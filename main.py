@@ -97,3 +97,29 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
         "message": "Login successful", 
         "user": {"email": db_user.email, "status": db_user.status}
     }
+
+@app.post("/auth/register")
+def register_user(user: UserLogin, db: Session = Depends(get_db)):
+    
+    # 1. Check if the email is already in the database
+    existing_user = db.query(DBUser).filter(DBUser.email == user.email).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Sequence already registered in the collective.")
+    
+    # 2. Create the new user identity
+    new_user = DBUser(
+        email=user.email,
+        password=user.password, 
+        status="PENDING_CLEARANCE"  # Giving new recruits a default status
+    )
+    
+    # 3. Save to the Vault (Database)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    # 4. Return the exact same success package as login
+    return {
+        "message": "Registration successful", 
+        "user": {"email": new_user.email, "status": new_user.status}
+    }
