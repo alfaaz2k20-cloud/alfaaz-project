@@ -1,0 +1,5 @@
+mkdir alfaaz-api
+cd alfaaz-api
+python -m venv venv
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
+pip install fastapi uvicorn pydantic
