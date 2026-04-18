@@ -19,6 +19,9 @@ Base = declarative_base()
 # ==========================================
 # 2. THE BLUEPRINT (Database Tables)
 # ==========================================
+# ==========================================
+# 2. THE BLUEPRINT (Database Tables)
+# ==========================================
 class DBUser(Base):
     __tablename__ = "users"
     
@@ -27,6 +30,11 @@ class DBUser(Base):
     password = Column(String) # Note: Still plain text for testing. We will lock this down later!
     full_name = Column(String, nullable=True)
     status = Column(String, default="PENDING_CLEARANCE") # Everyone starts here
+    
+    # NEW: Terminal Data Columns
+    exhibitions = Column(String, default="0")        # Track number of exhibitions
+    club_affiliation = Column(String, default="N/A") # Track their specific club
+    credits = Column(Integer, default=0)             # Track collective credits
 
 # This line actually builds the table inside the file
 Base.metadata.create_all(bind=engine)
@@ -107,12 +115,17 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
     if not db_user or db_user.password != user.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    # 3. Return success
+   # 3. Return success (Now with extra data)
     return {
         "message": "Login successful", 
-        "user": {"email": db_user.email, "status": db_user.status}
+        "user": {
+            "email": db_user.email, 
+            "status": db_user.status,
+            "exhibitions": db_user.exhibitions,
+            "club": db_user.club_affiliation,
+            "credits": db_user.credits
+        }
     }
-
 # ==========================================
 # 5. ADMIN PROTOCOLS
 # ==========================================
