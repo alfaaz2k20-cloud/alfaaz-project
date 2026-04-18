@@ -178,30 +178,42 @@
   </div>
 
   <script>
-    lucide.createIcons();
+  lucide.createIcons();
 
-    // 1. SECURITY CHECK: Are they logged in?
-    const userData = localStorage.getItem('alfaaz_user');
+  // 1. SECURITY CHECK: Are they logged in?
+  const userData = localStorage.getItem('alfaaz_user');
+  
+  if (!userData) {
+    // If no VIP Pass is found, instantly kick them back to login
+    window.location.href = 'login.html';
+  } else {
+    // 2. LOAD DATA: Parse the saved data
+    const user = JSON.parse(userData);
     
-    if (!userData) {
-      // If no VIP Pass is found, instantly kick them back to login
-      window.location.href = 'login.html';
-    } else {
-      // 2. LOAD DATA: Parse the saved data
-      const user = JSON.parse(userData);
-      
-      // Inject the data into the HTML
-      document.getElementById('dashEmail').textContent = user.email;
-      document.getElementById('dashStatus').textContent = user.status;
-    }
+    // Inject the data into the HTML
+    const emailDisplay = document.getElementById('dashEmail');
+    const statusBadge = document.getElementById('dashStatus');
+    const greeting = document.getElementById('userGreeting');
 
-    // 3. LOG OUT PROTOCOL
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      // Shred the VIP Pass
-      localStorage.removeItem('alfaaz_user');
-      // Kick them to the login page
-      window.location.href = 'login.html';
-    });
-  </script>
+    emailDisplay.textContent = user.email.toUpperCase();
+    statusBadge.textContent = user.status.replace('_', ' '); // Makes "PENDING_CLEARANCE" look like "PENDING CLEARANCE"
+    greeting.textContent = `GREETINGS, ${user.email.split('@')[0].toUpperCase()}`;
+
+    // 3. VISUAL POLISH: Change badge color based on status
+    if (user.status === 'PENDING_CLEARANCE') {
+      statusBadge.style.borderColor = '#a0aec0'; // Grey for pending
+      statusBadge.style.color = '#a0aec0';
+      statusBadge.style.background = 'rgba(160, 174, 192, 0.1)';
+    }
+  }
+
+  // 4. LOG OUT PROTOCOL
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    // Shred the memory
+    localStorage.removeItem('alfaaz_user');
+    // Teleport to login
+    window.location.href = 'login.html';
+  });
+</script>
 </body>
 </html>
