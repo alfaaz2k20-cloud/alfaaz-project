@@ -170,12 +170,30 @@
     </div>
 
     <div class="panel">
-      <h2 class="panel-title">Terminal Data</h2>
-      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.8;">
-        Your collective data, exhibition history, and active club enrollments will populate here once your clearance is fully verified by an administrator.
-      </p>
-    </div>
+  <h2 class="panel-title">Terminal Data</h2>
+
+  <p id="terminalPendingMsg" style="font-size: 12px; color: var(--text-secondary); line-height: 1.8;">
+    Your collective data is encrypted. Full clearance required for terminal access.
+  </p>
+
+ <div class="panel">
+  <h2 class="panel-title">Terminal Data</h2>
+
+  <p id="terminalPendingMsg" style="font-size: 12px; color: var(--text-secondary); line-height: 1.8;">
+    Your collective data is encrypted. Full clearance required for terminal access.
+  </p>
+
+  <div id="terminalDataDisplay" style="display: none;">
+    <div class="data-label">Exhibitions Logged</div>
+    <div class="data-value" id="dashExhibitions">0</div>
+
+    <div class="data-label">Active Club</div>
+    <div class="data-value" id="dashClub">N/A</div>
+
+    <div class="data-label">Collective Credits</div>
+    <div class="data-value" style="color: var(--accent-gold);" id="dashCredits">0</div>
   </div>
+</div>
 
   <script>
   lucide.createIcons();
@@ -190,7 +208,7 @@
     // 2. LOAD DATA: Parse the saved data
     const user = JSON.parse(userData);
     
-    // Inject the data into the HTML
+    // Inject the basic identity data into the HTML
     const emailDisplay = document.getElementById('dashEmail');
     const statusBadge = document.getElementById('dashStatus');
     const greeting = document.getElementById('userGreeting');
@@ -205,9 +223,22 @@
       statusBadge.style.color = '#a0aec0';
       statusBadge.style.background = 'rgba(160, 174, 192, 0.1)';
     }
+
+    // 4. TERMINAL DATA REVEAL
+    // Only show the vault data if they are fully cleared
+    if (user.status === 'ACTIVE_MEMBER' || user.status === 'ADMIN') {
+      // Hide the lock message, show the data grid
+      document.getElementById('terminalPendingMsg').style.display = 'none';
+      document.getElementById('terminalDataDisplay').style.display = 'block';
+
+      // Inject the newly fetched database values
+      document.getElementById('dashExhibitions').textContent = user.exhibitions;
+      document.getElementById('dashClub').textContent = user.club;
+      document.getElementById('dashCredits').textContent = user.credits;
+    }
   }
 
-  // 4. LOG OUT PROTOCOL
+  // 5. LOG OUT PROTOCOL
   document.getElementById('logoutBtn').addEventListener('click', () => {
     // Shred the memory
     localStorage.removeItem('alfaaz_user');
