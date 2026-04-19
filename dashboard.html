@@ -216,12 +216,12 @@
         statusBadge.style.background = 'rgba(160, 174, 192, 0.1)';
       }
 
-      // 4. TERMINAL DATA REVEAL
-      if (user.status === 'ACTIVE_MEMBER' || user.status === 'ADMIN') {
+     // 4. TERMINAL DATA REVEAL
+      // Show data to everyone who is a Participant, Member, or Admin
+      if (user.status === 'PARTICIPANT' || user.status === 'MEMBER' || user.status === 'ADMIN') {
         document.getElementById('terminalPendingMsg').style.display = 'none';
         document.getElementById('terminalDataDisplay').style.display = 'block';
 
-        // Add fallback values just in case the database sends null
         document.getElementById('dashExhibitions').textContent = user.exhibitions || "0";
         document.getElementById('dashClub').textContent = user.club || "N/A";
         document.getElementById('dashCredits').textContent = user.credits || "0";
