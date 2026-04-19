@@ -138,11 +138,10 @@ def ask_phantom(query: PhantomQuery):
     """
     
     try:
-        # Modern 2026 generate_content syntax
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=f"{personality}\n\nUser asks: {query.question}"
-        )
+    model="gemini-1.5-flash",
+    contents=f"{personality}\n\nUser asks: {query.question}"
+)
         
         return {"answer": response.text}
     except Exception as e:
