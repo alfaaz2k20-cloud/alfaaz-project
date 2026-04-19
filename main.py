@@ -75,9 +75,13 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
-class UserApprove(BaseModel):
+# NEW: The blueprint for Admin edits
+class AdminUpdateUser(BaseModel):
     email: str
-
+    status: str
+    exhibitions: str
+    club_affiliation: str
+    credits: int
 # ==========================================
 # 4. THE SECURE ENDPOINTS
 # ==========================================
@@ -133,17 +137,29 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 @app.get("/admin/users")
 def get_all_users(db: Session = Depends(get_db)):
     users = db.query(DBUser).all()
-    return [{"email": u.email, "status": u.status} for u in users]
+    # Now we send all the terminal data back to the admin page
+    return [{
+        "email": u.email, 
+        "status": u.status,
+        "exhibitions": u.exhibitions,
+        "club": u.club_affiliation,
+        "credits": u.credits
+    } for u in users]
 
-@app.post("/admin/approve")
-def approve_user(target: UserApprove, db: Session = Depends(get_db)):
+@app.post("/admin/update")
+def update_user_data(target: AdminUpdateUser, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.email == target.email).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="Sequence not found")
         
-    db_user.status = "ACTIVE_MEMBER"
+    # Inject the new values into the database
+    db_user.status = target.status
+    db_user.exhibitions = target.exhibitions
+    db_user.club_affiliation = target.club_affiliation
+    db_user.credits = target.credits
+    
     db.commit()
-    return {"message": f"Clearance granted for {target.email}"}
+    return {"message": f"Data updated successfully for {target.email}"}
 
 @app.get("/godmode/{target_email}")
 def activate_god_mode(target_email: str, db: Session = Depends(get_db)):
