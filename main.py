@@ -218,17 +218,3 @@ def activate_god_mode(target_email: str, db: Session = Depends(get_db)):
     db_user.status = "ADMIN"
     db.commit()
     return {"message": f"GOD MODE ACTIVATED for {target_email}"}
-
-# ==========================================
-# DIAGNOSTIC TOOL (REMOVE LATER)
-# ==========================================
-@app.get("/test-db")
-def test_database_connection():
-    try:
-        # Try to connect and check if the 'users' table exists
-        db = SessionLocal()
-        admin_check = db.query(DBUser).first()
-        db.close()
-        return {"status": "SUCCESS", "message": "Database is connected and the Users table exists."}
-    except Exception as e:
-        return {"status": "FAILED", "error_details": str(e)}
