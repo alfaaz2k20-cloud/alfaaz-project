@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from google import genai  # THE MODERN 2026 IMPORT
+from google import genai  
 import os
 from passlib.context import CryptContext
 
@@ -23,7 +23,6 @@ def verify_password(plain_password, hashed_password):
 # ==========================================
 # 1. THE VAULT (Cloud Database Setup)
 # ==========================================
-# It looks for the cloud DB first. If it can't find it, it falls back to local SQLite for testing.
 database_env = os.environ.get("DATABASE_URL")
 if database_env and database_env.startswith("postgres://"):
     database_env = database_env.replace("postgres://", "postgresql://", 1)
@@ -45,30 +44,6 @@ class DBUser(Base):
     club_affiliation = Column(String, default="N/A") 
     credits = Column(Integer, default=0)             
 
-Base.metadata.create_all(bind=engine)
-
-# ==========================================
-# 1.5 THE MASTER KEY (Permanent Admin Override)
-# ==========================================
-def establish_master_admin():
-    db = SessionLocal()
-    master_email = "admin@alfaaz.com"
-    # Check if the master admin exists in the cloud vault
-    admin_exists = db.query(DBUser).filter(DBUser.email == master_email).first()
-    
-    if not admin_exists:
-        master = DBUser(
-            email=master_email,
-            password=get_password_hash("AlfaazAdmin2026!"), # Change this password!
-            status="ADMIN",
-            full_name="The Curator"
-        )
-        db.add(master)
-        db.commit()
-    db.close()
-
-# Run this check every time the server wakes up
-establish_master_admin()
 # ==========================================
 # 2. API SETUP & BLUEPRINTS
 # ==========================================
@@ -109,6 +84,35 @@ class PhantomQuery(BaseModel):
     question: str
 
 # ==========================================
+# 2.5 SERVER STARTUP PROTOCOLS (The Safe Boot)
+# ==========================================
+@app.on_event("startup")
+def on_startup():
+    print("Initializing Database Tables...")
+    try:
+        Base.metadata.create_all(bind=engine)
+        
+        db = SessionLocal()
+        master_email = "admin@alfaaz.com"
+        admin_exists = db.query(DBUser).filter(DBUser.email == master_email).first()
+        
+        if not admin_exists:
+            print("Master Admin not found. Forging new Master Key...")
+            master = DBUser(
+                email=master_email,
+                password=get_password_hash("AlfaazAdmin2026!"), 
+                status="ADMIN",
+                full_name="The Curator"
+            )
+            db.add(master)
+            db.commit()
+        db.close()
+        print("Vault Systems Online. Master Key verified.")
+        
+    except Exception as e:
+        print(f"CRITICAL DB ERROR: The server failed to connect to Supabase. Check your URL and Password! ERROR DETAILS: {e}")
+
+# ==========================================
 # 3. AUTHENTICATION ENDPOINTS
 # ==========================================
 @app.post("/auth/register", status_code=status.HTTP_201_CREATED)
@@ -147,7 +151,6 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 # ==========================================
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# Initialize the new 2026 client
 if GEMINI_API_KEY:
     client = genai.Client(api_key=GEMINI_API_KEY)
 else:
@@ -167,10 +170,9 @@ def ask_phantom(query: PhantomQuery):
     
     try:
         response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=f"{personality}\n\nUser asks: {query.question}"
-)
-        
+            model="gemini-2.0-flash",
+            contents=f"{personality}\n\nUser asks: {query.question}"
+        )
         return {"answer": response.text}
     except Exception as e:
         print(f"AI ERROR: {str(e)}")
