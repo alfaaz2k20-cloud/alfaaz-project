@@ -95,7 +95,7 @@ def register_user(user: UserRegister, db: Session = Depends(get_db)):
         email=user.email, 
         password=hashed_password, # Saving the hash, NOT the real password
         full_name=user.full_name,
-        status="PENDING_CLEARANCE"
+        status="PARTICIPANT"
     )
     
     db.add(new_user)
