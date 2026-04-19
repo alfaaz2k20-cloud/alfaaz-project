@@ -140,7 +140,7 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 # ==========================================
 # This checks Render for a secure environment variable first. 
 # If it doesn't find one, it falls back to your hardcoded key for testing.
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyD1k503hLEPm7p6axQp-qkYeaDN7-6x44Q")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 phantom_model = genai.GenerativeModel('gemini-1.5-flash')
 
