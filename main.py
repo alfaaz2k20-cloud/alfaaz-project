@@ -2,9 +2,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException, Depends, status
 from pydantic import BaseModel
 from typing import Optional, List
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, func
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session, relationship
+from sqlalchemy.orm import sessionmaker, Session
 from groq import Groq
 import os
 from passlib.context import CryptContext
@@ -20,7 +20,6 @@ def get_password_hash(password):
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-# Database Routing (Fixing the postgres protocol for SQLAlchemy)
 database_env = os.environ.get("DATABASE_URL")
 if database_env and database_env.startswith("postgres://"):
     database_env = database_env.replace("postgres://", "postgresql://", 1)
@@ -32,7 +31,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # ==========================================
-# 1. THE REFINED VAULT (Database Models)
+# 1. THE SIMPLE VAULT (Database Models)
 # ==========================================
 class DBUser(Base):
     __tablename__ = "users"
@@ -41,25 +40,16 @@ class DBUser(Base):
     password = Column(String) 
     full_name = Column(String, nullable=True)
     status = Column(String, default="PARTICIPANT") # PARTICIPANT, ADMIN
-    exhibitions = Column(String, default="0")      
-    club_affiliation = Column(String, default="N/A") 
-    credits = Column(Integer, default=0)             
-    
-    # Relationship: One User can have many Art Pieces
-    art_pieces = relationship("DBArtPiece", back_populates="author")
 
-class DBArtPiece(Base):
-    __tablename__ = "gallery"
+class DBSubmission(Base):
+    __tablename__ = "submissions"
     id = Column(Integer, primary_key=True, index=True)
+    submission_type = Column(String) # e.g., "Membership", "Art PDF", "Proposal"
     title = Column(String)
-    description = Column(String)
-    art_type = Column(String) # Photography, Poetry, Film, Philosophy
-    media_url = Column(String)
+    file_url = Column(String) # The Cloudinary link
+    note = Column(String, nullable=True)
+    author_email = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
-    # The Foreign Key Bond: Links art to a specific User Email
-    author_email = Column(String, ForeignKey("users.email"))
-    author = relationship("DBUser", back_populates="art_pieces")
 
 # ==========================================
 # 2. API BLUEPRINTS (Pydantic Schemas)
@@ -83,18 +73,11 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
-class AdminUpdateUser(BaseModel):
-    email: str
-    status: str
-    exhibitions: str
-    club_affiliation: str
-    credits: int
-
-class ArtSubmission(BaseModel):
+class VaultSubmission(BaseModel):
+    submission_type: str
     title: str
-    description: str
-    art_type: str
-    media_url: str
+    file_url: str
+    note: Optional[str] = None
     author_email: str
 
 class PhantomQuery(BaseModel):
@@ -112,15 +95,11 @@ def get_db():
 # ==========================================
 @app.on_event("startup")
 def on_startup():
-    print("Initializing Database Tables...")
     try:
         Base.metadata.create_all(bind=engine)
         db = SessionLocal()
         master_email = "admin@alfaaz.com"
-        admin_exists = db.query(DBUser).filter(DBUser.email == master_email).first()
-        
-        if not admin_exists:
-            print("Master Admin not found. Forging Master Key...")
+        if not db.query(DBUser).filter(DBUser.email == master_email).first():
             master = DBUser(
                 email=master_email,
                 password=get_password_hash("AlfaazAdmin2026!"), 
@@ -130,18 +109,16 @@ def on_startup():
             db.add(master)
             db.commit()
         db.close()
-        print("Vault Systems Online. Master Key verified.")
     except Exception as e:
         print(f"CRITICAL DB ERROR: {e}")
 
 # ==========================================
-# 3. AUTHENTICATION ENDPOINTS
+# 3. AUTHENTICATION & THE PHANTOM
 # ==========================================
-@app.post("/auth/register", status_code=status.HTTP_201_CREATED)
+@app.post("/auth/register")
 def register_user(user: UserRegister, db: Session = Depends(get_db)):
     if db.query(DBUser).filter(DBUser.email == user.email).first():
-        raise HTTPException(status_code=400, detail="Sequence already in the vault.")
-    
+        raise HTTPException(status_code=400, detail="User already in the vault.")
     new_user = DBUser(email=user.email, password=get_password_hash(user.password), full_name=user.full_name)
     db.add(new_user)
     db.commit()
@@ -152,87 +129,51 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.email == user.email).first()
     if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {
-        "user": {
-            "email": db_user.email, 
-            "status": db_user.status,
-            "exhibitions": db_user.exhibitions,
-            "club": db_user.club_affiliation,
-            "credits": db_user.credits
-        }
-    }
+    return {"user": {"email": db_user.email, "status": db_user.status}}
 
-# ==========================================
-# 4. THE PHANTOM (Llama 4 Scout Engine)
-# ==========================================
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 @app.post("/phantom/ask")
 def ask_phantom(query: PhantomQuery):
-    if not client:
-        raise HTTPException(status_code=500, detail="The Phantom is silent.")
-
-    alfaaz_lore = """
-    You are The Phantom, the poetic curator of the ALFAAZ collective. 
-    ALFAAZ is dedicated to art, philosophy, and film. Speak with Brutalist mystery.
-    Keep answers concise and atmospheric. If asked for tech help, refer them to 'The Curator'.
-    """
-    
+    if not client: return {"answer": "[THE PHANTOM IS SILENT]"}
+    lore = "You are The Phantom, poetic curator of ALFAAZ. Answer with brutalist mystery. Keep it short."
     try:
-        chat_completion = client.chat.completions.create(
-            messages=[{"role": "system", "content": alfaaz_lore}, {"role": "user", "content": query.question}],
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+        response = client.chat.completions.create(
+            messages=[{"role": "system", "content": lore}, {"role": "user", "content": query.question}],
+            model="meta-llama/llama-4-scout-17b-16e-instruct", # Llama 4
             temperature=0.6,
         )
-        return {"answer": chat_completion.choices[0].message.content}
+        return {"answer": response.choices[0].message.content}
     except Exception as e:
-        if "429" in str(e):
-            return {"answer": "[THE VOID IS CLUTTERED] Too many whispers. Breathe, and inquire again."}
-        return {"answer": f"[SIGNAL DECAY] The Phantom is contemplating. Error: {str(e)}"}
+        return {"answer": "[SIGNAL DECAY] Please inquire again later."}
 
 # ==========================================
-# 5. THE GALLERY RITUALS
+# 4. PRIVATE SUBMISSION PIPELINE
 # ==========================================
-@app.get("/gallery/all")
-def get_gallery(db: Session = Depends(get_db)):
-    # Returns art pieces sorted by newest first
-    return db.query(DBArtPiece).order_by(DBArtPiece.created_at.desc()).all()
 
-@app.post("/gallery/submit")
-def submit_art(piece: ArtSubmission, db: Session = Depends(get_db)):
-    new_piece = DBArtPiece(
-        title=piece.title,
-        description=piece.description,
-        art_type=piece.art_type,
-        media_url=piece.media_url,
-        author_email=piece.author_email
+@app.post("/vault/submit")
+def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db)):
+    new_entry = DBSubmission(
+        submission_type=data.submission_type,
+        title=data.title,
+        file_url=data.file_url,
+        note=data.note,
+        author_email=data.author_email
     )
-    db.add(new_piece)
+    db.add(new_entry)
     db.commit()
-    return {"message": "Art etched into the vault"}
+    return {"status": "SUCCESS", "message": "Transmission received by the Vault."}
 
 # ==========================================
-# 6. ADMIN PROTOCOLS
+# 5. ADMIN DASHBOARD (Private Access)
 # ==========================================
+
+@app.get("/admin/submissions")
+def get_all_submissions(db: Session = Depends(get_db)):
+    # This returns all private files, PDFs, and forms for your admin.html
+    return db.query(DBSubmission).order_by(DBSubmission.created_at.desc()).all()
+
 @app.get("/admin/users")
 def get_all_users(db: Session = Depends(get_db)):
-    users = db.query(DBUser).all()
-    return [{"email": u.email, "status": u.status, "credits": u.credits} for u in users]
-
-@app.post("/admin/update")
-def update_user_data(target: AdminUpdateUser, db: Session = Depends(get_db)):
-    db_user = db.query(DBUser).filter(DBUser.email == target.email).first()
-    if not db_user: raise HTTPException(status_code=404, detail="Sequence not found")
-    db_user.status, db_user.exhibitions, db_user.club_affiliation, db_user.credits = \
-        target.status, target.exhibitions, target.club_affiliation, target.credits
-    db.commit()
-    return {"message": "Vault updated"}
-
-@app.get("/godmode/{target_email}")
-def activate_god_mode(target_email: str, db: Session = Depends(get_db)):
-    db_user = db.query(DBUser).filter(DBUser.email == target_email).first()
-    if not db_user: return {"error": "Target not found"}
-    db_user.status = "ADMIN"
-    db.commit()
-    return {"message": f"GOD MODE ACTIVATED for {target_email}"}
+    return db.query(DBUser).all()
