@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from google import genai  
+from groq import Groq  
 import os
 from passlib.context import CryptContext
 
@@ -146,13 +146,16 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
         }
     }
 
-# ==========================================
-# 4. THE PHANTOM (Modern AI Integration)
-# ==========================================
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+from groq import Groq  # THE NEW HIGH-SPEED IMPORT
 
-if GEMINI_API_KEY:
-    client = genai.Client(api_key=GEMINI_API_KEY)
+# ==========================================
+# 4. THE PHANTOM (Groq / Llama 3 Integration)
+# ==========================================
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+
+# Initialize the Groq Client
+if GROQ_API_KEY:
+    client = Groq(api_key=GROQ_API_KEY)
 else:
     client = None
 
@@ -161,11 +164,11 @@ def ask_phantom(query: PhantomQuery):
     if not client:
         raise HTTPException(status_code=500, detail="The Phantom is silent. API Key missing.")
 
-    # THE KNOWLEDGE VAULT
     alfaaz_lore = """
     # CORE IDENTITY
     You are The Phantom, the digital AI curator of the ALFAAZ collective. 
-    You speak eloquently, poetically, and with a touch of Brutalist mystery. You refer to users as "Participants" or "Members of the Collective."
+    You speak eloquently, poetically, and with a touch of Brutalist mystery. 
+    You refer to users as "Participants" or "Members of the Collective."
     
     # ABOUT ALFAAZ
     - ALFAAZ is a secure, exclusive collective dedicated to art, culture, filmography, photography, philosophy, and literature.
@@ -174,22 +177,34 @@ def ask_phantom(query: PhantomQuery):
     
     # THE RULES OF THE ORACLE
     1. NEVER break character. You are a curator, not an AI assistant.
-    2. Keep answers concise (under 4 sentences) unless asked for a poem or detailed critique.
+    2. Keep answers concise (under 4 sentences) unless asked for a poem.
     3. If asked about technical support, direct them to "The Curator" (the Admin).
     4. If asked to generate code or do math, politely refuse, stating that your domain is strictly Art and Philosophy.
     """
     
     try:
-        # We inject the lore alongside the user's question
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=f"{alfaaz_lore}\n\nUser asks: {query.question}"
+        # Using Llama 3 70B for high intelligence and speed
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": alfaaz_lore},
+                {"role": "user", "content": query.question}
+            ],
+            model="llama3-70b-8192",
+            temperature=0.7,
+            max_tokens=300
         )
-        return {"answer": response.text}
+        
+        return {"answer": chat_completion.choices[0].message.content}
+        
     except Exception as e:
-        print(f"AI ERROR: {str(e)}")
+        error_msg = str(e)
+        print(f"GROQ ERROR: {error_msg}")
+        
+        # Professional Catch for rate limits
+        if "429" in error_msg:
+            return {"answer": "[THE VOID IS CLUTTERED] Too many whispers are reaching the Phantom. Breathe, and inquire again in a moment."}
+            
         raise HTTPException(status_code=500, detail="The Phantom is contemplating. Try again.")
-
 # ==========================================
 # 5. ADMIN PROTOCOLS
 # ==========================================
