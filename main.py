@@ -177,3 +177,15 @@ def get_all_submissions(db: Session = Depends(get_db)):
 @app.get("/admin/users")
 def get_all_users(db: Session = Depends(get_db)):
     return db.query(DBUser).all()
+class StatusUpdate(BaseModel):
+    email: str
+    status: str
+
+@app.post("/admin/update_status")
+def update_user_status(target: StatusUpdate, db: Session = Depends(get_db)):
+    db_user = db.query(DBUser).filter(DBUser.email == target.email).first()
+    if not db_user: 
+        raise HTTPException(status_code=404, detail="Sequence not found")
+    db_user.status = target.status
+    db.commit()
+    return {"message": "Clearance updated"}
