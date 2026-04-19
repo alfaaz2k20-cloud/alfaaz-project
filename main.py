@@ -7,13 +7,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import google.generativeai as genai
 import os
-# NEW: The Cryptography Tools
+
+# The Cryptography Tools
 from passlib.context import CryptContext
 
 # ==========================================
 # 0. SECURITY SETUP (The Cipher)
 # ==========================================
-# This tells Python to use the 'bcrypt' algorithm to scramble passwords
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password):
@@ -31,16 +31,16 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # ==========================================
-# 2. THE BLUEPRINT
+# 2. THE DATABASE BLUEPRINT
 # ==========================================
 class DBUser(Base):
     __tablename__ = "users"
     
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
-    password = Column(String) # This will now hold the scrambled hash!
+    password = Column(String) 
     full_name = Column(String, nullable=True)
-    status = Column(String, default="PENDING_CLEARANCE") 
+    status = Column(String, default="PARTICIPANT") 
     
     exhibitions = Column(String, default="0")      
     club_affiliation = Column(String, default="N/A") 
@@ -49,7 +49,7 @@ class DBUser(Base):
 Base.metadata.create_all(bind=engine)
 
 # ==========================================
-# 3. API SETUP & VALIDATION
+# 3. API SETUP & VALIDATION BLUEPRINTS
 # ==========================================
 app = FastAPI(title="Alfaaz Collective API")
 
@@ -77,15 +77,17 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
-# NEW: The blueprint for Admin edits
 class AdminUpdateUser(BaseModel):
     email: str
     status: str
     exhibitions: str
     club_affiliation: str
     credits: int
-    class PhantomQuery(BaseModel):
+
+# [FIXED INDENTATION]: The blueprint for the AI
+class PhantomQuery(BaseModel):
     question: str
+
 # ==========================================
 # 4. THE SECURE ENDPOINTS
 # ==========================================
@@ -96,12 +98,11 @@ def register_user(user: UserRegister, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Sequence already registered in the collective.")
     
-    # SECURITY UPGRADE: Scramble the password before saving
     hashed_password = get_password_hash(user.password)
     
     new_user = DBUser(
         email=user.email, 
-        password=hashed_password, # Saving the hash, NOT the real password
+        password=hashed_password,
         full_name=user.full_name,
         status="PARTICIPANT"
     )
@@ -120,7 +121,6 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
     
     db_user = db.query(DBUser).filter(DBUser.email == user.email).first()
     
-    # SECURITY UPGRADE: Verify the typed password against the saved hash
     if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
@@ -138,36 +138,36 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 # ==========================================
 # 4.5 THE PHANTOM (AI Integration)
 # ==========================================
-# NOTE: Never push your real API key to a public GitHub repo! 
-# Since yours is private/for testing, we will place it here for now.
-genai.configure(api_key="AIzaSyD1k503hLEPm7p6axQp-qkYeaDN7-6x44Q")
+# This checks Render for a secure environment variable first. 
+# If it doesn't find one, it falls back to your hardcoded key for testing.
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyD1k503hLEPm7p6axQp-qkYeaDN7-6x44Q")
+genai.configure(api_key=GEMINI_API_KEY)
 phantom_model = genai.GenerativeModel('gemini-1.5-flash')
 
 @app.post("/phantom/ask")
 def ask_phantom(query: PhantomQuery, db: Session = Depends(get_db)):
-    # This is the "System Prompt" that gives the AI its personality
+    
     personality = """
     You are The Phantom, the AI curator of the ALFAAZ collective. 
     ALFAAZ is dedicated strictly to art, culture, filmography, photography, philosophy, and literature.
     Speak eloquently, poetically, and with a touch of mystery. 
     Keep your answers concise, inspiring, and deeply artistic.
     """
-
+    
     try:
-        # Combine the personality with the user's question
         full_prompt = f"{personality}\n\nUser asks: {query.question}"
         response = phantom_model.generate_content(full_prompt)
-
+        
         return {"answer": response.text}
     except Exception as e:
         raise HTTPException(status_code=500, detail="The Phantom is currently silent. Try again later.")
+
 # ==========================================
 # 5. ADMIN PROTOCOLS
 # ==========================================
 @app.get("/admin/users")
 def get_all_users(db: Session = Depends(get_db)):
     users = db.query(DBUser).all()
-    # Now we send all the terminal data back to the admin page
     return [{
         "email": u.email, 
         "status": u.status,
@@ -182,7 +182,6 @@ def update_user_data(target: AdminUpdateUser, db: Session = Depends(get_db)):
     if not db_user:
         raise HTTPException(status_code=404, detail="Sequence not found")
         
-    # Inject the new values into the database
     db_user.status = target.status
     db_user.exhibitions = target.exhibitions
     db_user.club_affiliation = target.club_affiliation
