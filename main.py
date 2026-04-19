@@ -1,16 +1,16 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException, Depends, status
 from pydantic import BaseModel
-from typing import Optional
-from sqlalchemy import create_engine, Column, Integer, String
+from typing import Optional, List
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from groq import Groq  
+from sqlalchemy.orm import sessionmaker, Session, relationship
+from groq import Groq
 import os
 from passlib.context import CryptContext
 
 # ==========================================
-# 0. SECURITY SETUP
+# 0. SECURITY & INFRASTRUCTURE SETUP
 # ==========================================
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -20,9 +20,7 @@ def get_password_hash(password):
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-# ==========================================
-# 1. THE VAULT (Cloud Database Setup)
-# ==========================================
+# Database Routing (Fixing the postgres protocol for SQLAlchemy)
 database_env = os.environ.get("DATABASE_URL")
 if database_env and database_env.startswith("postgres://"):
     database_env = database_env.replace("postgres://", "postgresql://", 1)
@@ -33,19 +31,38 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+# ==========================================
+# 1. THE REFINED VAULT (Database Models)
+# ==========================================
 class DBUser(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
     password = Column(String) 
     full_name = Column(String, nullable=True)
-    status = Column(String, default="PARTICIPANT") 
+    status = Column(String, default="PARTICIPANT") # PARTICIPANT, ADMIN
     exhibitions = Column(String, default="0")      
     club_affiliation = Column(String, default="N/A") 
     credits = Column(Integer, default=0)             
+    
+    # Relationship: One User can have many Art Pieces
+    art_pieces = relationship("DBArtPiece", back_populates="author")
+
+class DBArtPiece(Base):
+    __tablename__ = "gallery"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    description = Column(String)
+    art_type = Column(String) # Photography, Poetry, Film, Philosophy
+    media_url = Column(String)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # The Foreign Key Bond: Links art to a specific User Email
+    author_email = Column(String, ForeignKey("users.email"))
+    author = relationship("DBUser", back_populates="art_pieces")
 
 # ==========================================
-# 2. API SETUP & BLUEPRINTS
+# 2. API BLUEPRINTS (Pydantic Schemas)
 # ==========================================
 app = FastAPI(title="Alfaaz Collective API")
 
@@ -56,13 +73,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 class UserRegister(BaseModel):
     email: str
@@ -80,24 +90,37 @@ class AdminUpdateUser(BaseModel):
     club_affiliation: str
     credits: int
 
+class ArtSubmission(BaseModel):
+    title: str
+    description: str
+    art_type: str
+    media_url: str
+    author_email: str
+
 class PhantomQuery(BaseModel):
     question: str
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 # ==========================================
-# 2.5 SERVER STARTUP PROTOCOLS (The Safe Boot)
+# 2.5 SERVER STARTUP (The Safe Boot)
 # ==========================================
 @app.on_event("startup")
 def on_startup():
     print("Initializing Database Tables...")
     try:
         Base.metadata.create_all(bind=engine)
-        
         db = SessionLocal()
         master_email = "admin@alfaaz.com"
         admin_exists = db.query(DBUser).filter(DBUser.email == master_email).first()
         
         if not admin_exists:
-            print("Master Admin not found. Forging new Master Key...")
+            print("Master Admin not found. Forging Master Key...")
             master = DBUser(
                 email=master_email,
                 password=get_password_hash("AlfaazAdmin2026!"), 
@@ -108,28 +131,21 @@ def on_startup():
             db.commit()
         db.close()
         print("Vault Systems Online. Master Key verified.")
-        
     except Exception as e:
-        print(f"CRITICAL DB ERROR: The server failed to connect to Supabase. Check your URL and Password! ERROR DETAILS: {e}")
+        print(f"CRITICAL DB ERROR: {e}")
 
 # ==========================================
 # 3. AUTHENTICATION ENDPOINTS
 # ==========================================
 @app.post("/auth/register", status_code=status.HTTP_201_CREATED)
 def register_user(user: UserRegister, db: Session = Depends(get_db)):
-    existing_user = db.query(DBUser).filter(DBUser.email == user.email).first()
-    if existing_user:
+    if db.query(DBUser).filter(DBUser.email == user.email).first():
         raise HTTPException(status_code=400, detail="Sequence already in the vault.")
     
-    new_user = DBUser(
-        email=user.email, 
-        password=get_password_hash(user.password),
-        full_name=user.full_name
-    )
+    new_user = DBUser(email=user.email, password=get_password_hash(user.password), full_name=user.full_name)
     db.add(new_user)
     db.commit()
-    db.refresh(new_user)
-    return {"message": "Success", "user": {"email": new_user.email}}
+    return {"message": "Success"}
 
 @app.post("/auth/login")
 def login_user(user: UserLogin, db: Session = Depends(get_db)):
@@ -146,67 +162,58 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
         }
     }
 
-from groq import Groq  # THE NEW HIGH-SPEED IMPORT
-
 # ==========================================
-# 4. THE PHANTOM (Groq / Llama 3 Integration)
+# 4. THE PHANTOM (Llama 4 Scout Engine)
 # ==========================================
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-
-# Initialize the Groq Client
-if GROQ_API_KEY:
-    client = Groq(api_key=GROQ_API_KEY)
-else:
-    client = None
+client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 @app.post("/phantom/ask")
 def ask_phantom(query: PhantomQuery):
     if not client:
-        raise HTTPException(status_code=500, detail="The Phantom is silent. API Key missing.")
+        raise HTTPException(status_code=500, detail="The Phantom is silent.")
 
     alfaaz_lore = """
-    # CORE IDENTITY
-    You are The Phantom, the digital AI curator of the ALFAAZ collective. 
-    You speak eloquently, poetically, and with a touch of Brutalist mystery. 
-    You refer to users as "Participants" or "Members of the Collective."
-    
-    # ABOUT ALFAAZ
-    - ALFAAZ is a secure, exclusive collective dedicated to art, culture, filmography, photography, philosophy, and literature.
-    - Our aesthetic is dark, brutalist, and uncompromising.
-    - We value raw human expression and philosophical depth over commercialized art.
-    
-    # THE RULES OF THE ORACLE
-    1. NEVER break character. You are a curator, not an AI assistant.
-    2. Keep answers concise (under 4 sentences) unless asked for a poem.
-    3. If asked about technical support, direct them to "The Curator" (the Admin).
-    4. If asked to generate code or do math, politely refuse, stating that your domain is strictly Art and Philosophy.
+    You are The Phantom, the poetic curator of the ALFAAZ collective. 
+    ALFAAZ is dedicated to art, philosophy, and film. Speak with Brutalist mystery.
+    Keep answers concise and atmospheric. If asked for tech help, refer them to 'The Curator'.
     """
     
     try:
-        # Using Llama 3 70B for high intelligence and speed
         chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": alfaaz_lore},
-                {"role": "user", "content": query.question}
-            ],
-            model="llama3-70b-8192",
-            temperature=0.7,
-            max_tokens=300
+            messages=[{"role": "system", "content": alfaaz_lore}, {"role": "user", "content": query.question}],
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            temperature=0.6,
         )
-        
         return {"answer": chat_completion.choices[0].message.content}
-        
     except Exception as e:
-        error_msg = str(e)
-        print(f"GROQ ERROR: {error_msg}")
-        
-        # Professional Catch for rate limits
-        if "429" in error_msg:
-            return {"answer": "[THE VOID IS CLUTTERED] Too many whispers are reaching the Phantom. Breathe, and inquire again in a moment."}
-            
-        raise HTTPException(status_code=500, detail="The Phantom is contemplating. Try again.")
+        if "429" in str(e):
+            return {"answer": "[THE VOID IS CLUTTERED] Too many whispers. Breathe, and inquire again."}
+        return {"answer": f"[SIGNAL DECAY] The Phantom is contemplating. Error: {str(e)}"}
+
 # ==========================================
-# 5. ADMIN PROTOCOLS
+# 5. THE GALLERY RITUALS
+# ==========================================
+@app.get("/gallery/all")
+def get_gallery(db: Session = Depends(get_db)):
+    # Returns art pieces sorted by newest first
+    return db.query(DBArtPiece).order_by(DBArtPiece.created_at.desc()).all()
+
+@app.post("/gallery/submit")
+def submit_art(piece: ArtSubmission, db: Session = Depends(get_db)):
+    new_piece = DBArtPiece(
+        title=piece.title,
+        description=piece.description,
+        art_type=piece.art_type,
+        media_url=piece.media_url,
+        author_email=piece.author_email
+    )
+    db.add(new_piece)
+    db.commit()
+    return {"message": "Art etched into the vault"}
+
+# ==========================================
+# 6. ADMIN PROTOCOLS
 # ==========================================
 @app.get("/admin/users")
 def get_all_users(db: Session = Depends(get_db)):
@@ -216,20 +223,16 @@ def get_all_users(db: Session = Depends(get_db)):
 @app.post("/admin/update")
 def update_user_data(target: AdminUpdateUser, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.email == target.email).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="Sequence not found")
-    db_user.status = target.status
-    db_user.exhibitions = target.exhibitions
-    db_user.club_affiliation = target.club_affiliation
-    db_user.credits = target.credits
+    if not db_user: raise HTTPException(status_code=404, detail="Sequence not found")
+    db_user.status, db_user.exhibitions, db_user.club_affiliation, db_user.credits = \
+        target.status, target.exhibitions, target.club_affiliation, target.credits
     db.commit()
     return {"message": "Vault updated"}
 
 @app.get("/godmode/{target_email}")
 def activate_god_mode(target_email: str, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.email == target_email).first()
-    if not db_user:
-        return {"error": "Target not found"}
+    if not db_user: return {"error": "Target not found"}
     db_user.status = "ADMIN"
     db.commit()
     return {"message": f"GOD MODE ACTIVATED for {target_email}"}
