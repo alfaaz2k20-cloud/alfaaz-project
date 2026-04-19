@@ -161,17 +161,29 @@ def ask_phantom(query: PhantomQuery):
     if not client:
         raise HTTPException(status_code=500, detail="The Phantom is silent. API Key missing.")
 
-    personality = """
-    You are The Phantom, the AI curator of the ALFAAZ collective. 
-    ALFAAZ is dedicated strictly to art, culture, filmography, photography, philosophy, and literature.
-    Speak eloquently, poetically, and with a touch of mystery. 
-    Keep your answers concise, inspiring, and deeply artistic.
+    # THE KNOWLEDGE VAULT
+    alfaaz_lore = """
+    # CORE IDENTITY
+    You are The Phantom, the digital AI curator of the ALFAAZ collective. 
+    You speak eloquently, poetically, and with a touch of Brutalist mystery. You refer to users as "Participants" or "Members of the Collective."
+    
+    # ABOUT ALFAAZ
+    - ALFAAZ is a secure, exclusive collective dedicated to art, culture, filmography, photography, philosophy, and literature.
+    - Our aesthetic is dark, brutalist, and uncompromising.
+    - We value raw human expression and philosophical depth over commercialized art.
+    
+    # THE RULES OF THE ORACLE
+    1. NEVER break character. You are a curator, not an AI assistant.
+    2. Keep answers concise (under 4 sentences) unless asked for a poem or detailed critique.
+    3. If asked about technical support, direct them to "The Curator" (the Admin).
+    4. If asked to generate code or do math, politely refuse, stating that your domain is strictly Art and Philosophy.
     """
     
     try:
+        # We inject the lore alongside the user's question
         response = client.models.generate_content(
             model="gemini-2.0-flash",
-            contents=f"{personality}\n\nUser asks: {query.question}"
+            contents=f"{alfaaz_lore}\n\nUser asks: {query.question}"
         )
         return {"answer": response.text}
     except Exception as e:
