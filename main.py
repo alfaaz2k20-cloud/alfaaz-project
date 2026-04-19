@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-import google.generativeai as genai
+from google import genai  # THE MODERN 2026 IMPORT
 import os
 from passlib.context import CryptContext
 
@@ -115,22 +115,20 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
     }
 
 # ==========================================
-# 4. THE PHANTOM (AI Integration)
+# 4. THE PHANTOM (Modern AI Integration)
 # ==========================================
-# Initialize the AI properly with a safety check
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
+# Initialize the new 2026 client
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    phantom_model = genai.GenerativeModel('gemini-1.5-flash')
+    client = genai.Client(api_key=GEMINI_API_KEY)
 else:
-    phantom_model = None
+    client = None
 
 @app.post("/phantom/ask")
 def ask_phantom(query: PhantomQuery):
-    if not phantom_model:
-        # This will tell us if the Render Environment Variable is missing
-        raise HTTPException(status_code=500, detail="The Phantom is silent. API Key missing in server.")
+    if not client:
+        raise HTTPException(status_code=500, detail="The Phantom is silent. API Key missing.")
 
     personality = """
     You are The Phantom, the AI curator of the ALFAAZ collective. 
@@ -140,11 +138,15 @@ def ask_phantom(query: PhantomQuery):
     """
     
     try:
-        full_prompt = f"{personality}\n\nUser asks: {query.question}"
-        response = phantom_model.generate_content(full_prompt)
+        # Modern 2026 generate_content syntax
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=f"{personality}\n\nUser asks: {query.question}"
+        )
+        
         return {"answer": response.text}
     except Exception as e:
-        print(f"AI ERROR: {str(e)}") # This shows up in your Render Logs
+        print(f"AI ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail="The Phantom is contemplating. Try again.")
 
 # ==========================================
