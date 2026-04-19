@@ -21,10 +21,16 @@ def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 # ==========================================
-# 1. THE VAULT (Database Setup)
+# 1. THE VAULT (Cloud Database Setup)
 # ==========================================
-SQLALCHEMY_DATABASE_URL = "sqlite:///./alfaaz_data.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+# It looks for the cloud DB first. If it can't find it, it falls back to local SQLite for testing.
+database_env = os.environ.get("DATABASE_URL")
+if database_env and database_env.startswith("postgres://"):
+    database_env = database_env.replace("postgres://", "postgresql://", 1)
+
+SQLALCHEMY_DATABASE_URL = database_env or "sqlite:///./alfaaz_data.db"
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -41,6 +47,28 @@ class DBUser(Base):
 
 Base.metadata.create_all(bind=engine)
 
+# ==========================================
+# 1.5 THE MASTER KEY (Permanent Admin Override)
+# ==========================================
+def establish_master_admin():
+    db = SessionLocal()
+    master_email = "admin@alfaaz.com"
+    # Check if the master admin exists in the cloud vault
+    admin_exists = db.query(DBUser).filter(DBUser.email == master_email).first()
+    
+    if not admin_exists:
+        master = DBUser(
+            email=master_email,
+            password=get_password_hash("AlfaazAdmin2026!"), # Change this password!
+            status="ADMIN",
+            full_name="The Curator"
+        )
+        db.add(master)
+        db.commit()
+    db.close()
+
+# Run this check every time the server wakes up
+establish_master_admin()
 # ==========================================
 # 2. API SETUP & BLUEPRINTS
 # ==========================================
