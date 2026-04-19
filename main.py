@@ -5,6 +5,8 @@ from typing import Optional
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+import google.generativeai as genai
+import os
 # NEW: The Cryptography Tools
 from passlib.context import CryptContext
 
@@ -82,6 +84,8 @@ class AdminUpdateUser(BaseModel):
     exhibitions: str
     club_affiliation: str
     credits: int
+    class PhantomQuery(BaseModel):
+    question: str
 # ==========================================
 # 4. THE SECURE ENDPOINTS
 # ==========================================
@@ -131,6 +135,32 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
         }
     }
 
+# ==========================================
+# 4.5 THE PHANTOM (AI Integration)
+# ==========================================
+# NOTE: Never push your real API key to a public GitHub repo! 
+# Since yours is private/for testing, we will place it here for now.
+genai.configure(api_key="AIzaSyD1k503hLEPm7p6axQp-qkYeaDN7-6x44Q")
+phantom_model = genai.GenerativeModel('gemini-1.5-flash')
+
+@app.post("/phantom/ask")
+def ask_phantom(query: PhantomQuery, db: Session = Depends(get_db)):
+    # This is the "System Prompt" that gives the AI its personality
+    personality = """
+    You are The Phantom, the AI curator of the ALFAAZ collective. 
+    ALFAAZ is dedicated strictly to art, culture, filmography, photography, philosophy, and literature.
+    Speak eloquently, poetically, and with a touch of mystery. 
+    Keep your answers concise, inspiring, and deeply artistic.
+    """
+
+    try:
+        # Combine the personality with the user's question
+        full_prompt = f"{personality}\n\nUser asks: {query.question}"
+        response = phantom_model.generate_content(full_prompt)
+
+        return {"answer": response.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="The Phantom is currently silent. Try again later.")
 # ==========================================
 # 5. ADMIN PROTOCOLS
 # ==========================================
