@@ -1,17 +1,19 @@
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, HTTPException, Depends, Header, status
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from groq import Groq
 import os
-from passlib.context import CryptContext
+import jwt
 import datetime
+from passlib.context import CryptContext
 
 # ==========================================
-# 0. SECURITY & INFRASTRUCTURE SETUP
+# 0. SECURITY
 # ==========================================
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -21,18 +23,54 @@ def get_password_hash(password):
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
+# JWT secret lives ONLY on the server — set as env var on Render
+JWT_SECRET = os.environ.get("JWT_SECRET", "change-this-in-render-env-vars")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRY_HOURS = 24
+
+def create_token(email: str, user_status: str) -> str:
+    payload = {
+        "email": email,
+        "status": user_status,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=JWT_EXPIRY_HOURS)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def decode_token(token: str) -> dict:
+    try:
+        return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token.")
+
+# Admin guard — verifies JWT signature and checks ADMIN status
+bearer_scheme = HTTPBearer()
+
+def require_admin(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    payload = decode_token(credentials.credentials)
+    if payload.get("status") != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin clearance required.")
+    return payload
+
+# ==========================================
+# DATABASE SETUP
+# ==========================================
 database_env = os.environ.get("DATABASE_URL")
 if database_env and database_env.startswith("postgres://"):
     database_env = database_env.replace("postgres://", "postgresql://", 1)
 
 SQLALCHEMY_DATABASE_URL = database_env or "sqlite:///./alfaaz_data.db"
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {})
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {}
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # ==========================================
-# 1. THE SIMPLE VAULT (Database Models)
+# 1. DATABASE MODELS
 # ==========================================
 class DBUser(Base):
     __tablename__ = "users"
@@ -40,7 +78,7 @@ class DBUser(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String)
     full_name = Column(String, nullable=True)
-    status = Column(String, default="PARTICIPANT")  # PARTICIPANT, ADMIN
+    status = Column(String, default="PARTICIPANT")
 
 class DBSubmission(Base):
     __tablename__ = "submissions"
@@ -53,13 +91,13 @@ class DBSubmission(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 # ==========================================
-# 2. API BLUEPRINTS (Pydantic Schemas)
+# 2. APP & SCHEMAS
 # ==========================================
 app = FastAPI(title="Alfaaz Collective API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://alfaazcollective.vercel.app"], # LOCKED TO VERCEL
+    allow_origins=["https://alfaazcollective.vercel.app"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -96,15 +134,7 @@ def get_db():
         db.close()
 
 # ==========================================
-# ADMIN GUARD — Database Clearance Protocol
-# ==========================================
-def verify_admin(x_user_email: str = Header(...), db: Session = Depends(get_db)):
-    admin_user = db.query(DBUser).filter(DBUser.email == x_user_email).first()
-    if not admin_user or admin_user.status != "ADMIN":
-        raise HTTPException(status_code=403, detail="ACCESS DENIED: Insufficient clearance.")
-
-# ==========================================
-# 2.5 SERVER STARTUP (The Safe Boot)
+# 2.5 SERVER STARTUP
 # ==========================================
 @app.on_event("startup")
 def on_startup():
@@ -130,10 +160,10 @@ def on_startup():
 # ==========================================
 @app.get("/ping")
 def ping():
-    return {"status": "ONLINE", "message": "The Alfaaz Vault is awake."}
+    return {"status": "ALIVE"}
 
 # ==========================================
-# 3. AUTHENTICATION
+# 3. AUTHENTICATION — login/register now return a JWT token
 # ==========================================
 @app.post("/auth/register")
 def register_user(user: UserRegister, db: Session = Depends(get_db)):
@@ -147,18 +177,16 @@ def register_user(user: UserRegister, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    # Returns user object so register.html localStorage works correctly
-    return {
-        "message": "Success", 
-        "user": {"email": new_user.email, "status": new_user.status}
-    }
+    token = create_token(new_user.email, new_user.status)
+    return {"user": {"email": new_user.email, "status": new_user.status}, "token": token}
 
 @app.post("/auth/login")
 def login_user(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.email == user.email).first()
     if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {"user": {"email": db_user.email, "status": db_user.status}}
+    token = create_token(db_user.email, db_user.status)
+    return {"user": {"email": db_user.email, "status": db_user.status}, "token": token}
 
 # ==========================================
 # 4. THE PHANTOM — AI Curator with full Alfaaz knowledge
@@ -166,9 +194,8 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
-current_date = datetime.datetime.now().strftime("%B %Y")
-
-ALFAAZ_KNOWLEDGE = f"""
+# UPDATE this block whenever exhibitions, clubs, or events change.
+ALFAAZ_KNOWLEDGE = """
 ORGANIZATION: Alfaaz Collective
 TAGLINE: Art • Literature • Culture
 MISSION: Foster spaces where creativity meets collaboration. Celebrate local artists and writers through exhibitions, curated showcases, and creative events.
@@ -177,7 +204,6 @@ INSTAGRAM: https://www.instagram.com/alfaaz.2020
 EMAIL: alfaaz2k20@gmail.com
 ARCHIVE / LINKTREE: https://linktr.ee/alfaaz2k20
 SISTER PROJECT: Tchandervar (tchandervar.neocities.org) — bridges artists and commercial spaces.
-CURRENT DATE: {current_date}
 
 --- PAST EXHIBITIONS ---
 1. KAAMIL — Annual exhibition event. Held on two separate occasions.
@@ -189,7 +215,7 @@ CURRENT DATE: {current_date}
 7. ACT — Community project and performance event.
 
 --- UPCOMING EXHIBITIONS ---
-- "Absence" — Dates to be announced soon. 
+- "Absence" — Dates to be announced. Follow Instagram for updates.
 
 --- CLUBS ---
 1. Art & Craft — Visual arts, sketching, installations
@@ -238,7 +264,7 @@ def ask_phantom(query: PhantomQuery):
         return {"answer": "[SIGNAL DECAY] The void is temporarily unreachable. Inquire again."}
 
 # ==========================================
-# 5. PRIVATE SUBMISSION PIPELINE
+# 5. VAULT SUBMISSION
 # ==========================================
 @app.post("/vault/submit")
 def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db)):
@@ -254,18 +280,18 @@ def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db)):
     return {"status": "SUCCESS", "message": "Transmission received by the Vault."}
 
 # ==========================================
-# 6. ADMIN DASHBOARD — Protected by database header check
+# 6. ADMIN ENDPOINTS — protected by JWT, no secrets in HTML
 # ==========================================
 @app.get("/admin/submissions")
-def get_all_submissions(db: Session = Depends(get_db), _: None = Depends(verify_admin)):
+def get_all_submissions(db: Session = Depends(get_db), admin=Depends(require_admin)):
     return db.query(DBSubmission).order_by(DBSubmission.created_at.desc()).all()
 
 @app.get("/admin/users")
-def get_all_users(db: Session = Depends(get_db), _: None = Depends(verify_admin)):
+def get_all_users(db: Session = Depends(get_db), admin=Depends(require_admin)):
     return db.query(DBUser).all()
 
 @app.post("/admin/update_status")
-def update_user_status(target: StatusUpdate, db: Session = Depends(get_db), _: None = Depends(verify_admin)):
+def update_user_status(target: StatusUpdate, db: Session = Depends(get_db), admin=Depends(require_admin)):
     db_user = db.query(DBUser).filter(DBUser.email == target.email).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="Sequence not found")
