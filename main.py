@@ -55,6 +55,9 @@ def require_admin(credentials: HTTPAuthorizationCredentials = Depends(bearer_sch
     if payload.get("status") != "ADMIN":
         raise HTTPException(status_code=403, detail="Admin clearance required.")
     return payload
+def require_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    payload = decode_token(credentials.credentials)
+    return payload # Returns the decoded token if valid
 
 # ==========================================
 # DATABASE SETUP
@@ -145,8 +148,10 @@ def get_db():
         db.close()
 
 # ==========================================
-# 2.5 SERVER STARTUP
+# 2.5 SERVER STARTUP (Secured Boot)
 # ==========================================
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "FallbackKeyIfRenderFails123!")
+
 @app.on_event("startup")
 def on_startup():
     try:
@@ -156,7 +161,7 @@ def on_startup():
         if not db.query(DBUser).filter(DBUser.email == master_email).first():
             master = DBUser(
                 email=master_email,
-                password=get_password_hash("AlfaazAdmin2026!"),
+                password=get_password_hash(ADMIN_PASSWORD), # PULLING FROM RENDER
                 status="ADMIN",
                 full_name="The Curator"
             )
@@ -353,10 +358,14 @@ def ask_phantom(query: PhantomQuery):
         return {"answer": "[SIGNAL DECAY] The void is temporarily unreachable. Inquire again."}
 
 # ==========================================
-# 5. VAULT SUBMISSION
+# 5. VAULT SUBMISSION (Now Secured)
 # ==========================================
 @app.post("/vault/submit")
-def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db)):
+def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db), current_user: dict = Depends(require_user)):
+    # ANTI-SPOOFING: Ensure the token email matches the submission email
+    if data.author_email != current_user.get("email"):
+        raise HTTPException(status_code=403, detail="Identity spoofing detected. Transmission rejected.")
+        
     new_entry = DBSubmission(
         submission_type=data.submission_type,
         title=data.title,
@@ -367,7 +376,6 @@ def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db)):
     db.add(new_entry)
     db.commit()
     return {"status": "SUCCESS", "message": "Transmission received by the Vault."}
-
 # ==========================================
 # 6. ADMIN ENDPOINTS
 # ==========================================
