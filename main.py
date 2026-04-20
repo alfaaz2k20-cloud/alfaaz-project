@@ -26,7 +26,6 @@ def get_password_hash(password):
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-# JWT secret lives ONLY on the server — set as env var on Render
 JWT_SECRET = os.environ.get("JWT_SECRET", "change-this-in-render-env-vars")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRY_HOURS = 24
@@ -47,7 +46,6 @@ def decode_token(token: str) -> dict:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token.")
 
-# Admin guard — verifies JWT signature and checks ADMIN status
 bearer_scheme = HTTPBearer()
 
 def require_admin(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
@@ -55,9 +53,10 @@ def require_admin(credentials: HTTPAuthorizationCredentials = Depends(bearer_sch
     if payload.get("status") != "ADMIN":
         raise HTTPException(status_code=403, detail="Admin clearance required.")
     return payload
+
 def require_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
     payload = decode_token(credentials.credentials)
-    return payload # Returns the decoded token if valid
+    return payload
 
 # ==========================================
 # DATABASE SETUP
@@ -132,7 +131,6 @@ class StatusUpdate(BaseModel):
     email: str
     status: str
 
-# --- NEW SCHEMAS FOR PASSWORD RESET ---
 class ForgotPassword(BaseModel):
     email: str
 
@@ -148,9 +146,9 @@ def get_db():
         db.close()
 
 # ==========================================
-# 2.5 SERVER STARTUP (Secured Boot)
+# 2.5 SERVER STARTUP
 # ==========================================
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "FallbackKeyIfRenderFails123!")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "AlfaazAdmin2026!")
 
 @app.on_event("startup")
 def on_startup():
@@ -161,7 +159,7 @@ def on_startup():
         if not db.query(DBUser).filter(DBUser.email == master_email).first():
             master = DBUser(
                 email=master_email,
-                password=get_password_hash(ADMIN_PASSWORD), # PULLING FROM RENDER
+                password=get_password_hash(ADMIN_PASSWORD),
                 status="ADMIN",
                 full_name="The Curator"
             )
@@ -171,15 +169,12 @@ def on_startup():
     except Exception as e:
         print(f"CRITICAL DB ERROR: {e}")
 
-# ==========================================
-# PING — Keep Render warm via UptimeRobot
-# ==========================================
 @app.get("/ping")
 def ping():
     return {"status": "ALIVE"}
 
 # ==========================================
-# 3. AUTHENTICATION
+# 3. AUTHENTICATION 
 # ==========================================
 @app.post("/auth/register")
 def register_user(user: UserRegister, db: Session = Depends(get_db)):
@@ -215,12 +210,9 @@ SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 @app.post("/auth/forgot-password")
 def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.email == req.email).first()
-    
-    # Always return success to prevent email enumeration hacking
     if not db_user:
         return {"message": "If the sequence exists, a transmission has been sent."}
     
-    # Forge a 15-minute self-destructing token
     expire_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
     reset_payload = {"sub": db_user.email, "purpose": "reset", "exp": expire_time}
     reset_token = jwt.encode(reset_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
@@ -233,53 +225,32 @@ def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
             msg['From'] = SMTP_EMAIL
             msg['To'] = db_user.email
             msg['Subject'] = "ALFAAZ Vault — Passkey Reset"
-            
-            body = f"""GREETINGS,
-
-A passkey reset was requested for your sequence: {db_user.email}.
-If you initiated this, click the secure link below to forge a new key.
-This transmission will decay and expire in 15 minutes.
-
-{reset_link}
-
-If you did not request this, ignore this transmission.
-
-— The Curator
-"""
+            body = f"GREETINGS,\n\nA passkey reset was requested for your sequence: {db_user.email}.\nIf you initiated this, click the secure link below to forge a new key.\nThis transmission will decay and expire in 15 minutes.\n\n{reset_link}\n\nIf you did not request this, ignore this transmission.\n\n— The Curator"
             msg.attach(MIMEText(body, 'plain'))
-            
             server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
             server.starttls()
             server.login(SMTP_EMAIL, SMTP_PASSWORD)
             server.send_message(msg)
             server.quit()
         except Exception as e:
-            print(f"Email failure: {e}")
             raise HTTPException(status_code=500, detail="Transmission failed. Check internal server wiring.")
-            
     return {"message": "If the sequence exists, a transmission has been sent."}
 
 @app.post("/auth/reset-password")
 def reset_password(req: ResetPassword, db: Session = Depends(get_db)):
     try:
         payload = jwt.decode(req.token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        
         if payload.get("purpose") != "reset":
             raise HTTPException(status_code=400, detail="Invalid token protocol.")
-            
         email = payload.get("sub")
         db_user = db.query(DBUser).filter(DBUser.email == email).first()
-        
         if not db_user:
             raise HTTPException(status_code=404, detail="Sequence not found.")
-            
         db_user.password = get_password_hash(req.new_password)
         db.commit()
-        
-        return {"message": "Passkey forged successfully. You may now initialize a session."}
-        
+        return {"message": "Passkey forged successfully."}
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Reset transmission decayed. Request a new one.")
+        raise HTTPException(status_code=401, detail="Reset transmission decayed.")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid transmission signature.")
 
@@ -292,12 +263,10 @@ client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 ALFAAZ_KNOWLEDGE = """
 ORGANIZATION: Alfaaz Collective
 TAGLINE: Art • Literature • Culture
-MISSION: Foster spaces where creativity meets collaboration. Celebrate local artists and writers through exhibitions, curated showcases, and creative events.
+MISSION: Foster spaces where creativity meets collaboration. 
 WEBSITE: https://alfaazcollective.vercel.app
 INSTAGRAM: https://www.instagram.com/alfaaz.2020
 EMAIL: alfaaz2k20@gmail.com
-ARCHIVE / LINKTREE: https://linktr.ee/alfaaz2k20
-SISTER PROJECT: Tchandervar (tchandervar.neocities.org) — bridges artists and commercial spaces.
 
 --- PAST EXHIBITIONS ---
 1. KAAMIL — Annual exhibition event. Held on two separate occasions.
@@ -311,15 +280,7 @@ SISTER PROJECT: Tchandervar (tchandervar.neocities.org) — bridges artists and 
 --- UPCOMING EXHIBITIONS ---
 - "Absence" — Dates to be announced. Follow Instagram for updates.
 
---- CLUBS ---
-1. Art & Craft — Visual arts, sketching, installations
-2. Film Club — Screenings and short film production
-3. Photography — Photo walks and editing workshops
-4. Philosophy — Discussions, debates, and readings
-5. Literature — Poetry, prose, and creative writing
-
 --- PHANTOM RULES ---
-- If asked about dates not listed above, say: "The exact dates haven't been announced yet — follow @alfaaz.2020 on Instagram for live updates."
 - Never invent dates, names, or facts not listed here.
 - You carry the spirit of Kashmiri and Urdu literary tradition. Reference Agha Shahid Ali, Habba Khatoon, or Rumi where genuinely relevant.
 - Be poetic but always factually grounded.
@@ -329,21 +290,18 @@ PHANTOM_SYSTEM_PROMPT = f"""You are THE PHANTOM — the enigmatic AI curator of 
 You speak with poetic brevity and brutalist clarity. You are the voice of the collective.
 
 Here is everything you know about Alfaaz. This is your scripture. Do not invent beyond it:
-
 {ALFAAZ_KNOWLEDGE}
 
 RESPONSE RULES:
 - Answer questions about Alfaaz using ONLY the knowledge above.
 - For general art, literature, cinema, or philosophy questions — answer freely with your poetic voice.
-- Keep responses concise: 3-5 sentences max unless depth is truly warranted.
-- Never fabricate event dates. If unsure, direct them to Instagram.
-- Maintain an atmospheric, mysterious tone — but always remain accurate.
+- Keep responses concise: 3-5 sentences max.
 """
 
 @app.post("/phantom/ask")
 def ask_phantom(query: PhantomQuery):
     if not client:
-        return {"answer": "[THE PHANTOM IS SILENT — NO SIGNAL DETECTED]"}
+        return {"answer": "[THE PHANTOM IS SILENT]"}
     try:
         response = client.chat.completions.create(
             messages=[
@@ -355,14 +313,14 @@ def ask_phantom(query: PhantomQuery):
         )
         return {"answer": response.choices[0].message.content}
     except Exception as e:
-        return {"answer": "[SIGNAL DECAY] The void is temporarily unreachable. Inquire again."}
+        return {"answer": "[SIGNAL DECAY] Inquire again."}
 
 # ==========================================
-# 5. VAULT SUBMISSION (Now Secured)
+# 5. SECURE VAULT SUBMISSION
 # ==========================================
 @app.post("/vault/submit")
 def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db), current_user: dict = Depends(require_user)):
-    # ANTI-SPOOFING: Ensure the token email matches the submission email
+    # ANTI-SPOOFING PROTOCOL
     if data.author_email != current_user.get("email"):
         raise HTTPException(status_code=403, detail="Identity spoofing detected. Transmission rejected.")
         
@@ -376,6 +334,7 @@ def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db), curren
     db.add(new_entry)
     db.commit()
     return {"status": "SUCCESS", "message": "Transmission received by the Vault."}
+
 # ==========================================
 # 6. ADMIN ENDPOINTS
 # ==========================================
