@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from groq import Groq
 import os
 from passlib.context import CryptContext
+import datetime
 
 # ==========================================
 # 0. SECURITY & INFRASTRUCTURE SETUP
@@ -58,7 +59,7 @@ app = FastAPI(title="Alfaaz Collective API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://alfaazcollective.vercel.app"],
+    allow_origins=["https://alfaazcollective.vercel.app"], # LOCKED TO VERCEL
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -95,13 +96,12 @@ def get_db():
         db.close()
 
 # ==========================================
-# ADMIN GUARD — set ADMIN_SECRET as env var on Render
+# ADMIN GUARD — Database Clearance Protocol
 # ==========================================
-ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "alfaaz-admin-secret-change-me")
-
-def verify_admin(x_admin_secret: str = Header(...)):
-    if x_admin_secret != ADMIN_SECRET:
-        raise HTTPException(status_code=403, detail="Access denied. Invalid clearance key.")
+def verify_admin(x_user_email: str = Header(...), db: Session = Depends(get_db)):
+    admin_user = db.query(DBUser).filter(DBUser.email == x_user_email).first()
+    if not admin_user or admin_user.status != "ADMIN":
+        raise HTTPException(status_code=403, detail="ACCESS DENIED: Insufficient clearance.")
 
 # ==========================================
 # 2.5 SERVER STARTUP (The Safe Boot)
@@ -130,7 +130,7 @@ def on_startup():
 # ==========================================
 @app.get("/ping")
 def ping():
-    return {"status": "ALIVE"}
+    return {"status": "ONLINE", "message": "The Alfaaz Vault is awake."}
 
 # ==========================================
 # 3. AUTHENTICATION
@@ -147,8 +147,11 @@ def register_user(user: UserRegister, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    # FIX: now returns user object so register.html localStorage works correctly
-    return {"user": {"email": new_user.email, "status": new_user.status}}
+    # Returns user object so register.html localStorage works correctly
+    return {
+        "message": "Success", 
+        "user": {"email": new_user.email, "status": new_user.status}
+    }
 
 @app.post("/auth/login")
 def login_user(user: UserLogin, db: Session = Depends(get_db)):
@@ -163,10 +166,9 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
-# ---- ALFAAZ KNOWLEDGE BLOCK ----
-# UPDATE THIS SECTION whenever exhibitions, clubs, or events change.
-# This is Phantom's scripture — keep it accurate and current.
-ALFAAZ_KNOWLEDGE = """
+current_date = datetime.datetime.now().strftime("%B %Y")
+
+ALFAAZ_KNOWLEDGE = f"""
 ORGANIZATION: Alfaaz Collective
 TAGLINE: Art • Literature • Culture
 MISSION: Foster spaces where creativity meets collaboration. Celebrate local artists and writers through exhibitions, curated showcases, and creative events.
@@ -175,6 +177,7 @@ INSTAGRAM: https://www.instagram.com/alfaaz.2020
 EMAIL: alfaaz2k20@gmail.com
 ARCHIVE / LINKTREE: https://linktr.ee/alfaaz2k20
 SISTER PROJECT: Tchandervar (tchandervar.neocities.org) — bridges artists and commercial spaces.
+CURRENT DATE: {current_date}
 
 --- PAST EXHIBITIONS ---
 1. KAAMIL — Annual exhibition event. Held on two separate occasions.
@@ -186,7 +189,7 @@ SISTER PROJECT: Tchandervar (tchandervar.neocities.org) — bridges artists and 
 7. ACT — Community project and performance event.
 
 --- UPCOMING EXHIBITIONS ---
-- "Absence" — Dates to be announced soon. (Status as of January 2026)
+- "Absence" — Dates to be announced soon. 
 
 --- CLUBS ---
 1. Art & Craft — Visual arts, sketching, installations
@@ -251,7 +254,7 @@ def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db)):
     return {"status": "SUCCESS", "message": "Transmission received by the Vault."}
 
 # ==========================================
-# 6. ADMIN DASHBOARD — Protected by secret header
+# 6. ADMIN DASHBOARD — Protected by database header check
 # ==========================================
 @app.get("/admin/submissions")
 def get_all_submissions(db: Session = Depends(get_db), _: None = Depends(verify_admin)):
