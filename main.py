@@ -1,3 +1,6 @@
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -126,6 +129,14 @@ class StatusUpdate(BaseModel):
     email: str
     status: str
 
+# --- NEW SCHEMAS FOR PASSWORD RESET ---
+class ForgotPassword(BaseModel):
+    email: str
+
+class ResetPassword(BaseModel):
+    token: str
+    new_password: str
+
 def get_db():
     db = SessionLocal()
     try:
@@ -163,7 +174,7 @@ def ping():
     return {"status": "ALIVE"}
 
 # ==========================================
-# 3. AUTHENTICATION — login/register now return a JWT token
+# 3. AUTHENTICATION
 # ==========================================
 @app.post("/auth/register")
 def register_user(user: UserRegister, db: Session = Depends(get_db)):
@@ -189,12 +200,90 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
     return {"user": {"email": db_user.email, "status": db_user.status}, "token": token}
 
 # ==========================================
-# 4. THE PHANTOM — AI Curator with full Alfaaz knowledge
+# 3.5 AUTOMATED RECOVERY PIPELINE
+# ==========================================
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_EMAIL = os.environ.get("SMTP_EMAIL") 
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD") 
+
+@app.post("/auth/forgot-password")
+def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
+    db_user = db.query(DBUser).filter(DBUser.email == req.email).first()
+    
+    # Always return success to prevent email enumeration hacking
+    if not db_user:
+        return {"message": "If the sequence exists, a transmission has been sent."}
+    
+    # Forge a 15-minute self-destructing token
+    expire_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
+    reset_payload = {"sub": db_user.email, "purpose": "reset", "exp": expire_time}
+    reset_token = jwt.encode(reset_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    
+    reset_link = f"https://alfaazcollective.vercel.app/reset.html?token={reset_token}"
+    
+    if SMTP_EMAIL and SMTP_PASSWORD:
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = SMTP_EMAIL
+            msg['To'] = db_user.email
+            msg['Subject'] = "ALFAAZ Vault — Passkey Reset"
+            
+            body = f"""GREETINGS,
+
+A passkey reset was requested for your sequence: {db_user.email}.
+If you initiated this, click the secure link below to forge a new key.
+This transmission will decay and expire in 15 minutes.
+
+{reset_link}
+
+If you did not request this, ignore this transmission.
+
+— The Curator
+"""
+            msg.attach(MIMEText(body, 'plain'))
+            
+            server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+            server.starttls()
+            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.send_message(msg)
+            server.quit()
+        except Exception as e:
+            print(f"Email failure: {e}")
+            raise HTTPException(status_code=500, detail="Transmission failed. Check internal server wiring.")
+            
+    return {"message": "If the sequence exists, a transmission has been sent."}
+
+@app.post("/auth/reset-password")
+def reset_password(req: ResetPassword, db: Session = Depends(get_db)):
+    try:
+        payload = jwt.decode(req.token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        
+        if payload.get("purpose") != "reset":
+            raise HTTPException(status_code=400, detail="Invalid token protocol.")
+            
+        email = payload.get("sub")
+        db_user = db.query(DBUser).filter(DBUser.email == email).first()
+        
+        if not db_user:
+            raise HTTPException(status_code=404, detail="Sequence not found.")
+            
+        db_user.password = get_password_hash(req.new_password)
+        db.commit()
+        
+        return {"message": "Passkey forged successfully. You may now initialize a session."}
+        
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Reset transmission decayed. Request a new one.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid transmission signature.")
+
+# ==========================================
+# 4. THE PHANTOM — AI Curator
 # ==========================================
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
-# UPDATE this block whenever exhibitions, clubs, or events change.
 ALFAAZ_KNOWLEDGE = """
 ORGANIZATION: Alfaaz Collective
 TAGLINE: Art • Literature • Culture
@@ -280,7 +369,7 @@ def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db)):
     return {"status": "SUCCESS", "message": "Transmission received by the Vault."}
 
 # ==========================================
-# 6. ADMIN ENDPOINTS — protected by JWT, no secrets in HTML
+# 6. ADMIN ENDPOINTS
 # ==========================================
 @app.get("/admin/submissions")
 def get_all_submissions(db: Session = Depends(get_db), admin=Depends(require_admin)):
