@@ -30,16 +30,14 @@ JWT_SECRET = os.environ.get("JWT_SECRET", "change-this-in-render-env-vars")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRY_HOURS = 24
 
-# SMTP Configuration for Automated Emails
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-SMTP_EMAIL = os.environ.get("SMTP_EMAIL") 
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD") 
+SMTP_EMAIL = os.environ.get("SMTP_EMAIL")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 
 def send_system_email(to_email: str, subject: str, body: str):
-    """Universal function to handle outbound transmissions."""
     if not SMTP_EMAIL or not SMTP_PASSWORD:
-        print("SMTP credentials missing. Email transmission aborted.")
+        print(f"[EMAIL SKIPPED] To: {to_email} | Subject: {subject}")
         return
     try:
         msg = MIMEMultipart()
@@ -53,7 +51,7 @@ def send_system_email(to_email: str, subject: str, body: str):
         server.send_message(msg)
         server.quit()
     except Exception as e:
-        print(f"SMTP Transmission Error: {e}")
+        print(f"[SMTP ERROR] {e}")
 
 def create_token(email: str, user_status: str) -> str:
     payload = {
@@ -124,9 +122,9 @@ class DBClubApplication(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_email = Column(String, index=True)
     club_name = Column(String)
-    note = Column(String, nullable=True)         
-    status = Column(String, default="PENDING")    
-    admin_note = Column(String, nullable=True)    
+    note = Column(String, nullable=True)
+    status = Column(String, default="PENDING")
+    admin_note = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class DBEvent(Base):
@@ -134,9 +132,9 @@ class DBEvent(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     description = Column(String, nullable=True)
-    event_date = Column(String, nullable=True)     
+    event_date = Column(String, nullable=True)
     registration_open = Column(Boolean, default=False)
-    capacity = Column(Integer, default=0)          
+    capacity = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class DBEventRegistration(Base):
@@ -144,31 +142,27 @@ class DBEventRegistration(Base):
     id = Column(Integer, primary_key=True, index=True)
     event_id = Column(Integer, index=True)
     user_email = Column(String, index=True)
-    whatsapp_number = Column(String, nullable=True) 
+    whatsapp_number = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class DBExhibitionApplication(Base):
     __tablename__ = "exhibition_applications"
     id = Column(Integer, primary_key=True, index=True)
     user_email = Column(String, index=True)
-    # Section 2: Demographics
     full_name = Column(String)
     age = Column(Integer)
     address = Column(String)
     whatsapp = Column(String)
-    # Section 3: Art & Artist
     genre = Column(String)
     medium = Column(String)
-    portfolio_url = Column(String) 
+    portfolio_url = Column(String)
     over_19 = Column(Boolean, default=False)
     agreed_to_screening = Column(Boolean, default=False)
     applicant_note = Column(String, nullable=True)
-    # Administrative
-    status = Column(String, default="PENDING") 
+    status = Column(String, default="PENDING")    # PENDING, APPROVED, REJECTED
     curator_note = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-# NEW TABLE: Master Exhibition Settings
 class DBExhibitionConfig(Base):
     __tablename__ = "exhibition_config"
     id = Column(Integer, primary_key=True, index=True)
@@ -185,7 +179,7 @@ app = FastAPI(title="Alfaaz Collective API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this to your domains
+    allow_origins=["https://alfaazcollective.vercel.app"],  # FIX: was ["*"]
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -227,7 +221,7 @@ class ClubApplicationCreate(BaseModel):
 
 class ClubApplicationReview(BaseModel):
     application_id: int
-    status: str          
+    status: str
     admin_note: Optional[str] = None
 
 class EventCreate(BaseModel):
@@ -238,7 +232,7 @@ class EventCreate(BaseModel):
 
 class EventRegister(BaseModel):
     event_id: int
-    whatsapp_number: Optional[str] = None 
+    whatsapp_number: Optional[str] = None
 
 class ExhibitionApplicationCreate(BaseModel):
     full_name: str
@@ -254,9 +248,9 @@ class ExhibitionApplicationCreate(BaseModel):
 
 class ExhibitionReview(BaseModel):
     application_id: int
-    status: str # APPROVED or REJECTED
+    status: str
     curator_note: Optional[str] = None
-    payment_link: Optional[str] = None 
+    payment_link: Optional[str] = None
 
 class ExhibitionConfigSchema(BaseModel):
     title: str
@@ -324,25 +318,34 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 @app.post("/auth/forgot-password")
 def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.email == req.email).first()
-    if not db_user: return {"message": "If the sequence exists, a transmission has been sent."}
+    if not db_user:
+        return {"message": "If the sequence exists, a transmission has been sent."}
     expire_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
     reset_token = jwt.encode({"sub": db_user.email, "purpose": "reset", "exp": expire_time}, JWT_SECRET, algorithm=JWT_ALGORITHM)
     reset_link = f"https://alfaazcollective.vercel.app/reset.html?token={reset_token}"
-    body = f"GREETINGS,\n\nA passkey reset was requested for your sequence: {db_user.email}.\nClick below to forge a new key:\n\n{reset_link}\n\n— The Curator"
-    send_system_email(db_user.email, "ALFAAZ Vault — Passkey Reset", body)
+    send_system_email(
+        db_user.email,
+        "ALFAAZ Vault — Passkey Reset",
+        f"GREETINGS,\n\nA passkey reset was requested for: {db_user.email}.\nThis link expires in 15 minutes.\n\n{reset_link}\n\nIf you did not request this, ignore this message.\n\n— The Curator"
+    )
     return {"message": "If the sequence exists, a transmission has been sent."}
 
 @app.post("/auth/reset-password")
 def reset_password(req: ResetPassword, db: Session = Depends(get_db)):
     try:
         payload = jwt.decode(req.token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("purpose") != "reset":
+            raise HTTPException(status_code=400, detail="Invalid token protocol.")
         db_user = db.query(DBUser).filter(DBUser.email == payload.get("sub")).first()
-        if not db_user: raise HTTPException(status_code=404, detail="Sequence not found.")
+        if not db_user:
+            raise HTTPException(status_code=404, detail="Sequence not found.")
         db_user.password = get_password_hash(req.new_password)
         db.commit()
         return {"message": "Passkey forged successfully."}
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired transmission.")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Reset transmission decayed.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid transmission signature.")
 
 # ==========================================
 # 4. THE PHANTOM
@@ -353,20 +356,43 @@ client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 ALFAAZ_KNOWLEDGE = """
 ORGANIZATION: Alfaaz Collective
 TAGLINE: Art • Literature • Culture
-MISSION: Foster spaces where creativity meets collaboration. 
+MISSION: Foster spaces where creativity meets collaboration. Celebrate local artists and writers through exhibitions, curated showcases, and creative events.
 WEBSITE: https://alfaazcollective.vercel.app
 INSTAGRAM: https://www.instagram.com/alfaaz.2020
 EMAIL: alfaaz2k20@gmail.com
-SISTER PROJECT: Tchandervar (tchandervar.neocities.org)
+SISTER PROJECT: Tchandervar (tchandervar.neocities.org) — bridges artists and commercial spaces.
+
+--- PAST EXHIBITIONS ---
+1. KAAMIL — Annual exhibition event. Held on two separate occasions.
+2. KHAYAAL — Poetry slam event.
+3. HARUD — Named after the Kashmiri word for autumn.
+4. LIVE PAINTING — Open live painting session.
+5. BAYAAN — Philosophy debate and discussion event.
+6. LIVE PERFORMANCE — Performing arts showcase.
+7. ACT — Community project and performance event.
+
+--- CLUBS ---
+1. Art & Craft — Visual arts, sketching, installations
+2. Film Club — Screenings and short film production
+3. Photography — Photo walks and editing workshops
+4. Philosophy — Discussions, debates, and readings
+5. Literature — Poetry, prose, and creative writing
+
+--- PHANTOM RULES ---
+- If asked about dates not listed above: "The exact dates haven't been announced yet — follow @alfaaz.2020 on Instagram."
+- Never invent dates, names, or facts not listed here.
+- Reference Agha Shahid Ali, Habba Khatoon, or Rumi where genuinely relevant.
+- Be poetic but always factually grounded.
 """
 
 @app.post("/phantom/ask")
 def ask_phantom(query: PhantomQuery):
-    if not client: return {"answer": "[THE PHANTOM IS SILENT]"}
+    if not client:
+        return {"answer": "[THE PHANTOM IS SILENT — NO SIGNAL DETECTED]"}
     try:
         response = client.chat.completions.create(
             messages=[
-                {"role": "system", "content": f"You are THE PHANTOM. Knowledge: {ALFAAZ_KNOWLEDGE}. Keep responses brief, poetic, and accurate."},
+                {"role": "system", "content": f"You are THE PHANTOM — enigmatic AI curator of Alfaaz Collective. Speak with poetic brevity. Your knowledge:\n{ALFAAZ_KNOWLEDGE}\nKeep responses 3-5 sentences max. Never fabricate facts."},
                 {"role": "user", "content": query.question}
             ],
             model="meta-llama/llama-4-scout-17b-16e-instruct",
@@ -374,24 +400,42 @@ def ask_phantom(query: PhantomQuery):
         )
         return {"answer": response.choices[0].message.content}
     except Exception:
-        return {"answer": "[SIGNAL DECAY] Inquire again."}
+        return {"answer": "[SIGNAL DECAY] The void is temporarily unreachable. Inquire again."}
 
 # ==========================================
-# 5. VAULT SUBMISSION & CLUBS
+# 5. VAULT SUBMISSION
 # ==========================================
 @app.post("/vault/submit")
 def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db), user=Depends(require_auth)):
-    new_entry = DBSubmission(submission_type=data.submission_type, title=data.title, file_url=data.file_url, note=data.note, author_email=user["email"])
+    new_entry = DBSubmission(
+        submission_type=data.submission_type, title=data.title,
+        file_url=data.file_url, note=data.note, author_email=user["email"]
+    )
     db.add(new_entry)
     db.commit()
     return {"status": "SUCCESS"}
 
+# ==========================================
+# 6. CLUBS
+# ==========================================
 VALID_CLUBS = ["Art & Craft", "Film Club", "Photography", "Philosophy", "Literature"]
+
 @app.post("/clubs/apply")
 def apply_to_club(data: ClubApplicationCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
-    if data.club_name not in VALID_CLUBS: raise HTTPException(status_code=400, detail="Invalid club.")
-    existing = db.query(DBClubApplication).filter(DBClubApplication.user_email == user["email"], DBClubApplication.status == "PENDING").first()
-    if existing: raise HTTPException(status_code=400, detail="Pending application exists.")
+    if data.club_name not in VALID_CLUBS:
+        raise HTTPException(status_code=400, detail="Invalid club.")
+    existing = db.query(DBClubApplication).filter(
+        DBClubApplication.user_email == user["email"],
+        DBClubApplication.status == "PENDING"
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Pending application exists.")
+    approved = db.query(DBClubApplication).filter(
+        DBClubApplication.user_email == user["email"],
+        DBClubApplication.status == "APPROVED"
+    ).first()
+    if approved:
+        raise HTTPException(status_code=400, detail=f"Already a member of {approved.club_name}.")
     application = DBClubApplication(user_email=user["email"], club_name=data.club_name, note=data.note)
     db.add(application)
     db.commit()
@@ -399,12 +443,15 @@ def apply_to_club(data: ClubApplicationCreate, db: Session = Depends(get_db), us
 
 @app.get("/clubs/my-status")
 def get_my_club_status(db: Session = Depends(get_db), user=Depends(require_auth)):
-    app = db.query(DBClubApplication).filter(DBClubApplication.user_email == user["email"]).order_by(DBClubApplication.created_at.desc()).first()
-    if not app: return {"status": "NONE"}
-    return {"status": app.status, "club": app.club_name, "admin_note": app.admin_note}
+    application = db.query(DBClubApplication).filter(
+        DBClubApplication.user_email == user["email"]
+    ).order_by(DBClubApplication.created_at.desc()).first()
+    if not application:
+        return {"status": "NONE"}
+    return {"status": application.status, "club": application.club_name, "admin_note": application.admin_note}
 
 # ==========================================
-# 6. EVENTS (MINOR)
+# 7. EVENTS (minor / small gatherings)
 # ==========================================
 @app.get("/events/active")
 def get_active_events(db: Session = Depends(get_db)):
@@ -413,8 +460,10 @@ def get_active_events(db: Session = Depends(get_db)):
     for e in events:
         count = db.query(DBEventRegistration).filter(DBEventRegistration.event_id == e.id).count()
         result.append({
-            "id": e.id, "name": e.name, "description": e.description, "event_date": e.event_date,
-            "capacity": e.capacity, "registered": count, "spots_left": (e.capacity - count) if e.capacity > 0 else None,
+            "id": e.id, "name": e.name, "description": e.description,
+            "event_date": e.event_date, "capacity": e.capacity,
+            "registered": count,
+            "spots_left": (e.capacity - count) if e.capacity > 0 else None,
             "full": (e.capacity > 0 and count >= e.capacity)
         })
     return result
@@ -422,13 +471,21 @@ def get_active_events(db: Session = Depends(get_db)):
 @app.post("/events/register")
 def register_for_event(data: EventRegister, db: Session = Depends(get_db), user=Depends(require_auth)):
     event = db.query(DBEvent).filter(DBEvent.id == data.event_id).first()
-    if not event or not event.registration_open: raise HTTPException(status_code=400, detail="Registration closed.")
+    if not event or not event.registration_open:
+        raise HTTPException(status_code=400, detail="Registration closed.")
     count = db.query(DBEventRegistration).filter(DBEventRegistration.event_id == data.event_id).count()
-    if event.capacity > 0 and count >= event.capacity: raise HTTPException(status_code=400, detail="Event full.")
-    already = db.query(DBEventRegistration).filter(DBEventRegistration.event_id == data.event_id, DBEventRegistration.user_email == user["email"]).first()
-    if already: raise HTTPException(status_code=400, detail="Already registered.")
-    
-    reg = DBEventRegistration(event_id=data.event_id, user_email=user["email"], whatsapp_number=data.whatsapp_number)
+    if event.capacity > 0 and count >= event.capacity:
+        raise HTTPException(status_code=400, detail="Event full.")
+    already = db.query(DBEventRegistration).filter(
+        DBEventRegistration.event_id == data.event_id,
+        DBEventRegistration.user_email == user["email"]
+    ).first()
+    if already:
+        raise HTTPException(status_code=400, detail="Already registered.")
+    reg = DBEventRegistration(
+        event_id=data.event_id, user_email=user["email"],
+        whatsapp_number=data.whatsapp_number
+    )
     db.add(reg)
     db.commit()
     return {"status": "SUCCESS"}
@@ -436,53 +493,67 @@ def register_for_event(data: EventRegister, db: Session = Depends(get_db), user=
 @app.get("/events/my-registrations")
 def get_my_event_registrations(db: Session = Depends(get_db), user=Depends(require_auth)):
     regs = db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user["email"]).all()
-    return [{"event_id": r.event_id, "event_name": db.query(DBEvent).filter(DBEvent.id == r.event_id).first().name} for r in regs]
+    result = []
+    for r in regs:
+        # FIX: null-check prevents crash if event was deleted
+        event = db.query(DBEvent).filter(DBEvent.id == r.event_id).first()
+        if event:
+            result.append({"event_id": r.event_id, "event_name": event.name, "event_date": event.event_date})
+    return result
 
 # ==========================================
-# 7. MAJOR EXHIBITION PIPELINE
+# 8. MAJOR EXHIBITION PIPELINE
 # ==========================================
 @app.post("/exhibitions/apply")
 def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
     if not data.over_19 or not data.agreed_to_screening:
         raise HTTPException(status_code=400, detail="You must agree to the terms to proceed.")
-        
-    existing = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.user_email == user["email"]).first()
-    if existing and existing.status == "PENDING":
+    existing = db.query(DBExhibitionApplication).filter(
+        DBExhibitionApplication.user_email == user["email"],
+        DBExhibitionApplication.status == "PENDING"
+    ).first()
+    if existing:
         raise HTTPException(status_code=400, detail="You already have an application under review.")
-        
-    app = DBExhibitionApplication(
-        user_email=user["email"], full_name=data.full_name, age=data.age, address=data.address, whatsapp=data.whatsapp,
-        genre=data.genre, medium=data.medium, portfolio_url=data.portfolio_url,
-        over_19=data.over_19, agreed_to_screening=data.agreed_to_screening, applicant_note=data.applicant_note
+    application = DBExhibitionApplication(
+        user_email=user["email"], full_name=data.full_name, age=data.age,
+        address=data.address, whatsapp=data.whatsapp, genre=data.genre,
+        medium=data.medium, portfolio_url=data.portfolio_url,
+        over_19=data.over_19, agreed_to_screening=data.agreed_to_screening,
+        applicant_note=data.applicant_note
     )
-    db.add(app)
+    db.add(application)
     db.commit()
-    
-    # FIRE PHASE 1 EMAIL
-    subject = "ALFAAZ — Application Received"
-    body = f"Greetings {data.full_name},\n\nYour portfolio has successfully entered the Vault. It is currently under review by the Curator for the upcoming exhibition.\n\nYou will receive a transmission regarding your clearance status soon.\n\n— The Alfaaz Collective"
-    send_system_email(user["email"], subject, body)
-    
+    send_system_email(
+        user["email"],
+        "ALFAAZ — Application Received",
+        f"Greetings {data.full_name},\n\nYour portfolio has successfully entered the Vault. It is currently under review by the Curator for the upcoming exhibition.\n\nYou will receive a transmission regarding your clearance status soon.\n\n— The Alfaaz Collective"
+    )
     return {"status": "SUCCESS", "message": "Application secured."}
 
 @app.get("/exhibitions/my-status")
 def get_my_exhibition_status(db: Session = Depends(get_db), user=Depends(require_auth)):
-    app = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.user_email == user["email"]).order_by(DBExhibitionApplication.created_at.desc()).first()
-    if not app: return {"status": "NONE"}
-    return {"status": app.status, "curator_note": app.curator_note}
+    application = db.query(DBExhibitionApplication).filter(
+        DBExhibitionApplication.user_email == user["email"]
+    ).order_by(DBExhibitionApplication.created_at.desc()).first()
+    if not application:
+        return {"status": "NONE"}
+    return {"status": application.status, "curator_note": application.curator_note}
 
 # ==========================================
-# 8. EXHIBITION CONFIGURATION ENGINE (GLOBAL)
+# 9. EXHIBITION CONFIGURATION ENGINE (GLOBAL)
 # ==========================================
 @app.get("/exhibitions/config")
 def get_exhibition_config(db: Session = Depends(get_db)):
     config = db.query(DBExhibitionConfig).first()
     if not config:
-        # Failsafe default creation
-        config = DBExhibitionConfig(title="Annual Exhibition", date_text="TBD", venue="TBD", about_text="Details soon.", is_open=False)
+        config = DBExhibitionConfig()
         db.add(config)
         db.commit()
-    return config
+    return {
+        "title": config.title, "date_text": config.date_text,
+        "venue": config.venue, "about_text": config.about_text,
+        "is_open": config.is_open
+    }
 
 @app.post("/admin/exhibitions/config")
 def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends(get_db), admin=Depends(require_admin)):
@@ -499,11 +570,14 @@ def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends
     return {"status": "SUCCESS"}
 
 # ==========================================
-# 9. ADMIN ENDPOINTS
+# 10. ADMIN — EVENTS
 # ==========================================
 @app.post("/admin/events/create")
 def create_event(data: EventCreate, db: Session = Depends(get_db), admin=Depends(require_admin)):
-    event = DBEvent(name=data.name, description=data.description, event_date=data.event_date, capacity=data.capacity, registration_open=False)
+    event = DBEvent(
+        name=data.name, description=data.description,
+        event_date=data.event_date, capacity=data.capacity, registration_open=False
+    )
     db.add(event)
     db.commit()
     return {"status": "SUCCESS"}
@@ -511,37 +585,61 @@ def create_event(data: EventCreate, db: Session = Depends(get_db), admin=Depends
 @app.patch("/admin/events/{event_id}/toggle")
 def toggle_event_registration(event_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
     event = db.query(DBEvent).filter(DBEvent.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found.")
     event.registration_open = not event.registration_open
     db.commit()
-    return {"status": "SUCCESS"}
+    state = "OPEN" if event.registration_open else "CLOSED"
+    return {"status": state}
 
 @app.get("/admin/events")
 def get_all_events(db: Session = Depends(get_db), admin=Depends(require_admin)):
     events = db.query(DBEvent).order_by(DBEvent.created_at.desc()).all()
-    return [{"id": e.id, "name": e.name, "description": e.description, "event_date": e.event_date, "registration_open": e.registration_open, "capacity": e.capacity, "registered": db.query(DBEventRegistration).filter(DBEventRegistration.event_id == e.id).count()} for e in events]
+    return [{
+        "id": e.id, "name": e.name, "description": e.description,
+        "event_date": e.event_date, "registration_open": e.registration_open,
+        "capacity": e.capacity,
+        "registered": db.query(DBEventRegistration).filter(DBEventRegistration.event_id == e.id).count()
+    } for e in events]
 
 @app.get("/admin/events/{event_id}/registrations")
 def get_event_registrations(event_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
     regs = db.query(DBEventRegistration).filter(DBEventRegistration.event_id == event_id).all()
-    return {"registrations": [{"email": r.user_email, "whatsapp": r.whatsapp_number, "registered_at": str(r.created_at)} for r in regs]}
+    return {
+        "registrations": [{
+            "email": r.user_email,
+            "whatsapp": r.whatsapp_number or "—",
+            "registered_at": str(r.created_at)
+        } for r in regs]
+    }
 
 @app.delete("/admin/events/{event_id}")
 def delete_event(event_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
     event = db.query(DBEvent).filter(DBEvent.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found.")
     db.query(DBEventRegistration).filter(DBEventRegistration.event_id == event_id).delete()
     db.delete(event)
     db.commit()
     return {"status": "SUCCESS"}
 
+# ==========================================
+# 11. ADMIN — CLUBS & EXHIBITIONS & USERS
+# ==========================================
 @app.get("/admin/club-applications")
 def get_club_applications(db: Session = Depends(get_db), admin=Depends(require_admin)):
-    return db.query(DBClubApplication).order_by(DBClubApplication.created_at.desc()).all()
+    apps = db.query(DBClubApplication).order_by(DBClubApplication.created_at.desc()).all()
+    return [{"id": a.id, "user_email": a.user_email, "club_name": a.club_name,
+             "note": a.note, "status": a.status, "admin_note": a.admin_note,
+             "created_at": str(a.created_at)} for a in apps]
 
 @app.post("/admin/club-applications/review")
 def review_club_application(data: ClubApplicationReview, db: Session = Depends(get_db), admin=Depends(require_admin)):
-    app = db.query(DBClubApplication).filter(DBClubApplication.id == data.application_id).first()
-    app.status = data.status
-    app.admin_note = data.admin_note
+    application = db.query(DBClubApplication).filter(DBClubApplication.id == data.application_id).first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    application.status = data.status
+    application.admin_note = data.admin_note
     db.commit()
     return {"status": "SUCCESS"}
 
@@ -551,22 +649,25 @@ def get_all_exhibitions(db: Session = Depends(get_db), admin=Depends(require_adm
 
 @app.post("/admin/exhibitions/review")
 def review_exhibition(data: ExhibitionReview, db: Session = Depends(get_db), admin=Depends(require_admin)):
-    app = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == data.application_id).first()
-    if not app: raise HTTPException(status_code=404, detail="Application not found.")
-    
-    app.status = data.status
-    app.curator_note = data.curator_note
+    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == data.application_id).first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    application.status = data.status
+    application.curator_note = data.curator_note
     db.commit()
-    
-    # FIRE PHASE 3 EMAIL
-    subject = "ALFAAZ — Exhibition Status Update"
     if data.status == "APPROVED":
-        body = f"Greetings {app.full_name},\n\nYour artwork has successfully cleared the screening process.\n\nPlease log into the Alfaaz Collective dashboard to view the final terms and complete your registration via the secure payment link:\n{data.payment_link if data.payment_link else 'See Dashboard'}\n\n— The Curator"
+        send_system_email(
+            application.user_email,
+            "ALFAAZ — Exhibition Clearance Granted",
+            f"Greetings {application.full_name},\n\nYour artwork has cleared the screening process.\n\nPlease log into your Alfaaz dashboard to complete your registration.\n\n{'Payment Link: ' + data.payment_link if data.payment_link else 'See your dashboard for next steps.'}\n\n— The Curator"
+        )
     else:
-        body = f"Greetings {app.full_name},\n\nThank you for transmitting your portfolio. At this time, we are unable to clear your artwork for the upcoming exhibition. \n\nWe encourage you to continue refining your craft and submit again in future cycles.\n\n— The Curator"
-        
-    send_system_email(app.user_email, subject, body)
-    return {"status": "SUCCESS", "message": f"Applicant {data.status} and notified."}
+        send_system_email(
+            application.user_email,
+            "ALFAAZ — Exhibition Application Update",
+            f"Greetings {application.full_name},\n\nThank you for transmitting your portfolio. At this time, we are unable to clear your artwork for the upcoming exhibition.\n\nWe encourage you to continue refining your craft and submit again in future cycles.\n\n{'Curator Note: ' + data.curator_note if data.curator_note else ''}\n\n— The Curator"
+        )
+    return {"status": "SUCCESS", "message": f"Applicant {data.status.lower()} and notified."}
 
 @app.get("/admin/submissions")
 def get_all_submissions(db: Session = Depends(get_db), admin=Depends(require_admin)):
@@ -579,6 +680,8 @@ def get_all_users(db: Session = Depends(get_db), admin=Depends(require_admin)):
 @app.post("/admin/update_status")
 def update_user_status(target: StatusUpdate, db: Session = Depends(get_db), admin=Depends(require_admin)):
     db_user = db.query(DBUser).filter(DBUser.email == target.email).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found.")
     db_user.status = target.status
     db.commit()
     return {"status": "SUCCESS"}
