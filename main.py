@@ -107,6 +107,16 @@ class DBUser(Base):
     full_name = Column(String, nullable=True)
     status = Column(String, default="PARTICIPANT")
 
+class DBSubmission(Base):
+    __tablename__ = "submissions"
+    id = Column(Integer, primary_key=True, index=True)
+    submission_type = Column(String)
+    title = Column(String)
+    file_url = Column(String)
+    note = Column(String, nullable=True)
+    author_email = Column(String)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 class DBClubApplication(Base):
     __tablename__ = "club_applications"
     id = Column(Integer, primary_key=True, index=True)
@@ -149,7 +159,7 @@ class DBExhibitionApplication(Base):
     over_19 = Column(Boolean, default=False)
     agreed_to_screening = Column(Boolean, default=False)
     applicant_note = Column(String, nullable=True)
-    status = Column(String, default="PENDING")
+    status = Column(String, default="PENDING")    # PENDING, APPROVED, REJECTED
     curator_note = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -169,12 +179,7 @@ app = FastAPI(title="Alfaaz Collective API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://alfaazcollective.vercel.app", 
-        "http://localhost:3000", 
-        "http://127.0.0.1:5500", 
-        "http://localhost:5500"
-    ],
+    allow_origins=["https://alfaazcollective.vercel.app"],  # FIX: was ["*"]
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -188,6 +193,13 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+
+class VaultSubmission(BaseModel):
+    submission_type: str
+    title: str
+    file_url: str
+    note: Optional[str] = None
+    author_email: str
 
 class PhantomQuery(BaseModel):
     question: str
@@ -383,7 +395,7 @@ def ask_phantom(query: PhantomQuery):
                 {"role": "system", "content": f"You are THE PHANTOM — enigmatic AI curator of Alfaaz Collective. Speak with poetic brevity. Your knowledge:\n{ALFAAZ_KNOWLEDGE}\nKeep responses 3-5 sentences max. Never fabricate facts."},
                 {"role": "user", "content": query.question}
             ],
-            model="llama3-70b-8192",
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
             temperature=0.6,
         )
         return {"answer": response.choices[0].message.content}
@@ -391,7 +403,20 @@ def ask_phantom(query: PhantomQuery):
         return {"answer": "[SIGNAL DECAY] The void is temporarily unreachable. Inquire again."}
 
 # ==========================================
-# 5. CLUBS
+# 5. VAULT SUBMISSION
+# ==========================================
+@app.post("/vault/submit")
+def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db), user=Depends(require_auth)):
+    new_entry = DBSubmission(
+        submission_type=data.submission_type, title=data.title,
+        file_url=data.file_url, note=data.note, author_email=user["email"]
+    )
+    db.add(new_entry)
+    db.commit()
+    return {"status": "SUCCESS"}
+
+# ==========================================
+# 6. CLUBS
 # ==========================================
 VALID_CLUBS = ["Art & Craft", "Film Club", "Photography", "Philosophy", "Literature"]
 
@@ -426,7 +451,7 @@ def get_my_club_status(db: Session = Depends(get_db), user=Depends(require_auth)
     return {"status": application.status, "club": application.club_name, "admin_note": application.admin_note}
 
 # ==========================================
-# 6. EVENTS (minor / small gatherings)
+# 7. EVENTS (minor / small gatherings)
 # ==========================================
 @app.get("/events/active")
 def get_active_events(db: Session = Depends(get_db)):
@@ -470,13 +495,14 @@ def get_my_event_registrations(db: Session = Depends(get_db), user=Depends(requi
     regs = db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user["email"]).all()
     result = []
     for r in regs:
+        # FIX: null-check prevents crash if event was deleted
         event = db.query(DBEvent).filter(DBEvent.id == r.event_id).first()
         if event:
             result.append({"event_id": r.event_id, "event_name": event.name, "event_date": event.event_date})
     return result
 
 # ==========================================
-# 7. MAJOR EXHIBITION PIPELINE
+# 8. MAJOR EXHIBITION PIPELINE
 # ==========================================
 @app.post("/exhibitions/apply")
 def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
@@ -514,7 +540,7 @@ def get_my_exhibition_status(db: Session = Depends(get_db), user=Depends(require
     return {"status": application.status, "curator_note": application.curator_note}
 
 # ==========================================
-# 8. EXHIBITION CONFIGURATION ENGINE (GLOBAL)
+# 9. EXHIBITION CONFIGURATION ENGINE (GLOBAL)
 # ==========================================
 @app.get("/exhibitions/config")
 def get_exhibition_config(db: Session = Depends(get_db)):
@@ -544,7 +570,7 @@ def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends
     return {"status": "SUCCESS"}
 
 # ==========================================
-# 9. ADMIN ENDPOINTS
+# 10. ADMIN — EVENTS
 # ==========================================
 @app.post("/admin/events/create")
 def create_event(data: EventCreate, db: Session = Depends(get_db), admin=Depends(require_admin)):
@@ -597,6 +623,9 @@ def delete_event(event_id: int, db: Session = Depends(get_db), admin=Depends(req
     db.commit()
     return {"status": "SUCCESS"}
 
+# ==========================================
+# 11. ADMIN — CLUBS & EXHIBITIONS & USERS
+# ==========================================
 @app.get("/admin/club-applications")
 def get_club_applications(db: Session = Depends(get_db), admin=Depends(require_admin)):
     apps = db.query(DBClubApplication).order_by(DBClubApplication.created_at.desc()).all()
@@ -639,6 +668,10 @@ def review_exhibition(data: ExhibitionReview, db: Session = Depends(get_db), adm
             f"Greetings {application.full_name},\n\nThank you for transmitting your portfolio. At this time, we are unable to clear your artwork for the upcoming exhibition.\n\nWe encourage you to continue refining your craft and submit again in future cycles.\n\n{'Curator Note: ' + data.curator_note if data.curator_note else ''}\n\n— The Curator"
         )
     return {"status": "SUCCESS", "message": f"Applicant {data.status.lower()} and notified."}
+
+@app.get("/admin/submissions")
+def get_all_submissions(db: Session = Depends(get_db), admin=Depends(require_admin)):
+    return db.query(DBSubmission).order_by(DBSubmission.created_at.desc()).all()
 
 @app.get("/admin/users")
 def get_all_users(db: Session = Depends(get_db), admin=Depends(require_admin)):
