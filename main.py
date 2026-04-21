@@ -144,7 +144,7 @@ class DBEventRegistration(Base):
     id = Column(Integer, primary_key=True, index=True)
     event_id = Column(Integer, index=True)
     user_email = Column(String, index=True)
-    whatsapp_number = Column(String, nullable=True) # UPGRADED FOR SMALL GATHERINGS
+    whatsapp_number = Column(String, nullable=True) 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class DBExhibitionApplication(Base):
@@ -168,6 +168,16 @@ class DBExhibitionApplication(Base):
     curator_note = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+# NEW TABLE: Master Exhibition Settings
+class DBExhibitionConfig(Base):
+    __tablename__ = "exhibition_config"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, default="Annual Art Exhibition")
+    date_text = Column(String, default="Dates TBD")
+    venue = Column(String, default="Venue TBD")
+    about_text = Column(String, default="Details regarding the exhibition...")
+    is_open = Column(Boolean, default=False)
+
 # ==========================================
 # 2. APP & SCHEMAS
 # ==========================================
@@ -175,7 +185,7 @@ app = FastAPI(title="Alfaaz Collective API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://alfaazcollective.vercel.app"],
+    allow_origins=["*"], # In production, restrict this to your domains
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -228,7 +238,7 @@ class EventCreate(BaseModel):
 
 class EventRegister(BaseModel):
     event_id: int
-    whatsapp_number: Optional[str] = None # UPGRADED
+    whatsapp_number: Optional[str] = None 
 
 class ExhibitionApplicationCreate(BaseModel):
     full_name: str
@@ -246,7 +256,14 @@ class ExhibitionReview(BaseModel):
     application_id: int
     status: str # APPROVED or REJECTED
     curator_note: Optional[str] = None
-    payment_link: Optional[str] = None # Link sent on approval
+    payment_link: Optional[str] = None 
+
+class ExhibitionConfigSchema(BaseModel):
+    title: str
+    date_text: str
+    venue: str
+    about_text: str
+    is_open: bool
 
 def get_db():
     db = SessionLocal()
@@ -387,7 +404,7 @@ def get_my_club_status(db: Session = Depends(get_db), user=Depends(require_auth)
     return {"status": app.status, "club": app.club_name, "admin_note": app.admin_note}
 
 # ==========================================
-# 6. EVENTS (UPGRADED FOR WHATSAPP)
+# 6. EVENTS (MINOR)
 # ==========================================
 @app.get("/events/active")
 def get_active_events(db: Session = Depends(get_db)):
@@ -411,7 +428,6 @@ def register_for_event(data: EventRegister, db: Session = Depends(get_db), user=
     already = db.query(DBEventRegistration).filter(DBEventRegistration.event_id == data.event_id, DBEventRegistration.user_email == user["email"]).first()
     if already: raise HTTPException(status_code=400, detail="Already registered.")
     
-    # Store the whatsapp number
     reg = DBEventRegistration(event_id=data.event_id, user_email=user["email"], whatsapp_number=data.whatsapp_number)
     db.add(reg)
     db.commit()
@@ -423,7 +439,7 @@ def get_my_event_registrations(db: Session = Depends(get_db), user=Depends(requi
     return [{"event_id": r.event_id, "event_name": db.query(DBEvent).filter(DBEvent.id == r.event_id).first().name} for r in regs]
 
 # ==========================================
-# 7. MAJOR EXHIBITION PIPELINE (NEW)
+# 7. MAJOR EXHIBITION PIPELINE
 # ==========================================
 @app.post("/exhibitions/apply")
 def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
@@ -456,7 +472,34 @@ def get_my_exhibition_status(db: Session = Depends(get_db), user=Depends(require
     return {"status": app.status, "curator_note": app.curator_note}
 
 # ==========================================
-# 8. ADMIN DASHBOARD ENDPOINTS
+# 8. EXHIBITION CONFIGURATION ENGINE (GLOBAL)
+# ==========================================
+@app.get("/exhibitions/config")
+def get_exhibition_config(db: Session = Depends(get_db)):
+    config = db.query(DBExhibitionConfig).first()
+    if not config:
+        # Failsafe default creation
+        config = DBExhibitionConfig(title="Annual Exhibition", date_text="TBD", venue="TBD", about_text="Details soon.", is_open=False)
+        db.add(config)
+        db.commit()
+    return config
+
+@app.post("/admin/exhibitions/config")
+def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends(get_db), admin=Depends(require_admin)):
+    config = db.query(DBExhibitionConfig).first()
+    if not config:
+        config = DBExhibitionConfig()
+        db.add(config)
+    config.title = data.title
+    config.date_text = data.date_text
+    config.venue = data.venue
+    config.about_text = data.about_text
+    config.is_open = data.is_open
+    db.commit()
+    return {"status": "SUCCESS"}
+
+# ==========================================
+# 9. ADMIN ENDPOINTS
 # ==========================================
 @app.post("/admin/events/create")
 def create_event(data: EventCreate, db: Session = Depends(get_db), admin=Depends(require_admin)):
@@ -475,7 +518,7 @@ def toggle_event_registration(event_id: int, db: Session = Depends(get_db), admi
 @app.get("/admin/events")
 def get_all_events(db: Session = Depends(get_db), admin=Depends(require_admin)):
     events = db.query(DBEvent).order_by(DBEvent.created_at.desc()).all()
-    return [{"id": e.id, "name": e.name, "event_date": e.event_date, "registration_open": e.registration_open, "capacity": e.capacity, "registered": db.query(DBEventRegistration).filter(DBEventRegistration.event_id == e.id).count()} for e in events]
+    return [{"id": e.id, "name": e.name, "description": e.description, "event_date": e.event_date, "registration_open": e.registration_open, "capacity": e.capacity, "registered": db.query(DBEventRegistration).filter(DBEventRegistration.event_id == e.id).count()} for e in events]
 
 @app.get("/admin/events/{event_id}/registrations")
 def get_event_registrations(event_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
@@ -502,7 +545,6 @@ def review_club_application(data: ClubApplicationReview, db: Session = Depends(g
     db.commit()
     return {"status": "SUCCESS"}
 
-# NEW: Admin Exhibition Review
 @app.get("/admin/exhibitions")
 def get_all_exhibitions(db: Session = Depends(get_db), admin=Depends(require_admin)):
     return db.query(DBExhibitionApplication).order_by(DBExhibitionApplication.created_at.desc()).all()
