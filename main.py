@@ -84,7 +84,7 @@ def sync_notices_to_cloudinary(db: Session):
         result = cloudinary.uploader.upload(
             json_str,
             resource_type="raw",
-            public_id="notices",
+            public_id="notices.json",  # <--- FIX: Added .json extension right here
             folder="alfaaz",
             overwrite=True
         )
@@ -92,7 +92,6 @@ def sync_notices_to_cloudinary(db: Session):
 
     except Exception as e:
         print(f"[CLOUDINARY] Sync failed: {e}")
-
 # ==========================================
 # 0. SECURITY & CONFIG
 # ==========================================
