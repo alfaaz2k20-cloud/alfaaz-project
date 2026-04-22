@@ -3,6 +3,7 @@ import os
 import jwt
 import datetime
 import time
+import json
 from collections import defaultdict
 from typing import Optional
 
@@ -20,6 +21,79 @@ from groq import Groq
 from passlib.context import CryptContext
 
 # ==========================================
+# CLOUDINARY CONFIGURATION
+# ==========================================
+import cloudinary
+import cloudinary.uploader
+
+CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "dmqwjpmjk")
+CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
+
+if CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET,
+        secure=True
+    )
+    print("[CLOUDINARY] Configured successfully")
+else:
+    print("[CLOUDINARY] Not configured - set CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET env vars")
+
+# ==========================================
+# CLOUDINARY SYNC FUNCTION
+# ==========================================
+def sync_notices_to_cloudinary(db: Session):
+    """Upload current notices to Cloudinary CDN when admin saves changes."""
+    if not CLOUDINARY_API_SECRET:
+        print("[CLOUDINARY] Skipping sync - credentials not set")
+        return
+
+    try:
+        # Get active events
+        events = db.query(DBEvent).filter(DBEvent.registration_open == True).all()
+        events_data = []
+        for e in events:
+            count = db.query(DBEventRegistration).filter(DBEventRegistration.event_id == e.id).count()
+            events_data.append({
+                "name": e.name,
+                "event_date": e.event_date,
+                "description": e.description,
+                "capacity": e.capacity,
+                "spots_left": (e.capacity - count) if e.capacity > 0 else None,
+                "full": (e.capacity > 0 and count >= e.capacity)
+            })
+
+        # Get exhibition config
+        config = db.query(DBExhibitionConfig).first()
+        exhibition_data = None
+        if config:
+            exhibition_data = {
+                "is_open": config.is_open,
+                "title": config.title,
+                "date_text": config.date_text,
+                "about_text": config.about_text
+            }
+
+        # Build JSON
+        notices_json = {"events": events_data, "exhibition": exhibition_data}
+        json_str = json.dumps(notices_json, indent=2)
+
+        # Upload to Cloudinary
+        result = cloudinary.uploader.upload(
+            json_str,
+            resource_type="raw",
+            public_id="notices",
+            folder="alfaaz",
+            overwrite=True
+        )
+        print(f"[CLOUDINARY] notices.json synced: {result.get('secure_url')}")
+
+    except Exception as e:
+        print(f"[CLOUDINARY] Sync failed: {e}")
+
+# ==========================================
 # 0. SECURITY & CONFIG
 # ==========================================
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -33,8 +107,6 @@ def verify_password(plain_password, hashed_password):
 _jwt_secret_raw = os.environ.get("JWT_SECRET")
 if not _jwt_secret_raw:
     import sys
-    # In development (SQLite mode) we allow a generated dev secret but warn loudly.
-    # In production (PostgreSQL mode) we refuse to start without it.
     _is_production = bool(os.environ.get("DATABASE_URL"))
     if _is_production:
         print("FATAL: JWT_SECRET environment variable is not set. Refusing to start in production.", file=sys.stderr)
@@ -42,7 +114,7 @@ if not _jwt_secret_raw:
     else:
         import secrets as _secrets
         _jwt_secret_raw = _secrets.token_hex(32)
-        print("[DEV WARNING] JWT_SECRET not set. Using a random ephemeral secret — all sessions will be invalidated on restart.", file=sys.stderr)
+        print("[DEV WARNING] JWT_SECRET not set. Using a random ephemeral secret.", file=sys.stderr)
 JWT_SECRET = _jwt_secret_raw
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRY_HOURS = 24
@@ -70,7 +142,7 @@ def send_system_email(to_email: str, subject: str, body: str, raise_on_error: bo
     except Exception as e:
         print(f"[SMTP ERROR] {e}")
         if raise_on_error:
-            raise HTTPException(status_code=503, detail="Email transmission failed. The signal was lost — try again shortly.")
+            raise HTTPException(status_code=503, detail="Email transmission failed.")
 
 def create_token(email: str, user_status: str) -> str:
     payload = {
@@ -84,7 +156,7 @@ def decode_token(token: str) -> dict:
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
+        raise HTTPException(status_code=401, detail="Session expired.")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token.")
 
@@ -178,7 +250,7 @@ class DBExhibitionApplication(Base):
     over_19 = Column(Boolean, default=False)
     agreed_to_screening = Column(Boolean, default=False)
     applicant_note = Column(String, nullable=True)
-    status = Column(String, default="PENDING")    # PENDING, APPROVED, REJECTED
+    status = Column(String, default="PENDING")
     curator_note = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -200,8 +272,8 @@ app = FastAPI()
 # RATE LIMITER (in-memory, per IP)
 # ==========================================
 _phantom_requests: dict = defaultdict(list)
-_PHANTOM_LIMIT = 10   # max requests
-_PHANTOM_WINDOW = 60  # per 60 seconds
+_PHANTOM_LIMIT = 10
+_PHANTOM_WINDOW = 60
 
 def check_phantom_rate_limit(request: Request):
     ip = request.client.host
@@ -209,10 +281,7 @@ def check_phantom_rate_limit(request: Request):
     window_start = now - _PHANTOM_WINDOW
     _phantom_requests[ip] = [t for t in _phantom_requests[ip] if t > window_start]
     if len(_phantom_requests[ip]) >= _PHANTOM_LIMIT:
-        raise HTTPException(
-            status_code=429,
-            detail=f"Too many transmissions. The Phantom needs silence — wait a moment before inquiring again."
-        )
+        raise HTTPException(status_code=429, detail="Too many transmissions.")
     _phantom_requests[ip].append(now)
 
 _allowed_origins_raw = os.environ.get("CORS_ORIGINS", "https://alfaazcollective.vercel.app")
@@ -333,7 +402,7 @@ def on_startup():
         admin_password = os.environ.get("ADMIN_PASSWORD")
         if not admin_password:
             admin_password = "AlfaazAdmin2026!"
-            print("[SECURITY WARNING] ADMIN_PASSWORD env var not set. Using default password — change this in production!", file=__import__("sys").stderr)
+            print("[SECURITY WARNING] ADMIN_PASSWORD env var not set.", file=__import__("sys").stderr)
         if not db.query(DBUser).filter(DBUser.email == master_email).first():
             master = DBUser(
                 email=master_email,
@@ -384,7 +453,7 @@ def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
     send_system_email(
         db_user.email,
         "ALFAAZ Vault — Passkey Reset",
-        f"GREETINGS,\n\nA passkey reset was requested for: {db_user.email}.\nThis link expires in 15 minutes.\n\n{reset_link}\n\nIf you did not request this, ignore this message.\n\n— The Curator",
+        f"GREETINGS,\n\nA passkey reset was requested for: {db_user.email}.\nThis link expires in 15 minutes.\n\n{reset_link}\n\n— The Curator",
         raise_on_error=True
     )
     return {"message": "If the sequence exists, a transmission has been sent."}
@@ -415,33 +484,8 @@ client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 ALFAAZ_KNOWLEDGE = """
 ORGANIZATION: Alfaaz Collective
 TAGLINE: Art • Literature • Culture
-MISSION: Foster spaces where creativity meets collaboration. Celebrate local artists and writers through exhibitions, curated showcases, and creative events.
 WEBSITE: https://alfaazcollective.vercel.app
 INSTAGRAM: https://www.instagram.com/alfaaz.2020
-EMAIL: alfaaz2k20@gmail.com
-SISTER PROJECT: Tchandervar (tchandervar.neocities.org) — bridges artists and commercial spaces.
-
---- PAST EXHIBITIONS ---
-1. KAAMIL — Annual exhibition event. Held on two separate occasions.
-2. KHAYAAL — Poetry slam event.
-3. HARUD — Named after the Kashmiri word for autumn.
-4. LIVE PAINTING — Open live painting session.
-5. BAYAAN — Philosophy debate and discussion event.
-6. LIVE PERFORMANCE — Performing arts showcase.
-7. ACT — Community project and performance event.
-
---- CLUBS ---
-1. Art & Craft — Visual arts, sketching, installations
-2. Film Club — Screenings and short film production
-3. Photography — Photo walks and editing workshops
-4. Philosophy — Discussions, debates, and readings
-5. Literature — Poetry, prose, and creative writing
-
---- PHANTOM RULES ---
-- If asked about dates not listed above: "The exact dates haven't been announced yet — follow @alfaaz.2020 on Instagram."
-- Never invent dates, names, or facts not listed here.
-- Reference Agha Shahid Ali, Habba Khatoon, or Rumi where genuinely relevant.
-- Be poetic but always factually grounded.
 """
 
 @app.post("/phantom/ask")
@@ -451,7 +495,7 @@ def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_phantom_r
     try:
         response = client.chat.completions.create(
             messages=[
-                {"role": "system", "content": f"You are THE PHANTOM — enigmatic AI curator of Alfaaz Collective. Speak with poetic brevity. Your knowledge:\n{ALFAAZ_KNOWLEDGE}\nKeep responses 3-5 sentences max. Never fabricate facts."},
+                {"role": "system", "content": f"You are THE PHANTOM — enigmatic AI curator of Alfaaz Collective. Speak with poetic brevity. Keep responses 3-5 sentences max."},
                 {"role": "user", "content": query.question}
             ],
             model="llama-3.3-70b-versatile",
@@ -459,7 +503,7 @@ def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_phantom_r
         )
         return {"answer": response.choices[0].message.content}
     except Exception:
-        return {"answer": "[SIGNAL DECAY] The void is temporarily unreachable. Inquire again."}
+        return {"answer": "[SIGNAL DECAY] The void is temporarily unreachable."}
 
 # ==========================================
 # 5. VAULT SUBMISSION
@@ -510,7 +554,7 @@ def get_my_club_status(db: Session = Depends(get_db), user=Depends(require_auth)
     return {"status": application.status, "club": application.club_name, "admin_note": application.admin_note}
 
 # ==========================================
-# 7. EVENTS (minor / small gatherings)
+# 7. EVENTS
 # ==========================================
 @app.get("/events/active")
 def get_active_events(db: Session = Depends(get_db)):
@@ -554,7 +598,6 @@ def get_my_event_registrations(db: Session = Depends(get_db), user=Depends(requi
     regs = db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user["email"]).all()
     result = []
     for r in regs:
-        # FIX: null-check prevents crash if event was deleted
         event = db.query(DBEvent).filter(DBEvent.id == r.event_id).first()
         if event:
             result.append({"event_id": r.event_id, "event_name": event.name, "event_date": event.event_date})
@@ -566,7 +609,7 @@ def get_my_event_registrations(db: Session = Depends(get_db), user=Depends(requi
 @app.post("/exhibitions/apply")
 def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
     if not data.over_19 or not data.agreed_to_screening:
-        raise HTTPException(status_code=400, detail="You must agree to the terms to proceed.")
+        raise HTTPException(status_code=400, detail="You must agree to the terms.")
     existing = db.query(DBExhibitionApplication).filter(
         DBExhibitionApplication.user_email == user["email"],
         DBExhibitionApplication.status == "PENDING"
@@ -585,7 +628,7 @@ def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depend
     send_system_email(
         user["email"],
         "ALFAAZ — Application Received",
-        f"Greetings {data.full_name},\n\nYour portfolio has successfully entered the Vault. It is currently under review by the Curator for the upcoming exhibition.\n\nYou will receive a transmission regarding your clearance status soon.\n\n— The Alfaaz Collective"
+        f"Greetings {data.full_name},\n\nYour portfolio has successfully entered the Vault.\n\n— The Alfaaz Collective"
     )
     return {"status": "SUCCESS", "message": "Application secured."}
 
@@ -599,7 +642,7 @@ def get_my_exhibition_status(db: Session = Depends(get_db), user=Depends(require
     return {"status": application.status, "curator_note": application.curator_note}
 
 # ==========================================
-# 9. EXHIBITION CONFIGURATION ENGINE (GLOBAL)
+# 9. EXHIBITION CONFIGURATION ENGINE
 # ==========================================
 @app.get("/exhibitions/config")
 def get_exhibition_config(db: Session = Depends(get_db)):
@@ -626,6 +669,7 @@ def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends
     config.about_text = data.about_text
     config.is_open = data.is_open
     db.commit()
+    sync_notices_to_cloudinary(db)  # ← CLOUDINARY SYNC
     return {"status": "SUCCESS"}
 
 # ==========================================
@@ -639,6 +683,7 @@ def create_event(data: EventCreate, db: Session = Depends(get_db), admin=Depends
     )
     db.add(event)
     db.commit()
+    sync_notices_to_cloudinary(db)  # ← CLOUDINARY SYNC
     return {"status": "SUCCESS"}
 
 @app.patch("/admin/events/{event_id}/toggle")
@@ -648,6 +693,7 @@ def toggle_event_registration(event_id: int, db: Session = Depends(get_db), admi
         raise HTTPException(status_code=404, detail="Event not found.")
     event.registration_open = not event.registration_open
     db.commit()
+    sync_notices_to_cloudinary(db)  # ← CLOUDINARY SYNC
     state = "OPEN" if event.registration_open else "CLOSED"
     return {"status": state}
 
@@ -680,6 +726,7 @@ def delete_event(event_id: int, db: Session = Depends(get_db), admin=Depends(req
     db.query(DBEventRegistration).filter(DBEventRegistration.event_id == event_id).delete()
     db.delete(event)
     db.commit()
+    sync_notices_to_cloudinary(db)  # ← CLOUDINARY SYNC
     return {"status": "SUCCESS"}
 
 # ==========================================
@@ -718,13 +765,7 @@ def review_exhibition(data: ExhibitionReview, db: Session = Depends(get_db), adm
         send_system_email(
             application.user_email,
             "ALFAAZ — Exhibition Clearance Granted",
-            f"Greetings {application.full_name},\n\nYour artwork has cleared the screening process.\n\nPlease log into your Alfaaz dashboard to complete your registration.\n\n{'Payment Link: ' + data.payment_link if data.payment_link else 'See your dashboard for next steps.'}\n\n— The Curator"
-        )
-    else:
-        send_system_email(
-            application.user_email,
-            "ALFAAZ — Exhibition Application Update",
-            f"Greetings {application.full_name},\n\nThank you for transmitting your portfolio. At this time, we are unable to clear your artwork for the upcoming exhibition.\n\nWe encourage you to continue refining your craft and submit again in future cycles.\n\n{'Curator Note: ' + data.curator_note if data.curator_note else ''}\n\n— The Curator"
+            f"Greetings {application.full_name},\n\nYour artwork has cleared the screening process.\n\nPlease log into your Alfaaz dashboard.\n\n— The Curator"
         )
     return {"status": "SUCCESS", "message": f"Applicant {data.status.lower()} and notified."}
 
@@ -738,36 +779,28 @@ def get_all_users(db: Session = Depends(get_db), admin=Depends(require_admin)):
 
 @app.delete("/admin/users/{user_email}")
 def delete_user(user_email: str, db: Session = Depends(get_db), admin=Depends(require_admin)):
-    """Remove a user and all their data from the system."""
     user = db.query(DBUser).filter(DBUser.email == user_email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
     if user.status == "ADMIN":
         raise HTTPException(status_code=403, detail="Cannot delete an admin account.")
-    # Cascade-delete user's data
     db.query(DBSubmission).filter(DBSubmission.author_email == user_email).delete()
     db.query(DBClubApplication).filter(DBClubApplication.user_email == user_email).delete()
     db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user_email).delete()
     db.query(DBExhibitionApplication).filter(DBExhibitionApplication.user_email == user_email).delete()
     db.delete(user)
     db.commit()
-    return {"status": "SUCCESS", "message": f"User {user_email} and all associated records purged."}
+    return {"status": "SUCCESS", "message": f"User {user_email} purged."}
 
 @app.get("/auth/me")
 def get_me(db: Session = Depends(get_db), user=Depends(require_auth)):
-    """Return full profile for the currently authenticated user."""
     db_user = db.query(DBUser).filter(DBUser.email == user["email"]).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found.")
-    return {
-        "email": db_user.email,
-        "full_name": db_user.full_name,
-        "status": db_user.status,
-    }
+    return {"email": db_user.email, "full_name": db_user.full_name, "status": db_user.status}
 
 @app.patch("/auth/me")
 def update_me(data: dict, db: Session = Depends(get_db), user=Depends(require_auth)):
-    """Allow a user to update their own full_name."""
     db_user = db.query(DBUser).filter(DBUser.email == user["email"]).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found.")
