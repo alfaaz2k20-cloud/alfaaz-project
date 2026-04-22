@@ -52,7 +52,6 @@ def sync_notices_to_cloudinary(db: Session):
         return
 
     try:
-        # Get active events
         events = db.query(DBEvent).filter(DBEvent.registration_open == True).all()
         events_data = []
         for e in events:
@@ -66,7 +65,6 @@ def sync_notices_to_cloudinary(db: Session):
                 "full": (e.capacity > 0 and count >= e.capacity)
             })
 
-        # Get exhibition config
         config = db.query(DBExhibitionConfig).first()
         exhibition_data = None
         if config:
@@ -77,11 +75,9 @@ def sync_notices_to_cloudinary(db: Session):
                 "about_text": config.about_text
             }
 
-        # Build JSON
         notices_json = {"events": events_data, "exhibition": exhibition_data}
         json_str = json.dumps(notices_json, indent=2)
 
-        # Upload to Cloudinary
         result = cloudinary.uploader.upload(
             json_str,
             resource_type="raw",
@@ -156,7 +152,7 @@ def decode_token(token: str) -> dict:
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Session expired.")
+        raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token.")
 
@@ -250,8 +246,15 @@ class DBExhibitionApplication(Base):
     over_19 = Column(Boolean, default=False)
     agreed_to_screening = Column(Boolean, default=False)
     applicant_note = Column(String, nullable=True)
-    status = Column(String, default="PENDING")
+    status = Column(String, default="PENDING")          # PENDING, APPROVED, REJECTED
     curator_note = Column(String, nullable=True)
+    
+    # Stage-2 registration fields (filled after approval)
+    registration_status = Column(String, default="NONE") # NONE, SUBMITTED, CONFIRMED
+    agreed_to_tnc = Column(Boolean, default=False)
+    payment_proof_url = Column(String, nullable=True)    # Cloudinary URL of payment screenshot
+    participant_note_reg = Column(String, nullable=True) # Any note at registration stage
+    payment_confirmed_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class DBExhibitionConfig(Base):
@@ -262,15 +265,19 @@ class DBExhibitionConfig(Base):
     venue = Column(String, default="Venue TBD")
     about_text = Column(String, default="Details regarding the exhibition...")
     is_open = Column(Boolean, default=False)
+    
+    # T&C and payment settings
+    tnc_pdf_url = Column(String, nullable=True)          # Cloudinary URL of T&C PDF
+    registration_fee = Column(String, default="")        # e.g. "₹500"
+    payment_instructions = Column(String, default="")    # UPI ID / bank details
+    payment_qr_url = Column(String, nullable=True)       # Optional QR code image URL
 
 # ==========================================
 # 2. APP & SCHEMAS
 # ==========================================
-app = FastAPI()
+app = FastAPI(title="Alfaaz Collective API")
 
-# ==========================================
 # RATE LIMITER (in-memory, per IP)
-# ==========================================
 _phantom_requests: dict = defaultdict(list)
 _PHANTOM_LIMIT = 10
 _PHANTOM_WINDOW = 60
@@ -281,15 +288,12 @@ def check_phantom_rate_limit(request: Request):
     window_start = now - _PHANTOM_WINDOW
     _phantom_requests[ip] = [t for t in _phantom_requests[ip] if t > window_start]
     if len(_phantom_requests[ip]) >= _PHANTOM_LIMIT:
-        raise HTTPException(status_code=429, detail="Too many transmissions.")
+        raise HTTPException(status_code=429, detail="Too many transmissions. The Phantom needs silence.")
     _phantom_requests[ip].append(now)
-
-_allowed_origins_raw = os.environ.get("CORS_ORIGINS", "https://alfaazcollective.vercel.app")
-_allowed_origins = [o.strip() for o in _allowed_origins_raw.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_allowed_origins,
+    allow_origins=["https://alfaazcollective.vercel.app"],  
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -374,7 +378,6 @@ class ExhibitionReview(BaseModel):
     application_id: int
     status: str
     curator_note: Optional[str] = None
-    payment_link: Optional[str] = None
 
 class ExhibitionConfigSchema(BaseModel):
     title: str
@@ -382,6 +385,19 @@ class ExhibitionConfigSchema(BaseModel):
     venue: str
     about_text: str
     is_open: bool
+    tnc_pdf_url: Optional[str] = None
+    registration_fee: str = ""
+    payment_instructions: str = ""
+    payment_qr_url: Optional[str] = None
+
+class ExhibitionRegistrationSubmit(BaseModel):
+    """Participant submits stage-2 registration after approval."""
+    agreed_to_tnc: bool
+    payment_proof_url: str          # Cloudinary URL of payment screenshot
+    participant_note_reg: Optional[str] = None
+
+class PaymentConfirm(BaseModel):
+    application_id: int
 
 def get_db():
     db = SessionLocal()
@@ -399,10 +415,7 @@ def on_startup():
         Base.metadata.create_all(bind=engine)
         db = SessionLocal()
         master_email = "admin@alfaaz.com"
-        admin_password = os.environ.get("ADMIN_PASSWORD")
-        if not admin_password:
-            admin_password = "AlfaazAdmin2026!"
-            print("[SECURITY WARNING] ADMIN_PASSWORD env var not set.", file=sys.stderr)
+        admin_password = os.environ.get("ADMIN_PASSWORD", "AlfaazAdmin2026!")
         if not db.query(DBUser).filter(DBUser.email == master_email).first():
             master = DBUser(
                 email=master_email,
@@ -453,7 +466,7 @@ def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
     send_system_email(
         db_user.email,
         "ALFAAZ Vault — Passkey Reset",
-        f"GREETINGS,\n\nA passkey reset was requested for: {db_user.email}.\nThis link expires in 15 minutes.\n\n{reset_link}\n\n— The Curator",
+        f"GREETINGS,\n\nA passkey reset was requested for: {db_user.email}.\nThis link expires in 15 minutes.\n\n{reset_link}\n\nIf you did not request this, ignore this message.\n\n— The Curator",
         raise_on_error=True
     )
     return {"message": "If the sequence exists, a transmission has been sent."}
@@ -475,6 +488,26 @@ def reset_password(req: ResetPassword, db: Session = Depends(get_db)):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid transmission signature.")
 
+@app.get("/auth/me")
+def get_me(db: Session = Depends(get_db), user=Depends(require_auth)):
+    db_user = db.query(DBUser).filter(DBUser.email == user["email"]).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found.")
+    return {"email": db_user.email, "full_name": db_user.full_name, "status": db_user.status}
+
+@app.patch("/auth/me")
+def update_me(data: dict, db: Session = Depends(get_db), user=Depends(require_auth)):
+    db_user = db.query(DBUser).filter(DBUser.email == user["email"]).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found.")
+    if "full_name" in data:
+        full_name = str(data["full_name"]).strip()
+        if len(full_name) > 80:
+            raise HTTPException(status_code=400, detail="Name too long.")
+        db_user.full_name = full_name
+    db.commit()
+    return {"status": "SUCCESS", "full_name": db_user.full_name}
+
 # ==========================================
 # 4. THE PHANTOM
 # ==========================================
@@ -484,8 +517,33 @@ client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 ALFAAZ_KNOWLEDGE = """
 ORGANIZATION: Alfaaz Collective
 TAGLINE: Art • Literature • Culture
+MISSION: Foster spaces where creativity meets collaboration. Celebrate local artists and writers through exhibitions, curated showcases, and creative events.
 WEBSITE: https://alfaazcollective.vercel.app
 INSTAGRAM: https://www.instagram.com/alfaaz.2020
+EMAIL: alfaaz2k20@gmail.com
+SISTER PROJECT: Tchandervar (tchandervar.neocities.org) — bridges artists and commercial spaces.
+
+--- PAST EXHIBITIONS ---
+1. KAAMIL — Annual exhibition event. Held on two separate occasions.
+2. KHAYAAL — Poetry slam event.
+3. HARUD — Named after the Kashmiri word for autumn.
+4. LIVE PAINTING — Open live painting session.
+5. BAYAAN — Philosophy debate and discussion event.
+6. LIVE PERFORMANCE — Performing arts showcase.
+7. ACT — Community project and performance event.
+
+--- CLUBS ---
+1. Art & Craft — Visual arts, sketching, installations
+2. Film Club — Screenings and short film production
+3. Photography — Photo walks and editing workshops
+4. Philosophy — Discussions, debates, and readings
+5. Literature — Poetry, prose, and creative writing
+
+--- PHANTOM RULES ---
+- If asked about dates not listed above: "The exact dates haven't been announced yet — follow @alfaaz.2020 on Instagram."
+- Never invent dates, names, or facts not listed here.
+- Reference Agha Shahid Ali, Habba Khatoon, or Rumi where genuinely relevant.
+- Be poetic but always factually grounded.
 """
 
 @app.post("/phantom/ask")
@@ -495,7 +553,7 @@ def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_phantom_r
     try:
         response = client.chat.completions.create(
             messages=[
-                {"role": "system", "content": f"You are THE PHANTOM — enigmatic AI curator of Alfaaz Collective. Speak with poetic brevity. Keep responses 3-5 sentences max."},
+                {"role": "system", "content": f"You are THE PHANTOM — enigmatic AI curator of Alfaaz Collective. Speak with poetic brevity. Your knowledge:\n{ALFAAZ_KNOWLEDGE}\nKeep responses 3-5 sentences max. Never fabricate facts."},
                 {"role": "user", "content": query.question}
             ],
             model="llama-3.3-70b-versatile",
@@ -503,7 +561,7 @@ def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_phantom_r
         )
         return {"answer": response.choices[0].message.content}
     except Exception:
-        return {"answer": "[SIGNAL DECAY] The void is temporarily unreachable."}
+        return {"answer": "[SIGNAL DECAY] The void is temporarily unreachable. Inquire again."}
 
 # ==========================================
 # 5. VAULT SUBMISSION
@@ -609,7 +667,7 @@ def get_my_event_registrations(db: Session = Depends(get_db), user=Depends(requi
 @app.post("/exhibitions/apply")
 def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
     if not data.over_19 or not data.agreed_to_screening:
-        raise HTTPException(status_code=400, detail="You must agree to the terms.")
+        raise HTTPException(status_code=400, detail="You must agree to the terms to proceed.")
     existing = db.query(DBExhibitionApplication).filter(
         DBExhibitionApplication.user_email == user["email"],
         DBExhibitionApplication.status == "PENDING"
@@ -628,7 +686,7 @@ def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depend
     send_system_email(
         user["email"],
         "ALFAAZ — Application Received",
-        f"Greetings {data.full_name},\n\nYour portfolio has successfully entered the Vault.\n\n— The Alfaaz Collective"
+        f"Greetings {data.full_name},\n\nYour portfolio has successfully entered the Vault. It is currently under review by the Curator for the upcoming exhibition.\n\nYou will receive a transmission regarding your clearance status soon.\n\n— The Alfaaz Collective"
     )
     return {"status": "SUCCESS", "message": "Application secured."}
 
@@ -639,10 +697,111 @@ def get_my_exhibition_status(db: Session = Depends(get_db), user=Depends(require
     ).order_by(DBExhibitionApplication.created_at.desc()).first()
     if not application:
         return {"status": "NONE"}
-    return {"status": application.status, "curator_note": application.curator_note}
+    base = {
+        "status": application.status,
+        "curator_note": application.curator_note,
+        "application_id": application.id,
+    }
+    if application.status == "APPROVED":
+        base.update({
+            "full_name": application.full_name,
+            "age": application.age,
+            "address": application.address,
+            "whatsapp": application.whatsapp,
+            "genre": application.genre,
+            "medium": application.medium,
+            "portfolio_url": application.portfolio_url,
+            "registration_status": application.registration_status or "NONE",
+            "payment_confirmed_at": str(application.payment_confirmed_at) if application.payment_confirmed_at else None,
+        })
+    return base
 
 # ==========================================
-# 9. EXHIBITION CONFIGURATION ENGINE
+# EXHIBITION STAGE-2: REGISTRATION AFTER APPROVAL
+# ==========================================
+@app.post("/exhibitions/complete-registration")
+def complete_exhibition_registration(
+    data: ExhibitionRegistrationSubmit,
+    db: Session = Depends(get_db),
+    user=Depends(require_auth)
+):
+    application = db.query(DBExhibitionApplication).filter(
+        DBExhibitionApplication.user_email == user["email"],
+        DBExhibitionApplication.status == "APPROVED"
+    ).order_by(DBExhibitionApplication.created_at.desc()).first()
+    
+    if not application:
+        raise HTTPException(status_code=404, detail="No approved application found.")
+    if application.registration_status == "CONFIRMED":
+        raise HTTPException(status_code=400, detail="Registration already confirmed.")
+    if not data.agreed_to_tnc:
+        raise HTTPException(status_code=400, detail="You must agree to the Terms & Conditions.")
+    if not data.payment_proof_url:
+        raise HTTPException(status_code=400, detail="Payment proof is required.")
+
+    application.agreed_to_tnc = True
+    application.payment_proof_url = data.payment_proof_url
+    application.participant_note_reg = data.participant_note_reg
+    application.registration_status = "SUBMITTED"
+    db.commit()
+
+    send_system_email(
+        user["email"],
+        "ALFAAZ — Registration Submitted",
+        f"Greetings {application.full_name},\n\nYour registration form and payment proof have been received. The Curator will verify your payment and confirm your spot shortly.\n\n— The Alfaaz Collective"
+    )
+    return {"status": "SUBMITTED", "message": "Registration submitted. Awaiting payment confirmation."}
+
+@app.patch("/admin/exhibitions/{application_id}/confirm-payment")
+def confirm_exhibition_payment(
+    application_id: int,
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin)
+):
+    application = db.query(DBExhibitionApplication).filter(
+        DBExhibitionApplication.id == application_id
+    ).first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    if application.registration_status != "SUBMITTED":
+        raise HTTPException(status_code=400, detail="No payment submission found to confirm.")
+
+    application.registration_status = "CONFIRMED"
+    application.payment_confirmed_at = datetime.datetime.now(datetime.timezone.utc)
+    db.commit()
+
+    send_system_email(
+        application.user_email,
+        "ALFAAZ — Your Spot is Confirmed!",
+        f"Greetings {application.full_name},\n\nYour payment has been verified and your exhibition spot is officially confirmed.\n\nWelcome to the collective.\n\n— The Curator"
+    )
+    return {"status": "CONFIRMED"}
+
+@app.get("/admin/exhibitions/{application_id}/registration")
+def get_exhibition_registration_detail(
+    application_id: int,
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin)
+):
+    application = db.query(DBExhibitionApplication).filter(
+        DBExhibitionApplication.id == application_id
+    ).first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    return {
+        "id": application.id,
+        "user_email": application.user_email,
+        "full_name": application.full_name,
+        "status": application.status,
+        "registration_status": application.registration_status or "NONE",
+        "agreed_to_tnc": application.agreed_to_tnc,
+        "payment_proof_url": application.payment_proof_url,
+        "participant_note_reg": application.participant_note_reg,
+        "payment_confirmed_at": str(application.payment_confirmed_at) if application.payment_confirmed_at else None,
+    }
+
+# ==========================================
+# 9. EXHIBITION CONFIGURATION ENGINE (GLOBAL)
 # ==========================================
 @app.get("/exhibitions/config")
 def get_exhibition_config(db: Session = Depends(get_db)):
@@ -654,7 +813,11 @@ def get_exhibition_config(db: Session = Depends(get_db)):
     return {
         "title": config.title, "date_text": config.date_text,
         "venue": config.venue, "about_text": config.about_text,
-        "is_open": config.is_open
+        "is_open": config.is_open,
+        "tnc_pdf_url": config.tnc_pdf_url,
+        "registration_fee": config.registration_fee or "",
+        "payment_instructions": config.payment_instructions or "",
+        "payment_qr_url": config.payment_qr_url,
     }
 
 @app.post("/admin/exhibitions/config")
@@ -668,8 +831,12 @@ def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends
     config.venue = data.venue
     config.about_text = data.about_text
     config.is_open = data.is_open
+    config.tnc_pdf_url = data.tnc_pdf_url
+    config.registration_fee = data.registration_fee
+    config.payment_instructions = data.payment_instructions
+    config.payment_qr_url = data.payment_qr_url
     db.commit()
-    sync_notices_to_cloudinary(db)  # ← CLOUDINARY SYNC
+    sync_notices_to_cloudinary(db)  
     return {"status": "SUCCESS"}
 
 # ==========================================
@@ -683,7 +850,7 @@ def create_event(data: EventCreate, db: Session = Depends(get_db), admin=Depends
     )
     db.add(event)
     db.commit()
-    sync_notices_to_cloudinary(db)  # ← CLOUDINARY SYNC
+    sync_notices_to_cloudinary(db)  
     return {"status": "SUCCESS"}
 
 @app.patch("/admin/events/{event_id}/toggle")
@@ -693,7 +860,7 @@ def toggle_event_registration(event_id: int, db: Session = Depends(get_db), admi
         raise HTTPException(status_code=404, detail="Event not found.")
     event.registration_open = not event.registration_open
     db.commit()
-    sync_notices_to_cloudinary(db)  # ← CLOUDINARY SYNC
+    sync_notices_to_cloudinary(db)  
     state = "OPEN" if event.registration_open else "CLOSED"
     return {"status": state}
 
@@ -726,7 +893,7 @@ def delete_event(event_id: int, db: Session = Depends(get_db), admin=Depends(req
     db.query(DBEventRegistration).filter(DBEventRegistration.event_id == event_id).delete()
     db.delete(event)
     db.commit()
-    sync_notices_to_cloudinary(db)  # ← CLOUDINARY SYNC
+    sync_notices_to_cloudinary(db)  
     return {"status": "SUCCESS"}
 
 # ==========================================
@@ -761,11 +928,18 @@ def review_exhibition(data: ExhibitionReview, db: Session = Depends(get_db), adm
     application.status = data.status
     application.curator_note = data.curator_note
     db.commit()
+    
     if data.status == "APPROVED":
         send_system_email(
             application.user_email,
             "ALFAAZ — Exhibition Clearance Granted",
-            f"Greetings {application.full_name},\n\nYour artwork has cleared the screening process.\n\nPlease log into your Alfaaz dashboard.\n\n— The Curator"
+            f"Greetings {application.full_name},\n\nYour artwork has cleared the screening process.\n\nPlease log into your Alfaaz dashboard to review the Terms & Conditions and finalize your spot.\n\n— The Curator"
+        )
+    elif data.status == "REJECTED":
+        send_system_email(
+            application.user_email,
+            "ALFAAZ — Exhibition Update",
+            f"Greetings {application.full_name},\n\nWe appreciate you sharing your portfolio with us. Unfortunately, we cannot accommodate your submission for this specific cycle.\n\n— The Curator"
         )
     return {"status": "SUCCESS", "message": f"Applicant {data.status.lower()} and notified."}
 
@@ -784,6 +958,7 @@ def delete_user(user_email: str, db: Session = Depends(get_db), admin=Depends(re
         raise HTTPException(status_code=404, detail="User not found.")
     if user.status == "ADMIN":
         raise HTTPException(status_code=403, detail="Cannot delete an admin account.")
+    
     db.query(DBSubmission).filter(DBSubmission.author_email == user_email).delete()
     db.query(DBClubApplication).filter(DBClubApplication.user_email == user_email).delete()
     db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user_email).delete()
@@ -791,26 +966,6 @@ def delete_user(user_email: str, db: Session = Depends(get_db), admin=Depends(re
     db.delete(user)
     db.commit()
     return {"status": "SUCCESS", "message": f"User {user_email} purged."}
-
-@app.get("/auth/me")
-def get_me(db: Session = Depends(get_db), user=Depends(require_auth)):
-    db_user = db.query(DBUser).filter(DBUser.email == user["email"]).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found.")
-    return {"email": db_user.email, "full_name": db_user.full_name, "status": db_user.status}
-
-@app.patch("/auth/me")
-def update_me(data: dict, db: Session = Depends(get_db), user=Depends(require_auth)):
-    db_user = db.query(DBUser).filter(DBUser.email == user["email"]).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found.")
-    if "full_name" in data:
-        full_name = str(data["full_name"]).strip()
-        if len(full_name) > 80:
-            raise HTTPException(status_code=400, detail="Name too long.")
-        db_user.full_name = full_name
-    db.commit()
-    return {"status": "SUCCESS", "full_name": db_user.full_name}
 
 @app.post("/admin/update_status")
 def update_user_status(target: StatusUpdate, db: Session = Depends(get_db), admin=Depends(require_admin)):
