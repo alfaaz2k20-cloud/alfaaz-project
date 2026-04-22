@@ -1,5 +1,6 @@
 import smtplib
 import os
+import sys
 import jwt
 import datetime
 import time
@@ -84,7 +85,7 @@ def sync_notices_to_cloudinary(db: Session):
         result = cloudinary.uploader.upload(
             json_str,
             resource_type="raw",
-            public_id="notices.json",  # <--- FIX: Added .json extension right here
+            public_id="notices.json",
             folder="alfaaz",
             overwrite=True
         )
@@ -92,6 +93,7 @@ def sync_notices_to_cloudinary(db: Session):
 
     except Exception as e:
         print(f"[CLOUDINARY] Sync failed: {e}")
+
 # ==========================================
 # 0. SECURITY & CONFIG
 # ==========================================
@@ -105,7 +107,6 @@ def verify_password(plain_password, hashed_password):
 
 _jwt_secret_raw = os.environ.get("JWT_SECRET")
 if not _jwt_secret_raw:
-    import sys
     _is_production = bool(os.environ.get("DATABASE_URL"))
     if _is_production:
         print("FATAL: JWT_SECRET environment variable is not set. Refusing to start in production.", file=sys.stderr)
@@ -401,7 +402,7 @@ def on_startup():
         admin_password = os.environ.get("ADMIN_PASSWORD")
         if not admin_password:
             admin_password = "AlfaazAdmin2026!"
-            print("[SECURITY WARNING] ADMIN_PASSWORD env var not set.", file=__import__("sys").stderr)
+            print("[SECURITY WARNING] ADMIN_PASSWORD env var not set.", file=sys.stderr)
         if not db.query(DBUser).filter(DBUser.email == master_email).first():
             master = DBUser(
                 email=master_email,
