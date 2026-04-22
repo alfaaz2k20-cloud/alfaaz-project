@@ -916,6 +916,28 @@ def review_club_application(data: ClubApplicationReview, db: Session = Depends(g
     db.commit()
     return {"status": "SUCCESS"}
 
+@app.patch("/admin/exhibitions/{application_id}/revert")
+def revert_exhibition_status(application_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
+    """Allows Admin to undo a rejection and put the application back in PENDING."""
+    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    application.status = "PENDING"
+    application.curator_note = None  # Clear the rejection note
+    db.commit()
+    return {"status": "SUCCESS"}
+
+@app.patch("/admin/club-applications/{application_id}/revert")
+def revert_club_status(application_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
+    """Allows Admin to undo a club rejection."""
+    application = db.query(DBClubApplication).filter(DBClubApplication.id == application_id).first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    application.status = "PENDING"
+    application.admin_note = None
+    db.commit()
+    return {"status": "SUCCESS"}
+
 @app.get("/admin/exhibitions")
 def get_all_exhibitions(db: Session = Depends(get_db), admin=Depends(require_admin)):
     return db.query(DBExhibitionApplication).order_by(DBExhibitionApplication.created_at.desc()).all()
@@ -942,6 +964,28 @@ def review_exhibition(data: ExhibitionReview, db: Session = Depends(get_db), adm
             f"Greetings {application.full_name},\n\nWe appreciate you sharing your portfolio with us. Unfortunately, we cannot accommodate your submission for this specific cycle.\n\n— The Curator"
         )
     return {"status": "SUCCESS", "message": f"Applicant {data.status.lower()} and notified."}
+
+@app.patch("/admin/exhibitions/{application_id}/revert")
+def revert_exhibition_status(application_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
+    """Allows Admin to undo a rejection and put the application back in PENDING."""
+    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    application.status = "PENDING"
+    application.curator_note = None  # Clear the rejection note
+    db.commit()
+    return {"status": "SUCCESS"}
+
+@app.patch("/admin/club-applications/{application_id}/revert")
+def revert_club_status(application_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
+    """Allows Admin to undo a club rejection."""
+    application = db.query(DBClubApplication).filter(DBClubApplication.id == application_id).first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    application.status = "PENDING"
+    application.admin_note = None
+    db.commit()
+    return {"status": "SUCCESS"}
 
 @app.get("/admin/submissions")
 def get_all_submissions(db: Session = Depends(get_db), admin=Depends(require_admin)):
