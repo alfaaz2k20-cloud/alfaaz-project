@@ -1,17 +1,22 @@
 import smtplib
+import os
+import jwt
+import datetime
+import time
+from collections import defaultdict
+from typing import Optional
+
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+
+from fastapi import FastAPI, HTTPException, Depends, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, field_validator
-from typing import Optional
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from groq import Groq
-import os
-import jwt
-import datetime
 from passlib.context import CryptContext
 
 # ==========================================
@@ -71,7 +76,7 @@ def create_token(email: str, user_status: str) -> str:
     payload = {
         "email": email,
         "status": user_status,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=JWT_EXPIRY_HOURS)
+        "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=JWT_EXPIRY_HOURS)
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
@@ -189,10 +194,8 @@ class DBExhibitionConfig(Base):
 # ==========================================
 # 2. APP & SCHEMAS
 # ==========================================
-from fastapi import FastAPI, HTTPException, Depends, status, Request
-import time
-from collections import defaultdict
 app = FastAPI()
+
 # ==========================================
 # RATE LIMITER (in-memory, per IP)
 # ==========================================
@@ -375,7 +378,7 @@ def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.email == req.email).first()
     if not db_user:
         return {"message": "If the sequence exists, a transmission has been sent."}
-    expire_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
+    expire_time = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=15)
     reset_token = jwt.encode({"sub": db_user.email, "purpose": "reset", "exp": expire_time}, JWT_SECRET, algorithm=JWT_ALGORITHM)
     reset_link = f"https://alfaazcollective.vercel.app/reset.html?token={reset_token}"
     send_system_email(
@@ -451,7 +454,7 @@ def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_phantom_r
                 {"role": "system", "content": f"You are THE PHANTOM — enigmatic AI curator of Alfaaz Collective. Speak with poetic brevity. Your knowledge:\n{ALFAAZ_KNOWLEDGE}\nKeep responses 3-5 sentences max. Never fabricate facts."},
                 {"role": "user", "content": query.question}
             ],
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="llama-3.3-70b-versatile",
             temperature=0.6,
         )
         return {"answer": response.choices[0].message.content}
