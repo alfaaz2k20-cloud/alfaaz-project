@@ -192,7 +192,7 @@ class DBExhibitionConfig(Base):
 from fastapi import FastAPI, HTTPException, Depends, status, Request
 import time
 from collections import defaultdict
-
+app = FastAPI()
 # ==========================================
 # RATE LIMITER (in-memory, per IP)
 # ==========================================
