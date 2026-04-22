@@ -2,9 +2,8 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, func
 from sqlalchemy.ext.declarative import declarative_base
@@ -26,7 +25,20 @@ def get_password_hash(password):
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-JWT_SECRET = os.environ.get("JWT_SECRET", "change-this-in-render-env-vars")
+_jwt_secret_raw = os.environ.get("JWT_SECRET")
+if not _jwt_secret_raw:
+    import sys
+    # In development (SQLite mode) we allow a generated dev secret but warn loudly.
+    # In production (PostgreSQL mode) we refuse to start without it.
+    _is_production = bool(os.environ.get("DATABASE_URL"))
+    if _is_production:
+        print("FATAL: JWT_SECRET environment variable is not set. Refusing to start in production.", file=sys.stderr)
+        sys.exit(1)
+    else:
+        import secrets as _secrets
+        _jwt_secret_raw = _secrets.token_hex(32)
+        print("[DEV WARNING] JWT_SECRET not set. Using a random ephemeral secret — all sessions will be invalidated on restart.", file=sys.stderr)
+JWT_SECRET = _jwt_secret_raw
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRY_HOURS = 24
 
@@ -35,7 +47,7 @@ SMTP_PORT = 587
 SMTP_EMAIL = os.environ.get("SMTP_EMAIL")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 
-def send_system_email(to_email: str, subject: str, body: str):
+def send_system_email(to_email: str, subject: str, body: str, raise_on_error: bool = False):
     if not SMTP_EMAIL or not SMTP_PASSWORD:
         print(f"[EMAIL SKIPPED] To: {to_email} | Subject: {subject}")
         return
@@ -52,6 +64,8 @@ def send_system_email(to_email: str, subject: str, body: str):
         server.quit()
     except Exception as e:
         print(f"[SMTP ERROR] {e}")
+        if raise_on_error:
+            raise HTTPException(status_code=503, detail="Email transmission failed. The signal was lost — try again shortly.")
 
 def create_token(email: str, user_status: str) -> str:
     payload = {
@@ -175,11 +189,35 @@ class DBExhibitionConfig(Base):
 # ==========================================
 # 2. APP & SCHEMAS
 # ==========================================
-app = FastAPI(title="Alfaaz Collective API")
+from fastapi import FastAPI, HTTPException, Depends, status, Request
+import time
+from collections import defaultdict
+
+# ==========================================
+# RATE LIMITER (in-memory, per IP)
+# ==========================================
+_phantom_requests: dict = defaultdict(list)
+_PHANTOM_LIMIT = 10   # max requests
+_PHANTOM_WINDOW = 60  # per 60 seconds
+
+def check_phantom_rate_limit(request: Request):
+    ip = request.client.host
+    now = time.time()
+    window_start = now - _PHANTOM_WINDOW
+    _phantom_requests[ip] = [t for t in _phantom_requests[ip] if t > window_start]
+    if len(_phantom_requests[ip]) >= _PHANTOM_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many transmissions. The Phantom needs silence — wait a moment before inquiring again."
+        )
+    _phantom_requests[ip].append(now)
+
+_allowed_origins_raw = os.environ.get("CORS_ORIGINS", "https://alfaazcollective.vercel.app")
+_allowed_origins = [o.strip() for o in _allowed_origins_raw.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://alfaazcollective.vercel.app"],  # FIX: was ["*"]
+    allow_origins=_allowed_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -189,6 +227,20 @@ class UserRegister(BaseModel):
     email: str
     password: str
     full_name: Optional[str] = None
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Passkey must be at least 8 characters.")
+        if v.isdigit():
+            raise ValueError("Passkey cannot be all numbers.")
+        return v
+
+    @field_validator("email")
+    @classmethod
+    def normalise_email(cls, v: str) -> str:
+        return v.strip().lower()
 
 class UserLogin(BaseModel):
     email: str
@@ -275,7 +327,10 @@ def on_startup():
         Base.metadata.create_all(bind=engine)
         db = SessionLocal()
         master_email = "admin@alfaaz.com"
-        admin_password = os.environ.get("ADMIN_PASSWORD", "AlfaazAdmin2026!")
+        admin_password = os.environ.get("ADMIN_PASSWORD")
+        if not admin_password:
+            admin_password = "AlfaazAdmin2026!"
+            print("[SECURITY WARNING] ADMIN_PASSWORD env var not set. Using default password — change this in production!", file=__import__("sys").stderr)
         if not db.query(DBUser).filter(DBUser.email == master_email).first():
             master = DBUser(
                 email=master_email,
@@ -326,7 +381,8 @@ def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
     send_system_email(
         db_user.email,
         "ALFAAZ Vault — Passkey Reset",
-        f"GREETINGS,\n\nA passkey reset was requested for: {db_user.email}.\nThis link expires in 15 minutes.\n\n{reset_link}\n\nIf you did not request this, ignore this message.\n\n— The Curator"
+        f"GREETINGS,\n\nA passkey reset was requested for: {db_user.email}.\nThis link expires in 15 minutes.\n\n{reset_link}\n\nIf you did not request this, ignore this message.\n\n— The Curator",
+        raise_on_error=True
     )
     return {"message": "If the sequence exists, a transmission has been sent."}
 
@@ -386,7 +442,7 @@ SISTER PROJECT: Tchandervar (tchandervar.neocities.org) — bridges artists and 
 """
 
 @app.post("/phantom/ask")
-def ask_phantom(query: PhantomQuery):
+def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_phantom_rate_limit)):
     if not client:
         return {"answer": "[THE PHANTOM IS SILENT — NO SIGNAL DETECTED]"}
     try:
@@ -676,6 +732,49 @@ def get_all_submissions(db: Session = Depends(get_db), admin=Depends(require_adm
 @app.get("/admin/users")
 def get_all_users(db: Session = Depends(get_db), admin=Depends(require_admin)):
     return db.query(DBUser).all()
+
+@app.delete("/admin/users/{user_email}")
+def delete_user(user_email: str, db: Session = Depends(get_db), admin=Depends(require_admin)):
+    """Remove a user and all their data from the system."""
+    user = db.query(DBUser).filter(DBUser.email == user_email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+    if user.status == "ADMIN":
+        raise HTTPException(status_code=403, detail="Cannot delete an admin account.")
+    # Cascade-delete user's data
+    db.query(DBSubmission).filter(DBSubmission.author_email == user_email).delete()
+    db.query(DBClubApplication).filter(DBClubApplication.user_email == user_email).delete()
+    db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user_email).delete()
+    db.query(DBExhibitionApplication).filter(DBExhibitionApplication.user_email == user_email).delete()
+    db.delete(user)
+    db.commit()
+    return {"status": "SUCCESS", "message": f"User {user_email} and all associated records purged."}
+
+@app.get("/auth/me")
+def get_me(db: Session = Depends(get_db), user=Depends(require_auth)):
+    """Return full profile for the currently authenticated user."""
+    db_user = db.query(DBUser).filter(DBUser.email == user["email"]).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found.")
+    return {
+        "email": db_user.email,
+        "full_name": db_user.full_name,
+        "status": db_user.status,
+    }
+
+@app.patch("/auth/me")
+def update_me(data: dict, db: Session = Depends(get_db), user=Depends(require_auth)):
+    """Allow a user to update their own full_name."""
+    db_user = db.query(DBUser).filter(DBUser.email == user["email"]).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found.")
+    if "full_name" in data:
+        full_name = str(data["full_name"]).strip()
+        if len(full_name) > 80:
+            raise HTTPException(status_code=400, detail="Name too long.")
+        db_user.full_name = full_name
+    db.commit()
+    return {"status": "SUCCESS", "full_name": db_user.full_name}
 
 @app.post("/admin/update_status")
 def update_user_status(target: StatusUpdate, db: Session = Depends(get_db), admin=Depends(require_admin)):
