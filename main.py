@@ -419,9 +419,8 @@ def get_db():
         db.close()
 
 class BlogGenerateRequest(BaseModel):
-    topic: str
-    cover_image: Optional[str] = None
-
+    topic: str | None = None
+    
 # ==========================================
 # 2.5 SERVER STARTUP
 # ==========================================
@@ -584,15 +583,16 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
     if not client:
         raise HTTPException(status_code=500, detail="Phantom AI not configured.")
 
-    # THE FIX: A much stricter system prompt with an explicit JSON template and escaping rules.
+    # THE FIX: If no topic is provided, the Phantom picks its own!
+    active_topic = data.topic if data.topic else "Choose a fascinating, highly specific, and slightly obscure topic related to art, cultural history, clinical psychology, or literature (especially involving Urdu, Persian, or Kashmiri aesthetics) and write about it."
+
     system_prompt = """You are the Phantom Researcher for the Alfaaz Collective.
     Write a scholarly, engaging, and deeply insightful blog article about the requested topic.
-    Include valid research, cultural context, and citations/references where appropriate.
     
     CRITICAL INSTRUCTION: You MUST return a strictly valid JSON object. 
     1. All keys and values must be wrapped in double quotes.
-    2. The "content" value is HTML. You MUST use single quotes for HTML attributes (e.g., <a href='link'>) so you do not break the outer JSON double quotes.
-    3. Do NOT include newlines (\n) inside the JSON strings; keep the HTML as one continuous string.
+    2. The "content" value is HTML. Use single quotes for HTML attributes to protect the outer JSON quotes.
+    3. Do NOT include newlines (\n) inside the JSON strings.
     
     Use this exact JSON structure:
     {
@@ -606,29 +606,29 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
         response = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Topic: {data.topic}"}
+                {"role": "user", "content": f"Topic: {active_topic}"}
             ],
             model="llama-3.3-70b-versatile",
             response_format={"type": "json_object"},
-            temperature=0.7,
+            temperature=0.8, # Slightly higher temperature makes it more creative
         )
         
         result = json.loads(response.choices[0].message.content)
 
+        # Removed cover_image from the database save
         new_blog = DBBlog(
             title=result["title"],
             excerpt=result["excerpt"],
             content=result["content"],
-            cover_image=data.cover_image,
             is_published=True
         )
         db.add(new_blog)
         db.commit()
-        return {"status": "SUCCESS", "message": "Research compiled and published to the vault."}
+        return {"status": "SUCCESS", "message": "Autonomous research published."}
         
     except Exception as e:
         print(f"Phantom Error: {e}")
-        raise HTTPException(status_code=500, detail="The Phantom failed to compile the research.")
+        raise HTTPException(status_code=500, detail="The Phantom failed to compile.")
 
 # ==========================================
 # 5. VAULT SUBMISSION
