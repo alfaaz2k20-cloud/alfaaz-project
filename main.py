@@ -584,16 +584,25 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
     if not client:
         raise HTTPException(status_code=500, detail="Phantom AI not configured.")
 
+    # THE FIX: A much stricter system prompt with an explicit JSON template and escaping rules.
     system_prompt = """You are the Phantom Researcher for the Alfaaz Collective.
     Write a scholarly, engaging, and deeply insightful blog article about the requested topic.
     Include valid research, cultural context, and citations/references where appropriate.
-    Format your response strictly as a JSON object with three keys:
-    1. "title": A captivating string title.
-    2. "excerpt": A brief 2-sentence summary string.
-    3. "content": The full article formatted in clean HTML (use <h2>, <p>, <blockquote>, <ul>, etc. DO NOT include <html> or <body> tags, just the inner content)."""
+    
+    CRITICAL INSTRUCTION: You MUST return a strictly valid JSON object. 
+    1. All keys and values must be wrapped in double quotes.
+    2. The "content" value is HTML. You MUST use single quotes for HTML attributes (e.g., <a href='link'>) so you do not break the outer JSON double quotes.
+    3. Do NOT include newlines (\n) inside the JSON strings; keep the HTML as one continuous string.
+    
+    Use this exact JSON structure:
+    {
+      "title": "Your captivating title here",
+      "excerpt": "A brief 2-sentence summary here.",
+      "content": "<h2>Introduction</h2><p>Your full article here...</p>"
+    }
+    """
 
     try:
-        # We use JSON mode to force the AI to return structured database data
         response = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": system_prompt},
