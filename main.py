@@ -272,6 +272,16 @@ class DBExhibitionConfig(Base):
     payment_instructions = Column(String, default="")    # UPI ID / bank details
     payment_qr_url = Column(String, nullable=True)       # Optional QR code image URL
 
+class DBBlog(Base):
+    __tablename__ = "blogs"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    excerpt = Column(String)
+    content = Column(String, nullable=False)
+    cover_image = Column(String, nullable=True)
+    is_published = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 # ==========================================
 # 2. APP & SCHEMAS
 # ==========================================
@@ -405,6 +415,10 @@ def get_db():
         yield db
     finally:
         db.close()
+
+class BlogGenerateRequest(BaseModel):
+    topic: str
+    cover_image: Optional[str] = None
 
 # ==========================================
 # 2.5 SERVER STARTUP
@@ -562,6 +576,48 @@ def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_phantom_r
         return {"answer": response.choices[0].message.content}
     except Exception:
         return {"answer": "[SIGNAL DECAY] The void is temporarily unreachable. Inquire again."}
+    
+@app.post("/admin/blogs/generate")
+def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_db), admin=Depends(require_admin)):
+    if not client:
+        raise HTTPException(status_code=500, detail="Phantom AI not configured.")
+
+    system_prompt = """You are the Phantom Researcher for the Alfaaz Collective.
+    Write a scholarly, engaging, and deeply insightful blog article about the requested topic.
+    Include valid research, cultural context, and citations/references where appropriate.
+    Format your response strictly as a JSON object with three keys:
+    1. "title": A captivating string title.
+    2. "excerpt": A brief 2-sentence summary string.
+    3. "content": The full article formatted in clean HTML (use <h2>, <p>, <blockquote>, <ul>, etc. DO NOT include <html> or <body> tags, just the inner content)."""
+
+    try:
+        # We use JSON mode to force the AI to return structured database data
+        response = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Topic: {data.topic}"}
+            ],
+            model="llama-3.3-70b-versatile",
+            response_format={"type": "json_object"},
+            temperature=0.7,
+        )
+        
+        result = json.loads(response.choices[0].message.content)
+
+        new_blog = DBBlog(
+            title=result["title"],
+            excerpt=result["excerpt"],
+            content=result["content"],
+            cover_image=data.cover_image,
+            is_published=True
+        )
+        db.add(new_blog)
+        db.commit()
+        return {"status": "SUCCESS", "message": "Research compiled and published to the vault."}
+        
+    except Exception as e:
+        print(f"Phantom Error: {e}")
+        raise HTTPException(status_code=500, detail="The Phantom failed to compile the research.")
 
 # ==========================================
 # 5. VAULT SUBMISSION
