@@ -13,7 +13,7 @@ jobs:
       - name: Trigger Render API
         run: |
           curl -X POST "https://alfaaz-project.onrender.com/admin/blogs/generate" \
-               -H "Authorization: Bearer ${{ secrets.PHANTOM_TOKEN }}" \
+               -H "Authorization: Bearer ${{ secrets.PHANTOM_SECRET_TOKEN }}" \
                -H "Content-Type: application/json" \
                -d "{}" \
                --max-time 120
