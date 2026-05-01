@@ -15,4 +15,5 @@ jobs:
           curl -X POST "https://alfaaz-project.onrender.com/admin/blogs/generate" \
                -H "Authorization: Bearer ${{ secrets.PHANTOM_TOKEN }}" \
                -H "Content-Type: application/json" \
-               -d "{}"
+               -d "{}" \
+               --max-time 120
