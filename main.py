@@ -290,18 +290,18 @@ class DBBlog(Base):
 app = FastAPI(title="Alfaaz Collective API")
 
 # RATE LIMITER (in-memory, per IP)
-_phantom_requests: dict = defaultdict(list)
-_PHANTOM_LIMIT = 10
-_PHANTOM_WINDOW = 60
+_curator_requests: dict = defaultdict(list)
+_CURATOR_LIMIT = 10
+_CURATOR_WINDOW = 60
 
-def check_phantom_rate_limit(request: Request):
+def check_curator_rate_limit(request: Request):
     ip = request.client.host
     now = time.time()
-    window_start = now - _PHANTOM_WINDOW
-    _phantom_requests[ip] = [t for t in _phantom_requests[ip] if t > window_start]
-    if len(_phantom_requests[ip]) >= _PHANTOM_LIMIT:
-        raise HTTPException(status_code=429, detail="Too many transmissions. The Phantom needs silence.")
-    _phantom_requests[ip].append(now)
+    window_start = now - _CURATOR_WINDOW
+    _curator_requests[ip] = [t for t in _curator_requests[ip] if t > window_start]
+    if len(_curator_requests[ip]) >= _CURATOR_LIMIT:
+        raise HTTPException(status_code=429, detail="The Curator is currently occupied with other guests. Please wait a moment.")
+    _curator_requests[ip].append(now)
 
 app.add_middleware(
     CORSMiddleware,
@@ -320,9 +320,9 @@ class UserRegister(BaseModel):
     @classmethod
     def password_strength(cls, v: str) -> str:
         if len(v) < 8:
-            raise ValueError("Passkey must be at least 8 characters.")
+            raise ValueError("Password must be at least 8 characters.")
         if v.isdigit():
-            raise ValueError("Passkey cannot be all numbers.")
+            raise ValueError("Password cannot be all numbers.")
         return v
 
     @field_validator("email")
@@ -454,7 +454,7 @@ def ping():
 @app.post("/auth/register")
 def register_user(user: UserRegister, db: Session = Depends(get_db)):
     if db.query(DBUser).filter(DBUser.email == user.email).first():
-        raise HTTPException(status_code=400, detail="User already in the vault.")
+        raise HTTPException(status_code=400, detail="User already registered.")
     new_user = DBUser(email=user.email, password=get_password_hash(user.password), full_name=user.full_name)
     db.add(new_user)
     db.commit()
@@ -474,17 +474,17 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.email == req.email).first()
     if not db_user:
-        return {"message": "If the sequence exists, a transmission has been sent."}
+        return {"message": "If the email is registered, your reset link has been dispatched to your email."}
     expire_time = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=15)
     reset_token = jwt.encode({"sub": db_user.email, "purpose": "reset", "exp": expire_time}, JWT_SECRET, algorithm=JWT_ALGORITHM)
     reset_link = f"https://alfaazcollective.vercel.app/reset.html?token={reset_token}"
     send_system_email(
         db_user.email,
-        "ALFAAZ Vault — Passkey Reset",
-        f"GREETINGS,\n\nA passkey reset was requested for: {db_user.email}.\nThis link expires in 15 minutes.\n\n{reset_link}\n\nIf you did not request this, ignore this message.\n\n— The Curator",
+        "ALFAAZ — Password Reset",
+        f"Greetings,\n\nA password reset was requested for your account: {db_user.email}.\nThis link expires in 15 minutes.\n\n{reset_link}\n\nIf you did not request this, please ignore this message.\n\n— The Curator",
         raise_on_error=True
     )
-    return {"message": "If the sequence exists, a transmission has been sent."}
+    return {"message": "If the email is registered, your reset link has been dispatched to your email."}
 
 @app.post("/auth/reset-password")
 def reset_password(req: ResetPassword, db: Session = Depends(get_db)):
@@ -494,14 +494,14 @@ def reset_password(req: ResetPassword, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="Invalid token protocol.")
         db_user = db.query(DBUser).filter(DBUser.email == payload.get("sub")).first()
         if not db_user:
-            raise HTTPException(status_code=404, detail="Sequence not found.")
+            raise HTTPException(status_code=404, detail="Account not found.")
         db_user.password = get_password_hash(req.new_password)
         db.commit()
-        return {"message": "Passkey forged successfully."}
+        return {"message": "Password reset successfully."}
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Reset transmission decayed.")
+        raise HTTPException(status_code=401, detail="Reset link expired.")
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid transmission signature.")
+        raise HTTPException(status_code=401, detail="Invalid reset link.")
 
 @app.get("/auth/me")
 def get_me(db: Session = Depends(get_db), user=Depends(require_auth)):
@@ -524,7 +524,7 @@ def update_me(data: dict, db: Session = Depends(get_db), user=Depends(require_au
     return {"status": "SUCCESS", "full_name": db_user.full_name}
 
 # ==========================================
-# 4. THE PHANTOM
+# 4. THE CURATOR
 # ==========================================
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
@@ -554,7 +554,7 @@ SISTER PROJECT: Tchandervar (tchandervar.neocities.org) — bridges artists and 
 4. Philosophy — Discussions, debates, and readings
 5. Literature — Poetry, prose, and creative writing
 
---- PHANTOM RULES ---
+--- CURATOR RULES ---
 - If asked about dates not listed above: "The exact dates haven't been announced yet — follow @alfaaz.2020 on Instagram."
 - Never invent dates, names, or facts not listed here.
 - Reference Agha Shahid Ali, Habba Khatoon, or Rumi where genuinely relevant.
@@ -562,13 +562,16 @@ SISTER PROJECT: Tchandervar (tchandervar.neocities.org) — bridges artists and 
 """
 
 @app.post("/phantom/ask")
-def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_phantom_rate_limit)):
+def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_curator_rate_limit)):
     if not client:
-        return {"answer": "[THE PHANTOM IS SILENT — NO SIGNAL DETECTED]"}
+        return {"answer": "The Curator is currently unavailable."}
     try:
         response = client.chat.completions.create(
             messages=[
-                {"role": "system", "content": f"You are THE PHANTOM — enigmatic AI curator of Alfaaz Collective. Speak with poetic brevity. Your knowledge:\n{ALFAAZ_KNOWLEDGE}\nKeep responses 3-5 sentences max. Never fabricate facts."},
+                {
+                    "role": "system", 
+                    "content": f"You are The Curator of the Alfaaz Collective. You act as a seasoned gallery curator and literary guide. Speak with clarity, elegance, and approachability. Do not be overly poetic or dramatic; convey simple messages directly to make the participant's life easier. Your knowledge:\n{ALFAAZ_KNOWLEDGE}\nKeep responses 3-5 sentences max. Never fabricate facts."
+                },
                 {"role": "user", "content": query.question}
             ],
             model="llama-3.3-70b-versatile",
@@ -576,17 +579,17 @@ def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_phantom_r
         )
         return {"answer": response.choices[0].message.content}
     except Exception:
-        return {"answer": "[SIGNAL DECAY] The void is temporarily unreachable. Inquire again."}
+        return {"answer": "Our archives are temporarily unreachable. Please inquire again later."}
     
 @app.post("/admin/blogs/generate")
 def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_db), admin=Depends(require_admin)):
     if not client:
-        raise HTTPException(status_code=500, detail="Phantom AI not configured.")
+        raise HTTPException(status_code=500, detail="Curator AI not configured.")
 
-    # THE FIX: If no topic is provided, the Phantom picks its own!
+    # THE FIX: If no topic is provided, the Curator picks its own!
     active_topic = data.topic if data.topic else "Choose a fascinating, highly specific, and slightly obscure topic related to art, cultural history, clinical psychology, or literature (especially involving Urdu, Persian, or Kashmiri aesthetics) and write about it."
 
-    system_prompt = """You are the Phantom Researcher for the Alfaaz Collective.
+    system_prompt = """You are the Curator for the Alfaaz Collective.
     Write a scholarly, engaging, and deeply insightful blog article about the requested topic.
     
     CRITICAL INSTRUCTION: You MUST return a strictly valid JSON object. 
@@ -627,11 +630,11 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
         return {"status": "SUCCESS", "message": "Autonomous research published."}
         
     except Exception as e:
-        print(f"Phantom Error: {e}")
-        raise HTTPException(status_code=500, detail="The Phantom failed to compile.")
+        print(f"Curator Error: {e}")
+        raise HTTPException(status_code=500, detail="The Curator failed to generate the article.")
 
 # ==========================================
-# 5. VAULT SUBMISSION
+# 5. STORAGE SUBMISSION
 # ==========================================
 @app.post("/vault/submit")
 def submit_to_vault(data: VaultSubmission, db: Session = Depends(get_db), user=Depends(require_auth)):
@@ -753,9 +756,9 @@ def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depend
     send_system_email(
         user["email"],
         "ALFAAZ — Application Received",
-        f"Greetings {data.full_name},\n\nYour portfolio has successfully entered the Vault. It is currently under review by the Curator for the upcoming exhibition.\n\nYou will receive a transmission regarding your clearance status soon.\n\n— The Alfaaz Collective"
+        f"Greetings {data.full_name},\n\nYour portfolio has successfully entered our Storage. This secure space is used to safely hold your work and protect your assets while they are under review by the Curator for the upcoming exhibition.\n\nYou will receive an update regarding your status soon.\n\n— The Alfaaz Collective"
     )
-    return {"status": "SUCCESS", "message": "Application secured."}
+    return {"status": "SUCCESS", "message": "Application submitted successfully."}
 
 @app.get("/exhibitions/my-status")
 def get_my_exhibition_status(db: Session = Depends(get_db), user=Depends(require_auth)):
@@ -1031,28 +1034,6 @@ def review_exhibition(data: ExhibitionReview, db: Session = Depends(get_db), adm
             f"Greetings {application.full_name},\n\nWe appreciate you sharing your portfolio with us. Unfortunately, we cannot accommodate your submission for this specific cycle.\n\n— The Curator"
         )
     return {"status": "SUCCESS", "message": f"Applicant {data.status.lower()} and notified."}
-
-@app.patch("/admin/exhibitions/{application_id}/revert")
-def revert_exhibition_status(application_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
-    """Allows Admin to undo a rejection and put the application back in PENDING."""
-    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
-    if not application:
-        raise HTTPException(status_code=404, detail="Application not found.")
-    application.status = "PENDING"
-    application.curator_note = None  # Clear the rejection note
-    db.commit()
-    return {"status": "SUCCESS"}
-
-@app.patch("/admin/club-applications/{application_id}/revert")
-def revert_club_status(application_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
-    """Allows Admin to undo a club rejection."""
-    application = db.query(DBClubApplication).filter(DBClubApplication.id == application_id).first()
-    if not application:
-        raise HTTPException(status_code=404, detail="Application not found.")
-    application.status = "PENDING"
-    application.admin_note = None
-    db.commit()
-    return {"status": "SUCCESS"}
 
 @app.get("/admin/submissions")
 def get_all_submissions(db: Session = Depends(get_db), admin=Depends(require_admin)):
