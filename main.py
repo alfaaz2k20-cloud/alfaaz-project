@@ -650,6 +650,36 @@ def generate_blog_article(
         raise HTTPException(status_code=500, detail="The Curator failed to generate the article.")
 
 # ==========================================
+# PUBLIC BLOG / JOURNAL ENDPOINTS
+# ==========================================
+@app.get("/blogs")
+def get_all_blogs(db: Session = Depends(get_db)):
+    """Fetches all published articles for the Journal page and Notice Board."""
+    blogs = db.query(DBBlog).filter(DBBlog.is_published == True).order_by(DBBlog.created_at.desc()).all()
+    return [
+        {
+            "id": b.id,
+            "title": b.title,
+            "excerpt": b.excerpt,
+            "created_at": b.created_at.isoformat()
+        } for b in blogs
+    ]
+
+@app.get("/blog")
+def get_single_blog(id: int, db: Session = Depends(get_db)):
+    """Fetches the full HTML content of a specific article for post.html."""
+    blog = db.query(DBBlog).filter(DBBlog.id == id, DBBlog.is_published == True).first()
+    if not blog:
+        raise HTTPException(status_code=404, detail="Article not found.")
+    
+    return {
+        "id": blog.id,
+        "title": blog.title,
+        "content": blog.content,
+        "created_at": blog.created_at.isoformat()
+    }
+
+# ==========================================
 # 5. STORAGE SUBMISSION
 # ==========================================
 @app.post("/vault/submit")
