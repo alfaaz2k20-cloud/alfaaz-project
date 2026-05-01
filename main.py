@@ -11,7 +11,8 @@ from typing import Optional
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-from fastapi import FastAPI, HTTPException, Depends, status, Request
+# FIXED: Added Header to the imports
+from fastapi import FastAPI, HTTPException, Depends, status, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, field_validator
@@ -580,13 +581,29 @@ def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_curator_r
         return {"answer": response.choices[0].message.content}
     except Exception:
         return {"answer": "Our archives are temporarily unreachable. Please inquire again later."}
-    
+
+# FIXED: Removed the require_admin dependency and replaced it with a static token check.
 @app.post("/admin/blogs/generate")
-def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_db), admin=Depends(require_admin)):
+def generate_blog_article(
+    data: BlogGenerateRequest, 
+    db: Session = Depends(get_db), 
+    authorization: str = Header(None)
+):
+    expected_token = os.environ.get("PHANTOM_SECRET_TOKEN")
+    
+    if not expected_token:
+        raise HTTPException(status_code=500, detail="PHANTOM_SECRET_TOKEN not configured on server.")
+        
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing authorization header")
+        
+    token = authorization.split(" ")[1]
+    if token != expected_token:
+        raise HTTPException(status_code=403, detail="Unauthorized Curator Access")
+
     if not client:
         raise HTTPException(status_code=500, detail="Curator AI not configured.")
 
-    # THE FIX: If no topic is provided, the Curator picks its own!
     active_topic = data.topic if data.topic else "Choose a fascinating, highly specific, and slightly obscure topic related to art, cultural history, clinical psychology, or literature (especially involving Urdu, Persian, or Kashmiri aesthetics) and write about it."
 
     system_prompt = """You are the Curator for the Alfaaz Collective.
@@ -613,12 +630,11 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
             ],
             model="llama-3.3-70b-versatile",
             response_format={"type": "json_object"},
-            temperature=0.8, # Slightly higher temperature makes it more creative
+            temperature=0.8, 
         )
         
         result = json.loads(response.choices[0].message.content)
 
-        # Removed cover_image from the database save
         new_blog = DBBlog(
             title=result["title"],
             excerpt=result["excerpt"],
