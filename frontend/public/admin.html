@@ -246,6 +246,19 @@
 
     // EXHIBITIONS LOGIC
     let allExhibs = [], currentExhibOpen = false;
+    const hasPaymentSubmission = (a) => a.registration_status === 'SUBMITTED' || a.registration_status === 'CONFIRMED' || Boolean(a.payment_proof_url);
+    const getExhibitionLabel = (a) => a.registration_status === 'CONFIRMED' ? 'CONFIRMED' : hasPaymentSubmission(a) ? 'PAYMENT SUBMITTED' : a.status;
+    function getExhibConfigPayload(isOpen) {
+      return {
+        title: document.getElementById('cfg-title').value || 'Exhibition',
+        date_text: document.getElementById('cfg-date').value || 'TBD',
+        venue: document.getElementById('cfg-venue').value || 'TBD',
+        about_text: document.getElementById('cfg-desc').value || '',
+        tnc_pdf_url: document.getElementById('cfg-tc').value || '',
+        payment_qr_url: document.getElementById('cfg-payment').value || '',
+        is_open: isOpen
+      };
+    }
     function applyToggleUI(isOpen) {
       currentExhibOpen = isOpen; const master = document.getElementById('exhibToggleMaster'), btn = document.getElementById('exhibPillBtn'), status = document.getElementById('exhibPillStatus'), sub = document.getElementById('exhibToggleSub');
       if (!master) return;
@@ -255,37 +268,21 @@
     
     async function toggleExhibVisibility() {
       const btn = document.getElementById('exhibPillBtn'); btn.style.pointerEvents = 'none'; const newState = !currentExhibOpen; applyToggleUI(newState);
-      const payload = { 
-        title: document.getElementById('cfg-title').value || 'Exhibition', 
-        date_text: document.getElementById('cfg-date').value || 'TBD', 
-        venue: document.getElementById('cfg-venue').value || 'TBD', 
-        about_text: document.getElementById('cfg-desc').value || '', 
-        tc_link: document.getElementById('cfg-tc').value || '',
-        payment_link: document.getElementById('cfg-payment').value || '',
-        is_open: newState 
-      };
+      const payload = getExhibConfigPayload(newState);
       const res = await window.globalApiFetch('/admin/exhibitions/config', { method: 'POST', body: JSON.stringify(payload) });
       if (res && res.ok) { document.getElementById('cfg-open').value = newState ? 'true' : 'false'; const flash = document.getElementById('cfg-msg'); flash.textContent = newState ? '✓ Portal opened' : '✓ Portal hidden'; flash.style.color = newState ? 'var(--accent-green)' : 'var(--text-secondary)'; setTimeout(() => { flash.textContent = ''; }, 4000); } 
       else { applyToggleUI(!newState); } btn.style.pointerEvents = '';
     }
     
     async function loadExhibitions(f) {
-      const cfgRes = await fetch(`https://alfaaz-project.onrender.com/exhibitions/config`), cfg = await cfgRes.json();
-      document.getElementById('cfg-title').value = cfg.title || ''; document.getElementById('cfg-date').value = cfg.date_text || ''; document.getElementById('cfg-venue').value = cfg.venue || ''; document.getElementById('cfg-desc').value = cfg.about_text || ''; document.getElementById('cfg-tc').value = cfg.tc_link || ''; document.getElementById('cfg-payment').value = cfg.payment_link || ''; document.getElementById('cfg-open').value = cfg.is_open ? "true" : "false"; applyToggleUI(cfg.is_open);
+      const cfgRes = await window.globalApiFetch('/exhibitions/config'); if(!cfgRes) return; const cfg = await cfgRes.json();
+      document.getElementById('cfg-title').value = cfg.title || ''; document.getElementById('cfg-date').value = cfg.date_text || ''; document.getElementById('cfg-venue').value = cfg.venue || ''; document.getElementById('cfg-desc').value = cfg.about_text || ''; document.getElementById('cfg-tc').value = cfg.tnc_pdf_url || ''; document.getElementById('cfg-payment').value = cfg.payment_qr_url || ''; document.getElementById('cfg-open').value = cfg.is_open ? "true" : "false"; applyToggleUI(cfg.is_open);
       const res = await window.globalApiFetch('/admin/exhibitions'); if(!res) return; allExhibs = await res.json(); renderExhibitions(f);
     }
     
     async function saveExhibConfig() {
       const isOpen = document.getElementById('cfg-open').value === "true";
-      const payload = { 
-        title: document.getElementById('cfg-title').value, 
-        date_text: document.getElementById('cfg-date').value, 
-        venue: document.getElementById('cfg-venue').value, 
-        about_text: document.getElementById('cfg-desc').value, 
-        tc_link: document.getElementById('cfg-tc').value,
-        payment_link: document.getElementById('cfg-payment').value,
-        is_open: isOpen 
-      };
+      const payload = getExhibConfigPayload(isOpen);
       document.getElementById('cfg-msg').textContent = "Saving...";
       const res = await window.globalApiFetch('/admin/exhibitions/config', { method: 'POST', body: JSON.stringify(payload) });
       if (res && res.ok) { document.getElementById('cfg-msg').textContent = "✓ Settings Synced"; setTimeout(() => document.getElementById('cfg-msg').textContent = "", 3000); applyToggleUI(isOpen); }
@@ -294,14 +291,15 @@
     function filterExhibitions(f) { document.querySelectorAll('[id^="filt-"]').forEach(b => { b.classList.remove('gold'); b.style.color = ''; b.style.borderColor = ''; }); const target = document.getElementById(`filt-${f}`); target.classList.add('gold'); renderExhibitions(f); }
     
     function renderExhibitions(f) {
-      const container = document.getElementById('exhibitionsContainer'), apps = f === 'ALL' ? allExhibs : allExhibs.filter(a => a.status === f); container.innerHTML = '';
+      const container = document.getElementById('exhibitionsContainer'), apps = f === 'ALL' ? allExhibs : allExhibs.filter(a => f === 'FINALIZED' ? hasPaymentSubmission(a) : f === 'APPROVED' ? a.status === 'APPROVED' && !hasPaymentSubmission(a) : a.status === f); container.innerHTML = '';
       if (!apps.length) { container.innerHTML = '<div class="empty-state">No portfolios submitted.</div>'; return; }
       
       apps.forEach(a => {
         const card = document.createElement('div'); card.className = 'data-card exhib-card magnetic';
         
         // Handles badge coloring for Finalized
-        const badge = a.status === 'PENDING' ? 'badge-pending' : (a.status === 'APPROVED' || a.status === 'FINALIZED') ? 'badge-approved' : 'badge-rejected';
+        const displayStatus = getExhibitionLabel(a);
+        const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
         
         let actionBtns = `<a href="${a.portfolio_url}" target="_blank" class="action-btn gold" style="padding:0.6rem; font-size:9px; text-align: center;">View Portfolio</a>`;
         
@@ -317,19 +315,23 @@
         if (a.payment_proof_url) {
              actionBtns += `<a href="${a.payment_proof_url}" target="_blank" class="action-btn" style="padding:0.6rem; font-size:9px; border-color:var(--accent-green); color:var(--accent-green); text-align: center; margin-top: 0.5rem;">View Payment Receipt</a>`;
         }
+        if (a.registration_status === 'SUBMITTED') {
+             actionBtns += `<button class="action-btn gold" style="padding:0.6rem; font-size:9px;" onclick="confirmExhibitionPayment(${a.id}, this)">Confirm Payment</button>`;
+        }
         
         card.innerHTML = `
           <div><div class="data-label">Artist</div><div class="data-display">${a.full_name}</div><div style="font-size:11px;color:var(--text-secondary); margin-top: 4px;">${a.user_email}</div></div>
           <div><div class="data-label">Art Profile</div><div class="data-display" style="font-size:13px;">${a.genre}</div><div style="font-size:11px;color:var(--text-secondary); margin-top: 4px;">Medium: ${a.medium}</div></div>
-          <div><div class="data-label">Status</div><span class="badge ${badge}">${a.status}</span></div>
+          <div><div class="data-label">Status</div><span class="badge ${badge}">${displayStatus}</span></div>
           <div style="display:flex;flex-direction:column;gap:0.5rem;">${actionBtns}</div>`;
         container.appendChild(card);
       });
       if(window.refreshGlobalEffects) window.refreshGlobalEffects();
     }
     
-    async function reviewExhibition(id, status, btn) { const note = prompt('Curator Note to Artist:'); btn.textContent = '...'; const res = await window.globalApiFetch('/admin/exhibitions/review', { method: 'POST', body: JSON.stringify({ application_id: id, status: status, curator_note: note }) }); if (res && res.ok) { loadExhibitions('ALL'); filterExhibitions('ALL'); } }
-    async function revertExhibition(id, btn) { if (!confirm('Undo rejection?')) return; btn.textContent = '...'; btn.disabled = true; const res = await window.globalApiFetch(`/admin/exhibitions/${id}/revert`, { method: 'PATCH' }); if (res && res.ok) { loadExhibitions('ALL'); filterExhibitions('ALL'); } }
+    async function reviewExhibition(id, status, btn) { const note = prompt('Curator Note to Artist:'); btn.textContent = '...'; const res = await window.globalApiFetch('/admin/exhibitions/review', { method: 'POST', body: JSON.stringify({ application_id: id, status: status, curator_note: note }) }); if (res && res.ok) { await loadExhibitions('ALL'); filterExhibitions('ALL'); } else { btn.textContent = status === 'APPROVED' ? 'Approve' : 'Reject'; } }
+    async function revertExhibition(id, btn) { if (!confirm('Undo rejection?')) return; btn.textContent = '...'; btn.disabled = true; const res = await window.globalApiFetch(`/admin/exhibitions/${id}/revert`, { method: 'PATCH' }); if (res && res.ok) { await loadExhibitions('ALL'); filterExhibitions('ALL'); } else { btn.textContent = 'Undo Rejection'; btn.disabled = false; } }
+    async function confirmExhibitionPayment(id, btn) { if (!confirm('Confirm this exhibition payment?')) return; btn.textContent = '...'; btn.disabled = true; const res = await window.globalApiFetch(`/admin/exhibitions/${id}/confirm-payment`, { method: 'PATCH' }); if (res && res.ok) { await loadExhibitions('FINALIZED'); filterExhibitions('FINALIZED'); } else { btn.textContent = 'Confirm Payment'; btn.disabled = false; } }
 
     // CLUBS LOGIC
     let allClubApps = [];
