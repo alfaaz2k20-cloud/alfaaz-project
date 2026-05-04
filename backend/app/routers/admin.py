@@ -237,3 +237,13 @@ def update_user_status(target: StatusUpdate, db: Session = Depends(get_db)):
 @router.get("/submissions")
 def get_all_submissions(db: Session = Depends(get_db)):
     return db.query(DBSubmission).order_by(DBSubmission.created_at.desc()).all()
+
+@router.post("/email/test")
+def send_test_email(user=Depends(require_admin)):
+    sent = send_system_email(
+        user["email"],
+        "ALFAAZ — Email Test",
+        "This is a test email from the Alfaaz backend. If you received it, SMTP is configured correctly.",
+        raise_on_error=True,
+    )
+    return {"status": "SENT" if sent else "FAILED"}
