@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, func
-from backend.app.db.base import Base
+from app.db.base import Base
 
 class DBExhibitionApplication(Base):
     __tablename__ = "exhibition_applications"

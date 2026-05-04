@@ -2,12 +2,12 @@ import datetime
 import jwt
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from backend.app.db.session import get_db
-from backend.app.models.user import DBUser
-from backend.app.schemas.auth import UserRegister, UserLogin, ForgotPassword, ResetPassword
-from backend.app.core.security import get_password_hash, verify_password, create_token, require_auth
-from backend.app.core.config import JWT_SECRET, JWT_ALGORITHM
-from backend.app.services.email import send_system_email
+from app.db.session import get_db
+from app.models.user import DBUser
+from app.schemas.auth import UserRegister, UserLogin, ForgotPassword, ResetPassword
+from app.core.security import get_password_hash, verify_password, create_token, require_auth
+from app.core.config import JWT_SECRET, JWT_ALGORITHM
+from app.services.email import send_system_email
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 

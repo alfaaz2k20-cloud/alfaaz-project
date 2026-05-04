@@ -3,28 +3,28 @@ import json
 import datetime
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
-from backend.app.db.session import get_db
+from app.db.session import get_db
 
 # Models
-from backend.app.models.user import DBUser
-from backend.app.models.event import DBEvent, DBEventRegistration
-from backend.app.models.club import DBClubApplication
-from backend.app.models.exhibition import DBExhibitionApplication, DBExhibitionConfig
-from backend.app.models.submission import DBSubmission
-from backend.app.models.blog import DBBlog
+from app.models.user import DBUser
+from app.models.event import DBEvent, DBEventRegistration
+from app.models.club import DBClubApplication
+from app.models.exhibition import DBExhibitionApplication, DBExhibitionConfig
+from app.models.submission import DBSubmission
+from app.models.blog import DBBlog
 
 # Schemas
-from backend.app.schemas.auth import StatusUpdate
-from backend.app.schemas.event import EventCreate
-from backend.app.schemas.club import ClubApplicationReview
-from backend.app.schemas.exhibition import ExhibitionReview, ExhibitionConfigSchema
-from backend.app.schemas.blog import BlogGenerateRequest
+from app.schemas.auth import StatusUpdate
+from app.schemas.event import EventCreate
+from app.schemas.club import ClubApplicationReview
+from app.schemas.exhibition import ExhibitionReview, ExhibitionConfigSchema
+from app.schemas.blog import BlogGenerateRequest
 
 # Security & Services
-from backend.app.core.security import require_admin
-from backend.app.services.email import send_system_email
-from backend.app.services.cdn import sync_notices_to_cloudinary
-from backend.app.services.curator import get_groq_client
+from app.core.security import require_admin
+from app.services.email import send_system_email
+from app.services.cdn import sync_notices_to_cloudinary
+from app.services.curator import get_groq_client
 
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin)])
 

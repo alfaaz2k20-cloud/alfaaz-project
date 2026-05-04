@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from backend.app.db.session import get_db
-from backend.app.models.exhibition import DBExhibitionApplication, DBExhibitionConfig
-from backend.app.schemas.exhibition import ExhibitionApplicationCreate, ExhibitionRegistrationSubmit
-from backend.app.core.security import require_auth
-from backend.app.services.email import send_system_email
+from app.db.session import get_db
+from app.models.exhibition import DBExhibitionApplication, DBExhibitionConfig
+from app.schemas.exhibition import ExhibitionApplicationCreate, ExhibitionRegistrationSubmit
+from app.core.security import require_auth
+from app.services.email import send_system_email
 
 router = APIRouter(prefix="/exhibitions", tags=["Exhibitions"])
 

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from backend.app.db.session import get_db
-from backend.app.models.submission import DBSubmission
-from backend.app.schemas.submission import VaultSubmission
-from backend.app.core.security import require_auth
+from app.db.session import get_db
+from app.models.submission import DBSubmission
+from app.schemas.submission import VaultSubmission
+from app.core.security import require_auth
 
 router = APIRouter(prefix="/vault", tags=["Vault"])
 

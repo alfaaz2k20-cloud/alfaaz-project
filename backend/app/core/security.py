@@ -3,7 +3,7 @@ import datetime
 from fastapi import HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from passlib.context import CryptContext
-from backend.app.core.config import JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRY_HOURS
+from app.core.config import JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRY_HOURS
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 bearer_scheme = HTTPBearer()

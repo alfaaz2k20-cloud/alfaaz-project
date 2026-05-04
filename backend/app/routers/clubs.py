@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from backend.app.db.session import get_db
-from backend.app.models.club import DBClubApplication
-from backend.app.schemas.club import ClubApplicationCreate
-from backend.app.core.security import require_auth
+from app.db.session import get_db
+from app.models.club import DBClubApplication
+from app.schemas.club import ClubApplicationCreate
+from app.core.security import require_auth
 
 router = APIRouter(prefix="/clubs", tags=["Clubs"])
 

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, func
-from backend.app.db.base import Base
+from app.db.base import Base
 
 class DBClubApplication(Base):
     __tablename__ = "club_applications"
