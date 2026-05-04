@@ -17,6 +17,10 @@ services:
         generateValue: true
       - key: ADMIN_PASSWORD
         sync: false
+      - key: FRONTEND_URL
+        value: https://alfaazcollective.vercel.app
+      - key: FRONTEND_ORIGINS
+        value: https://alfaazcollective.vercel.app
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
