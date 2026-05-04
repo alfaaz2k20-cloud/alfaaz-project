@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, HTTPException
-from backend.app.services.curator import check_curator_rate_limit, get_groq_client, ALFAAZ_KNOWLEDGE
-from backend.app.schemas.curator import PhantomQuery
+from app.services.curator import check_curator_rate_limit, get_groq_client, ALFAAZ_KNOWLEDGE
+from app.schemas.curator import PhantomQuery
 
 # This replaces @app.post
 router = APIRouter(prefix="/phantom", tags=["The Curator"])

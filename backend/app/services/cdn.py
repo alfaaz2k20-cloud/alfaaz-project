@@ -2,9 +2,9 @@ import json
 import cloudinary
 import cloudinary.uploader
 from sqlalchemy.orm import Session
-from backend.app.models.event import DBEvent, DBEventRegistration
-from backend.app.models.exhibition import DBExhibitionConfig
-from backend.app.core.config import CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+from app.models.event import DBEvent, DBEventRegistration
+from app.models.exhibition import DBExhibitionConfig
+from app.core.config import CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 
 if CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
     cloudinary.config(

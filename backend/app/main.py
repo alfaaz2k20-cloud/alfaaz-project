@@ -4,14 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 
 # Import Database Core
-from backend.app.db.session import engine, SessionLocal
-from backend.app.db.base import Base
-from backend.app.models.user import DBUser
-from backend.app.core.config import ADMIN_PASSWORD
-from backend.app.core.security import get_password_hash
+from app.db.session import engine, SessionLocal
+from app.db.base import Base
+from app.models.user import DBUser
+from app.core.config import ADMIN_PASSWORD
+from app.core.security import get_password_hash
 
 # Import Routers
-from backend.app.routers import (
+from app.routers import (
     vault
 )
 

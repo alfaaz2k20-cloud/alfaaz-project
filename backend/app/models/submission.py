@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, func
-from backend.app.db.base import Base
+from app.db.base import Base
 
 class DBSubmission(Base):
     __tablename__ = "submissions"

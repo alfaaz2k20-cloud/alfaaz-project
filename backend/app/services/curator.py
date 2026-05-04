@@ -2,7 +2,7 @@ import time
 from collections import defaultdict
 from fastapi import Request, HTTPException
 from groq import Groq
-from backend.app.core.config import GROQ_API_KEY
+from app.core.config import GROQ_API_KEY
 
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
