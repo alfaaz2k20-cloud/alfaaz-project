@@ -119,6 +119,8 @@
         <div class="form-grid">
           <div class="form-group"><label class="data-label">T&C Document URL</label><input type="text" id="cfg-tc" placeholder="https://drive.google.com/..."></div>
           <div class="form-group"><label class="data-label">Payment Gateway / QR URL</label><input type="text" id="cfg-payment" placeholder="https://rzp.io/... or Image Link"></div>
+          <div class="form-group"><label class="data-label">Registration Fee</label><input type="text" id="cfg-fee" placeholder="e.g. Rs. 500"></div>
+          <div class="form-group"><label class="data-label">Payment Instructions</label><input type="text" id="cfg-payment-instructions" placeholder="UPI ID, bank details, or payment note"></div>
         </div>
 
         <div class="form-group" style="margin-bottom: 2.5rem;"><label class="data-label">About / Description</label><textarea id="cfg-desc" rows="3" placeholder="Brief context about the exhibition..."></textarea></div>
@@ -256,6 +258,8 @@
         about_text: document.getElementById('cfg-desc').value || '',
         tnc_pdf_url: document.getElementById('cfg-tc').value || '',
         payment_qr_url: document.getElementById('cfg-payment').value || '',
+        registration_fee: document.getElementById('cfg-fee').value || '',
+        payment_instructions: document.getElementById('cfg-payment-instructions').value || '',
         is_open: isOpen
       };
     }
@@ -276,7 +280,7 @@
     
     async function loadExhibitions(f) {
       const cfgRes = await window.globalApiFetch('/exhibitions/config'); if(!cfgRes) return; const cfg = await cfgRes.json();
-      document.getElementById('cfg-title').value = cfg.title || ''; document.getElementById('cfg-date').value = cfg.date_text || ''; document.getElementById('cfg-venue').value = cfg.venue || ''; document.getElementById('cfg-desc').value = cfg.about_text || ''; document.getElementById('cfg-tc').value = cfg.tnc_pdf_url || ''; document.getElementById('cfg-payment').value = cfg.payment_qr_url || ''; document.getElementById('cfg-open').value = cfg.is_open ? "true" : "false"; applyToggleUI(cfg.is_open);
+      document.getElementById('cfg-title').value = cfg.title || ''; document.getElementById('cfg-date').value = cfg.date_text || ''; document.getElementById('cfg-venue').value = cfg.venue || ''; document.getElementById('cfg-desc').value = cfg.about_text || ''; document.getElementById('cfg-tc').value = cfg.tnc_pdf_url || ''; document.getElementById('cfg-payment').value = cfg.payment_qr_url || ''; document.getElementById('cfg-fee').value = cfg.registration_fee || ''; document.getElementById('cfg-payment-instructions').value = cfg.payment_instructions || ''; document.getElementById('cfg-open').value = cfg.is_open ? "true" : "false"; applyToggleUI(cfg.is_open);
       const res = await window.globalApiFetch('/admin/exhibitions'); if(!res) return; allExhibs = await res.json(); renderExhibitions(f);
     }
     
