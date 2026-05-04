@@ -6,7 +6,7 @@ from app.db.session import get_db
 from app.models.user import DBUser
 from app.schemas.auth import UserRegister, UserLogin, ForgotPassword, ResetPassword
 from app.core.security import get_password_hash, verify_password, create_token, require_auth
-from app.core.config import JWT_SECRET, JWT_ALGORITHM
+from app.core.config import FRONTEND_URL, JWT_SECRET, JWT_ALGORITHM
 from app.services.email import send_system_email
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -37,7 +37,7 @@ def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
         return {"message": "If the email is registered, your reset link has been dispatched to your email."}
     expire_time = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=15)
     reset_token = jwt.encode({"sub": db_user.email, "purpose": "reset", "exp": expire_time}, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    reset_link = f"https://alfaazcollective.vercel.app/reset.html?token={reset_token}"
+    reset_link = f"{FRONTEND_URL}/reset.html?token={reset_token}"
     send_system_email(
         db_user.email,
         "ALFAAZ — Password Reset",

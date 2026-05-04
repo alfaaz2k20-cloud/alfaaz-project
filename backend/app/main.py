@@ -7,7 +7,7 @@ import os
 from app.db.session import engine, SessionLocal
 from app.db.base import Base
 from app.models.user import DBUser
-from app.core.config import ADMIN_PASSWORD
+from app.core.config import ADMIN_PASSWORD, FRONTEND_ORIGINS
 from app.core.security import get_password_hash
 
 # Import Routers
@@ -24,7 +24,13 @@ app = FastAPI(title="Alfaaz Collective API", version="2.0")
 # Setup CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://alfaazcollective.vercel.app"],  
+    allow_origins=FRONTEND_ORIGINS + [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+    ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

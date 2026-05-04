@@ -9,6 +9,14 @@ load_dotenv()
 # Environment Flag
 ENV = os.environ.get("ENV", "development")
 
+# Frontend
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://alfaazcollective.vercel.app").rstrip("/")
+FRONTEND_ORIGINS = [
+    origin.strip().rstrip("/")
+    for origin in os.environ.get("FRONTEND_ORIGINS", FRONTEND_URL).split(",")
+    if origin.strip()
+]
+
 # Database
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):

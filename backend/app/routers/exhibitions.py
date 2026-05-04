@@ -105,3 +105,7 @@ def complete_exhibition_registration(data: ExhibitionRegistrationSubmit, db: Ses
         f"Greetings {application.full_name},\n\nYour registration form and payment proof have been received. The Curator will verify your payment and confirm your spot shortly.\n\n— The Alfaaz Collective"
     )
     return {"status": "SUBMITTED", "message": "Registration submitted. Awaiting payment confirmation."}
+
+@router.post("/finalize")
+def finalize_exhibition_registration(data: ExhibitionRegistrationSubmit, db: Session = Depends(get_db), user=Depends(require_auth)):
+    return complete_exhibition_registration(data, db, user)

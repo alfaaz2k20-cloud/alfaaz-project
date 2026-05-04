@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/.venv/
+
+# Secrets and local config
+.env
+.env.*
+backend/.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local databases
+*.db
+
+# OS/editor noise
+desktop.ini
+.DS_Store
