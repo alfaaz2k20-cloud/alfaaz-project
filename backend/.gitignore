@@ -1,0 +1,9 @@
+# Secrets
+.env
+
+# Virtual Environments
+.venv/
+__pycache__/
+
+# Local Database
+*.db
