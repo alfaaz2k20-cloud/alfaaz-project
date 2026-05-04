@@ -207,7 +207,8 @@ def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends
 # --- Users & Submissions Admin ---
 @router.get("/users")
 def get_all_users(db: Session = Depends(get_db)):
-    return db.query(DBUser).all()
+    users = db.query(DBUser).all()
+    return [{"email": u.email, "full_name": u.full_name, "status": u.status} for u in users]
 
 @router.delete("/users/{user_email}")
 def delete_user(user_email: str, db: Session = Depends(get_db)):
