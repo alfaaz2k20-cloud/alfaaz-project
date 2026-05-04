@@ -1,4 +1,4 @@
-from backend.app.routers import admin, auth, blogs, clubs, curator, events, exhibitions
+from app.routers import admin, auth, blogs, clubs, curator, events, exhibitions
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
