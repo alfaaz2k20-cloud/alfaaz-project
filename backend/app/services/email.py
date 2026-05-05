@@ -3,10 +3,28 @@ import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from fastapi import HTTPException
-from app.core.config import EMAIL_FROM, RESEND_API_KEY, SMTP_SERVER, SMTP_PORT, SMTP_EMAIL, SMTP_PASSWORD
+from app.core.config import EMAIL_FROM, EMAIL_PROVIDER, RESEND_API_KEY, SMTP_SERVER, SMTP_PORT, SMTP_EMAIL, SMTP_PASSWORD
 
-def send_system_email(to_email: str, subject: str, body: str, raise_on_error: bool = False) -> bool:
-    if RESEND_API_KEY:
+def _selected_provider() -> str:
+    if EMAIL_PROVIDER == "auto":
+        return "smtp" if SMTP_EMAIL and SMTP_PASSWORD else "resend"
+    return EMAIL_PROVIDER
+
+def send_system_email(
+    to_email: str,
+    subject: str,
+    body: str,
+    raise_on_error: bool = False,
+    expose_error: bool = False,
+) -> bool:
+    provider = _selected_provider()
+
+    if provider == "resend":
+        if not RESEND_API_KEY:
+            print(f"[EMAIL SKIPPED] Missing RESEND_API_KEY | To: {to_email} | Subject: {subject}")
+            if raise_on_error:
+                raise HTTPException(status_code=503, detail="Email provider is not configured. Missing: RESEND_API_KEY")
+            return False
         if not EMAIL_FROM:
             print(f"[EMAIL SKIPPED] Missing EMAIL_FROM | To: {to_email} | Subject: {subject}")
             if raise_on_error:
@@ -33,7 +51,7 @@ def send_system_email(to_email: str, subject: str, body: str, raise_on_error: bo
                 if raise_on_error:
                     raise HTTPException(
                         status_code=503,
-                        detail=f"Email provider rejected the message: {provider_detail}",
+                        detail=f"Email provider rejected the message: {provider_detail}" if expose_error else "Email provider rejected the message.",
                     )
                 return False
             print(f"[EMAIL SENT] Provider: Resend | To: {to_email} | Subject: {subject}")
@@ -43,7 +61,7 @@ def send_system_email(to_email: str, subject: str, body: str, raise_on_error: bo
         except Exception as e:
             print(f"[RESEND ERROR] {e}")
             if raise_on_error:
-                raise HTTPException(status_code=503, detail="Email transmission failed.")
+                raise HTTPException(status_code=503, detail=f"Email transmission failed: {e}" if expose_error else "Email transmission failed.")
             return False
 
     if not SMTP_EMAIL or not SMTP_PASSWORD:
@@ -71,5 +89,5 @@ def send_system_email(to_email: str, subject: str, body: str, raise_on_error: bo
     except Exception as e:
         print(f"[SMTP ERROR] {e}")
         if raise_on_error:
-            raise HTTPException(status_code=503, detail="Email transmission failed.")
+            raise HTTPException(status_code=503, detail=f"Email transmission failed: {e}" if expose_error else "Email transmission failed.")
         return False
