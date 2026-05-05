@@ -28,9 +28,13 @@ def send_system_email(to_email: str, subject: str, body: str, raise_on_error: bo
                 timeout=20,
             )
             if response.status_code >= 400:
-                print(f"[RESEND ERROR] {response.status_code} {response.text}")
+                provider_detail = response.text[:500]
+                print(f"[RESEND ERROR] {response.status_code} {provider_detail}")
                 if raise_on_error:
-                    raise HTTPException(status_code=503, detail="Email provider rejected the message.")
+                    raise HTTPException(
+                        status_code=503,
+                        detail=f"Email provider rejected the message: {provider_detail}",
+                    )
                 return False
             print(f"[EMAIL SENT] Provider: Resend | To: {to_email} | Subject: {subject}")
             return True
