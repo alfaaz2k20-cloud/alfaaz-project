@@ -22,6 +22,7 @@ from app.schemas.blog import BlogGenerateRequest
 
 # Security & Services
 from app.core.security import require_admin
+from app.core.config import SMTP_EMAIL, SMTP_PASSWORD, SMTP_PORT, SMTP_SERVER
 from app.services.email import send_system_email
 from app.services.cdn import sync_notices_to_cloudinary
 from app.services.curator import get_groq_client
@@ -247,3 +248,12 @@ def send_test_email(user=Depends(require_admin)):
         raise_on_error=True,
     )
     return {"status": "SENT" if sent else "FAILED"}
+
+@router.get("/email/status")
+def get_email_status():
+    return {
+        "smtp_server": SMTP_SERVER,
+        "smtp_port": SMTP_PORT,
+        "smtp_email_configured": bool(SMTP_EMAIL),
+        "smtp_password_configured": bool(SMTP_PASSWORD),
+    }
