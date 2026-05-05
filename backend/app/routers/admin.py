@@ -22,7 +22,7 @@ from app.schemas.blog import BlogGenerateRequest
 
 # Security & Services
 from app.core.security import require_admin
-from app.core.config import SMTP_EMAIL, SMTP_PASSWORD, SMTP_PORT, SMTP_SERVER
+from app.core.config import EMAIL_FROM, RESEND_API_KEY, SMTP_EMAIL, SMTP_PASSWORD, SMTP_PORT, SMTP_SERVER
 from app.services.email import send_system_email
 from app.services.cdn import sync_notices_to_cloudinary
 from app.services.curator import get_groq_client
@@ -252,6 +252,9 @@ def send_test_email(user=Depends(require_admin)):
 @router.get("/email/status")
 def get_email_status():
     return {
+        "provider": "resend" if RESEND_API_KEY else "smtp",
+        "email_from_configured": bool(EMAIL_FROM),
+        "resend_api_key_configured": bool(RESEND_API_KEY),
         "smtp_server": SMTP_SERVER,
         "smtp_port": SMTP_PORT,
         "smtp_email_configured": bool(SMTP_EMAIL),

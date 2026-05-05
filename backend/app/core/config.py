@@ -55,6 +55,8 @@ SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_EMAIL = os.environ.get("SMTP_EMAIL")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
+EMAIL_FROM = os.environ.get("EMAIL_FROM") or SMTP_EMAIL
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
 
 # AI & Others
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
