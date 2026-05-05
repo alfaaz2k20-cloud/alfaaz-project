@@ -51,6 +51,9 @@ CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
 CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
 
 # Email
+EMAIL_PROVIDER = os.environ.get("EMAIL_PROVIDER", "smtp").strip().lower()
+if EMAIL_PROVIDER not in {"smtp", "resend", "auto"}:
+    EMAIL_PROVIDER = "smtp"
 SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_EMAIL = os.environ.get("SMTP_EMAIL")

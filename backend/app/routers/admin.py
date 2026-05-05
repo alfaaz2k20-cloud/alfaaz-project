@@ -22,7 +22,7 @@ from app.schemas.blog import BlogGenerateRequest
 
 # Security & Services
 from app.core.security import require_admin
-from app.core.config import EMAIL_FROM, RESEND_API_KEY, SMTP_EMAIL, SMTP_PASSWORD, SMTP_PORT, SMTP_SERVER
+from app.core.config import EMAIL_FROM, EMAIL_PROVIDER, RESEND_API_KEY, SMTP_EMAIL, SMTP_PASSWORD, SMTP_PORT, SMTP_SERVER
 from app.services.email import send_system_email
 from app.services.cdn import sync_notices_to_cloudinary
 from app.services.curator import get_groq_client
@@ -246,13 +246,18 @@ def send_test_email(user=Depends(require_admin)):
         "ALFAAZ — Email Test",
         "This is a test email from the Alfaaz backend. If you received it, SMTP is configured correctly.",
         raise_on_error=True,
+        expose_error=True,
     )
     return {"status": "SENT" if sent else "FAILED"}
 
 @router.get("/email/status")
 def get_email_status():
+    selected_provider = EMAIL_PROVIDER
+    if selected_provider == "auto":
+        selected_provider = "smtp" if SMTP_EMAIL and SMTP_PASSWORD else "resend"
     return {
-        "provider": "resend" if RESEND_API_KEY else "smtp",
+        "provider": selected_provider,
+        "configured_provider": EMAIL_PROVIDER,
         "email_from_configured": bool(EMAIL_FROM),
         "resend_api_key_configured": bool(RESEND_API_KEY),
         "smtp_server": SMTP_SERVER,
