@@ -233,8 +233,15 @@ h3.ur-hover {
 }
 
 /* Club titles */
-.club-title { margin-bottom: 3.5rem; line-height: 1.4; }
-.club-title.ur-hover::before { font-size: 1.6em; margin-top: -8px; }
+.club-title { 
+  margin-bottom: 0.5rem; 
+  padding-bottom: 1.8rem; /* Stretches the box downward so text doesn't bleed */
+  line-height: 1.4; 
+}
+.club-title.ur-hover::before { 
+  font-size: 1.6em; 
+  top: 40%; /* Lifts the Urdu text slightly higher inside the box */
+}
 
 /* ── NOTICE CARDS ─────────────────────────────── */
 .update-card {
