@@ -40,6 +40,29 @@ window.globalApiFetch = async function(endpoint, options = {}) {
     }, 5000); 
   }
   
+  // Bind the new Mini Send Button to your existing Enter key logic
+const phantomMiniSendBtn = document.getElementById('phantomMiniSendBtn');
+const phantomMiniInput = document.getElementById('phantomMiniInput');
+
+if (phantomMiniSendBtn && phantomMiniInput) {
+    phantomMiniSendBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Prevent sending empty messages
+        if (!phantomMiniInput.value.trim()) return; 
+        
+        // Create and dispatch a fake 'Enter' keypress to trigger your existing logic natively
+        const enterEvent = new KeyboardEvent('keypress', {
+            key: 'Enter',
+            code: 'Enter',
+            keyCode: 13,
+            which: 13,
+            bubbles: true
+        });
+        phantomMiniInput.dispatchEvent(enterEvent);
+    });
+}
+
   // Ensures it runs reliably
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', startLanguageCycle); } 
   else { startLanguageCycle(); }
