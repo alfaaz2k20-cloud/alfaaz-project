@@ -233,7 +233,7 @@ h3.ur-hover {
 }
 
 /* Club titles */
-.club-title { margin-bottom: 2.5rem; }
+.club-title { margin-bottom: 3.5rem; line-height: 1.4; }
 .club-title.ur-hover::before { font-size: 1.6em; margin-top: -8px; }
 
 /* ── NOTICE CARDS ─────────────────────────────── */
