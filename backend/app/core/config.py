@@ -50,16 +50,8 @@ CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "dmqwjpmjk")
 CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
 CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
 
-# Email
-EMAIL_PROVIDER = os.environ.get("EMAIL_PROVIDER", "smtp").strip().lower()
-if EMAIL_PROVIDER not in {"smtp", "resend", "auto"}:
-    EMAIL_PROVIDER = "smtp"
-SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_EMAIL = os.environ.get("SMTP_EMAIL")
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
-EMAIL_FROM = os.environ.get("EMAIL_FROM") or SMTP_EMAIL
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+# Email automation
+MAKE_WEBHOOK_URL = os.environ.get("MAKE_WEBHOOK_URL")
 
 # AI & Others
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")

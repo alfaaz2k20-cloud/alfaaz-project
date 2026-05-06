@@ -1,7 +1,6 @@
-import os
 import requests
 from fastapi import HTTPException
-from app.core.config import EMAIL_FROM
+from app.core.config import MAKE_WEBHOOK_URL
 
 def send_system_email(
     to_email: str,
@@ -10,12 +9,10 @@ def send_system_email(
     raise_on_error: bool = False,
     expose_error: bool = False,
 ) -> bool:
-    
-    # We will put the Make.com URL in your Render environment variables
-    WEBHOOK_URL = os.environ.get("MAKE_WEBHOOK_URL")
-    
-    if not WEBHOOK_URL:
+    if not MAKE_WEBHOOK_URL:
         print("[EMAIL SKIPPED] MAKE_WEBHOOK_URL is not set.")
+        if raise_on_error:
+            raise HTTPException(status_code=503, detail="Email automation is not configured. Missing: MAKE_WEBHOOK_URL")
         return False
 
     payload = {
@@ -25,8 +22,8 @@ def send_system_email(
     }
 
     try:
-        # This sends over HTTPS (Port 443), bypassing Render's SMTP block entirely
-        response = requests.post(WEBHOOK_URL, json=payload, timeout=20)
+        # HTTPS webhook keeps email delivery outside the app host.
+        response = requests.post(MAKE_WEBHOOK_URL, json=payload, timeout=20)
         
         if response.status_code == 200:
             print(f"[WEBHOOK SENT] To: {to_email} | Subject: {subject}")
@@ -34,11 +31,13 @@ def send_system_email(
         else:
             print(f"[WEBHOOK ERROR] {response.status_code} {response.text}")
             if raise_on_error:
-                raise HTTPException(status_code=503, detail="Webhook provider rejected the message.")
+                detail = response.text[:500] if expose_error else "Webhook provider rejected the message."
+                raise HTTPException(status_code=503, detail=detail)
             return False
             
     except Exception as e:
         print(f"[WEBHOOK CRASH] {e}")
         if raise_on_error:
-            raise HTTPException(status_code=503, detail="Email transmission failed.")
+            detail = f"Email transmission failed: {e}" if expose_error else "Email transmission failed."
+            raise HTTPException(status_code=503, detail=detail)
         return False

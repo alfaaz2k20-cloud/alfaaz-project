@@ -22,7 +22,7 @@ from app.schemas.blog import BlogGenerateRequest
 
 # Security & Services
 from app.core.security import require_admin
-from app.core.config import EMAIL_FROM, EMAIL_PROVIDER, RESEND_API_KEY, SMTP_EMAIL, SMTP_PASSWORD, SMTP_PORT, SMTP_SERVER
+from app.core.config import MAKE_WEBHOOK_URL
 from app.services.email import send_system_email
 from app.services.cdn import sync_notices_to_cloudinary
 from app.services.curator import get_groq_client
@@ -244,7 +244,7 @@ def send_test_email(user=Depends(require_admin)):
     sent = send_system_email(
         user["email"],
         "ALFAAZ — Email Test",
-        "This is a test email from the Alfaaz backend. If you received it, SMTP is configured correctly.",
+        "This is a test email from the Alfaaz backend. If you received it, Make automation is configured correctly.",
         raise_on_error=True,
         expose_error=True,
     )
@@ -252,16 +252,7 @@ def send_test_email(user=Depends(require_admin)):
 
 @router.get("/email/status")
 def get_email_status():
-    selected_provider = EMAIL_PROVIDER
-    if selected_provider == "auto":
-        selected_provider = "smtp" if SMTP_EMAIL and SMTP_PASSWORD else "resend"
     return {
-        "provider": selected_provider,
-        "configured_provider": EMAIL_PROVIDER,
-        "email_from_configured": bool(EMAIL_FROM),
-        "resend_api_key_configured": bool(RESEND_API_KEY),
-        "smtp_server": SMTP_SERVER,
-        "smtp_port": SMTP_PORT,
-        "smtp_email_configured": bool(SMTP_EMAIL),
-        "smtp_password_configured": bool(SMTP_PASSWORD),
+        "provider": "make",
+        "make_webhook_configured": bool(MAKE_WEBHOOK_URL),
     }
