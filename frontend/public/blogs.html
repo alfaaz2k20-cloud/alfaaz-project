@@ -11,7 +11,7 @@
     .page-title { font-family: var(--font-heading); font-size: clamp(3rem, 6vw, 4.5rem); font-weight: 400; text-transform: uppercase; letter-spacing: 1px; color: var(--text-primary); margin-bottom: 0.5rem; line-height: 1; }
     .page-subtitle { font-family: var(--font-body); font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4rem; display: block; border-bottom: 1px solid var(--grid-border); padding-bottom: 2rem; }
     .archive-grid { display: flex; flex-direction: column; gap: 1.5rem; }
-    .archive-card { background: var(--bg-secondary); padding: 3rem; position: relative; transition: box-shadow 0.4s var(--transition-smooth), transform 0.4s var(--transition-smooth); border: 1px solid var(--grid-border); text-decoration: none; display: block; cursor: none; box-shadow: var(--shadow-base); }
+    .archive-card { background: var(--bg-secondary); padding: 3rem; position: relative; transition: box-shadow 0.4s var(--transition-smooth), transform 0.4s var(--transition-smooth); border: 1px solid var(--grid-border); text-decoration: none; display: block; cursor: pointer; box-shadow: var(--shadow-base); }
     .archive-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-float); border-color: rgba(189, 111, 93, 0.3); }
     .archive-meta { font-family: var(--font-body); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 1rem; display: block; }
     .archive-title { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 400; color: var(--text-primary); line-height: 1.2; margin-bottom: 1rem; }
@@ -26,7 +26,7 @@
     .nav-links a:hover { color: var(--accent-gold); }
     .nav-actions { display: flex; align-items: center; gap: 1.5rem; }
     .mobile-only-link { display: none; }
-    #menuToggle { display: none; cursor: none; color: var(--text-primary); background: none; border: none; z-index: 1001; }
+    #menuToggle { display: none; cursor: pointer; color: var(--text-primary); background: none; border: none; z-index: 1001; }
     #menuToggle .hamburger-close { display: none; }
     #menuToggle.active .hamburger-open { display: none; }
     #menuToggle.active .hamburger-close { display: block; }
