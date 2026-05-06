@@ -1,0 +1,12 @@
+.env
+.env.local
+.env.production
+.env.*
+node_modules
+.git
+__pycache__
+*.pyc
+.DS_Store
+.venv
+package-lock.json
+package.json
