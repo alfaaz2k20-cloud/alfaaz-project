@@ -12,7 +12,7 @@ def send_system_email(
 ) -> bool:
     
     # We will put the Make.com URL in your Render environment variables
-    WEBHOOK_URL = os.environ.get("https://hook.eu1.make.com/6rhun7sjrf65pfwn9mn6tzhidwssfj8u")
+    WEBHOOK_URL = os.environ.get("MAKE_WEBHOOK_URL")
     
     if not WEBHOOK_URL:
         print("[EMAIL SKIPPED] MAKE_WEBHOOK_URL is not set.")
