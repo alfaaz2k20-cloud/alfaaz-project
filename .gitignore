@@ -18,3 +18,5 @@ __pycache__/
 # OS/editor noise
 desktop.ini
 .DS_Store
+
+upload_ready/

@@ -7,3 +7,5 @@ __pycache__/
 
 # Local Database
 *.db
+
+upload_ready/
