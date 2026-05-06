@@ -7,20 +7,8 @@ const API_URL = "https://alfaaz-project.onrender.com";
 // 1. Master UI Binding
 window.refreshGlobalEffects = function() {
     if (window.lucide) { lucide.createIcons(); }
-
-    document.querySelectorAll('.magnetic').forEach(element => {
-        if (element.dataset.magneticAttached === 'true') return;
-        element.addEventListener('mousemove', (e) => {
-            const rect = element.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
-            element.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
-        });
-        element.addEventListener('mouseleave', () => { element.style.transform = 'translate(0, 0)'; });
-        element.dataset.magneticAttached = 'true';
-    });
-};
-
+    
+    }
 document.addEventListener('DOMContentLoaded', window.refreshGlobalEffects);
 
 // 2. Global Fetch Wrapper
