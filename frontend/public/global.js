@@ -67,3 +67,18 @@ if (phantomMiniSendBtn && phantomMiniInput) {
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', startLanguageCycle); } 
   else { startLanguageCycle(); }
 })();
+
+// Keep Render backend alive
+const BACKEND = "https://alfaaz-project.onrender.com";
+
+async function wakeBackend() {
+  try {
+    await fetch(`${BACKEND}/`);
+  } catch (e) {}
+}
+
+// Ping on page load
+wakeBackend();
+
+// Ping every 10 minutes
+setInterval(wakeBackend, 10 * 60 * 1000);
