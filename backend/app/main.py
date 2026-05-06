@@ -71,3 +71,8 @@ def on_startup():
 @app.get("/ping")
 def ping():
     return {"status": "ALIVE", "message": "The monolith has been defeated."}
+
+#he actual 404 is handled by frontend, so this is just a fallback for API routes
+@app.get("/")
+def root():
+    return {"status": "Alfaaz backend is live"}
