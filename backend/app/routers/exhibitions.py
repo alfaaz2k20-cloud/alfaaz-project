@@ -30,24 +30,27 @@ def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depend
     if not data.over_19 or not data.agreed_to_screening:
         raise HTTPException(status_code=400, detail="You must agree to the terms to proceed.")
         
-    # --- NEW: Fetch the active cycle to stamp the application ---
+    # --- 1. Fetch the active cycle to stamp the application ---
     active_cycle = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
     if not active_cycle:
         raise HTTPException(status_code=400, detail="The portal is currently closed. No active exhibition.")
     
     cycle_title = active_cycle.title
-    # ------------------------------------------------------------
 
+    # --- 2. STRICT GATEKEEPER: Prevent duplicates in the same cycle ---
+    # We remove the status == "PENDING" check and instead lock it to the cycle title.
     existing = db.query(DBExhibitionApplication).filter(
         DBExhibitionApplication.user_email == user["email"],
-        DBExhibitionApplication.status == "PENDING"
+        DBExhibitionApplication.exhibition_cycle == cycle_title
     ).first()
+    
     if existing:
-        raise HTTPException(status_code=400, detail="You already have an application under review.")
+        raise HTTPException(status_code=400, detail="You have already submitted an application for this exhibition cycle.")
         
+    # --- 3. Create and Stamp the Application ---
     application = DBExhibitionApplication(
         user_email=user["email"], 
-        exhibition_cycle=cycle_title,  # <-- NEW: Stamping the active cycle here!
+        exhibition_cycle=cycle_title,  # Permanently stamped!
         full_name=data.full_name, 
         age=data.age,
         address=data.address, 
