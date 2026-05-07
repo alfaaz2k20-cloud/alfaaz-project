@@ -25,7 +25,6 @@ class DBExhibitionApplication(Base):
     payment_confirmed_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-# THE NEW, PROPER EXHIBITIONS TABLE
 class DBExhibition(Base):
     __tablename__ = "exhibitions_list"
     id = Column(Integer, primary_key=True, index=True)
@@ -33,7 +32,7 @@ class DBExhibition(Base):
     date_text = Column(String, default="Dates TBD")
     venue = Column(String, default="Venue TBD")
     about_text = Column(String, default="Details regarding the exhibition...")
-    is_active = Column(Boolean, default=False) # ONLY ONE CAN BE ACTIVE AT A TIME
+    is_active = Column(Boolean, default=False)
     tnc_pdf_url = Column(String, nullable=True)
     registration_fee = Column(String, default="")
     payment_instructions = Column(String, default="")
