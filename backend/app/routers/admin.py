@@ -29,7 +29,6 @@ from app.services.curator import get_groq_client
 
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin)])
 
-# ── Blog generation ──────────────────────────────────────────────────────────
 @router.post("/blogs/generate", dependencies=[])
 def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_db), authorization: str = Header(None)):
     expected_token = os.environ.get("PHANTOM_SECRET_TOKEN")
@@ -51,7 +50,7 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
     CRITICAL INSTRUCTION: You MUST return a strictly valid JSON object.
     1. All keys and values must be wrapped in double quotes.
     2. The "content" value is HTML. Use single quotes for HTML attributes to protect the outer JSON quotes.
-    3. Do NOT include newlines (\\n) inside the JSON strings.
+    3. Do NOT include newlines (\n) inside the JSON strings.
     Use this exact JSON structure: {"title": "...", "excerpt": "...", "content": "<h2>...</h2>"}"""
 
     try:
@@ -70,6 +69,7 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
         return {"status": "SUCCESS", "message": "Autonomous research published."}
     except Exception:
         raise HTTPException(status_code=500, detail="The Curator failed to generate the article.")
+
 
 # ── Events ───────────────────────────────────────────────────────────────────
 @router.post("/events/create")
@@ -117,6 +117,7 @@ def delete_event(event_id: int, db: Session = Depends(get_db)):
     sync_notices_to_cloudinary(db)
     return {"status": "SUCCESS"}
 
+
 # ── Clubs ────────────────────────────────────────────────────────────────────
 @router.get("/club-applications")
 def get_club_applications(db: Session = Depends(get_db)):
@@ -144,6 +145,7 @@ def revert_club_status(application_id: int, db: Session = Depends(get_db)):
     application.admin_note = None
     db.commit()
     return {"status": "SUCCESS"}
+
 
 # ── Exhibitions ───────────────────────────────────────────────────────────────
 
@@ -183,6 +185,14 @@ def activate_exhibition(ex_id: int, db: Session = Depends(get_db)):
         sync_notices_to_cloudinary(db)
         return {"status": "SUCCESS", "title": target.title}
     raise HTTPException(status_code=404, detail="Exhibition not found")
+
+# NEW: Route to close the portal completely
+@router.patch("/exhibitions/deactivate-all")
+def deactivate_all_exhibitions(db: Session = Depends(get_db)):
+    db.query(DBExhibition).update({DBExhibition.is_active: False})
+    db.commit()
+    sync_notices_to_cloudinary(db)
+    return {"status": "SUCCESS"}
 
 @router.get("/exhibitions")
 def get_all_exhibitions(cycle: str = None, db: Session = Depends(get_db)):
@@ -268,32 +278,6 @@ def get_exhibition_registration_detail(application_id: int, db: Session = Depend
         "payment_confirmed_at": str(application.payment_confirmed_at) if application.payment_confirmed_at else None
     }
 
-@router.post("/exhibitions/config")
-def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends(get_db)):
-    active_ex = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
-
-    if not data.is_open:
-        # Turn off the portal
-        if active_ex:
-            active_ex.is_active = False
-            db.commit()
-    else:
-        # Turn on the portal
-        if not active_ex:
-            raise HTTPException(status_code=400, detail="Please click 'Set as Live' on an exhibition below first.")
-        # Update details
-        active_ex.title = data.title
-        active_ex.date_text = data.date_text
-        active_ex.venue = data.venue
-        active_ex.about_text = data.about_text
-        active_ex.tnc_pdf_url = data.tnc_pdf_url
-        active_ex.registration_fee = data.registration_fee
-        active_ex.payment_instructions = data.payment_instructions
-        active_ex.payment_qr_url = data.payment_qr_url
-        db.commit()
-
-    sync_notices_to_cloudinary(db)
-    return {"status": "SUCCESS"}
 
 # ── Users & Submissions ───────────────────────────────────────────────────────
 @router.get("/users")
@@ -310,7 +294,7 @@ def delete_user(user_email: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Cannot delete an admin account.")
     db.query(DBSubmission).filter(DBSubmission.author_email == user_email).delete()
     db.query(DBClubApplication).filter(DBClubApplication.user_email == user_email).delete()
-    db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user_email).delete()
+    db.query(DBEventRegistration).filter(DBEventRegistration.event_id == user_email).delete()
     db.query(DBExhibitionApplication).filter(DBExhibitionApplication.user_email == user_email).delete()
     db.delete(user)
     db.commit()
