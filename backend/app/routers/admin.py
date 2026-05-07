@@ -194,6 +194,7 @@ def deactivate_all_exhibitions(db: Session = Depends(get_db)):
     sync_notices_to_cloudinary(db)
     return {"status": "SUCCESS"}
 
+# Replace get_all_exhibitions in admin.py
 @router.get("/exhibitions")
 def get_all_exhibitions(cycle: str = None, db: Session = Depends(get_db)):
     query = db.query(DBExhibitionApplication)
@@ -203,7 +204,22 @@ def get_all_exhibitions(cycle: str = None, db: Session = Depends(get_db)):
         target = cycle or _current_cycle(db)
         if target:
             query = query.filter(DBExhibitionApplication.exhibition_cycle == target)
-    return query.order_by(DBExhibitionApplication.created_at.desc()).all()
+            
+    apps = query.order_by(DBExhibitionApplication.created_at.desc()).all()
+    
+    # Explicit dictionary mapping ensures nulls are sent to JS properly
+    return [{
+        "id": a.id, 
+        "user_email": a.user_email, 
+        "full_name": a.full_name,
+        "exhibition_cycle": a.exhibition_cycle, # Now safely explicitly None/Null
+        "genre": a.genre, 
+        "medium": a.medium, 
+        "portfolio_url": a.portfolio_url,
+        "status": a.status, 
+        "registration_status": a.registration_status, 
+        "payment_proof_url": a.payment_proof_url
+    } for a in apps]
 
 @router.get("/exhibitions/cycles")
 def get_exhibition_cycles(db: Session = Depends(get_db)):
@@ -250,6 +266,11 @@ def confirm_exhibition_payment(application_id: int, db: Session = Depends(get_db
     application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
+        
+    # NEW GUARD CLAUSE
+    if application.registration_status != "SUBMITTED":
+        raise HTTPException(status_code=400, detail="Cannot confirm. The artist has not submitted payment proof yet.")
+        
     application.registration_status = "CONFIRMED"
     application.payment_confirmed_at = datetime.datetime.now(datetime.timezone.utc)
     db.commit()

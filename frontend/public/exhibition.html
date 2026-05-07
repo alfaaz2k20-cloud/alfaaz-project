@@ -153,6 +153,18 @@
 
   <script src="global.js"></script>
   <script>
+
+async function checkStatusBeforeRender() {
+    const res = await window.globalApiFetch('/exhibitions/my-status');
+    if (res && res.ok) {
+        const data = await res.json();
+        // Strict Gate: If your status is anything but NONE, you do not belong on the form page.
+        if (data.status !== "NONE") {
+            window.location.replace('dashboard.html');
+        }
+    }
+}
+
     document.addEventListener('DOMContentLoaded', async () => {
       // 1. Enforce Login
       const token = localStorage.getItem('alfaaz_token');
