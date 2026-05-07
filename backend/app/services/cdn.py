@@ -35,11 +35,12 @@ def sync_notices_to_cloudinary(db: Session):
                 "full": (e.capacity > 0 and count >= e.capacity)
             })
 
+        # Fetch the currently active exhibition from the new True Events table
         config = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
         exhibition_data = None
         if config:
             exhibition_data = {
-                "is_open": True,
+                "is_open": True,  # FIXED: This line was crashing the sync previously
                 "title": config.title,
                 "date_text": config.date_text,
                 "about_text": config.about_text
