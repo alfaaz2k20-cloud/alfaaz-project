@@ -199,7 +199,6 @@
       document.getElementById(`tab-${name}`).classList.add('active');
       if (!tabLoaded[name]) { tabLoaded[name] = true; loadTab(name); }
     }
-    
     function loadTab(name) {
       if (name === 'events') loadEvents(); 
       if (name === 'exhibitions') { loadExhibitionManager(); loadExhibitionsData('ALL'); }
@@ -263,7 +262,7 @@
     // ==========================================
     let allExhibs = [], activeCycleFilter = 'ALL';
 
-    // 1. Load the list of created exhibitions
+    // 1. Management: Load the list of created exhibitions
     async function loadExhibitionManager() {
       const res = await window.globalApiFetch('/admin/exhibitions/list');
       if (!res || !res.ok) return;
@@ -303,7 +302,7 @@
       });
     }
 
-    // 2. Create a new exhibition
+    // 2. Management: Create a new exhibition
     async function createNewExhibition() {
       const btn = document.querySelector('button[onclick="createNewExhibition()"]');
       const msg = document.getElementById('createExMsg');
@@ -317,7 +316,7 @@
         registration_fee: document.getElementById('newExFee').value.trim(),
         payment_qr_url: document.getElementById('newExQr').value.trim(),
         payment_instructions: document.getElementById('newExPayInst').value.trim(),
-        is_open: false // Ignored by backend, defaults to false
+        is_open: false 
       };
 
       if (!payload.title || !payload.date_text || !payload.venue) {
@@ -332,9 +331,8 @@
       if (res && res.ok) {
         msg.textContent = "✓ Exhibition Created!";
         msg.style.color = "var(--accent-green)";
-        // Clear form
         document.querySelectorAll('#newExTitle, #newExDate, #newExVenue, #newExDesc, #newExTnc, #newExFee, #newExQr, #newExPayInst').forEach(el => el.value = '');
-        await loadExhibitionManager(); // Refresh list
+        await loadExhibitionManager(); 
       } else {
         msg.textContent = "Failed to create. Title might already exist.";
         msg.style.color = "var(--accent-red)";
@@ -344,20 +342,20 @@
       setTimeout(() => msg.textContent = '', 4000);
     }
 
-    // 3. Make an exhibition live
+    // 3. Management: Make an exhibition live
     async function activateExhibition(id, title) {
       if (!confirm(`Are you sure you want to make "${title}" the live exhibition on the public portal?`)) return;
       
       const res = await window.globalApiFetch(`/admin/exhibitions/${id}/activate`, { method: 'PATCH' });
       if (res && res.ok) {
         await loadExhibitionManager();
-        await loadExhibitionsData('ALL'); // Refresh the applicants list below
+        await loadExhibitionsData('ALL'); 
       } else {
         alert("Failed to activate exhibition.");
       }
     }
 
-    // 4. Cycle Selector Dropdown
+    // 4. Applicants: Cycle Selector
     async function buildCycleSelector() {
       const res = await window.globalApiFetch('/admin/exhibitions/cycles');
       if (!res || !res.ok) return;
@@ -383,7 +381,7 @@
       });
     }
 
-    // 5. Load Applicants Data
+    // 5. Applicants: Load Data
     async function loadExhibitionsData(f) {
       const res = await window.globalApiFetch('/admin/exhibitions');
       if (!res) return;
