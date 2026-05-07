@@ -491,6 +491,46 @@
       if (window.refreshGlobalEffects) window.refreshGlobalEffects();
     }
 
+async function reviewExhibition(id, status, btn) {
+  const note = prompt('Curator Note to Artist (optional):');
+  btn.textContent = '...'; btn.disabled = true;
+  const res = await window.globalApiFetch('/admin/exhibitions/review', {
+    method: 'POST',
+    body: JSON.stringify({ application_id: id, status: status, curator_note: note || null })
+  });
+  if (res && res.ok) {
+    await loadExhibitionsData('ALL');
+    filterExhibitions(activeCycleFilter);
+  } else {
+    btn.textContent = status === 'APPROVED' ? 'Approve' : 'Reject';
+    btn.disabled = false;
+  }
+}
+
+async function revertExhibition(id, btn) {
+  if (!confirm('Undo rejection and return to Pending?')) return;
+  btn.textContent = '...'; btn.disabled = true;
+  const res = await window.globalApiFetch(`/admin/exhibitions/${id}/revert`, { method: 'PATCH' });
+  if (res && res.ok) {
+    await loadExhibitionsData('ALL');
+    filterExhibitions(activeCycleFilter);
+  } else {
+    btn.textContent = 'Undo Rejection'; btn.disabled = false;
+  }
+}
+
+async function confirmExhibitionPayment(id, btn) {
+  if (!confirm('Confirm this payment? This will notify the artist.')) return;
+  btn.textContent = '...'; btn.disabled = true;
+  const res = await window.globalApiFetch(`/admin/exhibitions/${id}/confirm-payment`, { method: 'PATCH' });
+  if (res && res.ok) {
+    await loadExhibitionsData('ALL');
+    filterExhibitions('FINALIZED');
+  } else {
+    btn.textContent = 'Confirm Payment'; btn.disabled = false;
+  }
+}
+
     // ==========================================
     // CLUBS LOGIC
     // ==========================================
