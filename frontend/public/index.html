@@ -494,42 +494,42 @@
     }
 
     function parseToCards(data) {
-        const cards = [];
-        const isLoggedIn = !!localStorage.getItem('alfaaz_token');
+    const cards = [];
+    const isLoggedIn = !!localStorage.getItem('alfaaz_token');
 
-        // 1. Exhibition First
-        if (data.exhibition && data.exhibition.is_open) {
-            const ex = data.exhibition;
-            cards.push({
-                tag: 'EXHIBITION',
-                tagColor: 'var(--accent-gold)',
-                date: ex.date_text || 'TBD',
-                title: ex.title,
-                body: ex.about_text ? ex.about_text.substring(0, 140) + '...' : '',
-                link: 'exhibition.html',
-                linkLabel: 'Apply Now →'
-            });
-        }
-
-        // 2. Standard Events
-        if (data.events && Array.isArray(data.events)) {
-            data.events.forEach(e => {
-                const spots = e.spots_left !== undefined && e.spots_left !== null ? `${e.spots_left} spots remaining` : 'Open';
-                const capText = e.full ? 'At capacity' : spots;
-                cards.push({
-                    tag: 'EVENT',
-                    tagColor: 'var(--accent-green)',
-                    date: e.event_date || 'TBD',
-                    title: e.name,
-                    body: (e.description ? e.description + ' — ' : '') + capText + '.',
-                    link: e.full ? null : (isLoggedIn ? 'dashboard.html' : 'login.html'),
-                    linkLabel: e.full ? null : (isLoggedIn ? 'Register →' : 'Login to Register →')
-                });
-            });
-        }
-
-        return cards;
+    // 1. Exhibition Check with Null-Safety
+    if (data && data.exhibition && data.exhibition.is_open === true) {
+        const ex = data.exhibition;
+        cards.push({
+            tag: 'EXHIBITION',
+            tagColor: 'var(--accent-gold)',
+            date: ex.date_text || 'TBD',
+            title: ex.title || 'Upcoming Cycle',
+            body: ex.about_text ? ex.about_text.substring(0, 140) + '...' : 'Applications opening soon.',
+            link: 'exhibition.html',
+            linkLabel: 'Apply Now →'
+        });
     }
+
+    // 2. Standard Events
+    if (data && data.events && Array.isArray(data.events)) {
+        data.events.forEach(e => {
+            const spots = e.spots_left !== undefined && e.spots_left !== null ? `${e.spots_left} spots remaining` : 'Open';
+            const capText = e.full ? 'At capacity' : spots;
+            cards.push({
+                tag: 'EVENT',
+                tagColor: 'var(--text-secondary)', // Using existing variable
+                date: e.event_date || 'TBD',
+                title: e.name,
+                body: (e.description ? e.description + ' — ' : '') + capText + '.',
+                link: e.full ? null : (isLoggedIn ? 'dashboard.html' : 'login.html'),
+                linkLabel: e.full ? null : (isLoggedIn ? 'Register →' : 'Login to Register →')
+            });
+        });
+    }
+
+    return cards;
+}
 
     async function loadLiveNotices() {
         const grid = document.getElementById('noticesGrid');
