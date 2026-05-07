@@ -61,35 +61,54 @@
   <footer><p>Alfaaz Collective // The Curator</p></footer>
 
   <script src="global.js"></script>
+  <script src="global.js"></script>
   <script>
     const menuToggle = document.getElementById('menuToggle'), navLinks = document.getElementById('navLinks');
-    menuToggle?.addEventListener('click', () => { const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true'; menuToggle.setAttribute('aria-expanded', !isExpanded); menuToggle.classList.toggle('active'); navLinks.classList.toggle('active'); });
+    menuToggle?.addEventListener('click', () => { 
+        const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true'; 
+        menuToggle.setAttribute('aria-expanded', !isExpanded); 
+        menuToggle.classList.toggle('active'); 
+        navLinks.classList.toggle('active'); 
+    });
 
     async function loadBlogs() {
       const container = document.getElementById('blogContainer');
       try {
-        const res = await fetch('/api/blogs'); if (!res.ok) throw new Error();
+        // Pointing directly to the backend to avoid Vercel 404s
+        // Note: Change "/blogs" to "/api/blogs" if your FastAPI router specifically requires that prefix.
+        const res = await fetch('https://alfaaz-project.onrender.com/blogs'); 
+        
+        if (!res.ok) throw new Error('Failed to fetch from backend');
         const blogs = await res.json();
-        if (!blogs.length) { container.innerHTML = '<div class="loading-state">The archives are currently empty.</div>'; return; }
+        
+        if (!blogs.length) { 
+            container.innerHTML = '<div class="loading-state">The archives are currently empty.</div>'; 
+            return; 
+        }
+        
         container.innerHTML = blogs.map(blog => `
           <a href="post.html?id=${blog.id}" class="archive-card magnetic">
             <span class="archive-meta">${new Date(blog.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} // Curator's Notes</span>
             <h2 class="archive-title">${blog.title}</h2>
             <p class="archive-excerpt">${blog.excerpt}</p>
           </a>`).join('');
+          
         if(window.refreshGlobalEffects) window.refreshGlobalEffects();
-      } catch (error) { container.innerHTML = '<div class="loading-state" style="color: var(--accent-red);">[Error] Archives unavailable.</div>'; }
+      } catch (error) { 
+          container.innerHTML = '<div class="loading-state" style="color: var(--accent-red);">[Error] Archives unavailable.</div>'; 
+          console.error("Blog Fetch Error:", error);
+      }
     }
+    
     document.addEventListener('DOMContentLoaded', loadBlogs);
 
-// SMART ROUTING (Sync logged-in state across sub-pages)
+    // SMART ROUTING (Sync logged-in state across sub-pages)
     (function() {
       const isLoggedIn = !!localStorage.getItem('alfaaz_token') && !!localStorage.getItem('alfaaz_user');
       const navLoginBtn = document.getElementById('navLoginBtn'), mobileLoginLink = document.getElementById('mobileLoginBtn');
       if (isLoggedIn) {
         if (navLoginBtn) { navLoginBtn.textContent = 'Dashboard'; navLoginBtn.href = 'dashboard.html'; }
         if (mobileLoginLink) {
-          // Both sub-pages are currently missing the ur-hover spans, but this protects it if you add them later
           const enSpan = mobileLoginLink.querySelector('.en-text');
           if (enSpan) enSpan.textContent = 'Dashboard';
           else mobileLoginLink.textContent = 'Dashboard';
@@ -97,7 +116,6 @@
         }
       }
     })();
-
   </script>
 </body>
 </html>
