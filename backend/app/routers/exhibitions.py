@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.models.exhibition import DBExhibitionApplication, DBExhibitionConfig
+from app.models.exhibition import DBExhibitionApplication, DBExhibition
 from app.schemas.exhibition import ExhibitionApplicationCreate, ExhibitionRegistrationSubmit
 from app.core.security import require_auth
 from app.services.email import send_system_email
@@ -10,9 +10,9 @@ router = APIRouter(prefix="/exhibitions", tags=["Exhibitions"])
 
 @router.get("/config")
 def get_exhibition_config(db: Session = Depends(get_db)):
-    config = db.query(DBExhibitionConfig).first()
+    config = db.query(DBExhibition).first()
     if not config:
-        config = DBExhibitionConfig()
+        config = DBExhibition()
         db.add(config)
         db.commit()
     return {
