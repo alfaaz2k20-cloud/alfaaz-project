@@ -76,7 +76,7 @@
       try {
         // Pointing directly to the backend to avoid Vercel 404s
         // Note: Change "/blogs" to "/api/blogs" if your FastAPI router specifically requires that prefix.
-        const res = await fetch('https://alfaaz-project.onrender.com/blogs'); 
+        const res = await fetch('https://alfaaz-project.onrender.com/blogs/'); 
         
         if (!res.ok) throw new Error('Failed to fetch from backend');
         const blogs = await res.json();
