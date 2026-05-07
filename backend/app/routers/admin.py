@@ -301,7 +301,33 @@ def get_exhibition_registration_detail(application_id: int, db: Session = Depend
         "participant_note_reg": application.participant_note_reg,
         "payment_confirmed_at": str(application.payment_confirmed_at) if application.payment_confirmed_at else None
     }
+@router.post("/exhibitions/config")
+def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends(get_db)):
+    # Find whichever exhibition is currently live
+    active_ex = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
 
+    # Prevent turning on the portal if no exhibition is selected
+    if not active_ex and data.is_open:
+        raise HTTPException(status_code=400, detail="Please click 'Set as Live' on an exhibition below first.")
+
+    if active_ex:
+        if not data.is_open:
+            active_ex.is_active = False  # This officially toggles the portal OFF
+        else:
+            # This updates the details if you edit them and click "Save Settings"
+            active_ex.title = data.title
+            active_ex.date_text = data.date_text
+            active_ex.venue = data.venue
+            active_ex.about_text = data.about_text
+            active_ex.tnc_pdf_url = data.tnc_pdf_url
+            active_ex.registration_fee = data.registration_fee
+            active_ex.payment_instructions = data.payment_instructions
+            active_ex.payment_qr_url = data.payment_qr_url
+        db.commit()
+
+    # This is the magic line that updates index.html!
+    sync_notices_to_cloudinary(db)
+    return {"status": "SUCCESS"}
 
 # ── Users & Submissions ───────────────────────────────────────────────────────
 @router.get("/users")
