@@ -496,21 +496,21 @@
         const cards = [];
         const isLoggedIn = !!localStorage.getItem('alfaaz_token');
 
-        // 1. EXHIBITION (Priority - Top)
+        // Exhibition - Top Priority
         if (data.exhibition && data.exhibition.is_open) {
             const ex = data.exhibition;
             cards.push({ 
                 tag: 'EXHIBITION', 
                 tagColor: 'var(--accent-gold)', 
                 date: ex.date_text || 'TBD', 
-                title: ex.title || 'Upcoming Exhibition', 
+                title: ex.title, 
                 body: ex.about_text ? ex.about_text.substring(0, 160) + '...' : 'Applications are open.', 
                 link: 'exhibition.html', 
                 linkLabel: 'Apply Now →' 
             });
         }
 
-        // 2. STANDARD EVENTS
+        // Standard Events
         if (data.events && Array.isArray(data.events)) {
             data.events.forEach(e => {
                 const capText = e.capacity === 0 ? 'Open registration' : e.full ? 'At capacity' : `${e.spots_left || '?'} spots remaining`;
@@ -521,8 +521,7 @@
                     title: e.name, 
                     body: (e.description ? e.description + ' — ' : '') + capText + '.', 
                     link: e.full ? null : (isLoggedIn ? 'dashboard.html' : 'login.html'), 
-                    linkLabel: e.full ? null : (isLoggedIn ? 'Register →' : 'Login to Register →'), 
-                    disabled: e.full 
+                    linkLabel: e.full ? null : (isLoggedIn ? 'Register →' : 'Login to Register →')
                 });
             });
         }
@@ -536,57 +535,57 @@
         isUpdating = true;
 
         try {
-            const cacheBuster = new Date().getTime();
-
-            // Fetch Notices from Cloudinary
-            const noticesPromise = fetch(`https://res.cloudinary.com/dmqwjpmjk/raw/upload/alfaaz/notices.json?t=${cacheBuster}`, {
-                cache: 'no-store'
-            });
-
-            // Fetch Latest Blog from Backend
-            const blogsPromise = fetch(`/api/blogs?t=${cacheBuster}`);
-
-            const [noticesRes, blogsRes] = await Promise.all([noticesPromise, blogsPromise]);
+            const timestamp = new Date().getTime();
+            
+            // Strong cache busting
+            const noticesRes = await fetch(
+                `https://res.cloudinary.com/dmqwjpmjk/raw/upload/alfaaz/notices.json?t=${timestamp}`, 
+                { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } }
+            );
 
             let allCards = [];
 
-            // Process Notices
-            if (noticesRes && noticesRes.ok) {
-                const noticesData = await noticesRes.json();
-                allCards = parseToCards(noticesData);
+            if (noticesRes.ok) {
+                const data = await noticesRes.json();
+                console.log("✅ Notices loaded:", data);   // Debug
+                allCards = parseToCards(data);
+            } else {
+                console.error("Failed to load notices.json");
             }
 
-            // Process Latest Blog (Curator AI)
-            if (blogsRes && blogsRes.ok) {
-                const blogs = await blogsRes.json();
-                if (blogs && blogs.length > 0) {
-                    const latest = blogs[0];
-                    allCards.unshift({
-                        tag: 'JOURNAL',
-                        tagColor: 'var(--text-primary)',
-                        date: new Date(latest.created_at).toLocaleDateString('en-IN'),
-                        title: latest.title,
-                        body: 'A new article has been published by the Curator.',
-                        link: `post.html?id=${latest.id}`,
-                        linkLabel: 'Read Article →'
-                    });
+            // Latest Blog
+            try {
+                const blogsRes = await fetch(`/api/blogs?t=${timestamp}`);
+                if (blogsRes.ok) {
+                    const blogs = await blogsRes.json();
+                    if (blogs?.length > 0) {
+                        const latest = blogs[0];
+                        allCards.unshift({
+                            tag: 'JOURNAL',
+                            tagColor: 'var(--text-primary)',
+                            date: new Date(latest.created_at).toLocaleDateString('en-IN'),
+                            title: latest.title,
+                            body: 'New article by the Curator.',
+                            link: `post.html?id=${latest.id}`,
+                            linkLabel: 'Read Article →'
+                        });
+                    }
                 }
-            }
+            } catch (bErr) { console.log("Blog fetch skipped"); }
 
             renderCards(grid, allCards);
 
         } catch (err) {
-            console.error("Notices fetch failed:", err);
+            console.error("❌ Notices fetch error:", err);
             renderCards(grid, []);
         } finally {
             isUpdating = false;
         }
     }
 
-    // Initialize
     document.addEventListener('DOMContentLoaded', loadLiveNotices);
     window.addEventListener('pageshow', loadLiveNotices);
-    setInterval(loadLiveNotices, 30000);
+    setInterval(loadLiveNotices, 20000);
 })();
     
     // VITRINE DESKTOP SLIDER
