@@ -1,6 +1,7 @@
 import json
 import cloudinary
 import cloudinary.uploader
+from io import BytesIO
 from sqlalchemy.orm import Session
 from app.models.event import DBEvent, DBEventRegistration
 from app.models.exhibition import DBExhibition
@@ -29,7 +30,7 @@ def sync_notices_to_cloudinary(db: Session):
             count = db.query(DBEventRegistration).filter(DBEventRegistration.event_id == e.id).count()
             events_data.append({
                 "name": e.name,
-                "event_date": str(e.event_date) if e.event_date else None,   # ← Important
+                "event_date": str(e.event_date) if e.event_date else None,
                 "description": e.description,
                 "capacity": e.capacity,
                 "spots_left": (e.capacity - count) if e.capacity > 0 else None,
@@ -59,18 +60,18 @@ def sync_notices_to_cloudinary(db: Session):
 
         json_str = json.dumps(notices_json, indent=2, ensure_ascii=False)
 
-        # FIXED: Use file-like object instead of string directly
-        from io import StringIO
-        file_obj = StringIO(json_str)
+        # FIX 1: BytesIO (not StringIO) — Cloudinary SDK requires bytes
+        file_obj = BytesIO(json_str.encode('utf-8'))
 
         result = cloudinary.uploader.upload(
             file_obj,
             resource_type="raw",
             public_id="notices.json",
             folder="alfaaz",
-            overwrite=True
+            overwrite=True,
+            invalidate=True   # FIX 2: Purges CDN edge cache immediately
         )
-        
+
         print(f"[CLOUDINARY] notices.json synced: {result.get('secure_url')}")
         return result.get('secure_url')
 
