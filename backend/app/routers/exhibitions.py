@@ -10,21 +10,21 @@ router = APIRouter(prefix="/exhibitions", tags=["Exhibitions"])
 
 @router.get("/config")
 def get_exhibition_config(db: Session = Depends(get_db)):
-    config = db.query(DBExhibition).first()
+    config = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
     if not config:
-        config = DBExhibition()
-        db.add(config)
-        db.commit()
+        return {"is_open": False, "title": "", "date_text": "", "about_text": ""}
+    
     return {
-        "title": config.title, "date_text": config.date_text,
-        "venue": config.venue, "about_text": config.about_text,
-        "is_open": config.is_open,
+        "is_open": True,
+        "title": config.title,
+        "date_text": config.date_text,
+        "about_text": config.about_text,
+        "venue": config.venue,
         "tnc_pdf_url": config.tnc_pdf_url,
         "registration_fee": config.registration_fee or "",
         "payment_instructions": config.payment_instructions or "",
         "payment_qr_url": config.payment_qr_url,
     }
-
 @router.post("/apply")
 def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
     if not data.over_19 or not data.agreed_to_screening:
