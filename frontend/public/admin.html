@@ -128,9 +128,10 @@
         <span id="cfg-msg" style="font-size:11px; margin-left:1rem; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px;"></span>
       </div>
 
-      <div class="section-title" style="display: flex; justify-content: space-between; align-items: flex-end;">
-        <div>Submitted Portfolios</div>
-      </div>
+      <div class="section-title" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+    <div>Submitted Portfolios</div>
+    <div id="cycleSelectWrap" style="display:flex; align-items:center;"></div>
+  </div>
       
       <!-- ADDED 'FINALIZED' TO THE FILTER BUTTONS -->
       <div style="display:flex; gap:0.8rem; margin-bottom:2rem; flex-wrap:wrap;">
@@ -246,10 +247,21 @@
     }
     function closeModal() { document.getElementById('regModal').classList.remove('open'); }
 
-    // EXHIBITIONS LOGIC
-    let allExhibs = [], currentExhibOpen = false;
-    const hasPaymentSubmission = (a) => a.registration_status === 'SUBMITTED' || a.registration_status === 'CONFIRMED' || Boolean(a.payment_proof_url);
-    const getExhibitionLabel = (a) => a.registration_status === 'CONFIRMED' ? 'CONFIRMED' : hasPaymentSubmission(a) ? 'PAYMENT SUBMITTED' : a.status;
+    // EXHIBITIONS LOGIC — CYCLE-AWARE VERSION
+    // Drop this in place of the old "EXHIBITIONS LOGIC" comment block in admin.html
+
+    let allExhibs = [], currentExhibOpen = false, activeCycleFilter = 'ALL';
+
+    const hasPaymentSubmission = (a) =>
+      a.registration_status === 'SUBMITTED' ||
+      a.registration_status === 'CONFIRMED' ||
+      Boolean(a.payment_proof_url);
+
+    const getExhibitionLabel = (a) =>
+      a.registration_status === 'CONFIRMED' ? 'CONFIRMED'
+      : hasPaymentSubmission(a) ? 'PAYMENT SUBMITTED'
+      : a.status;
+
     function getExhibConfigPayload(isOpen) {
       return {
         title: document.getElementById('cfg-title').value || 'Exhibition',
@@ -263,80 +275,208 @@
         is_open: isOpen
       };
     }
+
     function applyToggleUI(isOpen) {
-      currentExhibOpen = isOpen; const master = document.getElementById('exhibToggleMaster'), btn = document.getElementById('exhibPillBtn'), status = document.getElementById('exhibPillStatus'), sub = document.getElementById('exhibToggleSub');
+      currentExhibOpen = isOpen;
+      const master = document.getElementById('exhibToggleMaster'),
+            btn    = document.getElementById('exhibPillBtn'),
+            status = document.getElementById('exhibPillStatus'),
+            sub    = document.getElementById('exhibToggleSub');
       if (!master) return;
-      if (isOpen) { master.className = 'toggle-master is-open'; btn.className = 'pill-toggle on magnetic'; status.textContent = 'OPEN'; status.style.color = 'var(--accent-green)'; sub.textContent = 'Exhibition portal is LIVE and accepting applications.'; } 
-      else { master.className = 'toggle-master is-closed'; btn.className = 'pill-toggle off magnetic'; status.textContent = 'CLOSED'; status.style.color = 'var(--text-secondary)'; sub.textContent = 'Exhibition portal is HIDDEN from the public.'; }
+      if (isOpen) {
+        master.className = 'toggle-master is-open';
+        btn.className    = 'pill-toggle on magnetic';
+        status.textContent = 'OPEN'; status.style.color = 'var(--accent-green)';
+        sub.textContent  = 'Exhibition portal is LIVE and accepting applications.';
+      } else {
+        master.className = 'toggle-master is-closed';
+        btn.className    = 'pill-toggle off magnetic';
+        status.textContent = 'CLOSED'; status.style.color = 'var(--text-secondary)';
+        sub.textContent  = 'Exhibition portal is HIDDEN from the public.';
+      }
     }
-    
+
     async function toggleExhibVisibility() {
-      const btn = document.getElementById('exhibPillBtn'); btn.style.pointerEvents = 'none'; const newState = !currentExhibOpen; applyToggleUI(newState);
+      const btn = document.getElementById('exhibPillBtn');
+      btn.style.pointerEvents = 'none';
+      const newState = !currentExhibOpen;
+      applyToggleUI(newState);
       const payload = getExhibConfigPayload(newState);
       const res = await window.globalApiFetch('/admin/exhibitions/config', { method: 'POST', body: JSON.stringify(payload) });
-      if (res && res.ok) { document.getElementById('cfg-open').value = newState ? 'true' : 'false'; const flash = document.getElementById('cfg-msg'); flash.textContent = newState ? '✓ Portal opened' : '✓ Portal hidden'; flash.style.color = newState ? 'var(--accent-green)' : 'var(--text-secondary)'; setTimeout(() => { flash.textContent = ''; }, 4000); } 
-      else { applyToggleUI(!newState); } btn.style.pointerEvents = '';
+      if (res && res.ok) {
+        document.getElementById('cfg-open').value = newState ? 'true' : 'false';
+        const flash = document.getElementById('cfg-msg');
+        flash.textContent = newState ? '✓ Portal opened' : '✓ Portal hidden';
+        flash.style.color = newState ? 'var(--accent-green)' : 'var(--text-secondary)';
+        setTimeout(() => { flash.textContent = ''; }, 4000);
+      } else {
+        applyToggleUI(!newState);
+      }
+      btn.style.pointerEvents = '';
     }
-    
+
+    // ── Cycle selector ────────────────────────────────────────────────────────
+    async function buildCycleSelector(currentCycle) {
+      const res = await window.globalApiFetch('/admin/exhibitions/cycles');
+      if (!res || !res.ok) return;
+      const { cycles } = await res.json();
+
+      const wrap = document.getElementById('cycleSelectWrap');
+      if (!wrap) return;
+
+      // Build options — always include "Current" and "All Time"
+      let opts = `<option value="">Current: ${currentCycle}</option>`;
+      cycles.forEach(c => {
+        if (c !== currentCycle)
+          opts += `<option value="${c}">${c}</option>`;
+      });
+      opts += `<option value="ALL">— All Cycles —</option>`;
+
+      wrap.innerHTML = `
+        <label style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-right:0.8rem;">Viewing Cycle:</label>
+        <select id="cycleSelect" style="background:transparent;border:none;border-bottom:1px solid var(--grid-border);color:var(--text-primary);font-family:var(--font-body);font-size:12px;padding:0.4rem 0;width:auto;margin:0;">
+          ${opts}
+        </select>`;
+
+      document.getElementById('cycleSelect').addEventListener('change', async (e) => {
+        const selected = e.target.value; // "" = current, "ALL" = all, otherwise named cycle
+        const query = selected ? `?cycle=${encodeURIComponent(selected)}` : '';
+        const r = await window.globalApiFetch(`/admin/exhibitions${query}`);
+        if (r && r.ok) { allExhibs = await r.json(); filterExhibitions('ALL'); }
+      });
+    }
+
     async function loadExhibitions(f) {
-      const cfgRes = await window.globalApiFetch('/exhibitions/config'); if(!cfgRes) return; const cfg = await cfgRes.json();
-      document.getElementById('cfg-title').value = cfg.title || ''; document.getElementById('cfg-date').value = cfg.date_text || ''; document.getElementById('cfg-venue').value = cfg.venue || ''; document.getElementById('cfg-desc').value = cfg.about_text || ''; document.getElementById('cfg-tc').value = cfg.tnc_pdf_url || ''; document.getElementById('cfg-payment').value = cfg.payment_qr_url || ''; document.getElementById('cfg-fee').value = cfg.registration_fee || ''; document.getElementById('cfg-payment-instructions').value = cfg.payment_instructions || ''; document.getElementById('cfg-open').value = cfg.is_open ? "true" : "false"; applyToggleUI(cfg.is_open);
-      const res = await window.globalApiFetch('/admin/exhibitions'); if(!res) return; allExhibs = await res.json(); renderExhibitions(f);
+      const cfgRes = await window.globalApiFetch('/exhibitions/config');
+      if (!cfgRes) return;
+      const cfg = await cfgRes.json();
+
+      // Populate settings form
+      document.getElementById('cfg-title').value   = cfg.title || '';
+      document.getElementById('cfg-date').value    = cfg.date_text || '';
+      document.getElementById('cfg-venue').value   = cfg.venue || '';
+      document.getElementById('cfg-desc').value    = cfg.about_text || '';
+      document.getElementById('cfg-tc').value      = cfg.tnc_pdf_url || '';
+      document.getElementById('cfg-payment').value = cfg.payment_qr_url || '';
+      document.getElementById('cfg-fee').value     = cfg.registration_fee || '';
+      document.getElementById('cfg-payment-instructions').value = cfg.payment_instructions || '';
+      document.getElementById('cfg-open').value    = cfg.is_open ? 'true' : 'false';
+      applyToggleUI(cfg.is_open);
+
+      // Load current-cycle applications by default
+      const res = await window.globalApiFetch('/admin/exhibitions');
+      if (!res) return;
+      allExhibs = await res.json();
+      renderExhibitions(f);
+
+      // Build the cycle switcher after we know the current cycle title
+      buildCycleSelector(cfg.title);
     }
-    
+
     async function saveExhibConfig() {
-      const isOpen = document.getElementById('cfg-open').value === "true";
+      const isOpen = document.getElementById('cfg-open').value === 'true';
       const payload = getExhibConfigPayload(isOpen);
-      document.getElementById('cfg-msg').textContent = "Saving...";
+      document.getElementById('cfg-msg').textContent = 'Saving...';
       const res = await window.globalApiFetch('/admin/exhibitions/config', { method: 'POST', body: JSON.stringify(payload) });
-      if (res && res.ok) { document.getElementById('cfg-msg').textContent = "✓ Settings Synced"; setTimeout(() => document.getElementById('cfg-msg').textContent = "", 3000); applyToggleUI(isOpen); }
+      if (res && res.ok) {
+        document.getElementById('cfg-msg').textContent = '✓ Settings Synced';
+        setTimeout(() => document.getElementById('cfg-msg').textContent = '', 3000);
+        applyToggleUI(isOpen);
+      }
     }
-    
-    function filterExhibitions(f) { document.querySelectorAll('[id^="filt-"]').forEach(b => { b.classList.remove('gold'); b.style.color = ''; b.style.borderColor = ''; }); const target = document.getElementById(`filt-${f}`); target.classList.add('gold'); renderExhibitions(f); }
-    
+
+    function filterExhibitions(f) {
+      activeCycleFilter = f;
+      document.querySelectorAll('[id^="filt-"]').forEach(b => { b.classList.remove('gold'); });
+      const target = document.getElementById(`filt-${f}`);
+      if (target) target.classList.add('gold');
+      renderExhibitions(f);
+    }
+
     function renderExhibitions(f) {
-      const container = document.getElementById('exhibitionsContainer'), apps = f === 'ALL' ? allExhibs : allExhibs.filter(a => f === 'FINALIZED' ? hasPaymentSubmission(a) : f === 'APPROVED' ? a.status === 'APPROVED' && !hasPaymentSubmission(a) : a.status === f); container.innerHTML = '';
-      if (!apps.length) { container.innerHTML = '<div class="empty-state">No portfolios submitted.</div>'; return; }
-      
+      const container = document.getElementById('exhibitionsContainer');
+      const apps = f === 'ALL' ? allExhibs
+        : allExhibs.filter(a =>
+            f === 'FINALIZED' ? hasPaymentSubmission(a)
+            : f === 'APPROVED' ? a.status === 'APPROVED' && !hasPaymentSubmission(a)
+            : a.status === f
+          );
+      container.innerHTML = '';
+      if (!apps.length) { container.innerHTML = '<div class="empty-state">No portfolios found.</div>'; return; }
+
       apps.forEach(a => {
-        const card = document.createElement('div'); card.className = 'data-card exhib-card magnetic';
-        
-        // Handles badge coloring for Finalized
+        const card = document.createElement('div');
+        card.className = 'data-card exhib-card magnetic';
         const displayStatus = getExhibitionLabel(a);
-        const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
-        
-        let actionBtns = `<a href="${a.portfolio_url}" target="_blank" class="action-btn gold" style="padding:0.6rem; font-size:9px; text-align: center;">View Portfolio</a>`;
-        
+        const badge = a.status === 'PENDING' ? 'badge-pending'
+                    : a.status === 'APPROVED' ? 'badge-approved'
+                    : 'badge-rejected';
+
+        let actionBtns = `<a href="${a.portfolio_url}" target="_blank" class="action-btn gold" style="padding:0.6rem;font-size:9px;text-align:center;">View Portfolio</a>`;
+
         if (a.status === 'PENDING') {
-            actionBtns += `
-            <button class="action-btn" style="padding:0.6rem; font-size:9px;" onclick="reviewExhibition(${a.id}, 'APPROVED', this)">Approve</button>
-            <button class="action-btn" style="padding:0.6rem; font-size:9px; border-color:var(--accent-red); color:var(--accent-red);" onclick="reviewExhibition(${a.id}, 'REJECTED', this)">Reject</button>`;
+          actionBtns += `
+            <button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="reviewExhibition(${a.id},'APPROVED',this)">Approve</button>
+            <button class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-red);color:var(--accent-red);" onclick="reviewExhibition(${a.id},'REJECTED',this)">Reject</button>`;
         } else if (a.status === 'REJECTED') {
-            actionBtns += `<button class="action-btn" style="padding:0.6rem; font-size:9px;" onclick="revertExhibition(${a.id}, this)">Undo Rejection</button>`;
+          actionBtns += `<button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="revertExhibition(${a.id},this)">Undo Rejection</button>`;
         }
-        
-        // STEP 3: Shows the uploaded payment receipt if the artist finalized
         if (a.payment_proof_url) {
-             actionBtns += `<a href="${a.payment_proof_url}" target="_blank" class="action-btn" style="padding:0.6rem; font-size:9px; border-color:var(--accent-green); color:var(--accent-green); text-align: center; margin-top: 0.5rem;">View Payment Receipt</a>`;
+          actionBtns += `<a href="${a.payment_proof_url}" target="_blank" class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-green);color:var(--accent-green);text-align:center;margin-top:0.5rem;">View Payment Receipt</a>`;
         }
         if (a.registration_status === 'SUBMITTED') {
-             actionBtns += `<button class="action-btn gold" style="padding:0.6rem; font-size:9px;" onclick="confirmExhibitionPayment(${a.id}, this)">Confirm Payment</button>`;
+          actionBtns += `<button class="action-btn gold" style="padding:0.6rem;font-size:9px;" onclick="confirmExhibitionPayment(${a.id},this)">Confirm Payment</button>`;
         }
-        
+
+        // Show which cycle this app belongs to (useful when viewing "All Cycles")
+        const cycleTag = a.exhibition_cycle
+          ? `<div style="font-size:9px;margin-top:4px;color:var(--accent-gold);letter-spacing:1px;text-transform:uppercase;">${a.exhibition_cycle}</div>`
+          : '';
+
         card.innerHTML = `
-          <div><div class="data-label">Artist</div><div class="data-display">${a.full_name}</div><div style="font-size:11px;color:var(--text-secondary); margin-top: 4px;">${a.user_email}</div></div>
-          <div><div class="data-label">Art Profile</div><div class="data-display" style="font-size:13px;">${a.genre}</div><div style="font-size:11px;color:var(--text-secondary); margin-top: 4px;">Medium: ${a.medium}</div></div>
+          <div>
+            <div class="data-label">Artist</div>
+            <div class="data-display">${a.full_name}</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">${a.user_email}</div>
+            ${cycleTag}
+          </div>
+          <div>
+            <div class="data-label">Art Profile</div>
+            <div class="data-display" style="font-size:13px;">${a.genre}</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Medium: ${a.medium}</div>
+          </div>
           <div><div class="data-label">Status</div><span class="badge ${badge}">${displayStatus}</span></div>
           <div style="display:flex;flex-direction:column;gap:0.5rem;">${actionBtns}</div>`;
         container.appendChild(card);
       });
-      if(window.refreshGlobalEffects) window.refreshGlobalEffects();
+      if (window.refreshGlobalEffects) window.refreshGlobalEffects();
     }
-    
-    async function reviewExhibition(id, status, btn) { const note = prompt('Curator Note to Artist:'); btn.textContent = '...'; const res = await window.globalApiFetch('/admin/exhibitions/review', { method: 'POST', body: JSON.stringify({ application_id: id, status: status, curator_note: note }) }); if (res && res.ok) { await loadExhibitions('ALL'); filterExhibitions('ALL'); } else { btn.textContent = status === 'APPROVED' ? 'Approve' : 'Reject'; } }
-    async function revertExhibition(id, btn) { if (!confirm('Undo rejection?')) return; btn.textContent = '...'; btn.disabled = true; const res = await window.globalApiFetch(`/admin/exhibitions/${id}/revert`, { method: 'PATCH' }); if (res && res.ok) { await loadExhibitions('ALL'); filterExhibitions('ALL'); } else { btn.textContent = 'Undo Rejection'; btn.disabled = false; } }
-    async function confirmExhibitionPayment(id, btn) { if (!confirm('Confirm this exhibition payment?')) return; btn.textContent = '...'; btn.disabled = true; const res = await window.globalApiFetch(`/admin/exhibitions/${id}/confirm-payment`, { method: 'PATCH' }); if (res && res.ok) { await loadExhibitions('FINALIZED'); filterExhibitions('FINALIZED'); } else { btn.textContent = 'Confirm Payment'; btn.disabled = false; } }
 
+    async function reviewExhibition(id, status, btn) {
+      const note = prompt('Curator Note to Artist:');
+      btn.textContent = '...';
+      const res = await window.globalApiFetch('/admin/exhibitions/review', {
+        method: 'POST', body: JSON.stringify({ application_id: id, status, curator_note: note })
+      });
+      if (res && res.ok) { await loadExhibitions('ALL'); filterExhibitions('ALL'); }
+      else { btn.textContent = status === 'APPROVED' ? 'Approve' : 'Reject'; }
+    }
+
+    async function revertExhibition(id, btn) {
+      if (!confirm('Undo rejection?')) return;
+      btn.textContent = '...'; btn.disabled = true;
+      const res = await window.globalApiFetch(`/admin/exhibitions/${id}/revert`, { method: 'PATCH' });
+      if (res && res.ok) { await loadExhibitions('ALL'); filterExhibitions('ALL'); }
+      else { btn.textContent = 'Undo Rejection'; btn.disabled = false; }
+    }
+
+    async function confirmExhibitionPayment(id, btn) {
+      if (!confirm('Confirm this exhibition payment?')) return;
+      btn.textContent = '...'; btn.disabled = true;
+      const res = await window.globalApiFetch(`/admin/exhibitions/${id}/confirm-payment`, { method: 'PATCH' });
+      if (res && res.ok) { await loadExhibitions('FINALIZED'); filterExhibitions('FINALIZED'); }
+      else { btn.textContent = 'Confirm Payment'; btn.disabled = false; }
+    }
     // CLUBS LOGIC
     let allClubApps = [];
     async function loadClubs(f) { const res = await window.globalApiFetch('/admin/club-applications'); if(!res) return; allClubApps = await res.json(); renderClubs(f); }
