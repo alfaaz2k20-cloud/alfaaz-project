@@ -476,6 +476,7 @@
             grid.innerHTML = `<div class="update-card fade-in visible"><p class="update-date">Alfaaz Collective</p><p class="update-text">No active notices at the moment.</p></div>`; 
             return;
         } 
+
         cards.forEach(c => {
             const div = document.createElement('div'); 
             div.className = 'update-card fade-in visible magnetic';
@@ -496,8 +497,8 @@
         const cards = [];
         const isLoggedIn = !!localStorage.getItem('alfaaz_token');
 
-        // Exhibition - Top Priority
-        if (data.exhibition && data.exhibition.is_open) {
+        // Exhibition (Top)
+        if (data.exhibition && data.exhibition.is_open === true) {
             const ex = data.exhibition;
             cards.push({ 
                 tag: 'EXHIBITION', 
@@ -511,7 +512,7 @@
         }
 
         // Standard Events
-        if (data.events && Array.isArray(data.events)) {
+        if (data.events && Array.isArray(data.events) && data.events.length > 0) {
             data.events.forEach(e => {
                 const capText = e.capacity === 0 ? 'Open registration' : e.full ? 'At capacity' : `${e.spots_left || '?'} spots remaining`;
                 cards.push({ 
@@ -535,57 +536,61 @@
         isUpdating = true;
 
         try {
-            const timestamp = new Date().getTime();
-            
-            // Strong cache busting
-            const noticesRes = await fetch(
+            const timestamp = Date.now();
+
+            const res = await fetch(
                 `https://res.cloudinary.com/dmqwjpmjk/raw/upload/alfaaz/notices.json?t=${timestamp}`, 
-                { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } }
+                { 
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+                }
             );
 
-            let allCards = [];
-
-            if (noticesRes.ok) {
-                const data = await noticesRes.json();
-                console.log("✅ Notices loaded:", data);   // Debug
-                allCards = parseToCards(data);
+            if (res.ok) {
+                const data = await res.json();
+                console.log("✅ Notices loaded:", data);   // Keep this for debugging
+                const cards = parseToCards(data);
+                renderCards(grid, cards);
             } else {
-                console.error("Failed to load notices.json");
+                console.error("Failed to fetch notices.json");
+                renderCards(grid, []);
             }
 
-            // Latest Blog
+            // Blog Posts (Curator)
             try {
                 const blogsRes = await fetch(`/api/blogs?t=${timestamp}`);
                 if (blogsRes.ok) {
                     const blogs = await blogsRes.json();
                     if (blogs?.length > 0) {
                         const latest = blogs[0];
-                        allCards.unshift({
-                            tag: 'JOURNAL',
-                            tagColor: 'var(--text-primary)',
-                            date: new Date(latest.created_at).toLocaleDateString('en-IN'),
-                            title: latest.title,
-                            body: 'New article by the Curator.',
-                            link: `post.html?id=${latest.id}`,
-                            linkLabel: 'Read Article →'
-                        });
+                        // Insert blog at top
+                        const grid = document.getElementById('noticesGrid');
+                        const blogCard = document.createElement('div');
+                        blogCard.className = 'update-card fade-in visible magnetic';
+                        blogCard.innerHTML = `
+                            <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;">
+                                <span style="font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border:1px solid var(--text-primary);color:var(--text-primary);border-radius:2px;">JOURNAL</span>
+                                <span style="font-size:10px;letter-spacing:1px;color:var(--text-secondary);text-transform:uppercase;">${new Date(latest.created_at).toLocaleDateString('en-IN')}</span>
+                            </div>
+                            <p class="update-text">${latest.title}</p>
+                            <p style="font-size:12px;color:var(--text-secondary);margin-top:0.8rem;">New article by the Curator.</p>
+                            <a href="post.html?id=${latest.id}" style="display:inline-block;margin-top:1rem;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent-gold);text-decoration:none;border-bottom:1px solid var(--accent-gold);padding-bottom:2px;">Read Article →</a>
+                        `;
+                        grid.insertBefore(blogCard, grid.firstChild);
                     }
                 }
-            } catch (bErr) { console.log("Blog fetch skipped"); }
-
-            renderCards(grid, allCards);
+            } catch (e) {}
 
         } catch (err) {
-            console.error("❌ Notices fetch error:", err);
-            renderCards(grid, []);
+            console.error("❌ Load error:", err);
         } finally {
             isUpdating = false;
         }
     }
 
     document.addEventListener('DOMContentLoaded', loadLiveNotices);
-    window.addEventListener('pageshow', loadLiveNotices);
-    setInterval(loadLiveNotices, 20000);
+    window.addEventListener('pageshow', () => setTimeout(loadLiveNotices, 300));
+    setInterval(loadLiveNotices, 25000);
 })();
     
     // VITRINE DESKTOP SLIDER
