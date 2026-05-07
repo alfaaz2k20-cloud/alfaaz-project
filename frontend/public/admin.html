@@ -386,6 +386,8 @@
     }
 
     // 4. Applicants: Cycle Selector
+    let currentCycleView = 'ALL'; // NEW: Tracks the exact dropdown state
+
     async function buildCycleSelector() {
       const res = await window.globalApiFetch('/admin/exhibitions/cycles');
       if (!res || !res.ok) return;
@@ -403,9 +405,13 @@
           ${opts}
         </select>`;
 
-      document.getElementById('cycleSelect').addEventListener('change', async (e) => {
-        const selected = e.target.value; 
-        const query = selected ? `?cycle=${encodeURIComponent(selected)}` : '';
+      // STRICT SYNC: Force the dropdown to match the data being viewed
+      const sel = document.getElementById('cycleSelect');
+      sel.value = currentCycleView;
+
+      sel.addEventListener('change', async (e) => {
+        currentCycleView = e.target.value; 
+        const query = currentCycleView ? `?cycle=${encodeURIComponent(currentCycleView)}` : '';
         const r = await window.globalApiFetch(`/admin/exhibitions${query}`);
         if (r && r.ok) { allExhibs = await r.json(); filterExhibitions('ALL'); }
       });
@@ -413,21 +419,14 @@
 
     // 5. Applicants: Load Data
     async function loadExhibitionsData(f) {
-      // Force the initial API call to fetch ALL archive data, 
-      // preventing the legacy unstamped applications from hiding.
+      currentCycleView = 'ALL'; // Force the dropdown state to "ALL" on initial load
       const res = await window.globalApiFetch('/admin/exhibitions?cycle=ALL');
       if (!res) return;
       allExhibs = await res.json();
+      await buildCycleSelector();
       renderExhibitions(f);
-      buildCycleSelector();
-      
-      // Visually sync the dropdown to show "All Archive" on load
-      setTimeout(() => {
-          const sel = document.getElementById('cycleSelect');
-          if(sel) sel.value = "ALL";
-      }, 50);
     }
-    
+
     const hasPaymentSubmission = (a) => a.registration_status === 'SUBMITTED' || a.registration_status === 'CONFIRMED' || Boolean(a.payment_proof_url);
     const getExhibitionLabel = (a) => a.registration_status === 'CONFIRMED' ? 'CONFIRMED' : hasPaymentSubmission(a) ? 'PAYMENT SUBMITTED' : a.status;
 
@@ -469,7 +468,9 @@
           actionBtns += `<button class="action-btn gold" style="padding:0.6rem;font-size:9px;" onclick="confirmExhibitionPayment(${a.id},this)">Confirm Payment</button>`;
         }
 
-        const cycleTag = a.exhibition_cycle ? `<div style="font-size:9px;margin-top:4px;color:var(--accent-gold);letter-spacing:1px;text-transform:uppercase;">${a.exhibition_cycle}</div>` : '';
+        // --- NEW: The Legacy Fallback Label ---
+        const cycleName = a.exhibition_cycle ? a.exhibition_cycle : 'LEGACY ARCHIVE';
+        const cycleTag = `<div style="font-size:10px; margin-top:6px; color:var(--accent-gold); letter-spacing:1.5px; text-transform:uppercase; font-weight:600;">CYCLE: ${cycleName}</div>`;
 
         card.innerHTML = `
           <div>
@@ -488,30 +489,6 @@
         container.appendChild(card);
       });
       if (window.refreshGlobalEffects) window.refreshGlobalEffects();
-    }
-
-    async function reviewExhibition(id, status, btn) {
-      const note = prompt('Curator Note to Artist:');
-      btn.textContent = '...';
-      const res = await window.globalApiFetch('/admin/exhibitions/review', { method: 'POST', body: JSON.stringify({ application_id: id, status, curator_note: note }) });
-      if (res && res.ok) { await loadExhibitionsData('ALL'); filterExhibitions('ALL'); }
-      else { btn.textContent = status === 'APPROVED' ? 'Approve' : 'Reject'; }
-    }
-
-    async function revertExhibition(id, btn) {
-      if (!confirm('Undo rejection?')) return;
-      btn.textContent = '...'; btn.disabled = true;
-      const res = await window.globalApiFetch(`/admin/exhibitions/${id}/revert`, { method: 'PATCH' });
-      if (res && res.ok) { await loadExhibitionsData('ALL'); filterExhibitions('ALL'); }
-      else { btn.textContent = 'Undo Rejection'; btn.disabled = false; }
-    }
-
-    async function confirmExhibitionPayment(id, btn) {
-      if (!confirm('Confirm this exhibition payment?')) return;
-      btn.textContent = '...'; btn.disabled = true;
-      const res = await window.globalApiFetch(`/admin/exhibitions/${id}/confirm-payment`, { method: 'PATCH' });
-      if (res && res.ok) { await loadExhibitionsData('FINALIZED'); filterExhibitions('FINALIZED'); }
-      else { btn.textContent = 'Confirm Payment'; btn.disabled = false; }
     }
 
     // ==========================================
