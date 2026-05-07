@@ -387,11 +387,16 @@
     // EXHIBITIONS (CLEANED UP FOR MULTI-CYCLE LOGIC)
     async function loadExhibitionStatus() {
       try {
-        // Updated to use the clean global wrapper instead of hardcoded URL
         const [cfgRes, statusRes] = await Promise.all([ 
             window.globalApiFetch('/exhibitions/config'), 
             window.globalApiFetch('/exhibitions/my-status') 
         ]);
+        
+        // NEW STRICT NULL CHECK
+        if (!cfgRes || !statusRes) {
+            console.warn("Exhibition API fetch returned null. Aborting render.");
+            return; 
+        }
         
         const cfg = await cfgRes.json();
         const data = await statusRes.json();
