@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.models.event import DBEvent, DBEventRegistration
 from app.models.exhibition import DBExhibition
 from app.core.config import CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+from app.models.blog import DBBlog
 
 if CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
     cloudinary.config(
@@ -53,11 +54,24 @@ def sync_notices_to_cloudinary(db: Session):
                 "payment_qr_url": config.payment_qr_url
             }
 
+        # --- Latest Blog ---
+        latest_blog = db.query(DBBlog).filter(DBBlog.is_published == True).order_by(DBBlog.created_at.desc()).first()
+        blog_data = None
+        if latest_blog:
+            blog_data = {
+                "id": latest_blog.id,
+                "title": latest_blog.title,
+                "excerpt": latest_blog.excerpt,
+                "created_at": str(latest_blog.created_at) if latest_blog.created_at else None
+            }
+
+        # --- Construct Final JSON ---
         notices_json = {
             "events": events_data,
-            "exhibition": exhibition_data
+            "exhibition": exhibition_data,
+            "latest_blog": blog_data  
         }
-
+        
         json_str = json.dumps(notices_json, indent=2, ensure_ascii=False)
 
         # FIX 1: BytesIO (not StringIO) — Cloudinary SDK requires bytes
