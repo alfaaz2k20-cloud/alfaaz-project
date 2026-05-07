@@ -29,7 +29,8 @@ from app.services.curator import get_groq_client
 
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin)])
 
-# Note: The blog generation has its own custom token check, so we bypass the standard require_admin for it.
+
+# ── Blog generation (custom token, bypasses require_admin) ──────────────────
 @router.post("/blogs/generate", dependencies=[])
 def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_db), authorization: str = Header(None)):
     expected_token = os.environ.get("PHANTOM_SECRET_TOKEN")
@@ -42,38 +43,44 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
     if not client:
         raise HTTPException(status_code=500, detail="Curator AI not configured.")
 
-    active_topic = data.topic if data.topic else "Choose a fascinating, highly specific, and slightly obscure topic related to art, cultural history, clinical psychology, or literature and write about it."
+    active_topic = data.topic if data.topic else (
+        "Choose a fascinating, highly specific, and slightly obscure topic related to art, "
+        "cultural history, clinical psychology, or literature and write about it."
+    )
     system_prompt = """You are the Curator for the Alfaaz Collective.
     Write a scholarly, engaging, and deeply insightful blog article about the requested topic.
-    CRITICAL INSTRUCTION: You MUST return a strictly valid JSON object. 
+    CRITICAL INSTRUCTION: You MUST return a strictly valid JSON object.
     1. All keys and values must be wrapped in double quotes.
     2. The "content" value is HTML. Use single quotes for HTML attributes to protect the outer JSON quotes.
-    3. Do NOT include newlines (\n) inside the JSON strings.
+    3. Do NOT include newlines (\\n) inside the JSON strings.
     Use this exact JSON structure: {"title": "...", "excerpt": "...", "content": "<h2>...</h2>"}"""
 
     try:
         response = client.chat.completions.create(
-            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": f"Topic: {active_topic}"}],
+            messages=[{"role": "system", "content": system_prompt},
+                      {"role": "user", "content": f"Topic: {active_topic}"}],
             model="llama-3.3-70b-versatile",
             response_format={"type": "json_object"},
-            temperature=0.8, 
+            temperature=0.8,
         )
         result = json.loads(response.choices[0].message.content)
-        # Assuming bleach is imported and used here as discussed earlier, or rely on frontend sanitation.
-        new_blog = DBBlog(title=result["title"], excerpt=result["excerpt"], content=result["content"], is_published=True)
+        new_blog = DBBlog(title=result["title"], excerpt=result["excerpt"],
+                          content=result["content"], is_published=True)
         db.add(new_blog)
         db.commit()
         return {"status": "SUCCESS", "message": "Autonomous research published."}
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=500, detail="The Curator failed to generate the article.")
 
-# --- Events Admin ---
+
+# ── Events ───────────────────────────────────────────────────────────────────
 @router.post("/events/create")
 def create_event(data: EventCreate, db: Session = Depends(get_db)):
-    event = DBEvent(name=data.name, description=data.description, event_date=data.event_date, capacity=data.capacity, registration_open=False)
+    event = DBEvent(name=data.name, description=data.description,
+                    event_date=data.event_date, capacity=data.capacity, registration_open=False)
     db.add(event)
     db.commit()
-    sync_notices_to_cloudinary(db)  
+    sync_notices_to_cloudinary(db)
     return {"status": "SUCCESS"}
 
 @router.patch("/events/{event_id}/toggle")
@@ -83,7 +90,7 @@ def toggle_event_registration(event_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Event not found.")
     event.registration_open = not event.registration_open
     db.commit()
-    sync_notices_to_cloudinary(db)  
+    sync_notices_to_cloudinary(db)
     return {"status": "OPEN" if event.registration_open else "CLOSED"}
 
 @router.get("/events")
@@ -98,7 +105,8 @@ def get_all_events(db: Session = Depends(get_db)):
 @router.get("/events/{event_id}/registrations")
 def get_event_registrations(event_id: int, db: Session = Depends(get_db)):
     regs = db.query(DBEventRegistration).filter(DBEventRegistration.event_id == event_id).all()
-    return {"registrations": [{"email": r.user_email, "whatsapp": r.whatsapp_number or "—", "registered_at": str(r.created_at)} for r in regs]}
+    return {"registrations": [{"email": r.user_email, "whatsapp": r.whatsapp_number or "—",
+                                "registered_at": str(r.created_at)} for r in regs]}
 
 @router.delete("/events/{event_id}")
 def delete_event(event_id: int, db: Session = Depends(get_db)):
@@ -108,14 +116,17 @@ def delete_event(event_id: int, db: Session = Depends(get_db)):
     db.query(DBEventRegistration).filter(DBEventRegistration.event_id == event_id).delete()
     db.delete(event)
     db.commit()
-    sync_notices_to_cloudinary(db)  
+    sync_notices_to_cloudinary(db)
     return {"status": "SUCCESS"}
 
-# --- Clubs Admin ---
+
+# ── Clubs ────────────────────────────────────────────────────────────────────
 @router.get("/club-applications")
 def get_club_applications(db: Session = Depends(get_db)):
     apps = db.query(DBClubApplication).order_by(DBClubApplication.created_at.desc()).all()
-    return [{"id": a.id, "user_email": a.user_email, "club_name": a.club_name, "note": a.note, "status": a.status, "admin_note": a.admin_note, "created_at": str(a.created_at)} for a in apps]
+    return [{"id": a.id, "user_email": a.user_email, "club_name": a.club_name,
+             "note": a.note, "status": a.status, "admin_note": a.admin_note,
+             "created_at": str(a.created_at)} for a in apps]
 
 @router.post("/club-applications/review")
 def review_club_application(data: ClubApplicationReview, db: Session = Depends(get_db)):
@@ -137,63 +148,120 @@ def revert_club_status(application_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "SUCCESS"}
 
-# --- Exhibitions Admin ---
+
+# ── Exhibitions ───────────────────────────────────────────────────────────────
+
+def _current_cycle(db: Session) -> str:
+    config = db.query(DBExhibitionConfig).first()
+    return config.title if config else ""
+
+
 @router.get("/exhibitions")
-def get_all_exhibitions(db: Session = Depends(get_db)):
-    return db.query(DBExhibitionApplication).order_by(DBExhibitionApplication.created_at.desc()).all()
+def get_all_exhibitions(cycle: str = None, db: Session = Depends(get_db)):
+    """
+    Returns applications for a specific cycle (defaults to the current one).
+    Pass ?cycle=ALL to get every application ever submitted.
+    """
+    query = db.query(DBExhibitionApplication)
+    if cycle and cycle.upper() == "ALL":
+        pass  # no filter
+    else:
+        target = cycle or _current_cycle(db)
+        if target:
+            query = query.filter(DBExhibitionApplication.exhibition_cycle == target)
+    return query.order_by(DBExhibitionApplication.created_at.desc()).all()
+
+
+@router.get("/exhibitions/cycles")
+def get_exhibition_cycles(db: Session = Depends(get_db)):
+    """Returns a distinct list of all exhibition cycles that have applications."""
+    rows = (
+        db.query(DBExhibitionApplication.exhibition_cycle)
+        .distinct()
+        .order_by(DBExhibitionApplication.exhibition_cycle)
+        .all()
+    )
+    cycles = [r[0] for r in rows if r[0]]
+    current = _current_cycle(db)
+    return {"cycles": cycles, "current": current}
+
 
 @router.post("/exhibitions/review")
 def review_exhibition(data: ExhibitionReview, db: Session = Depends(get_db)):
-    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == data.application_id).first()
+    application = db.query(DBExhibitionApplication).filter(
+        DBExhibitionApplication.id == data.application_id).first()
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
     application.status = data.status
     application.curator_note = data.curator_note
     db.commit()
     if data.status == "APPROVED":
-        send_system_email(application.user_email, "ALFAAZ — Exhibition Clearance Granted", f"Greetings {application.full_name},\n\nYour artwork has cleared the screening process.\n\nPlease log into your Alfaaz dashboard to review the Terms & Conditions and finalize your spot.\n\n— The Curator")
+        send_system_email(
+            application.user_email,
+            "ALFAAZ — Exhibition Clearance Granted",
+            f"Greetings {application.full_name},\n\nYour artwork has cleared the screening process for "
+            f"{application.exhibition_cycle}.\n\nPlease log into your Alfaaz dashboard to review the "
+            f"Terms & Conditions and finalize your spot.\n\n— The Curator"
+        )
     elif data.status == "REJECTED":
-        send_system_email(application.user_email, "ALFAAZ — Exhibition Update", f"Greetings {application.full_name},\n\nWe appreciate you sharing your portfolio with us. Unfortunately, we cannot accommodate your submission for this specific cycle.\n\n— The Curator")
+        send_system_email(
+            application.user_email,
+            "ALFAAZ — Exhibition Update",
+            f"Greetings {application.full_name},\n\nWe appreciate you sharing your portfolio with us. "
+            f"Unfortunately, we cannot accommodate your submission for {application.exhibition_cycle}.\n\n— The Curator"
+        )
     return {"status": "SUCCESS", "message": f"Applicant {data.status.lower()} and notified."}
+
 
 @router.patch("/exhibitions/{application_id}/confirm-payment")
 def confirm_exhibition_payment(application_id: int, db: Session = Depends(get_db)):
-    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
-    
+    application = db.query(DBExhibitionApplication).filter(
+        DBExhibitionApplication.id == application_id).first()
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
         
-    # STRICT CHECK REMOVED: Admins can now force-confirm payments at any time.
-    
+    # STRICT CHECK OMITTED HERE SO ADMIN CAN ALWAYS FORCE-CONFIRM
+        
     application.registration_status = "CONFIRMED"
     application.payment_confirmed_at = datetime.datetime.now(datetime.timezone.utc)
     db.commit()
-    
-    # Send the final webhook email
     send_system_email(
-        application.user_email, 
-        "ALFAAZ — Your Spot is Confirmed!", 
-        f"Greetings {application.full_name},\n\nYour payment has been verified and your exhibition spot is officially confirmed.\n\nWelcome to the collective.\n\n— The Curator"
+        application.user_email,
+        "ALFAAZ — Your Spot is Confirmed!",
+        f"Greetings {application.full_name},\n\nYour payment for {application.exhibition_cycle} has been "
+        f"verified and your exhibition spot is officially confirmed.\n\nWelcome to the collective.\n\n— The Curator"
     )
-    
     return {"status": "CONFIRMED"}
 
-@router.get("/exhibitions/{application_id}/registration")
-def get_exhibition_registration_detail(application_id: int, db: Session = Depends(get_db)):
-    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
-    if not application:
-        raise HTTPException(status_code=404, detail="Application not found.")
-    return {"id": application.id, "user_email": application.user_email, "full_name": application.full_name, "status": application.status, "registration_status": application.registration_status or "NONE", "agreed_to_tnc": application.agreed_to_tnc, "payment_proof_url": application.payment_proof_url, "participant_note_reg": application.participant_note_reg, "payment_confirmed_at": str(application.payment_confirmed_at) if application.payment_confirmed_at else None}
 
 @router.patch("/exhibitions/{application_id}/revert")
 def revert_exhibition_status(application_id: int, db: Session = Depends(get_db)):
-    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
+    application = db.query(DBExhibitionApplication).filter(
+        DBExhibitionApplication.id == application_id).first()
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
     application.status = "PENDING"
     application.curator_note = None
     db.commit()
     return {"status": "SUCCESS"}
+
+
+@router.get("/exhibitions/{application_id}/registration")
+def get_exhibition_registration_detail(application_id: int, db: Session = Depends(get_db)):
+    application = db.query(DBExhibitionApplication).filter(
+        DBExhibitionApplication.id == application_id).first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    return {
+        "id": application.id, "user_email": application.user_email,
+        "full_name": application.full_name, "exhibition_cycle": application.exhibition_cycle,
+        "status": application.status, "registration_status": application.registration_status or "NONE",
+        "agreed_to_tnc": application.agreed_to_tnc,
+        "payment_proof_url": application.payment_proof_url,
+        "participant_note_reg": application.participant_note_reg,
+        "payment_confirmed_at": str(application.payment_confirmed_at) if application.payment_confirmed_at else None
+    }
+
 
 @router.post("/exhibitions/config")
 def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends(get_db)):
@@ -211,10 +279,11 @@ def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends
     config.payment_instructions = data.payment_instructions
     config.payment_qr_url = data.payment_qr_url
     db.commit()
-    sync_notices_to_cloudinary(db)  
+    sync_notices_to_cloudinary(db)
     return {"status": "SUCCESS"}
 
-# --- Users & Submissions Admin ---
+
+# ── Users & Submissions ───────────────────────────────────────────────────────
 @router.get("/users")
 def get_all_users(db: Session = Depends(get_db)):
     users = db.query(DBUser).all()
@@ -229,7 +298,7 @@ def delete_user(user_email: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Cannot delete an admin account.")
     db.query(DBSubmission).filter(DBSubmission.author_email == user_email).delete()
     db.query(DBClubApplication).filter(DBClubApplication.user_email == user_email).delete()
-    db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user_email).delete()
+    db.query(DBEventRegistration).filter(DBEventRegistration.event_id == user_email).delete()
     db.query(DBExhibitionApplication).filter(DBExhibitionApplication.user_email == user_email).delete()
     db.delete(user)
     db.commit()
@@ -253,7 +322,7 @@ def send_test_email(user=Depends(require_admin)):
     sent = send_system_email(
         user["email"],
         "ALFAAZ — Email Test",
-        "This is a test email from the Alfaaz backend. If you received it, Make automation is configured correctly.",
+        "This is a test email from the Alfaaz backend.",
         raise_on_error=True,
         expose_error=True,
     )
@@ -261,7 +330,4 @@ def send_test_email(user=Depends(require_admin)):
 
 @router.get("/email/status")
 def get_email_status():
-    return {
-        "provider": "make",
-        "make_webhook_configured": bool(MAKE_WEBHOOK_URL),
-    }
+    return {"provider": "make", "make_webhook_configured": bool(MAKE_WEBHOOK_URL)}

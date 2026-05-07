@@ -5,6 +5,10 @@ class DBExhibitionApplication(Base):
     __tablename__ = "exhibition_applications"
     id = Column(Integer, primary_key=True, index=True)
     user_email = Column(String, index=True)
+
+    # Stamped at submission time so old apps survive config changes
+    exhibition_cycle = Column(String, nullable=True, index=True)
+
     full_name = Column(String)
     age = Column(Integer)
     address = Column(String)
@@ -17,14 +21,15 @@ class DBExhibitionApplication(Base):
     applicant_note = Column(String, nullable=True)
     status = Column(String, default="PENDING")          # PENDING, APPROVED, REJECTED
     curator_note = Column(String, nullable=True)
-    
+
     # Stage-2 registration fields (filled after approval)
     registration_status = Column(String, default="NONE") # NONE, SUBMITTED, CONFIRMED
     agreed_to_tnc = Column(Boolean, default=False)
-    payment_proof_url = Column(String, nullable=True)    # Cloudinary URL of payment screenshot
-    participant_note_reg = Column(String, nullable=True) # Any note at registration stage
+    payment_proof_url = Column(String, nullable=True)
+    participant_note_reg = Column(String, nullable=True)
     payment_confirmed_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 
 class DBExhibitionConfig(Base):
     __tablename__ = "exhibition_config"
@@ -34,9 +39,9 @@ class DBExhibitionConfig(Base):
     venue = Column(String, default="Venue TBD")
     about_text = Column(String, default="Details regarding the exhibition...")
     is_open = Column(Boolean, default=False)
-    
+
     # T&C and payment settings
-    tnc_pdf_url = Column(String, nullable=True)          # Cloudinary URL of T&C PDF
-    registration_fee = Column(String, default="")        # e.g. "₹500"
-    payment_instructions = Column(String, default="")    # UPI ID / bank details
-    payment_qr_url = Column(String, nullable=True)       # Optional QR code image URL
+    tnc_pdf_url = Column(String, nullable=True)
+    registration_fee = Column(String, default="")
+    payment_instructions = Column(String, default="")
+    payment_qr_url = Column(String, nullable=True)
