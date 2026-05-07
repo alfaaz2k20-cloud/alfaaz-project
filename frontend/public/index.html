@@ -528,6 +528,28 @@
         });
     }
 
+// 3. Latest Blog Check
+    if (data && data.latest_blog) {
+        const b = data.latest_blog;
+        
+        // Format the date to match your aesthetic (e.g., "May 1, 2026")
+        let formattedDate = 'Recently';
+        if (b.created_at) {
+            const dateObj = new Date(b.created_at);
+            formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        cards.push({
+            tag: 'JOURNAL',
+            tagColor: 'var(--text-primary)', // Using standard text color to look editorial
+            date: formattedDate,
+            title: b.title,
+            body: b.excerpt ? b.excerpt.substring(0, 140) + '...' : 'New entry from the Curator.',
+            link: `post.html?id=${b.id}`,
+            linkLabel: 'Read Entry →'
+        });
+    }
+
     return cards;
 }
 
