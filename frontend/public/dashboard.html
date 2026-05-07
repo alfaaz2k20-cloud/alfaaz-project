@@ -302,7 +302,6 @@
       output.scrollTop = output.scrollHeight;
     }
     
-    // Press Enter to submit Phantom query
     document.getElementById('phantomInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') askPhantom();
     });
@@ -385,14 +384,25 @@
       } catch (e) { msg.style.color = "var(--accent-red)"; msg.textContent = "Failed."; btn.textContent = "Submit Application"; btn.disabled = false; }
     }
 
-    // EXHIBITIONS (INCLUDING STEP 3 FINALIZATION)
+    // EXHIBITIONS (CLEANED UP FOR MULTI-CYCLE LOGIC)
     async function loadExhibitionStatus() {
       try {
-        const [cfgRes, statusRes] = await Promise.all([ fetch(`https://alfaaz-project.onrender.com/exhibitions/config`), window.globalApiFetch('/exhibitions/my-status') ]);
-        const cfg = await cfgRes.json(), data = await statusRes.json();
+        // Updated to use the clean global wrapper instead of hardcoded URL
+        const [cfgRes, statusRes] = await Promise.all([ 
+            window.globalApiFetch('/exhibitions/config'), 
+            window.globalApiFetch('/exhibitions/my-status') 
+        ]);
+        
+        const cfg = await cfgRes.json();
+        const data = await statusRes.json();
         
         const masterPanel = document.getElementById('exhibitionPanel');
-        if (!cfg.is_open && data.status === "NONE") { if (masterPanel) masterPanel.style.display = "none"; return; }
+        
+        // If portal is closed and they have no active application, hide the panel completely.
+        if (!cfg.is_open && data.status === "NONE") { 
+            if (masterPanel) masterPanel.style.display = "none"; 
+            return; 
+        }
         if (masterPanel) masterPanel.style.display = "block";
         
         // Hide all views first
@@ -423,27 +433,19 @@
             const paymentDetails = document.getElementById('paymentDetails');
 
             if (cfg.tnc_pdf_url) {
-              tcLink.href = cfg.tnc_pdf_url;
-              tcLink.target = '_blank';
-              tcLink.style.opacity = '1';
-              tcLink.style.pointerEvents = 'auto';
+              tcLink.href = cfg.tnc_pdf_url; tcLink.target = '_blank';
+              tcLink.style.opacity = '1'; tcLink.style.pointerEvents = 'auto';
             } else {
-              tcLink.removeAttribute('href');
-              tcLink.removeAttribute('target');
-              tcLink.style.opacity = '0.55';
-              tcLink.style.pointerEvents = 'none';
+              tcLink.removeAttribute('href'); tcLink.removeAttribute('target');
+              tcLink.style.opacity = '0.55'; tcLink.style.pointerEvents = 'none';
             }
 
             if (cfg.payment_qr_url) {
-              paymentLink.href = cfg.payment_qr_url;
-              paymentLink.target = '_blank';
-              paymentLink.style.opacity = '1';
-              paymentLink.style.pointerEvents = 'auto';
+              paymentLink.href = cfg.payment_qr_url; paymentLink.target = '_blank';
+              paymentLink.style.opacity = '1'; paymentLink.style.pointerEvents = 'auto';
             } else {
-              paymentLink.removeAttribute('href');
-              paymentLink.removeAttribute('target');
-              paymentLink.style.opacity = '0.55';
-              paymentLink.style.pointerEvents = 'none';
+              paymentLink.removeAttribute('href'); paymentLink.removeAttribute('target');
+              paymentLink.style.opacity = '0.55'; paymentLink.style.pointerEvents = 'none';
             }
 
             const paymentLines = [];
@@ -474,7 +476,6 @@
       msg.style.color = "var(--text-secondary)"; msg.textContent = "Securing payment proof in vault...";
 
       try {
-        // Upload to Cloudinary
         const formData = new FormData(); 
         formData.append('file', fileInput.files[0]); 
         formData.append('upload_preset', "alfaaz_vault"); 
@@ -485,7 +486,6 @@
 
         msg.textContent = "Updating registration status...";
         
-        // Notify Backend
         const res = await window.globalApiFetch('/exhibitions/finalize', {
           method: 'POST',
           body: JSON.stringify({ agreed_to_tnc: true, payment_proof_url: cloudData.secure_url })
@@ -507,6 +507,7 @@
 
     // INIT
     loadProfile(); loadActiveEvents(); loadMyTickets(); loadClubStatus(); loadExhibitionStatus();
+  
   </script>
 </body>
 </html>
