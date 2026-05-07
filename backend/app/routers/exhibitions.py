@@ -71,16 +71,27 @@ def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depend
 
 @router.get("/my-status")
 def get_my_exhibition_status(db: Session = Depends(get_db), user=Depends(require_auth)):
+    # 1. Check what the active cycle is
+    active_ex = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
+    if not active_ex:
+        return {"status": "NONE"} # If portal is closed, they have no active status
+
+    # 2. Fetch the user's application ONLY for the active cycle
     application = db.query(DBExhibitionApplication).filter(
-        DBExhibitionApplication.user_email == user["email"]
-    ).order_by(DBExhibitionApplication.created_at.desc()).first()
+        DBExhibitionApplication.user_email == user["email"],
+        DBExhibitionApplication.exhibition_cycle == active_ex.title
+    ).first()
+    
     if not application:
         return {"status": "NONE"}
+        
     base = {
         "status": application.status,
         "curator_note": application.curator_note,
         "application_id": application.id,
+        "exhibition_cycle": application.exhibition_cycle, # Passing this to the frontend
     }
+    
     if application.status == "APPROVED":
         base.update({
             "full_name": application.full_name,
