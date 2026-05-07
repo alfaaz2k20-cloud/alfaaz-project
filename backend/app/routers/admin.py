@@ -29,8 +29,7 @@ from app.services.curator import get_groq_client
 
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin)])
 
-
-# ── Blog generation (custom token, bypasses require_admin) ──────────────────
+# ── Blog generation ──────────────────────────────────────────────────────────
 @router.post("/blogs/generate", dependencies=[])
 def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_db), authorization: str = Header(None)):
     expected_token = os.environ.get("PHANTOM_SECRET_TOKEN")
@@ -71,7 +70,6 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
         return {"status": "SUCCESS", "message": "Autonomous research published."}
     except Exception:
         raise HTTPException(status_code=500, detail="The Curator failed to generate the article.")
-
 
 # ── Events ───────────────────────────────────────────────────────────────────
 @router.post("/events/create")
@@ -119,7 +117,6 @@ def delete_event(event_id: int, db: Session = Depends(get_db)):
     sync_notices_to_cloudinary(db)
     return {"status": "SUCCESS"}
 
-
 # ── Clubs ────────────────────────────────────────────────────────────────────
 @router.get("/club-applications")
 def get_club_applications(db: Session = Depends(get_db)):
@@ -148,14 +145,11 @@ def revert_club_status(application_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "SUCCESS"}
 
-
 # ── Exhibitions ───────────────────────────────────────────────────────────────
 
 def _current_cycle(db: Session) -> str:
-    # Find the active exhibition to know which cycle we are in
     active_ex = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
     return active_ex.title if active_ex else ""
-
 
 @router.post("/exhibitions/create")
 def create_exhibition(data: ExhibitionConfigSchema, db: Session = Depends(get_db)):
@@ -168,25 +162,20 @@ def create_exhibition(data: ExhibitionConfigSchema, db: Session = Depends(get_db
         registration_fee=data.registration_fee,
         payment_instructions=data.payment_instructions,
         payment_qr_url=data.payment_qr_url,
-        is_active=False # Created as inactive by default
+        is_active=False
     )
     db.add(new_ex)
     db.commit()
     return {"status": "SUCCESS"}
-
 
 @router.get("/exhibitions/list")
 def list_all_exhibitions(db: Session = Depends(get_db)):
     exs = db.query(DBExhibition).order_by(DBExhibition.created_at.desc()).all()
     return [{"id": e.id, "title": e.title, "date_text": e.date_text, "is_active": e.is_active} for e in exs]
 
-
 @router.patch("/exhibitions/{ex_id}/activate")
 def activate_exhibition(ex_id: int, db: Session = Depends(get_db)):
-    # 1. Turn off all exhibitions
     db.query(DBExhibition).update({DBExhibition.is_active: False})
-    
-    # 2. Turn on the specific one you clicked
     target = db.query(DBExhibition).filter(DBExhibition.id == ex_id).first()
     if target:
         target.is_active = True
@@ -195,41 +184,27 @@ def activate_exhibition(ex_id: int, db: Session = Depends(get_db)):
         return {"status": "SUCCESS", "title": target.title}
     raise HTTPException(status_code=404, detail="Exhibition not found")
 
-
 @router.get("/exhibitions")
 def get_all_exhibitions(cycle: str = None, db: Session = Depends(get_db)):
-    """
-    Returns applications for a specific cycle (defaults to the current one).
-    Pass ?cycle=ALL to get every application ever submitted.
-    """
     query = db.query(DBExhibitionApplication)
     if cycle and cycle.upper() == "ALL":
-        pass  # no filter
+        pass
     else:
         target = cycle or _current_cycle(db)
         if target:
             query = query.filter(DBExhibitionApplication.exhibition_cycle == target)
     return query.order_by(DBExhibitionApplication.created_at.desc()).all()
 
-
 @router.get("/exhibitions/cycles")
 def get_exhibition_cycles(db: Session = Depends(get_db)):
-    """Returns a distinct list of all exhibition cycles that have applications."""
-    rows = (
-        db.query(DBExhibitionApplication.exhibition_cycle)
-        .distinct()
-        .order_by(DBExhibitionApplication.exhibition_cycle)
-        .all()
-    )
+    rows = db.query(DBExhibitionApplication.exhibition_cycle).distinct().order_by(DBExhibitionApplication.exhibition_cycle).all()
     cycles = [r[0] for r in rows if r[0]]
     current = _current_cycle(db)
     return {"cycles": cycles, "current": current}
 
-
 @router.post("/exhibitions/review")
 def review_exhibition(data: ExhibitionReview, db: Session = Depends(get_db)):
-    application = db.query(DBExhibitionApplication).filter(
-        DBExhibitionApplication.id == data.application_id).first()
+    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == data.application_id).first()
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
     application.status = data.status
@@ -252,16 +227,11 @@ def review_exhibition(data: ExhibitionReview, db: Session = Depends(get_db)):
         )
     return {"status": "SUCCESS", "message": f"Applicant {data.status.lower()} and notified."}
 
-
 @router.patch("/exhibitions/{application_id}/confirm-payment")
 def confirm_exhibition_payment(application_id: int, db: Session = Depends(get_db)):
-    application = db.query(DBExhibitionApplication).filter(
-        DBExhibitionApplication.id == application_id).first()
+    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
-        
-    # STRICT CHECK OMITTED HERE SO ADMIN CAN ALWAYS FORCE-CONFIRM
-        
     application.registration_status = "CONFIRMED"
     application.payment_confirmed_at = datetime.datetime.now(datetime.timezone.utc)
     db.commit()
@@ -273,11 +243,9 @@ def confirm_exhibition_payment(application_id: int, db: Session = Depends(get_db
     )
     return {"status": "CONFIRMED"}
 
-
 @router.patch("/exhibitions/{application_id}/revert")
 def revert_exhibition_status(application_id: int, db: Session = Depends(get_db)):
-    application = db.query(DBExhibitionApplication).filter(
-        DBExhibitionApplication.id == application_id).first()
+    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
     application.status = "PENDING"
@@ -285,11 +253,9 @@ def revert_exhibition_status(application_id: int, db: Session = Depends(get_db))
     db.commit()
     return {"status": "SUCCESS"}
 
-
 @router.get("/exhibitions/{application_id}/registration")
 def get_exhibition_registration_detail(application_id: int, db: Session = Depends(get_db)):
-    application = db.query(DBExhibitionApplication).filter(
-        DBExhibitionApplication.id == application_id).first()
+    application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
     return {
@@ -301,31 +267,31 @@ def get_exhibition_registration_detail(application_id: int, db: Session = Depend
         "participant_note_reg": application.participant_note_reg,
         "payment_confirmed_at": str(application.payment_confirmed_at) if application.payment_confirmed_at else None
     }
+
 @router.post("/exhibitions/config")
 def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends(get_db)):
-    # Find whichever exhibition is currently live
     active_ex = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
 
-    # Prevent turning on the portal if no exhibition is selected
-    if not active_ex and data.is_open:
-        raise HTTPException(status_code=400, detail="Please click 'Set as Live' on an exhibition below first.")
-
-    if active_ex:
-        if not data.is_open:
-            active_ex.is_active = False  # This officially toggles the portal OFF
-        else:
-            # This updates the details if you edit them and click "Save Settings"
-            active_ex.title = data.title
-            active_ex.date_text = data.date_text
-            active_ex.venue = data.venue
-            active_ex.about_text = data.about_text
-            active_ex.tnc_pdf_url = data.tnc_pdf_url
-            active_ex.registration_fee = data.registration_fee
-            active_ex.payment_instructions = data.payment_instructions
-            active_ex.payment_qr_url = data.payment_qr_url
+    if not data.is_open:
+        # Turn off the portal
+        if active_ex:
+            active_ex.is_active = False
+            db.commit()
+    else:
+        # Turn on the portal
+        if not active_ex:
+            raise HTTPException(status_code=400, detail="Please click 'Set as Live' on an exhibition below first.")
+        # Update details
+        active_ex.title = data.title
+        active_ex.date_text = data.date_text
+        active_ex.venue = data.venue
+        active_ex.about_text = data.about_text
+        active_ex.tnc_pdf_url = data.tnc_pdf_url
+        active_ex.registration_fee = data.registration_fee
+        active_ex.payment_instructions = data.payment_instructions
+        active_ex.payment_qr_url = data.payment_qr_url
         db.commit()
 
-    # This is the magic line that updates index.html!
     sync_notices_to_cloudinary(db)
     return {"status": "SUCCESS"}
 
@@ -344,7 +310,7 @@ def delete_user(user_email: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Cannot delete an admin account.")
     db.query(DBSubmission).filter(DBSubmission.author_email == user_email).delete()
     db.query(DBClubApplication).filter(DBClubApplication.user_email == user_email).delete()
-    db.query(DBEventRegistration).filter(DBEventRegistration.event_id == user_email).delete()
+    db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user_email).delete()
     db.query(DBExhibitionApplication).filter(DBExhibitionApplication.user_email == user_email).delete()
     db.delete(user)
     db.commit()

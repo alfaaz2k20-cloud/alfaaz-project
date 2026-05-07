@@ -39,7 +39,7 @@ def sync_notices_to_cloudinary(db: Session):
         exhibition_data = None
         if config:
             exhibition_data = {
-                "is_open": True,  # Replaces config.is_open since the model uses is_active now
+                "is_open": True,
                 "title": config.title,
                 "date_text": config.date_text,
                 "about_text": config.about_text
