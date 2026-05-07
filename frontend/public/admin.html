@@ -413,13 +413,21 @@
 
     // 5. Applicants: Load Data
     async function loadExhibitionsData(f) {
-      const res = await window.globalApiFetch('/admin/exhibitions');
+      // Force the initial API call to fetch ALL archive data, 
+      // preventing the legacy unstamped applications from hiding.
+      const res = await window.globalApiFetch('/admin/exhibitions?cycle=ALL');
       if (!res) return;
       allExhibs = await res.json();
       renderExhibitions(f);
       buildCycleSelector();
+      
+      // Visually sync the dropdown to show "All Archive" on load
+      setTimeout(() => {
+          const sel = document.getElementById('cycleSelect');
+          if(sel) sel.value = "ALL";
+      }, 50);
     }
-
+    
     const hasPaymentSubmission = (a) => a.registration_status === 'SUBMITTED' || a.registration_status === 'CONFIRMED' || Boolean(a.payment_proof_url);
     const getExhibitionLabel = (a) => a.registration_status === 'CONFIRMED' ? 'CONFIRMED' : hasPaymentSubmission(a) ? 'PAYMENT SUBMITTED' : a.status;
 
