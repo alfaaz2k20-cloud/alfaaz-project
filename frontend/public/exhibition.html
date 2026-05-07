@@ -10,7 +10,8 @@
 
   <style>
     .page-header { position: relative; min-height: 50vh; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; padding-top: 5rem; }
-    .page-title { font-family: var(--font-heading); font-size: clamp(3rem, 6vw, 4.5rem); font-weight: 400; color: var(--text-primary); margin-bottom: 1rem; position: relative; z-index: 10; }
+    /* Title sits cleanly — no ur-hover overlap */
+    .page-title { font-family: var(--font-heading); font-size: clamp(3rem, 6vw, 4.5rem); font-weight: 400; color: var(--text-primary); margin-bottom: 1rem; position: relative; z-index: 10; line-height: 1.1; }
     .page-subtitle { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--text-secondary); position: relative; z-index: 10; }
     
     .exhib-details-box { background: var(--bg-secondary); border: 1px solid var(--grid-border); padding: 3rem; margin-top: -3rem; position: relative; z-index: 20; box-shadow: var(--shadow-float); display: flex; flex-direction: column; gap: 2rem; }
@@ -20,11 +21,45 @@
     
     .exhib-desc { font-size: 13px; line-height: 1.8; color: var(--text-secondary); text-align: center; max-width: 700px; margin: 0 auto; padding-top: 2rem; border-top: 1px solid var(--grid-border); }
 
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    /* Form field visibility — labels clearly separated from inputs */
+    .field-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .field-hint { font-size: 10px; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 0.2rem; }
+
+    /* Override auth-input to be more visually present inside the form panel */
+    #exhibForm .auth-input {
+      border-bottom: 1px solid var(--grid-border);
+      padding-bottom: 0.7rem;
+      font-size: 13px;
+      transition: border-color 0.3s ease;
+    }
+    #exhibForm .auth-input:focus { border-bottom-color: var(--accent-gold); outline: none; }
+
+    /* File input styling */
+    .file-upload-wrapper { margin-top: 0.3rem; }
+    .file-upload-wrapper input[type="file"] {
+      font-size: 11px; color: var(--text-secondary);
+      width: 100%; background: transparent; border: none; padding: 0;
+    }
+    .file-upload-wrapper input[type="file"]::file-selector-button {
+      background: var(--bg-primary); color: var(--text-primary);
+      border: 1px solid var(--grid-border);
+      padding: 0.6rem 1.2rem; margin-right: 1rem;
+      font-family: var(--font-body); font-size: 10px;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      cursor: pointer; transition: all 0.3s; border-radius: 0;
+    }
+    .file-upload-wrapper input[type="file"]::file-selector-button:hover {
+      background: var(--accent-gold); color: #fff; border-color: var(--accent-gold);
+    }
+    #uploadStatus { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-top: 0.6rem; min-height: 1.2em; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
     .full-width { grid-column: 1 / -1; }
+    .form-divider { grid-column: 1 / -1; height: 1px; background: var(--grid-border); margin: 0.5rem 0; }
     
     @media (max-width: 768px) {
       .form-grid { grid-template-columns: 1fr; }
+      .full-width { grid-column: 1; }
       .exhib-details-box { padding: 2rem; }
     }
   </style>
@@ -47,9 +82,8 @@
       </video>
       <div class="video-overlay"></div>
       <div>
-        <h1 class="page-title ur-hover" data-ur="نمائش" id="headerTitle">
-          <span class="en-text">Loading...</span>
-        </h1>
+        <!-- ur-hover removed: Urdu text was overlapping the subtitle below -->
+        <h1 class="page-title" id="headerTitle">Loading...</h1>
         <p class="page-subtitle">Open Call for Artists</p>
       </div>
     </header>
@@ -82,68 +116,85 @@
         
         <form id="exhibForm" class="panel fade-in" style="padding: 3rem 2.5rem;">
           <div class="form-grid">
-            <div>
+
+            <!-- Full Name -->
+            <div class="field-group">
               <label class="input-label">Full Name *</label>
-              <input type="text" id="fname" class="auth-input" required>
-            </div>
-            <div>
-              <label class="input-label">Age *</label>
-              <input type="number" id="age" class="auth-input" required min="1">
-            </div>
-            <div class="full-width">
-              <label class="input-label">Address *</label>
-              <input type="text" id="address" class="auth-input" required>
-            </div>
-            <div class="full-width">
-              <label class="input-label">WhatsApp Number *</label>
-              <input type="tel" id="whatsapp" class="auth-input" required>
-            </div>
-            
-            <div style="grid-column: 1 / -1; height: 1px; background: var(--grid-border); margin: 1rem 0;"></div>
-            
-            <div>
-              <label class="input-label">Art Genre *</label>
-              <select id="genre" class="auth-input" required>
-                <option value="">Select Category...</option>
-                <option value="Painting">Painting</option>
-                <option value="Digital Art">Digital Art</option>
-                <option value="Photography">Photography</option>
-                <option value="Calligraphy">Calligraphy</option>
-                <option value="Sculpture / 3D">Sculpture / 3D</option>
-                <option value="Mixed Media">Mixed Media</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label class="input-label">Medium *</label>
-              <input type="text" id="medium" class="auth-input" placeholder="e.g., Oil, Acrylic, Procreate" required>
-            </div>
-            
-            <div class="full-width">
-              <label class="input-label">Portfolio URL *</label>
-              <p style="font-size: 10px; color: var(--text-secondary); margin-bottom: 0.5rem;">Link to Google Drive, Behance, or Instagram portfolio.</p>
-              <input type="url" id="portfolio" class="auth-input" placeholder="https://" required>
-            </div>
-            <div class="full-width">
-              <label class="input-label">Note to Curator (Optional)</label>
-              <textarea id="note" class="auth-input" rows="3" placeholder="Context regarding your submission..."></textarea>
+              <span class="field-hint">As it should appear in exhibition records</span>
+              <input type="text" id="fname" class="auth-input" placeholder="e.g. Mohammad Ali Khan" required>
             </div>
 
+            <!-- Age -->
+            <div class="field-group">
+              <label class="input-label">Age *</label>
+              <span class="field-hint">Must be 19 or older to apply</span>
+              <input type="number" id="age" class="auth-input" placeholder="e.g. 24" required min="1" max="99">
+            </div>
+
+            <!-- Address -->
+            <div class="field-group full-width">
+              <label class="input-label">Residential Address *</label>
+              <span class="field-hint">District and state are sufficient</span>
+              <input type="text" id="address" class="auth-input" placeholder="e.g. Sopore, Baramulla, Kashmir" required>
+            </div>
+
+            <!-- WhatsApp -->
+            <div class="field-group full-width">
+              <label class="input-label">WhatsApp Number *</label>
+              <span class="field-hint">We will contact you via WhatsApp if selected</span>
+              <input type="tel" id="whatsapp" class="auth-input" placeholder="e.g. +91 98765 43210" required>
+            </div>
+
+            <div class="form-divider"></div>
+
+            <!-- Genre — text input, not dropdown -->
+            <div class="field-group">
+              <label class="input-label">Art Genre *</label>
+              <span class="field-hint">Your primary creative category</span>
+              <input type="text" id="genre" class="auth-input" placeholder="e.g. Painting, Calligraphy, Mixed Media" required>
+            </div>
+
+            <!-- Medium -->
+            <div class="field-group">
+              <label class="input-label">Primary Medium *</label>
+              <span class="field-hint">Materials or tools you work with</span>
+              <input type="text" id="medium" class="auth-input" placeholder="e.g. Oil on Canvas, Procreate, Charcoal" required>
+            </div>
+
+            <!-- Portfolio PDF Upload -->
+            <div class="field-group full-width">
+              <label class="input-label">Portfolio PDF *</label>
+              <span class="field-hint">A single PDF containing photographs of your recent works — max 15MB, PDF only</span>
+              <div class="file-upload-wrapper">
+                <input type="file" id="portfolioFile" accept="application/pdf">
+              </div>
+              <div id="uploadStatus"></div>
+            </div>
+
+            <!-- Note -->
+            <div class="field-group full-width">
+              <label class="input-label">Note to Curator <span style="font-weight:400; text-transform:none; letter-spacing:0;">(Optional)</span></label>
+              <span class="field-hint">Any context you'd like the Curator to know</span>
+              <textarea id="note" class="auth-input" rows="3" placeholder="e.g. I work primarily in large-format watercolour, focusing on Kashmiri landscapes..."></textarea>
+            </div>
+
+            <!-- Declarations -->
             <div class="full-width" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
               <label style="display: flex; align-items: flex-start; gap: 1rem; cursor: pointer;">
-                <input type="checkbox" id="checkAge" required style="margin-top: 4px;">
-                <span style="font-size: 12px; color: var(--text-secondary);">I confirm that I am 19 years of age or older.</span>
+                <input type="checkbox" id="checkAge" required style="margin-top: 4px; flex-shrink: 0;">
+                <span style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">I confirm that I am 19 years of age or older.</span>
               </label>
               <label style="display: flex; align-items: flex-start; gap: 1rem; cursor: pointer;">
-                <input type="checkbox" id="checkScreen" required style="margin-top: 4px;">
-                <span style="font-size: 12px; color: var(--text-secondary);">I understand my portfolio will be reviewed, and submission does not guarantee selection.</span>
+                <input type="checkbox" id="checkScreen" required style="margin-top: 4px; flex-shrink: 0;">
+                <span style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">I understand my portfolio will be reviewed by the Curator, and submission does not guarantee selection.</span>
               </label>
             </div>
+
           </div>
 
           <div style="margin-top: 3rem; text-align: center;">
             <button type="submit" class="submit-btn" id="submitBtn">Submit to Curator</button>
-            <div id="formMsg" style="margin-top: 1rem; font-size: 12px;"></div>
+            <div id="formMsg" style="margin-top: 1rem; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;"></div>
           </div>
         </form>
       </div>
@@ -154,52 +205,82 @@
   <script src="global.js"></script>
   <script>
 
-async function checkStatusBeforeRender() {
-    const res = await window.globalApiFetch('/exhibitions/my-status');
-    if (res && res.ok) {
-        const data = await res.json();
-        // Strict Gate: If your status is anything but NONE, you do not belong on the form page.
-        if (data.status !== "NONE") {
-            window.location.replace('dashboard.html');
-        }
-    }
-}
+    // ── Cloudinary PDF Upload ──────────────────────────────────────────
+    const CLOUD_NAME = "dmqwjpmjk", UPLOAD_PRESET = "alfaaz_vault";
+    let uploadedPdfUrl = null;
 
+    document.getElementById('portfolioFile')?.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      const status = document.getElementById('uploadStatus');
+      if (!file) return;
+
+      if (file.type !== 'application/pdf') {
+        status.style.color = 'var(--accent-red)';
+        status.textContent = '✗ Only PDF files are accepted.';
+        e.target.value = '';
+        uploadedPdfUrl = null;
+        return;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        status.style.color = 'var(--accent-red)';
+        status.textContent = '✗ File exceeds the 15MB limit.';
+        e.target.value = '';
+        uploadedPdfUrl = null;
+        return;
+      }
+
+      status.style.color = 'var(--accent-gold)';
+      status.textContent = `Uploading ${file.name}...`;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', UPLOAD_PRESET);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.secure_url) {
+          uploadedPdfUrl = data.secure_url;
+          status.style.color = 'var(--accent-green)';
+          status.textContent = '✓ Uploaded successfully.';
+        } else {
+          throw new Error();
+        }
+      } catch {
+        status.style.color = 'var(--accent-red)';
+        status.textContent = '✗ Upload failed — please try again.';
+        uploadedPdfUrl = null;
+      }
+    });
+
+    // ── Page Init ─────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Enforce Login
       const token = localStorage.getItem('alfaaz_token');
       if (!token) {
         window.location.href = `login.html?redirect=exhibition.html`;
         return;
       }
 
-      // 2. Fetch Active Config
       try {
         const res = await fetch(`https://alfaaz-project.onrender.com/exhibitions/config`);
         if (!res.ok) throw new Error("Failed to load config");
         const config = await res.json();
         
-        // Setup Header
-        document.getElementById('headerTitle').innerHTML = `<span class="en-text">${config.title || 'Exhibition'}</span>`;
+        document.getElementById('headerTitle').textContent = config.title || 'Exhibition';
 
         if (!config.is_open) {
-          // Closed State
           document.getElementById('closedMessage').style.display = 'block';
         } else {
-          // Open State
           document.getElementById('detailsBox').style.display = 'flex';
           document.getElementById('applicationFormContainer').style.display = 'block';
-          
           document.getElementById('exDates').textContent = config.date_text;
           document.getElementById('exVenue').textContent = config.venue;
           document.getElementById('exDesc').textContent = config.about_text || 'Applications are now open for the upcoming exhibition cycle.';
 
-          // 3. Check if user already applied
+          // Gate: block if already applied for this cycle
           const statusRes = await window.globalApiFetch('/exhibitions/my-status');
           if (statusRes && statusRes.ok) {
             const statusData = await statusRes.json();
             if (statusData.status !== 'NONE') {
-              // They applied! Block form and show dashboard button
               document.getElementById('applicationFormContainer').innerHTML = `
                 <div class="panel fade-in text-center" style="padding: 4rem 2rem;">
                   <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-4" style="color: var(--accent-green);"></i>
@@ -214,51 +295,60 @@ async function checkStatusBeforeRender() {
           }
         }
       } catch (err) {
-        document.getElementById('headerTitle').innerHTML = `<span class="en-text">Server Error</span>`;
+        document.getElementById('headerTitle').textContent = 'Server Error';
         document.getElementById('closedMessage').style.display = 'block';
       }
 
-      // Animations
       const fadeElements = document.querySelectorAll('.fade-in');
       setTimeout(() => { fadeElements.forEach(el => el.classList.add('visible')); }, 100);
       if (window.lucide) lucide.createIcons();
     });
 
-    // Form Submission
+    // ── Form Submission ───────────────────────────────────────────────
     document.getElementById('exhibForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const btn = document.getElementById('submitBtn'), msg = document.getElementById('formMsg');
-      
+      const btn = document.getElementById('submitBtn');
+      const msg = document.getElementById('formMsg');
+
+      // Guard: PDF must be uploaded first
+      if (!uploadedPdfUrl) {
+        msg.style.color = 'var(--accent-red)';
+        msg.textContent = 'Please upload your portfolio PDF before submitting.';
+        return;
+      }
+
       const payload = {
-        full_name: document.getElementById('fname').value,
-        age: parseInt(document.getElementById('age').value),
-        address: document.getElementById('address').value,
-        whatsapp: document.getElementById('whatsapp').value,
-        genre: document.getElementById('genre').value,
-        medium: document.getElementById('medium').value,
-        portfolio_url: document.getElementById('portfolio').value,
-        over_19: document.getElementById('checkAge').checked,
+        full_name:          document.getElementById('fname').value.trim(),
+        age:                parseInt(document.getElementById('age').value),
+        address:            document.getElementById('address').value.trim(),
+        whatsapp:           document.getElementById('whatsapp').value.trim(),
+        genre:              document.getElementById('genre').value.trim(),
+        medium:             document.getElementById('medium').value.trim(),
+        portfolio_url:      uploadedPdfUrl,
+        over_19:            document.getElementById('checkAge').checked,
         agreed_to_screening: document.getElementById('checkScreen').checked,
-        applicant_note: document.getElementById('note').value || ""
+        applicant_note:     document.getElementById('note').value.trim() || null,
       };
 
       btn.textContent = "Submitting..."; btn.disabled = true;
-      
+      msg.textContent = ''; msg.style.color = '';
+
       const res = await window.globalApiFetch('/exhibitions/apply', {
         method: 'POST', body: JSON.stringify(payload)
       });
 
       if (res && res.ok) {
-        msg.textContent = "✓ Portfolio submitted successfully! Redirecting...";
-        msg.style.color = "var(--accent-green)";
+        msg.style.color = 'var(--accent-green)';
+        msg.textContent = '✓ Portfolio submitted. Redirecting to dashboard...';
         setTimeout(() => window.location.href = 'dashboard.html', 2000);
       } else {
-        const errorData = await res.json();
-        msg.textContent = errorData.detail || "Submission failed. Please try again.";
-        msg.style.color = "var(--accent-red)";
-        btn.textContent = "Submit to Curator"; btn.disabled = false;
+        const errorData = await res?.json().catch(() => ({}));
+        msg.style.color = 'var(--accent-red)';
+        msg.textContent = errorData.detail || 'Submission failed. Please try again.';
+        btn.textContent = 'Submit to Curator'; btn.disabled = false;
       }
     });
+
   </script>
 </body>
 </html>
