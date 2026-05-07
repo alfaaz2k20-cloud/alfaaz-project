@@ -29,21 +29,39 @@ def get_exhibition_config(db: Session = Depends(get_db)):
 def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
     if not data.over_19 or not data.agreed_to_screening:
         raise HTTPException(status_code=400, detail="You must agree to the terms to proceed.")
+        
+    # --- NEW: Fetch the active cycle to stamp the application ---
+    active_cycle = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
+    if not active_cycle:
+        raise HTTPException(status_code=400, detail="The portal is currently closed. No active exhibition.")
+    
+    cycle_title = active_cycle.title
+    # ------------------------------------------------------------
+
     existing = db.query(DBExhibitionApplication).filter(
         DBExhibitionApplication.user_email == user["email"],
         DBExhibitionApplication.status == "PENDING"
     ).first()
     if existing:
         raise HTTPException(status_code=400, detail="You already have an application under review.")
+        
     application = DBExhibitionApplication(
-        user_email=user["email"], full_name=data.full_name, age=data.age,
-        address=data.address, whatsapp=data.whatsapp, genre=data.genre,
-        medium=data.medium, portfolio_url=data.portfolio_url,
-        over_19=data.over_19, agreed_to_screening=data.agreed_to_screening,
+        user_email=user["email"], 
+        exhibition_cycle=cycle_title,  # <-- NEW: Stamping the active cycle here!
+        full_name=data.full_name, 
+        age=data.age,
+        address=data.address, 
+        whatsapp=data.whatsapp, 
+        genre=data.genre,
+        medium=data.medium, 
+        portfolio_url=data.portfolio_url,
+        over_19=data.over_19, 
+        agreed_to_screening=data.agreed_to_screening,
         applicant_note=data.applicant_note
     )
     db.add(application)
     db.commit()
+    
     send_system_email(
         user["email"],
         "ALFAAZ — Application Received",
