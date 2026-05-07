@@ -81,6 +81,14 @@
 
     <div id="tab-exhibitions" class="tab-panel">
       <div class="section-title">Exhibition Management</div>
+
+      <div class="panel" style="padding: 1.5rem 2.5rem; margin-bottom: 2rem; border-left: 4px solid var(--accent-gold); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <div style="font-family: var(--font-heading); font-size: 1.5rem;">Public Portal Status</div>
+          <div id="portalLiveStatus" style="font-size: 12px; color: var(--text-secondary);">Checking status...</div>
+        </div>
+        <button onclick="deactivateAllExhibitions()" class="action-btn" style="border-color: var(--accent-red); color: var(--accent-red);">Close Portal (Take Offline)</button>
+      </div>
       
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 4rem;">
         <div class="panel" style="padding: 2.5rem; margin-bottom: 0;">
@@ -269,7 +277,16 @@
       
       const exhibitions = await res.json();
       const container = document.getElementById('exhibitionListContainer');
+      const statusText = document.getElementById('portalLiveStatus');
       container.innerHTML = '';
+
+      // Update the Master Status UI
+      const liveEx = exhibitions.find(e => e.is_active);
+      if (liveEx) {
+        statusText.innerHTML = `Currently Live: <strong style="color: var(--accent-green);">${liveEx.title}</strong>`;
+      } else {
+        statusText.innerHTML = `<strong style="color: var(--accent-red);">CLOSED</strong> (No active exhibition)`;
+      }
 
       if (exhibitions.length === 0) {
         container.innerHTML = '<div style="font-size: 12px; color: var(--text-secondary);">No exhibitions created yet.</div>';
@@ -352,6 +369,19 @@
         await loadExhibitionsData('ALL'); 
       } else {
         alert("Failed to activate exhibition.");
+      }
+    }
+
+    // NEW: Turn off the portal
+    async function deactivateAllExhibitions() {
+      if (!confirm("Are you sure you want to CLOSE the exhibition portal? The public will not be able to apply until you set a cycle to live.")) return;
+      
+      const res = await window.globalApiFetch('/admin/exhibitions/deactivate-all', { method: 'PATCH' });
+      if (res && res.ok) {
+        await loadExhibitionManager();
+        alert("Portal successfully closed.");
+      } else {
+        alert("Failed to close portal.");
       }
     }
 
