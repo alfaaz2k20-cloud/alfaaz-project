@@ -207,8 +207,16 @@ def get_all_exhibitions(cycle: str = None, db: Session = Depends(get_db)):
 
 @router.get("/exhibitions/cycles")
 def get_exhibition_cycles(db: Session = Depends(get_db)):
-    rows = db.query(DBExhibitionApplication.exhibition_cycle).distinct().order_by(DBExhibitionApplication.exhibition_cycle).all()
-    cycles = [r[0] for r in rows if r[0]]
+    # 1. Pull the master list of all created exhibitions directly from the source
+    master_exhibitions = db.query(DBExhibition.title).order_by(DBExhibition.created_at.desc()).all()
+    cycles = [e[0] for e in master_exhibitions]
+    
+    # 2. Safety Net: Grab any legacy names stamped on old applications
+    legacy_rows = db.query(DBExhibitionApplication.exhibition_cycle).distinct().all()
+    for r in legacy_rows:
+        if r[0] and r[0] not in cycles:
+            cycles.append(r[0])
+            
     current = _current_cycle(db)
     return {"cycles": cycles, "current": current}
 
