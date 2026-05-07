@@ -159,14 +159,23 @@ def review_exhibition(data: ExhibitionReview, db: Session = Depends(get_db)):
 @router.patch("/exhibitions/{application_id}/confirm-payment")
 def confirm_exhibition_payment(application_id: int, db: Session = Depends(get_db)):
     application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
+    
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
-    if application.registration_status != "SUBMITTED":
-        raise HTTPException(status_code=400, detail="No payment submission found to confirm.")
+        
+    # STRICT CHECK REMOVED: Admins can now force-confirm payments at any time.
+    
     application.registration_status = "CONFIRMED"
     application.payment_confirmed_at = datetime.datetime.now(datetime.timezone.utc)
     db.commit()
-    send_system_email(application.user_email, "ALFAAZ — Your Spot is Confirmed!", f"Greetings {application.full_name},\n\nYour payment has been verified and your exhibition spot is officially confirmed.\n\nWelcome to the collective.\n\n— The Curator")
+    
+    # Send the final webhook email
+    send_system_email(
+        application.user_email, 
+        "ALFAAZ — Your Spot is Confirmed!", 
+        f"Greetings {application.full_name},\n\nYour payment has been verified and your exhibition spot is officially confirmed.\n\nWelcome to the collective.\n\n— The Curator"
+    )
+    
     return {"status": "CONFIRMED"}
 
 @router.get("/exhibitions/{application_id}/registration")
