@@ -3,7 +3,7 @@ import cloudinary
 import cloudinary.uploader
 from sqlalchemy.orm import Session
 from app.models.event import DBEvent, DBEventRegistration
-from app.models.exhibition import DBExhibitionConfig
+from app.models.exhibition import DBExhibition
 from app.core.config import CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 
 if CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
@@ -35,7 +35,7 @@ def sync_notices_to_cloudinary(db: Session):
                 "full": (e.capacity > 0 and count >= e.capacity)
             })
 
-        config = db.query(DBExhibitionConfig).first()
+        config = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
         exhibition_data = None
         if config:
             exhibition_data = {
