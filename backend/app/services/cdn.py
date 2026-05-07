@@ -22,41 +22,59 @@ def sync_notices_to_cloudinary(db: Session):
         return
 
     try:
+        # --- Events ---
         events = db.query(DBEvent).filter(DBEvent.registration_open == True).all()
         events_data = []
         for e in events:
             count = db.query(DBEventRegistration).filter(DBEventRegistration.event_id == e.id).count()
             events_data.append({
                 "name": e.name,
-                "event_date": e.event_date,
+                "event_date": str(e.event_date) if e.event_date else None,   # ← Important
                 "description": e.description,
                 "capacity": e.capacity,
                 "spots_left": (e.capacity - count) if e.capacity > 0 else None,
                 "full": (e.capacity > 0 and count >= e.capacity)
             })
 
-        # Fetch the currently active exhibition from the new True Events table
+        # --- Exhibition ---
         config = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
         exhibition_data = None
         if config:
             exhibition_data = {
-                "is_open": True,  # FIXED: This line was crashing the sync previously
+                "is_open": True,
                 "title": config.title,
                 "date_text": config.date_text,
-                "about_text": config.about_text
+                "about_text": config.about_text,
+                "venue": config.venue,
+                "tnc_pdf_url": config.tnc_pdf_url,
+                "registration_fee": config.registration_fee,
+                "payment_instructions": config.payment_instructions,
+                "payment_qr_url": config.payment_qr_url
             }
 
-        notices_json = {"events": events_data, "exhibition": exhibition_data}
-        json_str = json.dumps(notices_json, indent=2)
+        notices_json = {
+            "events": events_data,
+            "exhibition": exhibition_data
+        }
+
+        json_str = json.dumps(notices_json, indent=2, ensure_ascii=False)
+
+        # FIXED: Use file-like object instead of string directly
+        from io import StringIO
+        file_obj = StringIO(json_str)
 
         result = cloudinary.uploader.upload(
-            json_str,
+            file_obj,
             resource_type="raw",
             public_id="notices.json",
             folder="alfaaz",
             overwrite=True
         )
+        
         print(f"[CLOUDINARY] notices.json synced: {result.get('secure_url')}")
+        return result.get('secure_url')
 
     except Exception as e:
         print(f"[CLOUDINARY] Sync failed: {e}")
+        import traceback
+        traceback.print_exc()
