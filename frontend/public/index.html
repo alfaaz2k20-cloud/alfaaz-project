@@ -497,7 +497,7 @@
         const cards = [];
         const isLoggedIn = !!localStorage.getItem('alfaaz_token');
 
-        // Exhibition (Top)
+        // 1. Exhibition First
         if (data.exhibition && data.exhibition.is_open) {
             const ex = data.exhibition;
             cards.push({
@@ -505,16 +505,17 @@
                 tagColor: 'var(--accent-gold)',
                 date: ex.date_text || 'TBD',
                 title: ex.title,
-                body: ex.about_text ? ex.about_text.substring(0, 160) + '...' : 'Applications are open.',
+                body: ex.about_text ? ex.about_text.substring(0, 140) + '...' : '',
                 link: 'exhibition.html',
                 linkLabel: 'Apply Now →'
             });
         }
 
-        // Standard Events
+        // 2. Standard Events
         if (data.events && Array.isArray(data.events)) {
             data.events.forEach(e => {
-                const capText = e.capacity === 0 ? 'Open registration' : (e.full ? 'At capacity' : `${e.spots_left || '?'} spots remaining`);
+                const spots = e.spots_left !== undefined && e.spots_left !== null ? `${e.spots_left} spots remaining` : 'Open';
+                const capText = e.full ? 'At capacity' : spots;
                 cards.push({
                     tag: 'EVENT',
                     tagColor: 'var(--accent-green)',
@@ -544,51 +545,21 @@
 
             if (res.ok) {
                 const data = await res.json();
-                console.log("✅ Notices loaded:", data);
+                console.log("✅ Full data received:", data);   // ← Check this in console
                 const cards = parseToCards(data);
                 renderCards(grid, cards);
             }
         } catch (err) {
-            console.error("❌ Notices error:", err);
+            console.error("Notices load failed:", err);
         } finally {
             isUpdating = false;
         }
     }
 
-    // Blog posts handled separately for reliability
-    async function loadLatestBlog() {
-        try {
-            const res = await fetch(`/api/blogs?t=${Date.now()}`);
-            if (res.ok) {
-                const blogs = await res.json();
-                if (blogs?.length > 0) {
-                    const latest = blogs[0];
-                    const grid = document.getElementById('noticesGrid');
-                    if (grid) {
-                        const blogDiv = document.createElement('div');
-                        blogDiv.className = 'update-card fade-in visible magnetic';
-                        blogDiv.innerHTML = `
-                            <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;">
-                                <span style="font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border:1px solid var(--text-primary);color:var(--text-primary);border-radius:2px;">JOURNAL</span>
-                                <span style="font-size:10px;letter-spacing:1px;color:var(--text-secondary);text-transform:uppercase;">${new Date(latest.created_at).toLocaleDateString('en-IN')}</span>
-                            </div>
-                            <p class="update-text">${latest.title}</p>
-                            <p style="font-size:12px;color:var(--text-secondary);margin-top:0.8rem;">New article by the Curator.</p>
-                            <a href="post.html?id=${latest.id}" style="display:inline-block;margin-top:1rem;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent-gold);text-decoration:none;border-bottom:1px solid var(--accent-gold);padding-bottom:2px;">Read Article →</a>
-                        `;
-                        grid.insertBefore(blogDiv, grid.firstChild);
-                    }
-                }
-            }
-        } catch (e) {}
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        loadLiveNotices();
-        setTimeout(loadLatestBlog, 800);
-    });
+    // Init
+    document.addEventListener('DOMContentLoaded', loadLiveNotices);
     window.addEventListener('pageshow', loadLiveNotices);
-    setInterval(loadLiveNotices, 30000);
+    setInterval(loadLiveNotices, 25000);
 })();
     
     // VITRINE DESKTOP SLIDER
