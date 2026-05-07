@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-# Notice we changed DBExhibitionConfig to DBExhibition here
+# Notice we changed DBExhibition to DBExhibition here
 from app.models.exhibition import DBExhibitionApplication, DBExhibition 
 from app.schemas.exhibition import ExhibitionApplicationCreate, ExhibitionRegistrationSubmit
 from app.core.security import require_auth
