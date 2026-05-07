@@ -61,7 +61,6 @@
   <footer><p>Alfaaz Collective // The Curator</p></footer>
 
   <script src="global.js"></script>
-  <script src="global.js"></script>
   <script>
     const menuToggle = document.getElementById('menuToggle'), navLinks = document.getElementById('navLinks');
     menuToggle?.addEventListener('click', () => { 
@@ -74,12 +73,13 @@
     async function loadBlogs() {
       const container = document.getElementById('blogContainer');
       try {
-        // Pointing directly to the backend to avoid Vercel 404s
-        // Note: Change "/blogs" to "/api/blogs" if your FastAPI router specifically requires that prefix.
+        // Pointing directly to the backend Render URL with the trailing slash
         const res = await fetch('https://alfaaz-project.onrender.com/blogs/'); 
         
-        if (!res.ok) throw new Error('Failed to fetch from backend');
+        if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
         const blogs = await res.json();
+        
+        console.log("Archive Data Received:", blogs); // Check F12 console
         
         if (!blogs.length) { 
             container.innerHTML = '<div class="loading-state">The archives are currently empty.</div>'; 
