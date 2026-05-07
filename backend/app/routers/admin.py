@@ -9,7 +9,7 @@ from app.db.session import get_db
 from app.models.user import DBUser
 from app.models.event import DBEvent, DBEventRegistration
 from app.models.club import DBClubApplication
-from app.models.exhibition import DBExhibitionApplication, DBExhibitionConfig
+from app.models.exhibition import DBExhibitionApplication, DBExhibition
 from app.models.submission import DBSubmission
 from app.models.blog import DBBlog
 
@@ -152,8 +152,48 @@ def revert_club_status(application_id: int, db: Session = Depends(get_db)):
 # ── Exhibitions ───────────────────────────────────────────────────────────────
 
 def _current_cycle(db: Session) -> str:
-    config = db.query(DBExhibitionConfig).first()
-    return config.title if config else ""
+    # Find the active exhibition to know which cycle we are in
+    active_ex = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
+    return active_ex.title if active_ex else ""
+
+
+@router.post("/exhibitions/create")
+def create_exhibition(data: ExhibitionConfigSchema, db: Session = Depends(get_db)):
+    new_ex = DBExhibition(
+        title=data.title,
+        date_text=data.date_text,
+        venue=data.venue,
+        about_text=data.about_text,
+        tnc_pdf_url=data.tnc_pdf_url,
+        registration_fee=data.registration_fee,
+        payment_instructions=data.payment_instructions,
+        payment_qr_url=data.payment_qr_url,
+        is_active=False # Created as inactive by default
+    )
+    db.add(new_ex)
+    db.commit()
+    return {"status": "SUCCESS"}
+
+
+@router.get("/exhibitions/list")
+def list_all_exhibitions(db: Session = Depends(get_db)):
+    exs = db.query(DBExhibition).order_by(DBExhibition.created_at.desc()).all()
+    return [{"id": e.id, "title": e.title, "date_text": e.date_text, "is_active": e.is_active} for e in exs]
+
+
+@router.patch("/exhibitions/{ex_id}/activate")
+def activate_exhibition(ex_id: int, db: Session = Depends(get_db)):
+    # 1. Turn off all exhibitions
+    db.query(DBExhibition).update({DBExhibition.is_active: False})
+    
+    # 2. Turn on the specific one you clicked
+    target = db.query(DBExhibition).filter(DBExhibition.id == ex_id).first()
+    if target:
+        target.is_active = True
+        db.commit()
+        sync_notices_to_cloudinary(db)
+        return {"status": "SUCCESS", "title": target.title}
+    raise HTTPException(status_code=404, detail="Exhibition not found")
 
 
 @router.get("/exhibitions")
@@ -261,26 +301,6 @@ def get_exhibition_registration_detail(application_id: int, db: Session = Depend
         "participant_note_reg": application.participant_note_reg,
         "payment_confirmed_at": str(application.payment_confirmed_at) if application.payment_confirmed_at else None
     }
-
-
-@router.post("/exhibitions/config")
-def update_exhibition_config(data: ExhibitionConfigSchema, db: Session = Depends(get_db)):
-    config = db.query(DBExhibitionConfig).first()
-    if not config:
-        config = DBExhibitionConfig()
-        db.add(config)
-    config.title = data.title
-    config.date_text = data.date_text
-    config.venue = data.venue
-    config.about_text = data.about_text
-    config.is_open = data.is_open
-    config.tnc_pdf_url = data.tnc_pdf_url
-    config.registration_fee = data.registration_fee
-    config.payment_instructions = data.payment_instructions
-    config.payment_qr_url = data.payment_qr_url
-    db.commit()
-    sync_notices_to_cloudinary(db)
-    return {"status": "SUCCESS"}
 
 
 # ── Users & Submissions ───────────────────────────────────────────────────────
