@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Curated Archives | Alfaaz Collective</title>
-  <script src="https://unpkg.com/lucide@latest" defer></script>
+  <script src="https://unpkg.com/lucide@latest" defer></script>
   <style>
     main { max-width: 900px; margin: 8rem auto 4rem; padding: 0 2rem; min-height: 60vh; }
     .page-title { font-family: var(--font-heading); font-size: clamp(3rem, 6vw, 4.5rem); font-weight: 400; text-transform: uppercase; letter-spacing: 1px; color: var(--text-primary); margin-bottom: 0.5rem; line-height: 1; }
@@ -18,7 +18,8 @@
     .loading-state { font-size: 11px; color: var(--text-secondary); text-align: center; padding: 4rem; text-transform: uppercase; letter-spacing: 2px; border: 1px dashed var(--grid-border); }
     footer { text-align: center; padding: 3em 0; border-top: 1px solid var(--grid-border); font-size: 10px; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; }
   </style>
-  <script type="module" crossorigin src="/assets/components-inBCOpbj.js"></script>
+  <script type="module" crossorigin src="/assets/blogs-O_EdcHVP.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/components-CvPhcI-e.js">
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
 <body>
@@ -33,34 +34,5 @@
 
   <footer><p>Alfaaz Collective // The Curator</p></footer>
 
-  <script>
-    async function loadBlogs() {
-      const container = document.getElementById('blogContainer');
-      try {
-        const res = await fetch('https://alfaaz-project.onrender.com/blogs/'); 
-        if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
-        const blogs = await res.json();
-        
-        if (!blogs.length) { 
-            container.innerHTML = '<div class="loading-state">The archives are currently empty.</div>'; 
-            return; 
-        }
-        
-        container.innerHTML = blogs.map(blog => `
-          <a href="post.html?id=${blog.id}" class="archive-card">
-            <span class="archive-meta">${new Date(blog.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} // Curator's Notes</span>
-            <h2 class="archive-title">${blog.title}</h2>
-            <p class="archive-excerpt">${blog.excerpt || ''}</p>
-          </a>`).join('');
-          
-        if(window.refreshGlobalEffects) window.refreshGlobalEffects();
-      } catch (error) { 
-          container.innerHTML = '<div class="loading-state" style="color: var(--accent-red);">[Error] Archives unavailable.</div>'; 
-          console.error("Blog Fetch Error:", error);
-      }
-    }
-    
-    document.addEventListener('DOMContentLoaded', loadBlogs);
-  </script>
 </body>
 </html>

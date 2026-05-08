@@ -25,9 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         try {
-            // Updated to fetch directly from the backend URL matching the new architecture
-            const res = await fetch(`https://alfaaz-project.onrender.com/blogs/${articleId}`);
-            if (!res.ok) throw new Error("Article not found or server error.");
+            // Using globalApiFetch for consistency
+            const res = await window.globalApiFetch(`/blogs/${articleId}`);
+            if (!res || !res.ok) throw new Error("Article not found or server error.");
             
             const article = await res.json();
             const dateStr = new Date(article.created_at).toLocaleDateString('en-US', { 
