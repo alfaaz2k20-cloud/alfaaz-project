@@ -1,12 +1,16 @@
-from sqlalchemy import Column, Integer, String, DateTime, func
-from app.db.base import Base
+from typing import Optional
+from datetime import datetime
+from sqlmodel import SQLModel, Field
+from sqlalchemy import Column, DateTime, func
 
-class DBSubmission(Base):
+class DBSubmission(SQLModel, table=True):
     __tablename__ = "submissions"
-    id = Column(Integer, primary_key=True, index=True)
-    submission_type = Column(String)
-    title = Column(String)
-    file_url = Column(String)
-    note = Column(String, nullable=True)
-    author_email = Column(String)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    submission_type: str
+    title: str
+    file_url: str
+    note: Optional[str] = None
+    author_email: str
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+    )

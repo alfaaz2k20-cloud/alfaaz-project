@@ -1,12 +1,18 @@
-from sqlalchemy import Column, Integer, String, DateTime, func
-from app.db.base import Base
+from typing import Optional
+from datetime import datetime
+from sqlmodel import SQLModel, Field
+from sqlalchemy import Column, DateTime, func
 
-class DBClubApplication(Base):
+class ClubApplicationBase(SQLModel):
+    club_name: str
+    note: Optional[str] = None
+
+class DBClubApplication(ClubApplicationBase, table=True):
     __tablename__ = "club_applications"
-    id = Column(Integer, primary_key=True, index=True)
-    user_email = Column(String, index=True)
-    club_name = Column(String)
-    note = Column(String, nullable=True)
-    status = Column(String, default="PENDING")
-    admin_note = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    user_email: str = Field(index=True)
+    status: str = Field(default="PENDING")
+    admin_note: Optional[str] = None
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+    )

@@ -1,11 +1,10 @@
-from pydantic import BaseModel
+from app.models.club import ClubApplicationBase, SQLModel
 from typing import Optional
 
-class ClubApplicationCreate(BaseModel):
-    club_name: str
-    note: Optional[str] = None
+class ClubApplicationCreate(ClubApplicationBase):
+    pass
 
-class ClubApplicationReview(BaseModel):
+class ClubApplicationReview(SQLModel):
     application_id: int
     status: str
     admin_note: Optional[str] = None

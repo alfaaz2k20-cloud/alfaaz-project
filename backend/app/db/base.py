@@ -1,3 +1,4 @@
-from sqlalchemy.ext.declarative import declarative_base
+from sqlmodel import SQLModel
 
-Base = declarative_base()
+# Base will now be SQLModel for repo-wide consistency
+Base = SQLModel
