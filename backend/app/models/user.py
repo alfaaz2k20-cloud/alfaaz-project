@@ -1,10 +1,10 @@
-from sqlalchemy import Column, Integer, String
-from app.db.base import Base
+from typing import Optional
+from sqlmodel import SQLModel, Field
 
-class DBUser(Base):
+class DBUser(SQLModel, table=True):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    password = Column(String)
-    full_name = Column(String, nullable=True)
-    status = Column(String, default="PARTICIPANT")
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    email: str = Field(unique=True, index=True)
+    password: str
+    full_name: Optional[str] = None
+    status: str = Field(default="PARTICIPANT")
