@@ -2,7 +2,7 @@
    ALFAAZ COLLECTIVE — GLOBAL SCRIPTS
 ======================================== */
 
-const API_URL = "https://alfaaz-project.onrender.com";
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 // 1. Magnetic Effects
 window.initMagnetic = function() {
@@ -88,9 +88,8 @@ window.globalApiFetch = async function(endpoint, options = {}) {
 })();
 
 // 5. Keep Render backend alive
-const BACKEND = "https://alfaaz-project.onrender.com";
 async function wakeBackend() {
-  try { await fetch(`${BACKEND}/`); } catch (e) {}
+  try { await fetch(`${API_URL}/`); } catch (e) {}
 }
 wakeBackend();
 setInterval(wakeBackend, 10 * 60 * 1000);
