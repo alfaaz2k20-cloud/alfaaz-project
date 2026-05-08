@@ -7,8 +7,6 @@
   <script src="https://unpkg.com/lucide@latest" defer></script>
   <link rel="stylesheet" href="global.css">
   <script type="module" src="global.js"></script>
-  <script type="module" src="components.js"></script>
-  <script type="module" src="src/blogs.js"></script>
   <style>
     main { max-width: 900px; margin: 8rem auto 4rem; padding: 0 2rem; min-height: 60vh; }
     .page-title { font-family: var(--font-heading); font-size: clamp(3rem, 6vw, 4.5rem); font-weight: 400; text-transform: uppercase; letter-spacing: 1px; color: var(--text-primary); margin-bottom: 0.5rem; line-height: 1; }
@@ -25,7 +23,12 @@
 </head>
 <body>
   
-  <alfaaz-nav></alfaaz-nav>
+  <nav id="navbar" style="justify-content: space-between;">
+    <a href="index.html" class="logo">ALFAAZ</a>
+    <div class="nav-actions">
+      <a href="index.html" style="font-size: 11px; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Return</a>
+    </div>
+  </nav>
 
   <main>
     <h1 class="page-title">Curated Archives</h1>
@@ -35,5 +38,32 @@
 
   <footer><p>Alfaaz Collective // The Curator</p></footer>
 
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('blogContainer');
+      try {
+        const res = await fetch('https://alfaaz-project.onrender.com/blogs/'); 
+        if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+        const blogs = await res.json();
+        
+        if (!blogs.length) { 
+            container.innerHTML = '<div class="loading-state">The archives are currently empty.</div>'; 
+            return; 
+        }
+        
+        container.innerHTML = blogs.map(blog => `
+          <a href="post.html?id=${blog.id}" class="archive-card">
+            <span class="archive-meta">${new Date(blog.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} // Curator's Notes</span>
+            <h2 class="archive-title">${blog.title}</h2>
+            <p class="archive-excerpt">${blog.excerpt || ''}</p>
+          </a>`).join('');
+          
+        if(window.refreshGlobalEffects) window.refreshGlobalEffects();
+      } catch (error) { 
+          container.innerHTML = '<div class="loading-state" style="color: var(--accent-red);">[Error] Archives unavailable.</div>'; 
+          console.error("Blog Fetch Error:", error);
+      }
+    });
+  </script>
 </body>
 </html>
