@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Submit to Storage — ALFAAZ</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
+  <script src="https://unpkg.com/lucide@latest" defer></script>
   <style>
     .vault-container { max-width: 600px; margin: 8rem auto; padding: 0 2rem; }
     .panel-title { font-family: var(--font-heading); font-size: 2.5rem; font-weight: 400; letter-spacing: 1px; margin-bottom: 0.5rem; color: var(--text-primary); text-align: center;}
@@ -17,20 +17,14 @@
     input[type="file"]::file-selector-button { background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--grid-border); padding: 0.8rem 1.5rem; margin-right: 1rem; font-family: var(--font-body); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s; border-radius: 0; }
     input[type="file"]::file-selector-button:hover { background: var(--text-primary); color: #fff; }
     #status-msg { margin-top: 15px; font-size: 11px; text-align: center; letter-spacing: 1px; text-transform: uppercase; }
-    
-        @media (max-width: 768px) { nav { padding: 1rem 1.5rem; } .nav-login { display: none !important; } .mobile-only-link { display: block; } .nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; flex-direction: column; background: var(--bg-secondary); padding: 2rem; gap: 1.5rem; border-bottom: 1px solid var(--grid-border); box-shadow: 0 10px 20px rgba(0,0,0,0.05); } .nav-links.active { display: flex; } #menuToggle { display: flex; align-items: center; justify-content: center; margin-left: 0.5rem; } }
   </style>
+  <script type="module" crossorigin src="/assets/submit-CyqRlMcu.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/components-qyxsLnBe.js">
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
 <body>
-    <nav id="navbar" style="justify-content: space-between;">
-    <a href="index.html" class="logo magnetic">ALFAAZ</a>
-    
-    <div class="nav-actions" style="gap: 2rem;">
-      <a href="dashboard.html" class="magnetic" style="font-size: 11px; color: var(--text-primary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Dashboard</a>
-      <button id="logoutBtn" class="magnetic" style="background: transparent; border: none; color: var(--text-secondary); font-family: var(--font-body); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: color 0.3s ease;">Log Out</button>
-    </div>
-  </nav>
+
+  <alfaaz-nav></alfaaz-nav>
 
   <div class="vault-container">
     <div class="panel">
@@ -64,48 +58,5 @@
     </div>
   </div>
 
-  <script src="global.js"></script>
-  <script>
-    const userData = localStorage.getItem('alfaaz_user'), token = localStorage.getItem('alfaaz_token');
-    if (!userData || !token) window.location.href = 'login.html';
-    const user = JSON.parse(userData);
-
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      localStorage.clear();
-      window.location.href = 'login.html';
-    });
-    const menuToggle = document.getElementById('menuToggle'), navLinks = document.getElementById('navLinks');
-    menuToggle?.addEventListener('click', () => { const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true'; menuToggle.setAttribute('aria-expanded', !isExpanded); menuToggle.classList.toggle('active'); navLinks.classList.toggle('active'); });
-
-    const CLOUD_NAME = "dmqwjpmjk", UPLOAD_PRESET = "alfaaz_vault"; 
-
-    document.getElementById('submission-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('submit-btn'), status = document.getElementById('status-msg'), fileInput = document.getElementById('file-upload');
-        btn.innerText = "Uploading..."; btn.disabled = true; status.style.color = "var(--text-secondary)"; status.innerText = "Uploading your file to secure storage...";
-
-        try {
-            const formData = new FormData(); formData.append('file', fileInput.files[0]); formData.append('upload_preset', UPLOAD_PRESET);
-            const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, { method: 'POST', body: formData });
-            const cloudData = await cloudRes.json();
-            if (!cloudData.secure_url) throw new Error("Failed to secure file link.");
-
-            btn.innerText = "Finalizing..."; status.innerText = "Notifying the Curator...";
-            const vaultData = { submission_type: document.getElementById('sub-type').value, title: document.getElementById('title').value, file_url: cloudData.secure_url, note: document.getElementById('note').value, author_email: user.email };
-            
-            const pyRes = await window.globalApiFetch('/vault/submit', { method: 'POST', body: JSON.stringify(vaultData) });
-
-            if (pyRes && pyRes.ok) {
-                status.style.color = "var(--accent-green)"; status.innerText = "Submission Successful";
-                btn.style.background = "var(--accent-gold)"; btn.style.borderColor = "var(--accent-gold)"; btn.innerText = "File Secured";
-                setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
-            } else {
-                throw new Error("The Storage system rejected the submission.");
-            }
-        } catch (error) {
-            status.style.color = "var(--accent-red)"; status.innerText = "ERROR: " + error.message; btn.innerText = "Submit to Storage"; btn.disabled = false;
-        }
-    });
-  </script>
 </body>
 </html>
