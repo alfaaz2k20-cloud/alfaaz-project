@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!allEvents.length) { container.innerHTML = '<div class="empty-state">No events found.</div>'; return; }
         container.innerHTML = '';
         allEvents.forEach(e => {
-          const card = document.createElement('div'); card.className = 'data-card event-card magnetic';
+          const card = document.createElement('div'); card.className = 'data-card event-card';
           const isOpen = e.registration_open; const capLabel = e.capacity === 0 ? '∞' : `${e.registered}/${e.capacity}`;
           card.innerHTML = `
             <div><div class="data-label">Event</div><div class="data-display">${e.name}</div><div style="font-size:11px; color:var(--text-secondary); margin-top: 4px;">${e.description || '—'}</div></div>
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       apps.forEach(a => {
         const card = document.createElement('div');
-        card.className = 'data-card exhib-card magnetic';
+        card.className = 'data-card exhib-card';
         const displayStatus = getExhibitionLabel(a);
         const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
 
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('clubsContainer'); const apps = f === 'ALL' ? allClubApps : allClubApps.filter(a => a.status === f); container.innerHTML = '';
       if (!apps.length) { container.innerHTML = '<div class="empty-state">No applications found.</div>'; return; }
       apps.forEach(a => {
-        const card = document.createElement('div'); card.className = 'data-card club-card magnetic'; const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
+        const card = document.createElement('div'); card.className = 'data-card club-card'; const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
         card.innerHTML = `
           <div><div class="data-label">User</div><div class="data-display">${a.user_email}</div></div>
           <div><div class="data-label">Club</div><div class="data-display">${a.club_name}</div></div>
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadRoster = async function() {
       const container = document.getElementById('rosterContainer'); const res = await window.globalApiFetch('/admin/users'); if(!res) return; const users = await res.json(); container.innerHTML = '';
       users.forEach((u, i) => {
-        const card = document.createElement('div'); card.className = 'data-card user-card magnetic';
+        const card = document.createElement('div'); card.className = 'data-card user-card';
         card.innerHTML = `
           <div><div class="data-label">User</div><div class="data-display">${u.email}</div></div>
           <div><div class="data-label">Role</div><select id="st-${i}" style="margin:0;"><option value="PARTICIPANT" ${u.status==='PARTICIPANT'?'selected':''}>Participant</option><option value="ADMIN" ${u.status==='ADMIN'?'selected':''}>Admin</option></select></div>
