@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Administration — ALFAAZ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .header { font-family: var(--font-heading); font-size: 2.5rem; letter-spacing: 1px; color: var(--text-primary); border-bottom: 1px solid var(--grid-border); padding-bottom: 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 1rem; margin-top: 6rem; }
+    .tab-nav { display: flex; gap: 0; border-bottom: 1px solid var(--grid-border); margin-bottom: 2rem; flex-wrap: wrap; }
+    .tab-btn { padding: 1rem 1.5rem; font-family: var(--font-body); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; background: transparent; color: var(--text-secondary); border: none; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab-btn:hover { color: var(--accent-gold); } .tab-btn.active { color: var(--accent-gold); border-bottom-color: var(--accent-gold); font-weight: 500; }
+    .tab-panel { display: none; } .tab-panel.active { display: block; }
+    .section-title { color: var(--text-primary); font-family: var(--font-heading); font-size: 1.8rem; margin-top: 2rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--grid-border); padding-bottom: 0.5rem; font-weight: 400; }
+    
+    .panel { background: var(--bg-secondary); border: 1px solid var(--grid-border); padding: 3rem; margin-bottom: 3rem; box-shadow: var(--shadow-base); }
+    
+    .data-card { background: var(--bg-secondary); border: 1px solid var(--grid-border); padding: 1.5rem 2rem; margin-bottom: 1rem; display: grid; gap: 1.5rem; align-items: center; transition: border-color 0.3s ease; }
+    .data-card:hover { border-color: var(--accent-gold); }
+    .user-card { grid-template-columns: 2fr 1fr 1fr; } .club-card { grid-template-columns: 2fr 1fr 1fr 1fr; } .event-card { grid-template-columns: 2fr 1fr 1fr 1fr 1fr; } .exhib-card { grid-template-columns: 2fr 1.5fr 1fr 1.5fr; align-items: start; }
+    
+    .data-label { font-family: var(--font-body); font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .data-display { font-size: 14px; font-weight: 400; color: var(--text-primary); }
+    
+    .badge { display: inline-block; padding: 4px 10px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; border-radius: 2px; font-weight: 500;}
+    .badge-pending { background: rgba(184, 134, 11, 0.05); color: var(--accent-gold); border-color: var(--accent-gold); } 
+    .badge-approved { background: rgba(22, 163, 74, 0.05); color: var(--accent-green); border-color: var(--accent-green); } 
+    .badge-rejected { background: rgba(220, 38, 38, 0.05); color: var(--accent-red); border-color: var(--accent-red); } 
+    .badge-open { background: rgba(22, 163, 74, 0.05); color: var(--accent-green); border-color: var(--accent-green); } 
+    .badge-closed { background: var(--bg-primary); color: var(--text-secondary); border-color: var(--grid-border); }
+    
+    input, select, textarea { background: transparent; border: none; border-bottom: 1px solid var(--grid-border); color: var(--text-primary); padding: 0.8rem 0; width: 100%; font-family: var(--font-body); font-size: 13px; border-radius: 0; transition: border-color 0.3s; } input:focus, select:focus, textarea:focus { outline: none; border-bottom-color: var(--accent-gold); }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 2rem; } 
+    .form-group { display: flex; flex-direction: column; gap: 0.2rem; } 
+    .empty-state { color: var(--text-secondary); font-size: 12px; padding: 3rem; text-align: center; border: 1px dashed var(--grid-border); background: var(--bg-primary); font-style: italic; }
+    
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(248, 246, 240, 0.95); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); } .modal-overlay.open { display: flex; } .modal { background: var(--bg-secondary); border: 1px solid var(--grid-border); box-shadow: var(--shadow-float); padding: 3rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; } .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--grid-border); padding-bottom: 1.5rem; }
+    
+    @media (max-width: 768px) { .club-card, .event-card, .user-card, .exhib-card { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; gap: 1.5rem; } nav { padding: 1rem 1.5rem; } .nav-login { display: none !important; } .mobile-only-link { display: block; } .nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; flex-direction: column; background: var(--bg-secondary); padding: 2rem; gap: 1.5rem; border-bottom: 1px solid var(--grid-border); box-shadow: 0 10px 20px rgba(0,0,0,0.05); } .nav-links.active { display: flex; } #menuToggle { display: flex; align-items: center; justify-content: center; margin-left: 0.5rem; } }
+  </style>
+  <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
+</head>
+<body>
+  <nav id="navbar" style="justify-content: space-between;">
+    <a href="index.html" class="logo magnetic">ALFAAZ</a>
+    
+    <div class="nav-actions" style="gap: 2rem;">
+      <a href="dashboard.html" class="magnetic" style="font-size: 11px; color: var(--text-primary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Dashboard</a>
+      <button id="logoutBtn" class="magnetic" style="background: transparent; border: none; color: var(--text-secondary); font-family: var(--font-body); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: color 0.3s ease;">Log Out</button>
+    </div>
+  </nav>
+
+  <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
+    <div class="header">
+      <div>Administration</div>
+      <a href="dashboard.html" class="magnetic" style="font-size: 11px; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px;">&larr; Dashboard</a>
+    </div>
+    <div class="tab-nav">
+      <button class="tab-btn active magnetic" onclick="switchTab('events')">Standard Events</button>
+      <button class="tab-btn magnetic" onclick="switchTab('exhibitions')">Exhibitions</button>
+      <button class="tab-btn magnetic" onclick="switchTab('clubs')">Club Applications</button>
+      <button class="tab-btn magnetic" onclick="switchTab('roster')">Collective Roster</button>
+    </div>
+
+    <div id="tab-events" class="tab-panel active">
+      <div class="section-title">Create Event</div>
+      <div class="panel">
+        <div class="form-grid">
+          <div class="form-group"><label class="data-label">Event Name *</label><input type="text" id="ev-name" placeholder="e.g. Live Painting"></div>
+          <div class="form-group"><label class="data-label">Event Date</label><input type="text" id="ev-date" placeholder="e.g. Sunday 4PM"></div>
+          <div class="form-group"><label class="data-label">Capacity (0 = unlimited)</label><input type="number" id="ev-capacity" value="0" min="0" style="background: transparent; border: none; border-bottom: 1px solid var(--grid-border); color: var(--text-primary); padding: 0.8rem 0; width: 100%; font-family: var(--font-body); font-size: 13px; outline: none;"></div>
+          <div class="form-group"><label class="data-label">Description</label><input type="text" id="ev-desc" placeholder="Brief description..."></div>
+        </div>
+        <button class="action-btn gold magnetic" style="padding: 1rem 2rem;" onclick="handleCreateEvent()">Create Event</button>
+        <span id="ev-create-msg" style="font-size:11px; margin-left:1rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;"></span>
+      </div>
+      <div class="section-title">Live Events</div>
+      <div id="eventsContainer"><div class="empty-state">Loading events...</div></div>
+    </div>
+
+    <div id="tab-exhibitions" class="tab-panel">
+      <div class="section-title">Exhibition Management</div>
+
+      <div class="panel" style="padding: 1.5rem 2.5rem; margin-bottom: 2rem; border-left: 4px solid var(--accent-gold); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <div style="font-family: var(--font-heading); font-size: 1.5rem;">Public Portal Status</div>
+          <div id="portalLiveStatus" style="font-size: 12px; color: var(--text-secondary);">Checking status...</div>
+        </div>
+        <button onclick="deactivateAllExhibitions()" class="action-btn" style="border-color: var(--accent-red); color: var(--accent-red);">Close Portal (Take Offline)</button>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 4rem;">
+        <div class="panel" style="padding: 2.5rem; margin-bottom: 0;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.5rem; color: var(--text-primary); margin-bottom: 1.5rem;">Create New Cycle</h3>
+          
+          <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+              <label class="data-label">Exhibition Title *</label>
+              <input type="text" id="newExTitle" placeholder="e.g., Harud 2026">
+            </div>
+            <div>
+              <label class="data-label">Dates *</label>
+              <input type="text" id="newExDate" placeholder="e.g., October 12th - 15th">
+            </div>
+            <div>
+              <label class="data-label">Venue *</label>
+              <input type="text" id="newExVenue" placeholder="e.g., Mahatta Art Gallery">
+            </div>
+            <div>
+              <label class="data-label">About / Description</label>
+              <textarea id="newExDesc" rows="3" placeholder="Brief description..."></textarea>
+            </div>
+            <div style="margin-top: 1rem; border-top: 1px dashed var(--grid-border); padding-top: 1rem;">
+               <span style="font-size: 10px; font-weight: 600; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 1px;">Post-Approval Req. (Optional)</span>
+            </div>
+            <div>
+              <label class="data-label">T&C PDF URL</label>
+              <input type="text" id="newExTnc" placeholder="https://...">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div>
+                <label class="data-label">Reg. Fee (₹)</label>
+                <input type="text" id="newExFee" placeholder="e.g., 500">
+              </div>
+              <div>
+                <label class="data-label">Payment QR URL</label>
+                <input type="text" id="newExQr" placeholder="https://...">
+              </div>
+            </div>
+            <div>
+              <label class="data-label">Payment Instructions</label>
+              <input type="text" id="newExPayInst" placeholder="e.g., UPI to alfaaz@okaxis">
+            </div>
+          </div>
+          <button onclick="createNewExhibition()" class="submit-btn" style="width: 100%;">Create Exhibition</button>
+          <div id="createExMsg" style="margin-top: 1rem; font-size: 11px; text-align: center;"></div>
+        </div>
+
+        <div class="panel" style="padding: 2.5rem; margin-bottom: 0;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.5rem; color: var(--text-primary); margin-bottom: 1.5rem;">Cycle Control Center</h3>
+          <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 1.5rem;">Click "Set as Live" to open the portal for a specific exhibition. Only one can be live at a time.</p>
+          
+          <div id="exhibitionListContainer" style="display: flex; flex-direction: column; gap: 1rem; max-height: 600px; overflow-y: auto; padding-right: 10px;">
+            <div style="font-size: 12px; color: var(--accent-gold);">Loading exhibitions...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+        <div>Submitted Portfolios</div>
+        <div id="cycleSelectWrap" style="display:flex; align-items:center;"></div>
+      </div>
+      
+      <div style="display:flex; gap:0.8rem; margin-bottom:2rem; flex-wrap:wrap;">
+        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('ALL')" id="filt-ALL">All</button>
+        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('PENDING')" id="filt-PENDING">Pending</button>
+        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('APPROVED')" id="filt-APPROVED">Approved</button>
+        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('FINALIZED')" id="filt-FINALIZED">Finalized (Paid)</button>
+        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('REJECTED')" id="filt-REJECTED">Rejected</button>
+      </div>
+      
+      <div id="exhibitionsContainer"><div class="empty-state">Loading applications...</div></div>
+    </div>
+
+    <div id="tab-clubs" class="tab-panel">
+      <div class="section-title">Club Applications</div>
+      <div style="display:flex; gap:0.8rem; margin-bottom:2rem; flex-wrap:wrap;">
+        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('ALL')" id="filter-ALL">All</button>
+        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('PENDING')" id="filter-PENDING">Pending</button>
+        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('APPROVED')" id="filter-APPROVED">Approved</button>
+        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('REJECTED')" id="filter-REJECTED">Rejected</button>
+      </div>
+      <div id="clubsContainer"><div class="empty-state">Loading applications...</div></div>
+    </div>
+    
+    <div id="tab-roster" class="tab-panel">
+      <div class="section-title">Collective Roster</div>
+      <div id="rosterContainer"><div class="empty-state">Loading roster...</div></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="regModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div style="font-family:var(--font-heading); font-size:2.5rem; color:var(--text-primary); font-weight: 400;" id="modalTitle">Details</div>
+        <button class="action-btn magnetic" style="padding: 0.5rem 1rem; border-color: transparent;" onclick="closeModal()">✕ Close</button>
+      </div>
+      <div id="modalBody" style="color:var(--text-primary);"></div>
+    </div>
+  </div>
+
+  <script src="global.js"></script>
+  <script>
+    const userData = localStorage.getItem('alfaaz_user');
+    if (!userData) window.location.href = 'login.html';
+    const user = JSON.parse(userData); 
+    if (user.status !== 'ADMIN') window.location.href = 'dashboard.html';
+
+    document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); window.location.href = 'login.html'; });
+
+    const tabLoaded = {};
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelector(`[onclick="switchTab('${name}')"]`).classList.add('active');
+      document.getElementById(`tab-${name}`).classList.add('active');
+      if (!tabLoaded[name]) { tabLoaded[name] = true; loadTab(name); }
+    }
+    function loadTab(name) {
+      if (name === 'events') loadEvents(); 
+      if (name === 'exhibitions') { loadExhibitionManager(); loadExhibitionsData('ALL'); }
+      if (name === 'clubs') loadClubs('ALL'); 
+      if (name === 'roster') loadRoster();
+    }
+
+    // ==========================================
+    // EVENTS LOGIC
+    // ==========================================
+    let allEvents = [];
+    async function loadEvents() {
+      const container = document.getElementById('eventsContainer');
+      try {
+        const res = await window.globalApiFetch('/admin/events');
+        if(!res) return;
+        allEvents = await res.json();
+        if (!allEvents.length) { container.innerHTML = '<div class="empty-state">No events found.</div>'; return; }
+        container.innerHTML = '';
+        allEvents.forEach(e => {
+          const card = document.createElement('div'); card.className = 'data-card event-card magnetic';
+          const isOpen = e.registration_open; const capLabel = e.capacity === 0 ? '∞' : `${e.registered}/${e.capacity}`;
+          card.innerHTML = `
+            <div><div class="data-label">Event</div><div class="data-display">${e.name}</div><div style="font-size:11px; color:var(--text-secondary); margin-top: 4px;">${e.description || '—'}</div></div>
+            <div><div class="data-label">Date</div><div class="data-display" style="font-size:12px;">${e.event_date || '—'}</div></div>
+            <div><div class="data-label">Registered</div><div class="data-display">${capLabel}</div></div>
+            <div><div class="data-label">Status</div><span class="badge ${isOpen ? 'badge-open' : 'badge-closed'}">${isOpen ? 'Open' : 'Closed'}</span></div>
+            <div style="display:flex; flex-direction:column; gap:0.6rem;">
+              <button class="action-btn ${isOpen ? '' : 'gold'}" style="padding: 0.6rem; font-size:9px;" onclick="toggleEvent(${e.id}, this)">${isOpen ? 'Close Registration' : 'Open Registration'}</button>
+              <button class="action-btn gold" style="padding: 0.6rem; font-size:9px;" onclick="viewRegistrations(${e.id})">View List</button>
+              <button class="action-btn" style="padding: 0.6rem; font-size:9px; border-color:var(--accent-red); color:var(--accent-red);" onclick="deleteEvent(${e.id}, '${e.name.replace(/'/g, "\\'")}', this)">Delete</button>
+            </div>`;
+          container.appendChild(card);
+        });
+        if(window.refreshGlobalEffects) window.refreshGlobalEffects();
+      } catch (e) { container.innerHTML = '<div class="empty-state">Error loading events.</div>'; }
+    }
+
+    async function handleCreateEvent() {
+      const name = document.getElementById('ev-name').value.trim(), date = document.getElementById('ev-date').value.trim(), capacity = parseInt(document.getElementById('ev-capacity').value) || 0, desc = document.getElementById('ev-desc').value.trim(), msg = document.getElementById('ev-create-msg');
+      if (!name) return; msg.textContent = 'Creating...';
+      const res = await window.globalApiFetch('/admin/events/create', { method: 'POST', body: JSON.stringify({ name, description: desc, event_date: date, capacity }) });
+      if (res && res.ok) { msg.textContent = '✓ Created.'; loadEvents(); }
+    }
+    async function toggleEvent(id, btn) { btn.textContent = '...'; const res = await window.globalApiFetch(`/admin/events/${id}/toggle`, { method: 'PATCH' }); if (res && res.ok) loadEvents(); }
+    async function deleteEvent(id, name, btn) { if (!confirm(`Delete ${name}?`)) return; btn.textContent = '...'; const res = await window.globalApiFetch(`/admin/events/${id}`, { method: 'DELETE' }); if (res && res.ok) loadEvents(); }
+    
+    async function viewRegistrations(id) {
+      const event = allEvents.find(e => e.id === id); document.getElementById('modalTitle').textContent = event.name; document.getElementById('modalBody').innerHTML = 'Loading...'; document.getElementById('regModal').classList.add('open');
+      const res = await window.globalApiFetch(`/admin/events/${id}/registrations`);
+      if(!res) return;
+      const data = await res.json();
+      let html = `<div style="font-size:12px; margin-bottom:1.5rem; color:var(--accent-gold); font-weight:600; letter-spacing: 1px; text-transform: uppercase;">Total Approved: ${data.registrations.length}</div>`;
+      data.registrations.forEach((r, i) => { html += `<div style="padding:1rem 0; border-bottom:1px solid var(--grid-border); font-size:13px; display:flex; justify-content:space-between; align-items: center;"><span><strong style="color: var(--accent-gold); margin-right: 10px;">${i+1}.</strong> ${r.email}</span><span style="color:var(--text-primary); font-size: 11px; background: var(--bg-primary); padding: 4px 10px; border-radius: 2px;">${r.whatsapp ? 'WA: ' + r.whatsapp : 'No WA provided'}</span></div>`; });
+      document.getElementById('modalBody').innerHTML = html || '<div class="empty-state">No registrations.</div>';
+    }
+    function closeModal() { document.getElementById('regModal').classList.remove('open'); }
+
+    // ==========================================
+    // EXHIBITIONS LOGIC (TRUE EVENTS MODEL)
+    // ==========================================
+    let allExhibs = [], activeCycleFilter = 'ALL';
+
+    // 1. Management: Load the list of created exhibitions
+    async function loadExhibitionManager() {
+      const res = await window.globalApiFetch('/admin/exhibitions/list');
+      if (!res || !res.ok) return;
+      
+      const exhibitions = await res.json();
+      const container = document.getElementById('exhibitionListContainer');
+      const statusText = document.getElementById('portalLiveStatus');
+      container.innerHTML = '';
+
+      // Update the Master Status UI
+      const liveEx = exhibitions.find(e => e.is_active);
+      if (liveEx) {
+        statusText.innerHTML = `Currently Live: <strong style="color: var(--accent-green);">${liveEx.title}</strong>`;
+      } else {
+        statusText.innerHTML = `<strong style="color: var(--accent-red);">CLOSED</strong> (No active exhibition)`;
+      }
+
+      if (exhibitions.length === 0) {
+        container.innerHTML = '<div style="font-size: 12px; color: var(--text-secondary);">No exhibitions created yet.</div>';
+        return;
+      }
+
+      exhibitions.forEach(ex => {
+        const card = document.createElement('div');
+        card.style.cssText = `border: 1px solid ${ex.is_active ? 'var(--accent-gold)' : 'var(--grid-border)'}; padding: 1.5rem; background: ${ex.is_active ? 'var(--bg-primary)' : 'transparent'}; transition: all 0.3s;`;
+        
+        const statusBadge = ex.is_active 
+          ? `<span style="font-size: 9px; padding: 3px 8px; background: var(--accent-gold); color: #fff; letter-spacing: 1px; text-transform: uppercase;">Live Now</span>`
+          : `<span style="font-size: 9px; padding: 3px 8px; border: 1px solid var(--grid-border); color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase;">Inactive</span>`;
+          
+        const actionBtn = ex.is_active
+          ? `<button disabled style="font-family: var(--font-body); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--grid-border); color: var(--text-secondary); cursor: not-allowed;">Currently Active</button>`
+          : `<button onclick="activateExhibition(${ex.id}, '${ex.title.replace(/'/g, "\\'")}')" class="action-btn gold" style="padding: 0.5rem 1rem; font-size: 10px;">Set as Live</button>`;
+
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <div>
+              <div style="font-family: var(--font-heading); font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.2rem;">${ex.title}</div>
+              <div style="font-size: 11px; color: var(--text-secondary);">${ex.date_text}</div>
+            </div>
+            ${statusBadge}
+          </div>
+          <div>${actionBtn}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 2. Management: Create a new exhibition
+    async function createNewExhibition() {
+      const btn = document.querySelector('button[onclick="createNewExhibition()"]');
+      const msg = document.getElementById('createExMsg');
+      
+      const payload = {
+        title: document.getElementById('newExTitle').value.trim(),
+        date_text: document.getElementById('newExDate').value.trim(),
+        venue: document.getElementById('newExVenue').value.trim(),
+        about_text: document.getElementById('newExDesc').value.trim(),
+        tnc_pdf_url: document.getElementById('newExTnc').value.trim(),
+        registration_fee: document.getElementById('newExFee').value.trim(),
+        payment_qr_url: document.getElementById('newExQr').value.trim(),
+        payment_instructions: document.getElementById('newExPayInst').value.trim(),
+        is_open: false 
+      };
+
+      if (!payload.title || !payload.date_text || !payload.venue) {
+        msg.textContent = "Title, Dates, and Venue are required.";
+        msg.style.color = "var(--accent-red)";
+        return;
+      }
+
+      btn.textContent = "Creating..."; btn.disabled = true;
+      const res = await window.globalApiFetch('/admin/exhibitions/create', { method: 'POST', body: JSON.stringify(payload) });
+      
+      if (res && res.ok) {
+        msg.textContent = "✓ Exhibition Created!";
+        msg.style.color = "var(--accent-green)";
+        document.querySelectorAll('#newExTitle, #newExDate, #newExVenue, #newExDesc, #newExTnc, #newExFee, #newExQr, #newExPayInst').forEach(el => el.value = '');
+        await loadExhibitionManager(); 
+      } else {
+        msg.textContent = "Failed to create. Title might already exist.";
+        msg.style.color = "var(--accent-red)";
+      }
+      
+      btn.textContent = "Create Exhibition"; btn.disabled = false;
+      setTimeout(() => msg.textContent = '', 4000);
+    }
+
+    // 3. Management: Make an exhibition live
+    async function activateExhibition(id, title) {
+      if (!confirm(`Are you sure you want to make "${title}" the live exhibition on the public portal?`)) return;
+      
+      const res = await window.globalApiFetch(`/admin/exhibitions/${id}/activate`, { method: 'PATCH' });
+      if (res && res.ok) {
+        await loadExhibitionManager();
+        await loadExhibitionsData('ALL'); 
+      } else {
+        alert("Failed to activate exhibition.");
+      }
+    }
+
+    // NEW: Turn off the portal
+    async function deactivateAllExhibitions() {
+      if (!confirm("Are you sure you want to CLOSE the exhibition portal? The public will not be able to apply until you set a cycle to live.")) return;
+      
+      const res = await window.globalApiFetch('/admin/exhibitions/deactivate-all', { method: 'PATCH' });
+      if (res && res.ok) {
+        await loadExhibitionManager();
+        alert("Portal successfully closed.");
+      } else {
+        alert("Failed to close portal.");
+      }
+    }
+
+    // 4. Applicants: Cycle Selector
+    let currentCycleView = 'ALL'; // NEW: Tracks the exact dropdown state
+
+    async function buildCycleSelector() {
+      const res = await window.globalApiFetch('/admin/exhibitions/cycles');
+      if (!res || !res.ok) return;
+      const { cycles, current } = await res.json();
+      const wrap = document.getElementById('cycleSelectWrap');
+      if (!wrap) return;
+
+      let opts = `<option value="">Active Now: ${current || 'None'}</option>`;
+      cycles.forEach(c => { if (c !== current) opts += `<option value="${c}">${c}</option>`; });
+      opts += `<option value="ALL">— All Archive —</option>`;
+
+      wrap.innerHTML = `
+        <label style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-right:0.8rem;">Viewing Cycle:</label>
+        <select id="cycleSelect" style="background:transparent;border:none;border-bottom:1px solid var(--grid-border);color:var(--text-primary);font-family:var(--font-body);font-size:12px;padding:0.4rem 0;outline:none;">
+          ${opts}
+        </select>`;
+
+      // STRICT SYNC: Force the dropdown to match the data being viewed
+      const sel = document.getElementById('cycleSelect');
+      sel.value = currentCycleView;
+
+      sel.addEventListener('change', async (e) => {
+        currentCycleView = e.target.value; 
+        const query = currentCycleView ? `?cycle=${encodeURIComponent(currentCycleView)}` : '';
+        const r = await window.globalApiFetch(`/admin/exhibitions${query}`);
+        if (r && r.ok) { allExhibs = await r.json(); filterExhibitions('ALL'); }
+      });
+    }
+
+    // 5. Applicants: Load Data
+    async function loadExhibitionsData(f) {
+      currentCycleView = 'ALL'; // Force the dropdown state to "ALL" on initial load
+      const res = await window.globalApiFetch('/admin/exhibitions?cycle=ALL');
+      if (!res) return;
+      allExhibs = await res.json();
+      await buildCycleSelector();
+      renderExhibitions(f);
+    }
+
+    const hasPaymentSubmission = (a) => a.registration_status === 'SUBMITTED' || a.registration_status === 'CONFIRMED' || Boolean(a.payment_proof_url);
+    const getExhibitionLabel = (a) => a.registration_status === 'CONFIRMED' ? 'CONFIRMED' : hasPaymentSubmission(a) ? 'PAYMENT SUBMITTED' : a.status;
+
+    function filterExhibitions(f) {
+      activeCycleFilter = f;
+      document.querySelectorAll('[id^="filt-"]').forEach(b => b.classList.remove('gold'));
+      const target = document.getElementById(`filt-${f}`);
+      if (target) target.classList.add('gold');
+      renderExhibitions(f);
+    }
+
+    function renderExhibitions(f) {
+      const container = document.getElementById('exhibitionsContainer');
+      const apps = f === 'ALL' ? allExhibs
+        : allExhibs.filter(a => f === 'FINALIZED' ? hasPaymentSubmission(a) : f === 'APPROVED' ? a.status === 'APPROVED' && !hasPaymentSubmission(a) : a.status === f);
+      
+      container.innerHTML = '';
+      if (!apps.length) { container.innerHTML = '<div class="empty-state">No portfolios found.</div>'; return; }
+
+      apps.forEach(a => {
+        const card = document.createElement('div');
+        card.className = 'data-card exhib-card magnetic';
+        const displayStatus = getExhibitionLabel(a);
+        const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
+
+        let actionBtns = `<a href="${a.portfolio_url}" target="_blank" class="action-btn gold" style="padding:0.6rem;font-size:9px;text-align:center;">View Portfolio</a>`;
+
+        if (a.status === 'PENDING') {
+          actionBtns += `
+            <button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="reviewExhibition(${a.id},'APPROVED',this)">Approve</button>
+            <button class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-red);color:var(--accent-red);" onclick="reviewExhibition(${a.id},'REJECTED',this)">Reject</button>`;
+        } else if (a.status === 'REJECTED') {
+          actionBtns += `<button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="revertExhibition(${a.id},this)">Undo Rejection</button>`;
+        }
+        if (a.payment_proof_url) {
+          actionBtns += `<a href="${a.payment_proof_url}" target="_blank" class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-green);color:var(--accent-green);text-align:center;margin-top:0.5rem;">View Payment Receipt</a>`;
+        }
+        if (a.registration_status === 'SUBMITTED') {
+          actionBtns += `<button class="action-btn gold" style="padding:0.6rem;font-size:9px;" onclick="confirmExhibitionPayment(${a.id},this)">Confirm Payment</button>`;
+        }
+
+        // --- NEW: The Legacy Fallback Label ---
+        const cycleName = a.exhibition_cycle ? a.exhibition_cycle : 'LEGACY ARCHIVE';
+        const cycleTag = `<div style="font-size:10px; margin-top:6px; color:var(--accent-gold); letter-spacing:1.5px; text-transform:uppercase; font-weight:600;">CYCLE: ${cycleName}</div>`;
+
+        card.innerHTML = `
+          <div>
+            <div class="data-label">Artist</div>
+            <div class="data-display">${a.full_name}</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">${a.user_email}</div>
+            ${cycleTag}
+          </div>
+          <div>
+            <div class="data-label">Art Profile</div>
+            <div class="data-display" style="font-size:13px;">${a.genre}</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Medium: ${a.medium}</div>
+          </div>
+          <div><div class="data-label">Status</div><span class="badge ${badge}">${displayStatus}</span></div>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;">${actionBtns}</div>`;
+        container.appendChild(card);
+      });
+      if (window.refreshGlobalEffects) window.refreshGlobalEffects();
+    }
+
+async function reviewExhibition(id, status, btn) {
+  const note = prompt('Curator Note to Artist (optional):');
+  btn.textContent = '...'; btn.disabled = true;
+  const res = await window.globalApiFetch('/admin/exhibitions/review', {
+    method: 'POST',
+    body: JSON.stringify({ application_id: id, status: status, curator_note: note || null })
+  });
+  if (res && res.ok) {
+    await loadExhibitionsData('ALL');
+    filterExhibitions(activeCycleFilter);
+  } else {
+    btn.textContent = status === 'APPROVED' ? 'Approve' : 'Reject';
+    btn.disabled = false;
+  }
+}
+
+async function revertExhibition(id, btn) {
+  if (!confirm('Undo rejection and return to Pending?')) return;
+  btn.textContent = '...'; btn.disabled = true;
+  const res = await window.globalApiFetch(`/admin/exhibitions/${id}/revert`, { method: 'PATCH' });
+  if (res && res.ok) {
+    await loadExhibitionsData('ALL');
+    filterExhibitions(activeCycleFilter);
+  } else {
+    btn.textContent = 'Undo Rejection'; btn.disabled = false;
+  }
+}
+
+async function confirmExhibitionPayment(id, btn) {
+  if (!confirm('Confirm this payment? This will notify the artist.')) return;
+  btn.textContent = '...'; btn.disabled = true;
+  const res = await window.globalApiFetch(`/admin/exhibitions/${id}/confirm-payment`, { method: 'PATCH' });
+  if (res && res.ok) {
+    await loadExhibitionsData('ALL');
+    filterExhibitions('FINALIZED');
+  } else {
+    btn.textContent = 'Confirm Payment'; btn.disabled = false;
+  }
+}
+
+    // ==========================================
+    // CLUBS LOGIC
+    // ==========================================
+    let allClubApps = [];
+    async function loadClubs(f) { const res = await window.globalApiFetch('/admin/club-applications'); if(!res) return; allClubApps = await res.json(); renderClubs(f); }
+    function filterClubs(f) { document.querySelectorAll('[id^="filter-"]').forEach(b => { b.classList.remove('gold'); b.style.color = ''; b.style.borderColor = ''; }); const target = document.getElementById(`filter-${f}`); target.classList.add('gold'); renderClubs(f); }
+    function renderClubs(f) {
+      const container = document.getElementById('clubsContainer'); const apps = f === 'ALL' ? allClubApps : allClubApps.filter(a => a.status === f); container.innerHTML = '';
+      if (!apps.length) { container.innerHTML = '<div class="empty-state">No applications found.</div>'; return; }
+      apps.forEach(a => {
+        const card = document.createElement('div'); card.className = 'data-card club-card magnetic'; const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
+        card.innerHTML = `
+          <div><div class="data-label">User</div><div class="data-display">${a.user_email}</div></div>
+          <div><div class="data-label">Club</div><div class="data-display">${a.club_name}</div></div>
+          <div><div class="data-label">Status</div><span class="badge ${badge}">${a.status}</span></div>
+          <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          ${a.status === 'PENDING' ? `<button class="action-btn" style="padding:0.6rem; font-size:9px;" onclick="reviewClub(${a.id}, 'APPROVED', this)">Approve</button><button class="action-btn" style="padding:0.6rem; font-size:9px; border-color:var(--accent-red); color:var(--accent-red);" onclick="reviewClub(${a.id}, 'REJECTED', this)">Reject</button>` : ''}
+          ${a.status === 'REJECTED' ? `<button class="action-btn" style="padding:0.6rem; font-size:9px;" onclick="revertClub(${a.id}, this)">Undo</button>` : ''}
+          </div>`;
+        container.appendChild(card);
+      });
+      if(window.refreshGlobalEffects) window.refreshGlobalEffects();
+    }
+    async function reviewClub(id, status, btn) { const note = status === 'REJECTED' ? prompt('Note:') : null; btn.textContent = '...'; const res = await window.globalApiFetch('/admin/club-applications/review', { method: 'POST', body: JSON.stringify({ application_id: id, status, admin_note: note }) }); if (res && res.ok) loadClubs('ALL'); }
+    async function revertClub(id, btn) { if (!confirm('Undo rejection?')) return; btn.textContent = '...'; btn.disabled = true; const res = await window.globalApiFetch(`/admin/club-applications/${id}/revert`, { method: 'PATCH' }); if (res && res.ok) { loadClubs('ALL'); filterClubs('ALL'); } }
+
+    // ==========================================
+    // ROSTER LOGIC
+    // ==========================================
+    async function loadRoster() {
+      const container = document.getElementById('rosterContainer'); const res = await window.globalApiFetch('/admin/users'); if(!res) return; const users = await res.json(); container.innerHTML = '';
+      users.forEach((u, i) => {
+        const card = document.createElement('div'); card.className = 'data-card user-card magnetic';
+        card.innerHTML = `
+          <div><div class="data-label">User</div><div class="data-display">${u.email}</div></div>
+          <div><div class="data-label">Role</div><select id="st-${i}" style="margin:0;"><option value="PARTICIPANT" ${u.status==='PARTICIPANT'?'selected':''}>Participant</option><option value="ADMIN" ${u.status==='ADMIN'?'selected':''}>Admin</option></select></div>
+          <button class="action-btn gold" style="padding:0.8rem; font-size:9px;" onclick="updateStatus('${u.email}', ${i}, this)">Save Role</button>`;
+        container.appendChild(card);
+      });
+      if(window.refreshGlobalEffects) window.refreshGlobalEffects();
+    }
+    async function updateStatus(email, i, btn) { const status = document.getElementById(`st-${i}`).value; btn.textContent = '...'; const res = await window.globalApiFetch('/admin/update_status', { method: 'POST', body: JSON.stringify({ email, status }) }); if (res && res.ok) { if (email === user.email && status === 'PARTICIPANT') { localStorage.clear(); window.location.href = 'login.html'; } btn.textContent = '✓'; setTimeout(() => btn.textContent = 'Save Role', 2000); } }
+
+    // INIT
+    switchTab('events'); 
+  </script>
+</body>
+</html>
