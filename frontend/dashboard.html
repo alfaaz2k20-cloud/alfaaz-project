@@ -7,6 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="global.css">
+  <script src="global.js"></script>
+  <script src="components.js"></script>
   <style>
     .dash-container { max-width: 1200px; margin: 8rem auto 4rem; padding: 0 2rem; }
     
@@ -66,14 +68,7 @@
   
   <div id="toastContainer"></div>
 
-  <nav id="navbar" style="justify-content: space-between;">
-    <a href="index.html" class="logo magnetic">ALFAAZ</a>
-    
-    <div class="nav-actions" style="gap: 2rem;">
-      <a href="dashboard.html" class="magnetic" style="font-size: 11px; color: var(--accent-gold); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Dashboard</a>
-      <button id="logoutBtn" class="magnetic" style="background: transparent; border: none; color: var(--text-secondary); font-family: var(--font-body); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: color 0.3s ease;">Log Out</button>
-    </div>
-  </nav>
+  <alfaaz-nav></alfaaz-nav>
 
   <div class="dash-container">
     <div class="grid-layout">

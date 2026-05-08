@@ -10,6 +10,8 @@
   <script src="https://unpkg.com/lucide@latest" defer></script>
   <!-- Cache busted to force the new layout -->
   <link rel="stylesheet" href="global.css?v=alfaaz-clubs">
+  <script src="global.js"></script>
+  <script src="components.js"></script>
 
   <style>
     /* RAPID PRELOADER */
@@ -414,33 +416,8 @@
     const fadeObserver = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); } }); }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
     fadeElements.forEach(el => fadeObserver.observe(el));
 
-    // NAV SCROLL
-    const navbar = document.getElementById('navbar');
-    let lastY = window.scrollY, ticking = false;
-    window.addEventListener('scroll', () => {
-      if (!ticking) { window.requestAnimationFrame(() => { const currentY = window.scrollY; if (currentY > lastY && currentY > 120) navbar.classList.add('hidden'); else navbar.classList.remove('hidden'); if (currentY > 80) navbar.classList.add('scrolled'); else navbar.classList.remove('scrolled'); lastY = currentY; ticking = false; }); ticking = true; }
-    }, { passive: true });
-
-    // MOBILE MENU
-    const menuToggle = document.getElementById('menuToggle'), navLinks = document.getElementById('navLinks');
-    menuToggle?.addEventListener('click', () => { const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true'; menuToggle.setAttribute('aria-expanded', !isExpanded); menuToggle.classList.toggle('active'); navLinks.classList.toggle('active'); });
+    // MARQUEE PAUSE logic
     const marquee = document.querySelector('.marquee'); marquee?.addEventListener('mouseenter', () => { marquee.style.animationPlayState = 'paused'; }); marquee?.addEventListener('mouseleave', () => { marquee.style.animationPlayState = 'running'; });
-
-    // SMART ROUTING
-    (function() {
-      const isLoggedIn = !!localStorage.getItem('alfaaz_token') && !!localStorage.getItem('alfaaz_user');
-      const navLoginBtn = document.getElementById('navLoginBtn'), joinClubBtn = document.getElementById('joinClubBtn'), mobileLoginLink = document.getElementById('mobileLoginBtn');
-      if (isLoggedIn) {
-        if (navLoginBtn) { navLoginBtn.textContent = 'Dashboard'; navLoginBtn.href = 'dashboard.html'; }
-        if (mobileLoginLink) {
-          const enSpan = mobileLoginLink.querySelector('.en-text');
-          if (enSpan) enSpan.textContent = 'Dashboard';
-          else mobileLoginLink.textContent = 'Dashboard';
-          mobileLoginLink.href = 'dashboard.html';
-        }
-        if (joinClubBtn) { joinClubBtn.textContent = 'Apply for a Club'; joinClubBtn.href = 'dashboard.html'; }
-      }
-    })();
 
     // CURATOR AI
     const pBox = document.getElementById('phantomMiniBox'), pOut = document.getElementById('phantomMiniOutput'), pIn = document.getElementById('phantomMiniInput'), pTrig = document.getElementById('phantomMiniTrigger');
