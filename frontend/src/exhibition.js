@@ -80,23 +80,24 @@ document.addEventListener('DOMContentLoaded', () => {
           if (exDesc) exDesc.textContent = config.about_text || 'Applications are now open for the upcoming exhibition cycle.';
 
           // Gate: block if already applied for this cycle
-          const statusRes = await window.globalApiFetch('/exhibitions/my-status');
-          if (statusRes && statusRes.ok) {
-            const statusData = await statusRes.json();
-            if (statusData.status !== 'NONE') {
-              if (applicationFormContainer) {
-                  applicationFormContainer.innerHTML = `
-                    <div class="panel fade-in text-center" style="padding: 4rem 2rem;">
-                      <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-4" style="color: var(--accent-green);"></i>
-                      <h3 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 1rem;">Application Received</h3>
-                      <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 2rem;">You have already submitted a portfolio for this exhibition cycle. Please track your status in the dashboard.</p>
-                      <a href="dashboard.html" class="submit-btn magnetic">Go to Dashboard</a>
-                    </div>
-                  `;
+          if (window.globalApiFetch) {
+              const statusRes = await window.globalApiFetch('/exhibitions/my-status');
+              if (statusRes && statusRes.ok) {
+                const statusData = await statusRes.json();
+                if (statusData.status !== 'NONE') {
+                  if (applicationFormContainer) {
+                      applicationFormContainer.innerHTML = `
+                        <div class="panel fade-in text-center" style="padding: 4rem 2rem;">
+                          <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-4" style="color: var(--accent-green);"></i>
+                          <h3 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 1rem;">Application Received</h3>
+                          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 2rem;">You have already submitted a portfolio for this exhibition cycle. Please track your status in the dashboard.</p>
+                          <a href="dashboard.html" class="action-btn gold" style="display:inline-block;">Go to Dashboard</a>
+                        </div>
+                      `;
+                  }
+                  if (window.lucide) window.lucide.createIcons();
+                }
               }
-              if (window.lucide) window.lucide.createIcons();
-              return;
-            }
           }
         }
       } catch (err) {
@@ -140,23 +141,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btn) { btn.textContent = "Submitting..."; btn.disabled = true; }
       if (msg) { msg.textContent = ''; msg.style.color = ''; }
 
-      const res = await window.globalApiFetch('/exhibitions/apply', {
-        method: 'POST', body: JSON.stringify(payload)
-      });
+      if (window.globalApiFetch) {
+          const res = await window.globalApiFetch('/exhibitions/apply', {
+            method: 'POST', body: JSON.stringify(payload)
+          });
 
-      if (res && res.ok) {
-        if (msg) {
-            msg.style.color = 'var(--accent-green)';
-            msg.textContent = '✓ Portfolio submitted. Redirecting to dashboard...';
-        }
-        setTimeout(() => window.location.href = 'dashboard.html', 2000);
-      } else {
-        const errorData = await res?.json().catch(() => ({}));
-        if (msg) {
-            msg.style.color = 'var(--accent-red)';
-            msg.textContent = errorData.detail || 'Submission failed. Please try again.';
-        }
-        if (btn) { btn.textContent = 'Submit to Curator'; btn.disabled = false; }
+          if (res && res.ok) {
+            if (msg) {
+                msg.style.color = 'var(--accent-green)';
+                msg.textContent = '✓ Portfolio submitted. Redirecting to dashboard...';
+            }
+            setTimeout(() => window.location.href = 'dashboard.html', 2000);
+          } else {
+            const errorData = await res?.json().catch(() => ({}));
+            if (msg) {
+                msg.style.color = 'var(--accent-red)';
+                msg.textContent = errorData.detail || 'Submission failed. Please try again.';
+            }
+            if (btn) { btn.textContent = 'Submit to Curator'; btn.disabled = false; }
+          }
       }
     });
 

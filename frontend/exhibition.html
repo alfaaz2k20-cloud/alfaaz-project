@@ -8,6 +8,7 @@
   <script src="https://unpkg.com/lucide@latest" defer></script>
   <link rel="stylesheet" href="global.css?v=alfaaz-clubs">
   <script type="module" src="global.js"></script>
+  <script type="module" src="src/exhibition.js"></script>
 
   <style>
     .page-header { position: relative; min-height: 50vh; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; padding-top: 5rem; }
@@ -187,128 +188,5 @@
     </section>
   </main>
 
-  <script type="module">
-    // INLINE RECOVERY SCRIPT
-    document.addEventListener('DOMContentLoaded', async () => {
-        const token = localStorage.getItem('alfaaz_token');
-        if (!token) { window.location.href = 'login.html?redirect=exhibition.html'; return; }
-
-        const headerTitle = document.getElementById('headerTitle');
-        const closedMessage = document.getElementById('closedMessage');
-        const detailsBox = document.getElementById('detailsBox');
-        const applicationFormContainer = document.getElementById('applicationFormContainer');
-        const exDates = document.getElementById('exDates');
-        const exVenue = document.getElementById('exVenue');
-        const exDesc = document.getElementById('exDesc');
-
-        // CLOUDINARY
-        const CLOUD_NAME = "dmqwjpmjk", UPLOAD_PRESET = "alfaaz_vault";
-        let uploadedPdfUrl = null;
-
-        document.getElementById('portfolioFile')?.addEventListener('change', async (e) => {
-          const file = e.target.files[0];
-          const status = document.getElementById('uploadStatus');
-          if (!file || !status) return;
-
-          if (file.type !== 'application/pdf') {
-            status.style.color = 'var(--accent-red)'; status.textContent = '✗ Only PDF files are accepted.';
-            e.target.value = ''; uploadedPdfUrl = null; return;
-          }
-          if (file.size > 15 * 1024 * 1024) {
-            status.style.color = 'var(--accent-red)'; status.textContent = '✗ File exceeds the 15MB limit.';
-            e.target.value = ''; uploadedPdfUrl = null; return;
-          }
-
-          status.style.color = 'var(--accent-gold)'; status.textContent = `Uploading ${file.name}...`;
-
-          try {
-            const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', UPLOAD_PRESET);
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, { method: 'POST', body: formData });
-            const data = await res.json();
-            if (data.secure_url) { uploadedPdfUrl = data.secure_url; status.style.color = 'var(--accent-green)'; status.textContent = '✓ Uploaded successfully.'; }
-            else { throw new Error(); }
-          } catch {
-            status.style.color = 'var(--accent-red)'; status.textContent = '✗ Upload failed — please try again.'; uploadedPdfUrl = null;
-          }
-        });
-
-        // INIT
-        try {
-            const res = await fetch(`https://alfaaz-project.onrender.com/exhibitions/config`);
-            if (!res.ok) throw new Error("Failed to load config");
-            const config = await res.json();
-            
-            headerTitle.textContent = config.title || 'Exhibition';
-
-            if (!config.is_open) {
-                closedMessage.style.display = 'block';
-            } else {
-                detailsBox.style.display = 'flex';
-                applicationFormContainer.style.display = 'block';
-                exDates.textContent = config.date_text;
-                exVenue.textContent = config.venue;
-                exDesc.textContent = config.about_text || 'Applications are now open.';
-
-                // CHECK STATUS
-                if (window.globalApiFetch) {
-                    const statusRes = await window.globalApiFetch('/exhibitions/my-status');
-                    if (statusRes && statusRes.ok) {
-                        const statusData = await statusRes.json();
-                        if (statusData.status !== 'NONE') {
-                            applicationFormContainer.innerHTML = `
-                                <div class="panel fade-in text-center" style="padding: 4rem 2rem;">
-                                    <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-4" style="color: var(--accent-green);"></i>
-                                    <h3 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 1rem;">Application Received</h3>
-                                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 2rem;">You have already submitted a portfolio for this exhibition cycle. Please track your status in the dashboard.</p>
-                                    <a href="dashboard.html" class="submit-btn">Go to Dashboard</a>
-                                </div>
-                            `;
-                        }
-                    }
-                }
-            }
-        } catch (err) {
-            headerTitle.textContent = 'Connection Error';
-            closedMessage.style.display = 'block';
-        }
-
-        const fadeElements = document.querySelectorAll('.fade-in');
-        setTimeout(() => { fadeElements.forEach(el => el.classList.add('visible')); }, 100);
-        if (window.lucide) lucide.createIcons();
-
-        // SUBMIT
-        document.getElementById('exhibForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn'), msg = document.getElementById('formMsg');
-            if (!uploadedPdfUrl) { msg.style.color = 'var(--accent-red)'; msg.textContent = 'Please upload your portfolio PDF first.'; return; }
-
-            const payload = {
-                full_name: document.getElementById('fname').value.trim(),
-                age: parseInt(document.getElementById('age').value),
-                address: document.getElementById('address').value.trim(),
-                whatsapp: document.getElementById('whatsapp').value.trim(),
-                genre: document.getElementById('genre').value.trim(),
-                medium: document.getElementById('medium').value.trim(),
-                portfolio_url: uploadedPdfUrl,
-                over_19: document.getElementById('checkAge').checked,
-                agreed_to_screening: document.getElementById('checkScreen').checked,
-                applicant_note: document.getElementById('note').value.trim() || null,
-            };
-
-            btn.textContent = "Submitting..."; btn.disabled = true;
-            try {
-                const res = await window.globalApiFetch('/exhibitions/apply', { method: 'POST', body: JSON.stringify(payload) });
-                if (res && res.ok) {
-                    msg.style.color = 'var(--accent-green)'; msg.textContent = '✓ Portfolio submitted.';
-                    setTimeout(() => window.location.href = 'dashboard.html', 2000);
-                } else {
-                    const errorData = await res?.json().catch(() => ({}));
-                    msg.style.color = 'var(--accent-red)'; msg.textContent = errorData.detail || 'Submission failed.';
-                    btn.textContent = 'Submit to Curator'; btn.disabled = false;
-                }
-            } catch (err) { btn.textContent = 'Submit to Curator'; btn.disabled = false; }
-        });
-    });
-  </script>
 </body>
 </html>
