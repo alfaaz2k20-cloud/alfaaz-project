@@ -1,7 +1,0 @@
-import"./components-qyxsLnBe.js";/* empty css               */document.addEventListener("DOMContentLoaded",()=>{function o(n){const r=document.createElement("div");return r.innerHTML=n,r.querySelectorAll("script, iframe, object, embed, form").forEach(t=>t.remove()),r.querySelectorAll("*").forEach(t=>{[...t.attributes].forEach(e=>{(e.name.startsWith("on")||e.name==="href"&&e.value.startsWith("javascript:"))&&t.removeAttribute(e.name)})}),r.innerHTML}async function a(){const n=document.getElementById("articleTarget"),r=new URLSearchParams(window.location.search).get("id");if(n){if(!r){n.innerHTML='<div class="loading-state" style="color:var(--accent-red);">[Error] Document ID missing.</div>';return}try{const t=await fetch(`https://alfaaz-project.onrender.com/blogs/${r}`);if(!t.ok)throw new Error("Article not found or server error.");const e=await t.json(),i=new Date(e.created_at).toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});n.innerHTML=`
-                <div class="post-header">
-                    <span class="post-meta">${i} // Curator's Notes</span>
-                    <h1 class="post-title">${e.title}</h1>
-                </div>
-                <div class="post-content">${o(e.content)}</div>
-            `,document.title=`${e.title} | Alfaaz Archives`,window.refreshGlobalEffects&&window.refreshGlobalEffects()}catch{n.innerHTML='<div class="loading-state" style="color:var(--accent-red);">[Error] Connection failed or article not found.</div>'}}}a()});
