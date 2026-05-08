@@ -7,6 +7,8 @@
   <script src="https://cdn.tailwindcss.com" defer></script>
   <script src="https://unpkg.com/lucide@latest" defer></script>
   <link rel="stylesheet" href="global.css?v=alfaaz-clubs">
+  <script src="global.js"></script>
+  <script src="components.js"></script>
 
   <style>
     .page-header { position: relative; min-height: 50vh; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; padding-top: 5rem; }
@@ -66,14 +68,7 @@
 </head>
 <body>
 
-  <nav id="navbar" class="scrolled">
-    <a href="index.html" class="logo magnetic ur-hover" data-ur="الفاظ">
-      <span class="en-text">ALFAAZ</span>
-    </a>
-    <div class="nav-actions">
-      <a href="dashboard.html" class="nav-cta magnetic" style="padding: 0.5rem 1.5rem; font-size: 10px;">Dashboard</a>
-    </div>
-  </nav>
+  <alfaaz-nav></alfaaz-nav>
 
   <main>
     <header class="page-header">
@@ -202,7 +197,6 @@
     </section>
   </main>
 
-  <script src="global.js"></script>
   <script>
 
     // ── Cloudinary PDF Upload ──────────────────────────────────────────
