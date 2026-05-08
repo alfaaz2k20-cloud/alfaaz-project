@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exhibition Portal — ALFAAZ COLLECTIVE</title>
   <script src="https://cdn.tailwindcss.com" defer></script>
-  <script src="https://unpkg.com/lucide@latest" defer></script>
+  <script src="https://unpkg.com/lucide@latest" defer></script>
 
   <style>
     .page-header { position: relative; min-height: 50vh; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; padding-top: 5rem; }
@@ -62,7 +62,8 @@
       .exhib-details-box { padding: 2rem; }
     }
   </style>
-  <script type="module" crossorigin src="/assets/components-qyxsLnBe.js"></script>
+  <script type="module" crossorigin src="/assets/exhibition-C5cHk10z.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/components-qyxsLnBe.js">
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
 <body>
@@ -76,7 +77,6 @@
       </video>
       <div class="video-overlay"></div>
       <div>
-        <!-- ur-hover removed: Urdu text was overlapping the subtitle below -->
         <h1 class="page-title" id="headerTitle">Loading...</h1>
         <p class="page-subtitle">Open Call for Artists</p>
       </div>
@@ -196,152 +196,5 @@
     </section>
   </main>
 
-  <script>
-
-    // ── Cloudinary PDF Upload ──────────────────────────────────────────
-    const CLOUD_NAME = "dmqwjpmjk", UPLOAD_PRESET = "alfaaz_vault";
-    let uploadedPdfUrl = null;
-
-    document.getElementById('portfolioFile')?.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      const status = document.getElementById('uploadStatus');
-      if (!file) return;
-
-      if (file.type !== 'application/pdf') {
-        status.style.color = 'var(--accent-red)';
-        status.textContent = '✗ Only PDF files are accepted.';
-        e.target.value = '';
-        uploadedPdfUrl = null;
-        return;
-      }
-      if (file.size > 15 * 1024 * 1024) {
-        status.style.color = 'var(--accent-red)';
-        status.textContent = '✗ File exceeds the 15MB limit.';
-        e.target.value = '';
-        uploadedPdfUrl = null;
-        return;
-      }
-
-      status.style.color = 'var(--accent-gold)';
-      status.textContent = `Uploading ${file.name}...`;
-
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', UPLOAD_PRESET);
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.secure_url) {
-          uploadedPdfUrl = data.secure_url;
-          status.style.color = 'var(--accent-green)';
-          status.textContent = '✓ Uploaded successfully.';
-        } else {
-          throw new Error();
-        }
-      } catch {
-        status.style.color = 'var(--accent-red)';
-        status.textContent = '✗ Upload failed — please try again.';
-        uploadedPdfUrl = null;
-      }
-    });
-
-    // ── Page Init ─────────────────────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', async () => {
-      const token = localStorage.getItem('alfaaz_token');
-      if (!token) {
-        window.location.href = `login.html?redirect=exhibition.html`;
-        return;
-      }
-
-      try {
-        const res = await fetch(`https://alfaaz-project.onrender.com/exhibitions/config`);
-        if (!res.ok) throw new Error("Failed to load config");
-        const config = await res.json();
-        
-        document.getElementById('headerTitle').textContent = config.title || 'Exhibition';
-
-        if (!config.is_open) {
-          document.getElementById('closedMessage').style.display = 'block';
-        } else {
-          document.getElementById('detailsBox').style.display = 'flex';
-          document.getElementById('applicationFormContainer').style.display = 'block';
-          document.getElementById('exDates').textContent = config.date_text;
-          document.getElementById('exVenue').textContent = config.venue;
-          document.getElementById('exDesc').textContent = config.about_text || 'Applications are now open for the upcoming exhibition cycle.';
-
-          // Gate: block if already applied for this cycle
-          const statusRes = await window.globalApiFetch('/exhibitions/my-status');
-          if (statusRes && statusRes.ok) {
-            const statusData = await statusRes.json();
-            if (statusData.status !== 'NONE') {
-              document.getElementById('applicationFormContainer').innerHTML = `
-                <div class="panel fade-in text-center" style="padding: 4rem 2rem;">
-                  <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-4" style="color: var(--accent-green);"></i>
-                  <h3 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 1rem;">Application Received</h3>
-                  <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 2rem;">You have already submitted a portfolio for this exhibition cycle. Please track your status in the dashboard.</p>
-                  <a href="dashboard.html" class="submit-btn magnetic">Go to Dashboard</a>
-                </div>
-              `;
-              if (window.lucide) lucide.createIcons();
-              return;
-            }
-          }
-        }
-      } catch (err) {
-        document.getElementById('headerTitle').textContent = 'Server Error';
-        document.getElementById('closedMessage').style.display = 'block';
-      }
-
-      const fadeElements = document.querySelectorAll('.fade-in');
-      setTimeout(() => { fadeElements.forEach(el => el.classList.add('visible')); }, 100);
-      if (window.lucide) lucide.createIcons();
-    });
-
-    // ── Form Submission ───────────────────────────────────────────────
-    document.getElementById('exhibForm')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      const msg = document.getElementById('formMsg');
-
-      // Guard: PDF must be uploaded first
-      if (!uploadedPdfUrl) {
-        msg.style.color = 'var(--accent-red)';
-        msg.textContent = 'Please upload your portfolio PDF before submitting.';
-        return;
-      }
-
-      const payload = {
-        full_name:          document.getElementById('fname').value.trim(),
-        age:                parseInt(document.getElementById('age').value),
-        address:            document.getElementById('address').value.trim(),
-        whatsapp:           document.getElementById('whatsapp').value.trim(),
-        genre:              document.getElementById('genre').value.trim(),
-        medium:             document.getElementById('medium').value.trim(),
-        portfolio_url:      uploadedPdfUrl,
-        over_19:            document.getElementById('checkAge').checked,
-        agreed_to_screening: document.getElementById('checkScreen').checked,
-        applicant_note:     document.getElementById('note').value.trim() || null,
-      };
-
-      btn.textContent = "Submitting..."; btn.disabled = true;
-      msg.textContent = ''; msg.style.color = '';
-
-      const res = await window.globalApiFetch('/exhibitions/apply', {
-        method: 'POST', body: JSON.stringify(payload)
-      });
-
-      if (res && res.ok) {
-        msg.style.color = 'var(--accent-green)';
-        msg.textContent = '✓ Portfolio submitted. Redirecting to dashboard...';
-        setTimeout(() => window.location.href = 'dashboard.html', 2000);
-      } else {
-        const errorData = await res?.json().catch(() => ({}));
-        msg.style.color = 'var(--accent-red)';
-        msg.textContent = errorData.detail || 'Submission failed. Please try again.';
-        btn.textContent = 'Submit to Curator'; btn.disabled = false;
-      }
-    });
-
-  </script>
 </body>
 </html>
