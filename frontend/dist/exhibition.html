@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exhibition Portal — ALFAAZ COLLECTIVE</title>
   <script src="https://cdn.tailwindcss.com" defer></script>
-  <script src="https://unpkg.com/lucide@latest" defer></script>
+  <script src="https://unpkg.com/lucide@latest" defer></script>
 
   <style>
     .page-header { position: relative; min-height: 50vh; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; padding-top: 5rem; }
-    /* Title sits cleanly — no ur-hover overlap */
     .page-title { font-family: var(--font-heading); font-size: clamp(3rem, 6vw, 4.5rem); font-weight: 400; color: var(--text-primary); margin-bottom: 1rem; position: relative; z-index: 10; line-height: 1.1; }
     .page-subtitle { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--text-secondary); position: relative; z-index: 10; }
     
@@ -20,11 +19,9 @@
     
     .exhib-desc { font-size: 13px; line-height: 1.8; color: var(--text-secondary); text-align: center; max-width: 700px; margin: 0 auto; padding-top: 2rem; border-top: 1px solid var(--grid-border); }
 
-    /* Form field visibility — labels clearly separated from inputs */
     .field-group { display: flex; flex-direction: column; gap: 0.4rem; }
     .field-hint { font-size: 10px; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 0.2rem; }
 
-    /* Override auth-input to be more visually present inside the form panel */
     #exhibForm .auth-input {
       border-bottom: 1px solid var(--grid-border);
       padding-bottom: 0.7rem;
@@ -33,7 +30,6 @@
     }
     #exhibForm .auth-input:focus { border-bottom-color: var(--accent-gold); outline: none; }
 
-    /* File input styling */
     .file-upload-wrapper { margin-top: 0.3rem; }
     .file-upload-wrapper input[type="file"] {
       font-size: 11px; color: var(--text-secondary);
@@ -62,13 +58,18 @@
       .exhib-details-box { padding: 2rem; }
     }
   </style>
-  <script type="module" crossorigin src="/assets/exhibition-oYzcchq7.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/components-CvPhcI-e.js">
+  <script type="module" crossorigin src="/assets/exhibition-CXbqXdR_.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/global-BnpDR9S0.js">
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
 <body>
 
-  <alfaaz-nav></alfaaz-nav>
+  <nav id="navbar" style="justify-content: space-between;">
+    <a href="index.html" class="logo">ALFAAZ</a>
+    <div class="nav-actions">
+      <a href="index.html" style="font-size: 11px; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Return</a>
+    </div>
+  </nav>
 
   <main>
     <header class="page-header">
@@ -111,28 +112,24 @@
         <form id="exhibForm" class="panel fade-in" style="padding: 3rem 2.5rem;">
           <div class="form-grid">
 
-            <!-- Full Name -->
             <div class="field-group">
               <label class="input-label">Full Name *</label>
               <span class="field-hint">As it should appear in exhibition records</span>
               <input type="text" id="fname" class="auth-input" placeholder="e.g. Mohammad Ali Khan" required>
             </div>
 
-            <!-- Age -->
             <div class="field-group">
               <label class="input-label">Age *</label>
               <span class="field-hint">Must be 19 or older to apply</span>
               <input type="number" id="age" class="auth-input" placeholder="e.g. 24" required min="1" max="99">
             </div>
 
-            <!-- Address -->
             <div class="field-group full-width">
               <label class="input-label">Residential Address *</label>
               <span class="field-hint">District and state are sufficient</span>
               <input type="text" id="address" class="auth-input" placeholder="e.g. Sopore, Baramulla, Kashmir" required>
             </div>
 
-            <!-- WhatsApp -->
             <div class="field-group full-width">
               <label class="input-label">WhatsApp Number *</label>
               <span class="field-hint">We will contact you via WhatsApp if selected</span>
@@ -141,21 +138,18 @@
 
             <div class="form-divider"></div>
 
-            <!-- Genre — text input, not dropdown -->
             <div class="field-group">
               <label class="input-label">Art Genre *</label>
               <span class="field-hint">Your primary creative category</span>
               <input type="text" id="genre" class="auth-input" placeholder="e.g. Painting, Calligraphy, Mixed Media" required>
             </div>
 
-            <!-- Medium -->
             <div class="field-group">
               <label class="input-label">Primary Medium *</label>
               <span class="field-hint">Materials or tools you work with</span>
               <input type="text" id="medium" class="auth-input" placeholder="e.g. Oil on Canvas, Procreate, Charcoal" required>
             </div>
 
-            <!-- Portfolio PDF Upload -->
             <div class="field-group full-width">
               <label class="input-label">Portfolio PDF *</label>
               <span class="field-hint">A single PDF containing photographs of your recent works — max 15MB, PDF only</span>
@@ -165,14 +159,12 @@
               <div id="uploadStatus"></div>
             </div>
 
-            <!-- Note -->
             <div class="field-group full-width">
               <label class="input-label">Note to Curator <span style="font-weight:400; text-transform:none; letter-spacing:0;">(Optional)</span></label>
               <span class="field-hint">Any context you'd like the Curator to know</span>
               <textarea id="note" class="auth-input" rows="3" placeholder="e.g. I work primarily in large-format watercolour, focusing on Kashmiri landscapes..."></textarea>
             </div>
 
-            <!-- Declarations -->
             <div class="full-width" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
               <label style="display: flex; align-items: flex-start; gap: 1rem; cursor: pointer;">
                 <input type="checkbox" id="checkAge" required style="margin-top: 4px; flex-shrink: 0;">
@@ -195,6 +187,6 @@
 
     </section>
   </main>
-
+
 </body>
 </html>

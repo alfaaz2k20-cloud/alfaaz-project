@@ -8,7 +8,7 @@
   <script src="https://unpkg.com/lucide@latest" defer></script>
   <link rel="stylesheet" href="global.css">
   <script type="module" src="global.js"></script>
-  <script type="module" src="components.js"></script>
+  
   <script type="module" src="src/submit.js"></script>
   <style>
     .vault-container { max-width: 600px; margin: 8rem auto; padding: 0 2rem; }
@@ -26,9 +26,9 @@
 <body>
 
   <nav id="navbar" style="justify-content: space-between;">
-    <a href="index.html" class="logo magnetic">ALFAAZ</a>
+    <a href="index.html" class="logo">ALFAAZ</a>
     <div class="nav-actions">
-      <a href="index.html" class="magnetic" style="font-size: 11px; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Return</a>
+      <a href="index.html" class="" style="font-size: 11px; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Return</a>
     </div>
   </nav>
 
@@ -58,7 +58,7 @@
           <label class="input-label">Curator's Note (Optional context)</label>
           <textarea id="note" rows="3" placeholder="Brief context..."></textarea>
         </div>
-        <button type="submit" id="submit-btn" class="submit-btn magnetic" style="width: 100%;">Submit to Storage</button>
+        <button type="submit" id="submit-btn" class="submit-btn" style="width: 100%;">Submit to Storage</button>
       </form>
       <div id="status-msg"></div>
     </div>

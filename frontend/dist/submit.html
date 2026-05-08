@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Submit to Storage — ALFAAZ</title>
   <script src="https://cdn.tailwindcss.com" defer></script>
-  <script src="https://unpkg.com/lucide@latest" defer></script>
+  <script src="https://unpkg.com/lucide@latest" defer></script>
+  
   <style>
     .vault-container { max-width: 600px; margin: 8rem auto; padding: 0 2rem; }
     .panel-title { font-family: var(--font-heading); font-size: 2.5rem; font-weight: 400; letter-spacing: 1px; margin-bottom: 0.5rem; color: var(--text-primary); text-align: center;}
@@ -18,16 +19,16 @@
     input[type="file"]::file-selector-button:hover { background: var(--text-primary); color: #fff; }
     #status-msg { margin-top: 15px; font-size: 11px; text-align: center; letter-spacing: 1px; text-transform: uppercase; }
   </style>
-  <script type="module" crossorigin src="/assets/submit-DZD8YMJx.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/components-CvPhcI-e.js">
+  <script type="module" crossorigin src="/assets/submit-FqNf1t91.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/global-BnpDR9S0.js">
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
 <body>
 
   <nav id="navbar" style="justify-content: space-between;">
-    <a href="index.html" class="logo magnetic">ALFAAZ</a>
+    <a href="index.html" class="logo">ALFAAZ</a>
     <div class="nav-actions">
-      <a href="index.html" class="magnetic" style="font-size: 11px; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Return</a>
+      <a href="index.html" class="" style="font-size: 11px; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Return</a>
     </div>
   </nav>
 
@@ -57,7 +58,7 @@
           <label class="input-label">Curator's Note (Optional context)</label>
           <textarea id="note" rows="3" placeholder="Brief context..."></textarea>
         </div>
-        <button type="submit" id="submit-btn" class="submit-btn magnetic" style="width: 100%;">Submit to Storage</button>
+        <button type="submit" id="submit-btn" class="submit-btn" style="width: 100%;">Submit to Storage</button>
       </form>
       <div id="status-msg"></div>
     </div>
