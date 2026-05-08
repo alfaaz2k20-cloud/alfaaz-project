@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const events = await res.json();
         if (!events.length) { container.innerHTML = '<div style="font-size:12px; color:var(--text-secondary); font-style:italic;">No upcoming events at this time.</div>'; return; }
         container.innerHTML = events.map(e => `
-          <div class="list-item magnetic">
+          <div class="list-item">
             <div style="flex:1;">
               <div style="font-family:var(--font-heading); font-size:1.5rem; color:var(--text-primary); margin-bottom:5px;">${e.name}</div>
               <div style="font-size:10px; color:var(--accent-gold); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">${e.event_date || 'TBD'}</div>
