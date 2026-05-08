@@ -34,12 +34,12 @@ export default async function handler(req, res) {
         };
     });
 
-    const exhResult = await client.query(`SELECT * FROM exhibition_config LIMIT 1`);
+    const exhResult = await client.query(`SELECT * FROM exhibitions_list WHERE is_active = true LIMIT 1`);
     let exhibition = null;
     if (exhResult.rows.length > 0) {
         const row = exhResult.rows[0];
         exhibition = {
-            is_open: row.is_open,
+            is_open: true,
             title: row.title,
             date_text: row.date_text,
             about_text: row.about_text
