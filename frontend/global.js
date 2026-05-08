@@ -4,26 +4,9 @@
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://alfaaz-project.onrender.com';
 
-// 1. Magnetic Effects
-window.initMagnetic = function() {
-    const magneticElements = document.querySelectorAll('.magnetic');
-    magneticElements.forEach((el) => {
-        el.addEventListener('mousemove', function(e) {
-            const pos = el.getBoundingClientRect();
-            const x = e.clientX - pos.left - pos.width / 2;
-            const y = e.clientY - pos.top - pos.height / 2;
-            el.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
-        });
-        el.addEventListener('mouseleave', function() {
-            el.style.transform = 'translate(0px, 0px)';
-        });
-    });
-};
-
-// 2. Master UI Binding
+// 1. Master UI Binding
 window.refreshGlobalEffects = function() {
     if (window.lucide) { window.lucide.createIcons(); }
-    window.initMagnetic();
 };
 
 document.addEventListener('DOMContentLoaded', () => {

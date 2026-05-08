@@ -70,11 +70,11 @@
   <div id="toastContainer"></div>
 
   <nav id="navbar" style="justify-content: space-between;">
-    <a href="index.html" class="logo magnetic">ALFAAZ</a>
+    <a href="index.html" class="logo">ALFAAZ</a>
     
     <div class="nav-actions" style="gap: 2rem;">
-      <a href="dashboard.html" class="magnetic" style="font-size: 11px; color: var(--accent-gold); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Dashboard</a>
-      <button id="logoutBtn" class="magnetic" style="background: transparent; border: none; color: var(--text-secondary); font-family: var(--font-body); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: color 0.3s ease;">Log Out</button>
+      <a href="dashboard.html" class="" style="font-size: 11px; color: var(--accent-gold); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Dashboard</a>
+      <button id="logoutBtn" class="" style="background: transparent; border: none; color: var(--text-secondary); font-family: var(--font-body); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: color 0.3s ease;">Log Out</button>
     </div>
   </nav>
 
@@ -90,12 +90,12 @@
           <div class="data-label">Display Name</div>
           <div id="nameDisplayRow" class="data-value">
             <span id="dashName" style="font-family: var(--font-heading); font-size: 1.8rem;">—</span>
-            <button class="edit-name-btn magnetic" onclick="startEditName()">[Edit]</button>
+            <button class="edit-name-btn" onclick="startEditName()">[Edit]</button>
           </div>
           <div id="nameEditRow" style="display:none; align-items:center; gap:0.5rem; margin-bottom:1.5rem;">
             <input type="text" id="nameEditInput" style="margin:0; padding:0.5rem; flex:1;">
-            <button class="edit-name-btn magnetic" onclick="saveEditName()">[Save]</button>
-            <button class="edit-name-btn magnetic" onclick="cancelEditName()" style="color:var(--text-secondary);">[Cancel]</button>
+            <button class="edit-name-btn" onclick="saveEditName()">[Save]</button>
+            <button class="edit-name-btn" onclick="cancelEditName()" style="color:var(--text-secondary);">[Cancel]</button>
           </div>
           
           <div class="data-label">Registered Email</div>
@@ -103,7 +103,7 @@
           
           <div class="data-label">Account Role</div>
           <div class="data-value"><span class="badge badge-gold" id="dashStatus">Loading...</span></div>
-          <a id="adminLink" href="admin.html" class="action-btn gold magnetic" style="display: none; margin-top: 1rem; text-align: center;">Administration Panel</a>
+          <a id="adminLink" href="admin.html" class="action-btn gold" style="display: none; margin-top: 1rem; text-align: center;">Administration Panel</a>
         </div>
 
         <!-- EXHIBITION PANEL -->
@@ -113,7 +113,7 @@
           <!-- State 1: Apply -->
           <div id="exhibApplyView" style="display: none;">
             <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 2rem;">Submit your portfolio directly to the Curator's Storage for the upcoming major exhibition.</p>
-            <a href="exhibition.html" class="action-btn gold magnetic" style="display: block; text-align: center;">Submit Application</a>
+            <a href="exhibition.html" class="action-btn gold" style="display: block; text-align: center;">Submit Application</a>
           </div>
           
           <!-- State 2: Pending -->
@@ -154,7 +154,7 @@
                     <span style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">I confirm that I have read and agree to adhere to the Terms & Conditions of the exhibition.</span>
                   </label>
 
-                  <button type="submit" id="finalizeExhibBtn" class="submit-btn magnetic" style="width: 100%;">Finalize Registration</button>
+                  <button type="submit" id="finalizeExhibBtn" class="submit-btn" style="width: 100%;">Finalize Registration</button>
                   <div id="finalizeMsg" style="font-size: 11px; margin-top: 1rem; text-align: center; text-transform: uppercase; letter-spacing: 1px;"></div>
                 </form>
               </div>
@@ -190,7 +190,7 @@
             </select>
             <div class="data-label">Curator's Note (Optional)</div>
             <textarea id="clubNote" rows="3" placeholder="Brief pitch defining your intent..."></textarea>
-            <button id="clubSubmitBtn" class="action-btn gold magnetic" style="width: 100%;" onclick="submitClubApplication()">Submit Application</button>
+            <button id="clubSubmitBtn" class="action-btn gold" style="width: 100%;" onclick="submitClubApplication()">Submit Application</button>
             <div id="clubMsg" style="font-size: 10px; margin-top: 15px; letter-spacing: 2px; text-transform: uppercase; text-align: center;"></div>
           </div>
         </div>
@@ -224,7 +224,7 @@
       </div>
       <div class="phantom-input-wrapper">
         <input type="text" id="phantomInput" placeholder="Ask about art, events, or literature...">
-        <button onclick="askPhantom()" class="phantom-btn magnetic">Inquire</button>
+        <button onclick="askPhantom()" class="phantom-btn">Inquire</button>
       </div>
     </div>
   </div>

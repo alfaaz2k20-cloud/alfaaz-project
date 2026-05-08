@@ -24,21 +24,21 @@ class AlfaazNav extends HTMLElement {
 
     this.innerHTML = `
       <nav id="navbar">
-        <a href="index.html" class="logo magnetic ur-hover" data-ur="الفاظ">
+        <a href="index.html" class="logo ur-hover" data-ur="الفاظ">
           <span class="en-text">ALFAAZ</span>
         </a>
         
         <div class="nav-links" id="navLinks">
-          <a href="index.html#home" class="magnetic ur-hover" data-ur="ابتداء"><span class="en-text">Home</span></a>
-          <a href="index.html#updates" class="magnetic ur-hover" data-ur="اطلاع"><span class="en-text">Updates</span></a>
-          <a href="blogs.html" class="magnetic ur-hover" data-ur="رسالہ"><span class="en-text">Journal</span></a>
-          <a href="submit.html" class="magnetic ur-hover" data-ur="ذخیرہ"><span class="en-text">Storage</span></a>
-          <a href="${loginHref}" class="mobile-only-link magnetic ur-hover" data-ur="داخلہ"><span class="en-text">${loginLabel}</span></a>
+          <a href="index.html#home" class="ur-hover" data-ur="ابتداء"><span class="en-text">Home</span></a>
+          <a href="index.html#updates" class="ur-hover" data-ur="اطلاع"><span class="en-text">Updates</span></a>
+          <a href="blogs.html" class="ur-hover" data-ur="رسالہ"><span class="en-text">Journal</span></a>
+          <a href="submit.html" class="ur-hover" data-ur="ذخیرہ"><span class="en-text">Storage</span></a>
+          <a href="${loginHref}" class="mobile-only-link ur-hover" data-ur="داخلہ"><span class="en-text">${loginLabel}</span></a>
         </div>
 
         <div class="nav-actions">
-          <a href="${loginHref}" id="navLoginBtn" class="nav-login magnetic">${loginLabel}</a>
-          <a href="https://tchandervar.neocities.org" target="_blank" class="cta-btn magnetic" style="padding: 0.6rem 1.2rem; font-size: 10px;">Tchandervar</a>
+          <a href="${loginHref}" id="navLoginBtn" class="nav-login">${loginLabel}</a>
+          <a href="https://tchandervar.neocities.org" target="_blank" class="cta-btn" style="padding: 0.6rem 1.2rem; font-size: 10px;">Tchandervar</a>
           
           <button id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
             <i data-lucide="menu" class="w-6 h-6 hamburger-open"></i>
@@ -63,11 +63,6 @@ class AlfaazNav extends HTMLElement {
     // Re-run Lucide icons for the newly injected HTML
     if (window.lucide) {
       window.lucide.createIcons();
-    }
-    
-    // Re-run magnetic effects if defined globally
-    if (window.initMagnetic) {
-      window.initMagnetic();
     }
   }
 

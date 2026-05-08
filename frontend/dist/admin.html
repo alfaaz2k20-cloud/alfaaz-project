@@ -39,30 +39,30 @@
     
     @media (max-width: 768px) { .club-card, .event-card, .user-card, .exhib-card { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; gap: 1.5rem; } nav { padding: 1rem 1.5rem; } .nav-login { display: none !important; } .mobile-only-link { display: block; } .nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; flex-direction: column; background: var(--bg-secondary); padding: 2rem; gap: 1.5rem; border-bottom: 1px solid var(--grid-border); box-shadow: 0 10px 20px rgba(0,0,0,0.05); } .nav-links.active { display: flex; } #menuToggle { display: flex; align-items: center; justify-content: center; margin-left: 0.5rem; } }
   </style>
-  <script type="module" crossorigin src="/assets/admin-DD3KnXS8.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/components-DZ64e3xR.js">
+  <script type="module" crossorigin src="/assets/admin-D3HMInNv.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/components-inBCOpbj.js">
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
 <body>
   <nav id="navbar" style="justify-content: space-between;">
-    <a href="index.html" class="logo magnetic">ALFAAZ</a>
+    <a href="index.html" class="logo">ALFAAZ</a>
     
     <div class="nav-actions" style="gap: 2rem;">
-      <a href="dashboard.html" class="magnetic" style="font-size: 11px; color: var(--text-primary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Dashboard</a>
-      <button id="logoutBtn" class="magnetic" style="background: transparent; border: none; color: var(--text-secondary); font-family: var(--font-body); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: color 0.3s ease;">Log Out</button>
+      <a href="dashboard.html" class="" style="font-size: 11px; color: var(--text-primary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s ease;">Dashboard</a>
+      <button id="logoutBtn" class="" style="background: transparent; border: none; color: var(--text-secondary); font-family: var(--font-body); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: color 0.3s ease;">Log Out</button>
     </div>
   </nav>
 
   <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
     <div class="header">
       <div>Administration</div>
-      <a href="dashboard.html" class="magnetic" style="font-size: 11px; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px;">&larr; Dashboard</a>
+      <a href="dashboard.html" class="" style="font-size: 11px; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px;">&larr; Dashboard</a>
     </div>
     <div class="tab-nav">
-      <button class="tab-btn active magnetic" onclick="switchTab('events')">Standard Events</button>
-      <button class="tab-btn magnetic" onclick="switchTab('exhibitions')">Exhibitions</button>
-      <button class="tab-btn magnetic" onclick="switchTab('clubs')">Club Applications</button>
-      <button class="tab-btn magnetic" onclick="switchTab('roster')">Collective Roster</button>
+      <button class="tab-btn active" onclick="switchTab('events')">Standard Events</button>
+      <button class="tab-btn" onclick="switchTab('exhibitions')">Exhibitions</button>
+      <button class="tab-btn" onclick="switchTab('clubs')">Club Applications</button>
+      <button class="tab-btn" onclick="switchTab('roster')">Collective Roster</button>
     </div>
 
     <div id="tab-events" class="tab-panel active">
@@ -74,7 +74,7 @@
           <div class="form-group"><label class="data-label">Capacity (0 = unlimited)</label><input type="number" id="ev-capacity" value="0" min="0" style="background: transparent; border: none; border-bottom: 1px solid var(--grid-border); color: var(--text-primary); padding: 0.8rem 0; width: 100%; font-family: var(--font-body); font-size: 13px; outline: none;"></div>
           <div class="form-group"><label class="data-label">Description</label><input type="text" id="ev-desc" placeholder="Brief description..."></div>
         </div>
-        <button class="action-btn gold magnetic" style="padding: 1rem 2rem;" onclick="handleCreateEvent()">Create Event</button>
+        <button class="action-btn gold" style="padding: 1rem 2rem;" onclick="handleCreateEvent()">Create Event</button>
         <span id="ev-create-msg" style="font-size:11px; margin-left:1rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;"></span>
       </div>
       <div class="section-title">Live Events</div>
@@ -155,11 +155,11 @@
       </div>
       
       <div style="display:flex; gap:0.8rem; margin-bottom:2rem; flex-wrap:wrap;">
-        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('ALL')" id="filt-ALL">All</button>
-        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('PENDING')" id="filt-PENDING">Pending</button>
-        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('APPROVED')" id="filt-APPROVED">Approved</button>
-        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('FINALIZED')" id="filt-FINALIZED">Finalized (Paid)</button>
-        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('REJECTED')" id="filt-REJECTED">Rejected</button>
+        <button class="action-btn gold" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('ALL')" id="filt-ALL">All</button>
+        <button class="action-btn gold" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('PENDING')" id="filt-PENDING">Pending</button>
+        <button class="action-btn gold" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('APPROVED')" id="filt-APPROVED">Approved</button>
+        <button class="action-btn gold" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('FINALIZED')" id="filt-FINALIZED">Finalized (Paid)</button>
+        <button class="action-btn gold" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterExhibitions('REJECTED')" id="filt-REJECTED">Rejected</button>
       </div>
       
       <div id="exhibitionsContainer"><div class="empty-state">Loading applications...</div></div>
@@ -168,10 +168,10 @@
     <div id="tab-clubs" class="tab-panel">
       <div class="section-title">Club Applications</div>
       <div style="display:flex; gap:0.8rem; margin-bottom:2rem; flex-wrap:wrap;">
-        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('ALL')" id="filter-ALL">All</button>
-        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('PENDING')" id="filter-PENDING">Pending</button>
-        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('APPROVED')" id="filter-APPROVED">Approved</button>
-        <button class="action-btn gold magnetic" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('REJECTED')" id="filter-REJECTED">Rejected</button>
+        <button class="action-btn gold" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('ALL')" id="filter-ALL">All</button>
+        <button class="action-btn gold" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('PENDING')" id="filter-PENDING">Pending</button>
+        <button class="action-btn gold" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('APPROVED')" id="filter-APPROVED">Approved</button>
+        <button class="action-btn gold" style="padding: 0.6rem 1.2rem; font-size: 9px;" onclick="filterClubs('REJECTED')" id="filter-REJECTED">Rejected</button>
       </div>
       <div id="clubsContainer"><div class="empty-state">Loading applications...</div></div>
     </div>
@@ -186,7 +186,7 @@
     <div class="modal">
       <div class="modal-header">
         <div style="font-family:var(--font-heading); font-size:2.5rem; color:var(--text-primary); font-weight: 400;" id="modalTitle">Details</div>
-        <button class="action-btn magnetic" style="padding: 0.5rem 1rem; border-color: transparent;" onclick="closeModal()">✕ Close</button>
+        <button class="action-btn" style="padding: 0.5rem 1rem; border-color: transparent;" onclick="closeModal()">✕ Close</button>
       </div>
       <div id="modalBody" style="color:var(--text-primary);"></div>
     </div>
