@@ -18,7 +18,7 @@
     .loading-state { font-size: 11px; color: var(--text-secondary); text-align: center; padding: 4rem; text-transform: uppercase; letter-spacing: 2px; border: 1px dashed var(--grid-border); }
     footer { text-align: center; padding: 3em 0; border-top: 1px solid var(--grid-border); font-size: 10px; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; }
   </style>
-  <script type="module" crossorigin src="/assets/components-DZ64e3xR.js"></script>
+  <script type="module" crossorigin src="/assets/components-inBCOpbj.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
 <body>
@@ -47,7 +47,7 @@
         }
         
         container.innerHTML = blogs.map(blog => `
-          <a href="post.html?id=${blog.id}" class="archive-card magnetic">
+          <a href="post.html?id=${blog.id}" class="archive-card">
             <span class="archive-meta">${new Date(blog.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} // Curator's Notes</span>
             <h2 class="archive-title">${blog.title}</h2>
             <p class="archive-excerpt">${blog.excerpt || ''}</p>
