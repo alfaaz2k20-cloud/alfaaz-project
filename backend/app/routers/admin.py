@@ -323,7 +323,7 @@ def delete_user(user_email: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Cannot delete an admin account.")
     db.query(DBSubmission).filter(DBSubmission.author_email == user_email).delete()
     db.query(DBClubApplication).filter(DBClubApplication.user_email == user_email).delete()
-    db.query(DBEventRegistration).filter(DBEventRegistration.event_id == user_email).delete()
+    db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user_email).delete()
     db.query(DBExhibitionApplication).filter(DBExhibitionApplication.user_email == user_email).delete()
     db.delete(user)
     db.commit()

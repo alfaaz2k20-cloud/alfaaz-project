@@ -111,13 +111,20 @@ def get_my_exhibition_status(db: Session = Depends(get_db), user=Depends(require
 
 @router.post("/complete-registration")
 def complete_exhibition_registration(data: ExhibitionRegistrationSubmit, db: Session = Depends(get_db), user=Depends(require_auth)):
+    # 1. Fetch active cycle
+    active_ex = db.query(DBExhibition).filter(DBExhibition.is_active == True).first()
+    if not active_ex:
+        raise HTTPException(status_code=400, detail="The exhibition portal is currently closed.")
+
+    # 2. Find approved application for THIS cycle
     application = db.query(DBExhibitionApplication).filter(
         DBExhibitionApplication.user_email == user["email"],
+        DBExhibitionApplication.exhibition_cycle == active_ex.title,
         DBExhibitionApplication.status == "APPROVED"
-    ).order_by(DBExhibitionApplication.created_at.desc()).first()
+    ).first()
     
     if not application:
-        raise HTTPException(status_code=404, detail="No approved application found.")
+        raise HTTPException(status_code=404, detail="No approved application found for the current cycle.")
     if application.registration_status == "CONFIRMED":
         raise HTTPException(status_code=400, detail="Registration already confirmed.")
     if not data.agreed_to_tnc:
