@@ -4,12 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const div = document.createElement('div'); 
         div.innerHTML = html;
         div.querySelectorAll('script, iframe, object, embed, form').forEach(el => el.remove());
-        div.querySelectorAll('*').forEach(el => { 
-            [...el.attributes].forEach(attr => { 
-                if (attr.name.startsWith('on') || attr.name === 'href' && attr.value.startsWith('javascript:')) 
-                    el.removeAttribute(attr.name); 
-            }); 
-        });
         return div.innerHTML;
     }
 

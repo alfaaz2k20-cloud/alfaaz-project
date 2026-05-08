@@ -2,9 +2,37 @@
    ALFAAZ COLLECTIVE — GLOBAL SCRIPTS
 ======================================== */
 
+// 1. Master Configuration
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://alfaaz-project.onrender.com';
 
-// 1. Master UI Binding
+// 2. Global Fetch Wrapper
+window.globalApiFetch = async function(endpoint, options = {}) {
+    const token = localStorage.getItem('alfaaz_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    
+    try {
+        const response = await fetch(`${API_URL}${endpoint}`, { 
+            ...options, 
+            headers: { ...headers, ...(options.headers || {}) } 
+        });
+        
+        if (response.status === 401 || response.status === 403) { 
+            // Only clear and redirect if we aren't already on login
+            if (!window.location.pathname.endsWith('login.html')) {
+                localStorage.clear(); 
+                window.location.href = 'login.html'; 
+            }
+            return null; 
+        }
+        return response;
+    } catch (error) { 
+        console.error("API fetch error:", error); 
+        throw error; 
+    }
+};
+
+// 3. Master UI Binding
 window.refreshGlobalEffects = function() {
     if (window.lucide) { window.lucide.createIcons(); }
 };
@@ -12,8 +40,8 @@ window.refreshGlobalEffects = function() {
 document.addEventListener('DOMContentLoaded', () => {
     window.refreshGlobalEffects();
     
-    // Navbar scroll effect
-    const navbar = document.querySelector('alfaaz-nav nav');
+    // Global Scroll Navbar Effect
+    const navbar = document.getElementById('navbar');
     if (navbar) {
         let lastY = window.scrollY;
         window.addEventListener('scroll', () => {
@@ -28,28 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: true });
     }
 });
-
-// 3. Global Fetch Wrapper
-window.globalApiFetch = async function(endpoint, options = {}) {
-    const token = localStorage.getItem('alfaaz_token');
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    
-    try {
-        const response = await fetch(`${API_URL}${endpoint}`, { ...options, headers: { ...headers, ...(options.headers || {}) } });
-        if (response.status === 401 || response.status === 403) { 
-            localStorage.clear(); 
-            if (!window.location.pathname.endsWith('login.html')) {
-                window.location.href = 'login.html'; 
-            }
-            return null; 
-        }
-        return response;
-    } catch (error) { 
-        console.error("API fetch error:", error); 
-        throw error; 
-    }
-};
 
 // 4. Staggered Cascading Translations
 (function() {
