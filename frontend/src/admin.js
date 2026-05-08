@@ -5,6 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(userData); 
     if (user.status !== 'ADMIN') window.location.href = 'dashboard.html';
 
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => { localStorage.clear(); window.location.href = 'login.html'; });
+    }
+
     const tabLoaded = {};
     window.switchTab = function(name) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
