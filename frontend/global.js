@@ -5,8 +5,30 @@
 // 1. Master Configuration
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://alfaaz-project.onrender.com';
 
-// 2. Global Fetch Wrapper
+// 2. Assertive Backend Waking (The Pulse)
+// We create a promise that resolves once the backend responds for the first time.
+let isServerReady = false;
+const serverReadyPromise = (async () => {
+    try {
+        const start = Date.now();
+        await fetch(`${API_URL}/`);
+        isServerReady = true;
+        console.log(`[ALFAAZ] Backend Pulse: OK (${Date.now() - start}ms)`);
+    } catch (e) {
+        console.warn("[ALFAAZ] Backend Pulse: Failed. Service might be starting...");
+        // Resolve anyway after a timeout to prevent infinite hanging
+        setTimeout(() => { isServerReady = true; }, 30000);
+    }
+})();
+
+// 3. Global Fetch Wrapper (Upgraded with Cold-Start Protection)
 window.globalApiFetch = async function(endpoint, options = {}) {
+    // If the server hasn't responded yet, wait for the initial pulse to resolve.
+    // This prevents multiple overlapping requests from hitting a sleeping server simultaneously.
+    if (!isServerReady) {
+        await serverReadyPromise;
+    }
+
     const token = localStorage.getItem('alfaaz_token');
     const headers = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -18,7 +40,6 @@ window.globalApiFetch = async function(endpoint, options = {}) {
         });
         
         if (response.status === 401 || response.status === 403) { 
-            // Only clear and redirect if we aren't already on login
             if (!window.location.pathname.endsWith('login.html')) {
                 localStorage.clear(); 
                 window.location.href = 'login.html'; 
@@ -32,7 +53,7 @@ window.globalApiFetch = async function(endpoint, options = {}) {
     }
 };
 
-// 3. Master UI Binding
+// 4. Master UI Binding
 window.refreshGlobalEffects = function() {
     if (window.lucide) { window.lucide.createIcons(); }
 };
@@ -40,7 +61,6 @@ window.refreshGlobalEffects = function() {
 document.addEventListener('DOMContentLoaded', () => {
     window.refreshGlobalEffects();
     
-    // Global Scroll Navbar Effect
     const navbar = document.getElementById('navbar');
     if (navbar) {
         let lastY = window.scrollY;
@@ -57,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 4. Staggered Cascading Translations
+// 5. Staggered Cascading Translations
 (function() {
   function startLanguageCycle() {
     const bilingualElements = document.querySelectorAll('.ur-hover');
@@ -76,9 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
   else { startLanguageCycle(); }
 })();
 
-// 5. Keep Render backend alive
+// 6. Keep Render backend alive (Background Periodic Ping)
 async function wakeBackend() {
   try { await fetch(`${API_URL}/`); } catch (e) {}
 }
-wakeBackend();
 setInterval(wakeBackend, 10 * 60 * 1000);

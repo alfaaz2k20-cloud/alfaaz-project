@@ -23,10 +23,10 @@
     .nav-links a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background: var(--accent-gold); transition: width 0.4s ease; }
     .nav-links a:hover::after { width: 100%; }
     .nav-links a:hover { color: var(--accent-gold); }
-    .nav-actions { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-actions { display: flex; align-items: center; gap: 1.5rem; height: 100%; }
     .mobile-only-link { display: none; }
     
-    #menuToggle { display: none; color: var(--text-primary); background: none; border: none; z-index: 1001; }
+    #menuToggle { display: none; color: var(--text-primary); background: none; border: none; z-index: 1001; padding: 0; cursor: pointer; align-items: center; justify-content: center; width: 30px; height: 30px; margin-left: 0.5rem; }
     #menuToggle .hamburger-close { display: none; }
     #menuToggle.active .hamburger-open { display: none; }
     #menuToggle.active .hamburger-close { display: block; }
@@ -127,7 +127,7 @@
         .footer-content, .footer-bottom { flex-direction: column; align-items: start; gap: 2rem; } 
     }
   </style>
-  <script type="module" crossorigin src="/assets/global-DH5Z8GjP.js"></script>
+  <script type="module" crossorigin src="/assets/global-BneSZJmH.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
 <body>
@@ -138,7 +138,7 @@
     <div class="preloader-status" id="preloaderStatus">ALFAAZ COLLECTIVE</div>
   </div>
 
-  <nav id="navbar">
+    <nav id="navbar">
     <a href="#" class="logo ur-hover" data-ur="الفاظ">
       <span class="en-text">ALFAAZ</span>
     </a>
@@ -404,7 +404,17 @@
     }
 
     let sequenceStarted = false;
-    const checkInterval = setInterval(() => { if (loadedCount >= flashImages.length / 2) { clearInterval(checkInterval); if (!sequenceStarted) { sequenceStarted = true; flashNext(); } } }, 50);
+    const checkInterval = setInterval(() => { 
+        if (loadedCount >= flashImages.length / 2) { 
+            clearInterval(checkInterval); 
+            if (!sequenceStarted) { 
+                sequenceStarted = true; 
+                // Pre-warm backend immediately
+                fetch('https://alfaaz-project.onrender.com/').catch(() => {});
+                flashNext(); 
+            } 
+        } 
+    }, 50);
     setTimeout(() => { clearInterval(checkInterval); if (!sequenceStarted) { sequenceStarted = true; flashNext(); } }, 1500);
     function revealHero() { const heroTitle = document.querySelector('.hero-title'), heroSubtitle = document.querySelector('.hero-subtitle'); if (heroTitle) heroTitle.classList.add('visible'); if (heroSubtitle) setTimeout(() => heroSubtitle.classList.add('visible'), 500); }
 
