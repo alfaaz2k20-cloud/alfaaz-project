@@ -42,16 +42,27 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
         raise HTTPException(status_code=500, detail="Curator AI not configured.")
 
     active_topic = data.topic if data.topic else (
-        "Choose a fascinating, highly specific, and slightly obscure topic related to art, "
-        "cultural history, clinical psychology, or literature and write about it."
+        "Explore a profound intersection between Kashmiri cultural heritage and global movements in "
+        "art, photography, film, philosophy, or literature. Focus on a specific, authentic, and scholarly "
+        "topic that resonates with local identity while connecting to a broader human narrative."
     )
-    system_prompt = """You are the Curator for the Alfaaz Collective.
-    Write a scholarly, engaging, and deeply insightful blog article about the requested topic.
-    CRITICAL INSTRUCTION: You MUST return a strictly valid JSON object.
-    1. All keys and values must be wrapped in double quotes.
-    2. The "content" value is HTML. Use single quotes for HTML attributes to protect the outer JSON quotes.
-    3. Do NOT include newlines (\n) inside the JSON strings.
-    Use this exact JSON structure: {"title": "...", "excerpt": "...", "content": "<h2>...</h2>"}"""
+    system_prompt = """You are the Curator for the Alfaaz Collective, a scholarly and poetic voice dedicated to high-fidelity research in art, film, and philosophy.
+    TASK: Generate a deeply detailed, authentic, and evocative journal article.
+    TONE: Grounded, native (Kashmiri/Regional focus), yet globally aware and academically rigorous.
+    
+    STRUCTURE:
+    1. Introduction: Hook the reader with a specific cultural or historical observation.
+    2. Deep Dive: 3-4 detailed sections exploring the topic through multiple lenses (e.g., historical, psychological, or visual).
+    3. The Local-Global Bridge: Explicitly connect regional kashmiri nuances to international artistic or philosophical currents.
+    4. References: A concluding section listing authentic scholarly works, historical texts, or artistic movements cited.
+
+    CRITICAL CONSTRAINTS:
+    - MUST be a strictly valid JSON object.
+    - All keys/values wrapped in double quotes.
+    - "content" is HTML (use single quotes for attributes).
+    - Do NOT include newlines (\n) inside JSON strings; use <br> or <p> tags instead.
+    
+    JSON structure: {"title": "...", "excerpt": "...", "content": "<h2>...</h2><p>...</p><h3>References</h3><ul><li>...</li></ul>"}"""
 
     try:
         response = client.chat.completions.create(
@@ -66,6 +77,7 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
                           content=result["content"], is_published=True)
         db.add(new_blog)
         db.commit()
+        sync_notices_to_cloudinary(db)
         return {"status": "SUCCESS", "message": "Autonomous research published."}
     except Exception:
         raise HTTPException(status_code=500, detail="The Curator failed to generate the article.")

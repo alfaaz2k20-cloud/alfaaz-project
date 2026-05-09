@@ -42,8 +42,8 @@
     document.addEventListener('DOMContentLoaded', async () => {
       const container = document.getElementById('blogContainer');
       try {
-        const res = await fetch('https://alfaaz-project.onrender.com/blogs/'); 
-        if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+        const res = await window.globalApiFetch('/blogs/'); 
+        if (!res || !res.ok) throw new Error(`Failed to fetch`);
         const blogs = await res.json();
         
         if (!blogs.length) { 
