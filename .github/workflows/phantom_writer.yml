@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Trigger Render API
         run: |
-          curl -v -X POST "https://alfaaz-project.onrender.com/admin/blogs/generate" \
+          curl -v -X POST "https://alfaaz-project.onrender.com/blogs/generate" \
                -H "Authorization: Bearer ${{ secrets.PHANTOM_SECRET_TOKEN }}" \
                -H "Content-Type: application/json" \
                -d "{}" \
