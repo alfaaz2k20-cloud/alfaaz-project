@@ -31,14 +31,19 @@ router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(requir
 
 @router.post("/blogs/generate", dependencies=[])
 def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_db), authorization: str = Header(None)):
-    expected_token = os.environ.get("PHANTOM_SECRET_TOKEN")
-    if not expected_token:
+    from app.core.config import PHANTOM_SECRET_TOKEN as EXPECTED_TOKEN
+    
+    if not EXPECTED_TOKEN:
+        print("[CURATOR ERROR] PHANTOM_SECRET_TOKEN not configured in environment.")
         raise HTTPException(status_code=500, detail="PHANTOM_SECRET_TOKEN not configured.")
-    if not authorization or not authorization.startswith("Bearer ") or authorization.split(" ")[1] != expected_token:
+        
+    if not authorization or not authorization.startswith("Bearer ") or authorization.split(" ")[1] != EXPECTED_TOKEN:
+        print(f"[CURATOR ERROR] Unauthorized access attempt with token: {authorization[:15] if authorization else 'None'}...")
         raise HTTPException(status_code=403, detail="Unauthorized Curator Access")
 
     client = get_groq_client()
     if not client:
+        print("[CURATOR ERROR] Groq client not initialized.")
         raise HTTPException(status_code=500, detail="Curator AI not configured.")
 
     active_topic = data.topic if data.topic else (
@@ -46,6 +51,7 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
         "art, photography, film, philosophy, or literature. Focus on a specific, authentic, and scholarly "
         "topic that resonates with local identity while connecting to a broader human narrative."
     )
+    
     system_prompt = """You are the Curator for the Alfaaz Collective, a scholarly and poetic voice dedicated to high-fidelity research in art, film, and philosophy.
     TASK: Generate a deeply detailed, authentic, and evocative journal article.
     TONE: Grounded, native (Kashmiri/Regional focus), yet globally aware and academically rigorous.
@@ -60,7 +66,7 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
     - MUST be a strictly valid JSON object.
     - All keys/values wrapped in double quotes.
     - "content" is HTML (use single quotes for attributes).
-    - Do NOT include newlines (\n) inside JSON strings; use <br> or <p> tags instead.
+    - Do NOT include newlines (\\n) inside JSON strings; use <br> or <p> tags instead.
     
     JSON structure: {"title": "...", "excerpt": "...", "content": "<h2>...</h2><p>...</p><h3>References</h3><ul><li>...</li></ul>"}"""
 
@@ -71,16 +77,40 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
             model="llama-3.3-70b-versatile",
             response_format={"type": "json_object"},
             temperature=0.8,
+            max_tokens=4096
         )
-        result = json.loads(response.choices[0].message.content)
-        new_blog = DBBlog(title=result["title"], excerpt=result["excerpt"],
-                          content=result["content"], is_published=True)
+        
+        raw_content = response.choices[0].message.content
+        try:
+            result = json.loads(raw_content)
+        except json.JSONDecodeError as je:
+            print(f"[CURATOR ERROR] JSON Decode Failed: {je}")
+            print(f"[CURATOR ERROR] Raw Output: {raw_content}")
+            raise HTTPException(status_code=500, detail="The Curator produced an unreadable manuscript.")
+
+        new_blog = DBBlog(
+            title=result.get("title", "Untitled Reflection"), 
+            excerpt=result.get("excerpt", ""),
+            content=result.get("content", ""), 
+            is_published=True
+        )
+        
         db.add(new_blog)
         db.commit()
-        sync_notices_to_cloudinary(db)
+        
+        # Sync to CDN
+        try:
+            sync_notices_to_cloudinary(db)
+        except Exception as se:
+            print(f"[CURATOR WARNING] CDN Sync failed but blog was saved: {se}")
+            
         return {"status": "SUCCESS", "message": "Autonomous research published."}
-    except Exception:
-        raise HTTPException(status_code=500, detail="The Curator failed to generate the article.")
+        
+    except Exception as e:
+        print(f"[CURATOR CRITICAL] Generation failed: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"The Curator failed to generate the article: {str(e)}")
 
 
 # ── Events ───────────────────────────────────────────────────────────────────
