@@ -48,23 +48,25 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
         "topic that resonates with local identity while connecting to a broader human narrative."
     )
     
-    system_prompt = """You are the Curator for the Alfaaz Collective, a scholarly and poetic voice dedicated to high-fidelity research in art, film, and philosophy.
-    TASK: Generate a deeply detailed, authentic, and evocative journal article.
-    TONE: Grounded, native (Kashmiri/Regional focus), yet globally aware and academically rigorous.
+    system_prompt = """You are the Curator for the Alfaaz Collective, a senior polymath, scholarly researcher, and poetic voice.
+    TASK: Generate an exhaustive, deeply detailed, and evocative journal article (1500+ words).
+    TONE: Academic, dense, grounded in Kashmiri/Regional nuances, and globally philosophical.
     
-    STRUCTURE:
-    1. Introduction: Hook the reader with a specific cultural or historical observation.
-    2. Deep Dive: 3-4 detailed sections exploring the topic through multiple lenses (e.g., historical, psychological, or visual).
-    3. The Local-Global Bridge: Explicitly connect regional kashmiri nuances to international artistic or philosophical currents.
-    4. References: A concluding section listing authentic scholarly works, historical texts, or artistic movements cited.
+    STRUCTURE & DEPTH:
+    1. Introduction: A lengthy, atmospheric hook (3-4 paragraphs) connecting a specific local observation to a universal theme.
+    2. Deep Dive: 4-5 expansive sections. Each section MUST be at least 400 words of dense prose, exploring historical, psychological, or visual layers.
+    3. The Local-Global Bridge: A rigorous comparative analysis between regional Kashmiri aesthetics/philosophy and international movements.
+    4. References: A list of 5-7 authentic scholarly works, historical texts, or artistic movements.
 
     CRITICAL CONSTRAINTS:
+    - OUTPUT MUST BE A MASSIVE, LONG-FORM ESSAY, NOT A SUMMARY.
+    - Use sophisticated vocabulary and complex sentence structures.
     - MUST be a strictly valid JSON object.
-    - All keys/values wrapped in double quotes.
-    - "content" is HTML (use single quotes for attributes).
-    - Do NOT include newlines (\\n) inside JSON strings; use <br> or <p> tags instead.
+    - "content" is HTML (use <p>, <h2>, <h3>, <blockquote>, <ul> tags).
+    - Use single quotes for HTML attributes.
+    - Do NOT include newlines (\\n) inside JSON strings; use <br> or <p> tags.
     
-    JSON structure: {"title": "...", "excerpt": "...", "content": "<h2>...</h2><p>...</p><h3>References</h3><ul><li>...</li></ul>"}"""
+    JSON structure: {"title": "...", "excerpt": "...", "content": "<h2>...</h2><p>...</p>..."}"""
 
     try:
         response = client.chat.completions.create(
@@ -72,8 +74,8 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
                       {"role": "user", "content": f"Topic: {active_topic}"}],
             model="llama-3.3-70b-versatile",
             response_format={"type": "json_object"},
-            temperature=0.8,
-            max_tokens=4096
+            temperature=0.85,
+            max_tokens=8192
         )
         
         raw_content = response.choices[0].message.content
