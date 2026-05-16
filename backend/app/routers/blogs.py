@@ -1,3 +1,4 @@
+import secrets
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from app.db.session import get_db
@@ -33,8 +34,12 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
         print("[CURATOR ERROR] PHANTOM_SECRET_TOKEN not configured in environment.")
         raise HTTPException(status_code=500, detail="PHANTOM_SECRET_TOKEN not configured.")
         
-    if not authorization or not authorization.startswith("Bearer ") or authorization.split(" ")[1] != EXPECTED_TOKEN:
-        print(f"[CURATOR ERROR] Unauthorized access attempt with token: {authorization[:15] if authorization else 'None'}...")
+    token = None
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ", 1)[1]
+
+    if not token or not secrets.compare_digest(token, EXPECTED_TOKEN):
+        print("[CURATOR ERROR] Unauthorized access attempt to /blogs/generate.")
         raise HTTPException(status_code=403, detail="Unauthorized Curator Access")
 
     client = get_groq_client()

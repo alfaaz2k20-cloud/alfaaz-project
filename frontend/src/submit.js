@@ -7,14 +7,15 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'login.html';
         return;
     }
-    
-    const user = JSON.parse(userData);
 
     const form = document.getElementById('submission-form');
     if (!form) return;
 
-    const CLOUD_NAME = "dmqwjpmjk";
-    const UPLOAD_PRESET = "alfaaz_vault"; 
+    const cloudinaryConfig = window.ALFAAZ_CLOUDINARY || {
+        cloudName: 'dmqwjpmjk',
+        uploadPreset: 'alfaaz_vault'
+    };
+    const { cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET } = cloudinaryConfig;
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -49,8 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 submission_type: document.getElementById('sub-type').value, 
                 title: document.getElementById('title').value, 
                 file_url: cloudData.secure_url, 
-                note: document.getElementById('note').value, 
-                author_email: user.email 
+                note: document.getElementById('note').value
             };
             
             const pyRes = await window.globalApiFetch('/vault/submit', { 

@@ -1,5 +1,10 @@
 // dashboard.js — Centralized Dashboard Logic
 document.addEventListener('DOMContentLoaded', () => {
+    const cloudinaryConfig = window.ALFAAZ_CLOUDINARY || {
+      cloudName: 'dmqwjpmjk',
+      uploadPreset: 'alfaaz_vault'
+    };
+
     // TOAST SYSTEM
     function showToast(message, type = 'info', duration = 3500) {
       const container = document.getElementById('toastContainer');
@@ -18,7 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'login.html';
         return;
     }
-    const user = JSON.parse(userData);
+    let user;
+    try {
+      user = JSON.parse(userData);
+    } catch (error) {
+      localStorage.removeItem('alfaaz_user');
+      window.location.href = 'login.html';
+      return;
+    }
 
     const dashEmail = document.getElementById('dashEmail');
     const dashStatus = document.getElementById('dashStatus');
@@ -69,34 +81,50 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // PHANTOM TERMINAL
+    function appendPhantomMessage(output, label, text, style = '') {
+      const row = document.createElement('div');
+      row.style.cssText = style;
+      if (label) {
+        const strong = document.createElement('strong');
+        strong.textContent = `${label}:`;
+        row.appendChild(strong);
+        row.appendChild(document.createTextNode(' '));
+      }
+      row.appendChild(document.createTextNode(text));
+      output.appendChild(row);
+      output.scrollTop = output.scrollHeight;
+      return row;
+    }
+
     window.askPhantom = async function() {
       const input = document.getElementById('phantomInput'), output = document.getElementById('phantomOutput');
       if (!input || !output) return;
       const query = input.value.trim();
       if (!query) return; input.value = '';
-      output.innerHTML += `<div style="margin-top:1.5rem; color: var(--accent-gold);"><strong>You:</strong> ${query}</div>`;
-      output.innerHTML += `<div id="load-msg" style="color:var(--text-secondary); font-style:italic; margin-top:0.5rem;">The Curator is thinking...</div>`;
-      output.scrollTop = output.scrollHeight;
+      appendPhantomMessage(output, 'You', query, 'margin-top:1.5rem; color: var(--accent-gold);');
+      const loadMsg = appendPhantomMessage(output, '', 'The Curator is thinking...', 'color:var(--text-secondary); font-style:italic; margin-top:0.5rem;');
       
       try {
         const res = await window.globalApiFetch('/phantom/ask', { method: 'POST', body: JSON.stringify({ question: query }) });
-        const loadMsg = document.getElementById('load-msg');
-        if (loadMsg) loadMsg.remove();
+        if (loadMsg.isConnected) loadMsg.remove();
         if (res && res.ok) {
           const data = await res.json();
-          output.innerHTML += `<div style="color:var(--text-primary); margin-top:0.5rem;"><strong>Curator:</strong> ${data.answer}</div>`;
+          appendPhantomMessage(output, 'Curator', data.answer, 'color:var(--text-primary); margin-top:0.5rem;');
         } else {
-          output.innerHTML += `<div style="color:var(--accent-red); margin-top:0.5rem;">The Curator is currently occupied.</div>`;
+          appendPhantomMessage(output, '', 'The Curator is currently occupied.', 'color:var(--accent-red); margin-top:0.5rem;');
         }
       } catch (err) { 
-          const loadMsg = document.getElementById('load-msg');
-          if (loadMsg) loadMsg.remove(); 
+          if (loadMsg.isConnected) loadMsg.remove();
+          appendPhantomMessage(output, '', '[Offline]', 'color:var(--accent-red); margin-top:0.5rem;');
       }
       output.scrollTop = output.scrollHeight;
     };
     
-    document.getElementById('phantomInput')?.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') window.askPhantom();
+    document.getElementById('phantomInput')?.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          window.askPhantom();
+        }
     });
 
     // EVENTS
@@ -307,9 +335,9 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const formData = new FormData(); 
         formData.append('file', fileInput.files[0]); 
-        formData.append('upload_preset', "alfaaz_vault"); 
+        formData.append('upload_preset', cloudinaryConfig.uploadPreset); 
         
-        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/dmqwjpmjk/upload`, { method: 'POST', body: formData });
+        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`, { method: 'POST', body: formData });
         const cloudData = await cloudRes.json();
         if (!cloudData.secure_url) throw new Error("Cloud vault upload failed.");
 

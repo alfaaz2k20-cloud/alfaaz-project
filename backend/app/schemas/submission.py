@@ -6,4 +6,4 @@ class VaultSubmission(BaseModel):
     title: str
     file_url: str
     note: Optional[str] = None
-    author_email: str
+    author_email: Optional[str] = None

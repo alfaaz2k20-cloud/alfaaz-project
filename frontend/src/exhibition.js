@@ -15,7 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const exDesc = document.getElementById('exDesc');
 
     // ── Cloudinary PDF Upload ──────────────────────────────────────────
-    const CLOUD_NAME = "dmqwjpmjk", UPLOAD_PRESET = "alfaaz_vault";
+    const cloudinaryConfig = window.ALFAAZ_CLOUDINARY || {
+      cloudName: 'dmqwjpmjk',
+      uploadPreset: 'alfaaz_vault'
+    };
+    const { cloudName: CLOUD_NAME, uploadPreset: UPLOAD_PRESET } = cloudinaryConfig;
     let uploadedPdfUrl = null;
 
     document.getElementById('portfolioFile')?.addEventListener('change', async (e) => {
@@ -64,8 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Page Init ─────────────────────────────────────────────────────
     async function initExhibition() {
       try {
-        const res = await fetch(`https://alfaaz-project.onrender.com/exhibitions/config`);
-        if (!res.ok) throw new Error("Failed to load config");
+        const res = await window.globalApiFetch('/exhibitions/config');
+        if (!res || !res.ok) throw new Error("Failed to load config");
         const config = await res.json();
         
         if (headerTitle) headerTitle.textContent = config.title || 'Exhibition';

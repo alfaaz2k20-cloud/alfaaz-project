@@ -12,7 +12,7 @@
 
 ## 3. Technical Architecture
 - **Backend:** FastAPI deployed on Render.
-- **Frontend:** React/Vite deployed on Vercel.
+- **Frontend:** Vite Multi-Page App (MPA) with vanilla ES modules, deployed on Vercel from the `frontend/` directory.
 - **Data Handling:** 
     - Use `Bearer` tokens for authentication (stored in `localStorage`).
     - `CORS` is strictly configured (`allow_credentials=False`).
