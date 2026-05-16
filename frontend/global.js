@@ -52,7 +52,7 @@ window.globalApiFetch = async function(endpoint, options = {}) {
             headers: { ...headers, ...(options.headers || {}) } 
         });
         
-        if (response.status === 401 || response.status === 403) { 
+        if (response.status === 401) { 
             if (!window.location.pathname.endsWith('login.html')) {
                 localStorage.clear(); 
                 window.location.href = 'login.html'; 
