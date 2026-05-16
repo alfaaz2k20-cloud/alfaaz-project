@@ -3,7 +3,20 @@
 ======================================== */
 
 // 1. Master Configuration
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://alfaaz-project.onrender.com';
+const API_URL =
+    import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_API_URL ||
+    'https://alfaaz-project.onrender.com';
+const CLOUDINARY_CLOUD_NAME =
+    import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dmqwjpmjk';
+const CLOUDINARY_UPLOAD_PRESET =
+    import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'alfaaz_vault';
+
+window.ALFAAZ_API_URL = API_URL;
+window.ALFAAZ_CLOUDINARY = {
+    cloudName: CLOUDINARY_CLOUD_NAME,
+    uploadPreset: CLOUDINARY_UPLOAD_PRESET
+};
 
 // 2. Assertive Backend Waking (The Pulse)
 // We create a promise that resolves once the backend responds for the first time.

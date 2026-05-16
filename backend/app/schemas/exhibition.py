@@ -23,7 +23,6 @@ class ExhibitionConfigSchema(BaseModel):
     date_text: str
     venue: str
     about_text: str
-    is_open: bool
     tnc_pdf_url: Optional[str] = None
     registration_fee: str = ""
     payment_instructions: str = ""

@@ -1,9 +1,24 @@
 // admin.js — Centralized Administration Logic
 document.addEventListener('DOMContentLoaded', () => {
     const userData = localStorage.getItem('alfaaz_user');
-    if (!userData) window.location.href = 'login.html';
-    const user = JSON.parse(userData); 
-    if (user.status !== 'ADMIN') window.location.href = 'dashboard.html';
+    if (!userData) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    let user;
+    try {
+        user = JSON.parse(userData);
+    } catch (error) {
+        localStorage.removeItem('alfaaz_user');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    if (!user || user.status !== 'ADMIN') {
+        window.location.href = 'dashboard.html';
+        return;
+    }
 
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -146,8 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tnc_pdf_url: document.getElementById('newExTnc').value.trim(),
         registration_fee: document.getElementById('newExFee').value.trim(),
         payment_qr_url: document.getElementById('newExQr').value.trim(),
-        payment_instructions: document.getElementById('newExPayInst').value.trim(),
-        is_open: false 
+        payment_instructions: document.getElementById('newExPayInst').value.trim()
       };
 
       if (!payload.title || !payload.date_text || !payload.venue) {
