@@ -15,7 +15,12 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 def register_user(user: UserRegister, db: Session = Depends(get_db)):
     if db.query(DBUser).filter(DBUser.email == user.email).first():
         raise HTTPException(status_code=400, detail="User already registered.")
-    new_user = DBUser(email=user.email, password=get_password_hash(user.password), full_name=user.full_name)
+    
+    full_name = user.full_name.strip()
+    if len(full_name) > 80:
+        raise HTTPException(status_code=400, detail="Name must be under 80 characters.")
+        
+    new_user = DBUser(email=user.email, password=get_password_hash(user.password), full_name=full_name)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
