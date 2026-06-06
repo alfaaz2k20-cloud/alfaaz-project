@@ -1,7 +1,6 @@
 from app.routers import admin, auth, blogs, clubs, curator, events, exhibitions
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import os
 
 # Import Database Core
 from app.db.session import engine, SessionLocal
@@ -72,7 +71,7 @@ def on_startup():
 def ping():
     return {"status": "ALIVE", "message": "The monolith has been defeated."}
 
-#he actual 404 is handled by frontend, so this is just a fallback for API routes
+# The frontend owns browser routes; this is only the API root fallback.
 @app.get("/")
 def root():
     return {"status": "Alfaaz backend is live"}

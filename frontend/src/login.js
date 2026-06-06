@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 body: JSON.stringify({ email: emailValue, password: passwordValue })
             });
+            if (!response) throw new Error("No response from authentication service.");
             const data = await response.json();
 
             if (response.ok) {
@@ -93,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 body: JSON.stringify({ email: emailValue })
             });
+            if (!response) throw new Error("No response from authentication service.");
             const data = await response.json();
             if (response.ok) alert(data.message);
             else alert("Request failed: " + (data.detail || "Unknown error."));

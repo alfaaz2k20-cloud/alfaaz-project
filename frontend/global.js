@@ -52,12 +52,14 @@ window.globalApiFetch = async function(endpoint, options = {}) {
             headers: { ...headers, ...(options.headers || {}) } 
         });
         
-        if (response.status === 401) { 
-            if (!window.location.pathname.endsWith('login.html')) {
+        if (response.status === 401) {
+            const authPages = ['login.html', 'register.html', 'reset.html'];
+            const isAuthPage = authPages.some(page => window.location.pathname.endsWith(page));
+            if (!isAuthPage) {
                 localStorage.clear(); 
                 window.location.href = 'login.html'; 
+                return null;
             }
-            return null; 
         }
         return response;
     } catch (error) { 

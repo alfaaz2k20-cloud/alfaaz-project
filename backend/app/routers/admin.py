@@ -1,7 +1,5 @@
-import os
-import json
 import datetime
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 
@@ -11,21 +9,18 @@ from app.models.event import DBEvent, DBEventRegistration
 from app.models.club import DBClubApplication
 from app.models.exhibition import DBExhibitionApplication, DBExhibition
 from app.models.submission import DBSubmission
-from app.models.blog import DBBlog
 
 # Schemas
 from app.schemas.auth import StatusUpdate
 from app.schemas.event import EventCreate
 from app.schemas.club import ClubApplicationReview
 from app.schemas.exhibition import ExhibitionReview, ExhibitionConfigSchema
-from app.schemas.blog import BlogGenerateRequest
 
 # Security & Services
 from app.core.security import require_admin
 from app.core.config import MAKE_WEBHOOK_URL
 from app.services.email import send_system_email
 from app.services.cdn import sync_notices_to_cloudinary
-from app.services.curator import get_groq_client
 
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin)])
 
@@ -144,7 +139,6 @@ def activate_exhibition(ex_id: int, db: Session = Depends(get_db)):
         return {"status": "SUCCESS", "title": target.title}
     raise HTTPException(status_code=404, detail="Exhibition not found")
 
-# NEW: Route to close the portal completely
 @router.patch("/exhibitions/deactivate-all")
 def deactivate_all_exhibitions(db: Session = Depends(get_db)):
     db.query(DBExhibition).update({DBExhibition.is_active: False})
@@ -152,7 +146,6 @@ def deactivate_all_exhibitions(db: Session = Depends(get_db)):
     sync_notices_to_cloudinary(db)
     return {"status": "SUCCESS"}
 
-# Replace get_all_exhibitions in admin.py
 @router.get("/exhibitions")
 def get_all_exhibitions(cycle: str = None, db: Session = Depends(get_db)):
     query = db.query(DBExhibitionApplication)
@@ -225,7 +218,6 @@ def confirm_exhibition_payment(application_id: int, db: Session = Depends(get_db
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
         
-    # NEW GUARD CLAUSE
     if application.registration_status != "SUBMITTED":
         raise HTTPException(status_code=400, detail="Cannot confirm. The artist has not submitted payment proof yet.")
         
