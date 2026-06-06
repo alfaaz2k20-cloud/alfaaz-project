@@ -104,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     full_name: nameValue || null
                 })
             });
+            if (!response) throw new Error("No response from authentication service.");
             const data = await response.json();
 
             if (response.ok) {

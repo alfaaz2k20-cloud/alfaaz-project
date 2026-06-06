@@ -5,7 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function isTokenLikelyExpired(t) {
         try {
-            const payload = JSON.parse(atob(t.split('.')[1]));
+            const encodedPayload = t.split('.')[1];
+            const base64 = encodedPayload.replace(/-/g, '+').replace(/_/g, '/');
+            const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+            const payload = JSON.parse(atob(padded));
             return payload.exp && (payload.exp * 1000 < Date.now());
         } catch {
             return false;
@@ -126,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 body: JSON.stringify({ token: token, new_password: newPassword })
             });
+            if (!response) throw new Error("No response from authentication service.");
             const data = await response.json();
             
             if (response.ok) {
