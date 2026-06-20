@@ -116,3 +116,14 @@ async function wakeBackend() {
   try { await fetch(`${API_URL}/`); } catch (e) {}
 }
 setInterval(wakeBackend, 10 * 60 * 1000);
+
+// 7. PWA service worker registration
+if ('serviceWorker' in navigator && window.isSecureContext) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .catch((error) => {
+        console.warn('[ALFAAZ] Service worker registration failed:', error);
+      });
+  });
+}
