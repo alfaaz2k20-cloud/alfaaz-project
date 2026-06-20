@@ -3,6 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#2d2722">
+  <meta name="application-name" content="Alfaaz">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Alfaaz">
+  <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
   <title>ALFAAZ COLLECTIVE — Art & Culture</title>
   <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
   
@@ -127,7 +135,8 @@
         .footer-content, .footer-bottom { flex-direction: column; align-items: start; gap: 2rem; } 
     }
   </style>
-  <script type="module" crossorigin src="/assets/global-BneSZJmH.js"></script>
+  <script type="module" crossorigin src="/assets/main-BTWyu2-P.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/global-CjxeOYmg.js">
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
 <body>
@@ -355,7 +364,7 @@
   <div id="phantomMiniOverlay" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end;">
     <div id="phantomMiniBox" style="display: none; width: 340px; background: var(--bg-secondary); border: 1px solid var(--grid-border); border-radius: 0px; box-shadow: var(--shadow-float); margin-bottom: 1rem; padding: 2rem; transform: translateY(10px); opacity: 0; transition: all 0.3s ease;">
       <div style="font-family: var(--font-heading); font-size: 1.8rem; color: var(--text-primary); margin-bottom: 1rem; border-bottom: 1px solid var(--grid-border); padding-bottom: 0.5rem; line-height: 1;">The Curator</div>
-      <div id="phantomMiniOutput" style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; height: 250px; overflow-y: auto; margin-bottom: 1rem; display: flex; column-gap: 12px;">
+      <div id="phantomMiniOutput" style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; height: 250px; overflow-y: auto; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 12px;">
         <div style="font-style: italic;">Ask the Curator a question...</div>
       </div>
       <div style="display: flex; align-items: center; border: 1px solid var(--grid-border); background: transparent; transition: 0.3s;">
@@ -368,247 +377,5 @@
     <button id="phantomMiniTrigger" onclick="togglePhantomMini()" style="background: var(--bg-secondary); border: 1px solid var(--grid-border); border-radius: 0; color: var(--text-primary); padding: 0.8rem 1.5rem; font-size: 10px; letter-spacing: 2px; transition: all 0.3s ease; text-transform: uppercase; box-shadow: var(--shadow-base);">[ Consult Curator ]</button>
   </div>
 
-  <script>
-    // PRELOADER
-    const preloader = document.getElementById('loader'), flashImg = document.getElementById('flash-image');
-    const flashImages = [
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777653360/photo_2026-05-01_22-00-43_jsuqqm.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777652934/photo_2026-05-01_21-31-20_yt717r.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777653360/photo_2026-05-01_22-02-06_gc5mdw.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777653360/photo_2026-05-01_22-02-27_pjxbcp.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777652935/photo_2026-05-01_21-20-54_mn1dkc.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777652935/photo_2026-05-01_21-31-31_me900g.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777652934/photo_2026-05-01_21-41-19_m1u2rq.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777653360/photo_2026-05-01_22-03-15_st7awx.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777652935/photo_2026-05-01_21-24-56_iggk1n.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777652935/photo_2026-05-01_21-24-49_w17lpe.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777653360/photo_2026-05-01_22-05-00_xs313m.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777652935/photo_2026-05-01_21-24-34_vspkzd.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777653360/photo_2026-05-01_22-01-14_ac2gyf.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777652936/photo_2026-05-01_21-21-08_wnmv0b.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777653360/photo_2026-05-01_22-03-59_snoeqr.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777652831/photo_2026-05-01_21-41-21_abvman.jpg",
-      "https://res.cloudinary.com/dmqwjpmjk/image/upload/c_fill,w_800,q_auto,f_auto/v1777653360/photo_2026-05-01_22-00-43_jsuqqm.jpg"
-    ];
-    
-    flashImg.src = flashImages[0];
-    let loadedCount = 0; const preloadedImages = [];
-    flashImages.forEach(src => { const img = new Image(); img.src = src; img.onload = () => loadedCount++; preloadedImages.push(img); });
-    
-    let imgIndex = 0, delay = 35;
-    function flashNext() {
-      if (imgIndex < flashImages.length) {
-        if (preloadedImages[imgIndex].complete) flashImg.src = preloadedImages[imgIndex].src;
-        imgIndex++; delay += 10; setTimeout(flashNext, delay);
-      } else { preloader.classList.add('fade-out'); revealHero(); }
-    }
-
-    let sequenceStarted = false;
-    const checkInterval = setInterval(() => { 
-        if (loadedCount >= flashImages.length / 2) { 
-            clearInterval(checkInterval); 
-            if (!sequenceStarted) { 
-                sequenceStarted = true; 
-                // Pre-warm backend immediately
-                fetch('https://alfaaz-project.onrender.com/').catch(() => {});
-                flashNext(); 
-            } 
-        } 
-    }, 50);
-    setTimeout(() => { clearInterval(checkInterval); if (!sequenceStarted) { sequenceStarted = true; flashNext(); } }, 1500);
-    function revealHero() { const heroTitle = document.querySelector('.hero-title'), heroSubtitle = document.querySelector('.hero-subtitle'); if (heroTitle) heroTitle.classList.add('visible'); if (heroSubtitle) setTimeout(() => heroSubtitle.classList.add('visible'), 500); }
-
-    // SCROLL ANIMATIONS
-    const fadeElements = document.querySelectorAll('.fade-in');
-    const fadeObserver = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); } }); }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-    fadeElements.forEach(el => fadeObserver.observe(el));
-
-    // MOBILE MENU
-    const menuToggle = document.getElementById('menuToggle'), navLinks = document.getElementById('navLinks');
-    menuToggle?.addEventListener('click', () => { 
-        const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true'; 
-        menuToggle.setAttribute('aria-expanded', !isExpanded); 
-        menuToggle.classList.toggle('active'); 
-        navLinks.classList.toggle('active'); 
-    });
-
-    // MARQUEE PAUSE logic
-    const marquee = document.querySelector('.marquee'); marquee?.addEventListener('mouseenter', () => { marquee.style.animationPlayState = 'paused'; }); marquee?.addEventListener('mouseleave', () => { marquee.style.animationPlayState = 'running'; });
-
-    // SMART ROUTING
-    (function() {
-      const isLoggedIn = !!localStorage.getItem('alfaaz_token');
-      const navLoginBtn = document.getElementById('navLoginBtn'), joinClubBtn = document.getElementById('joinClubBtn'), mobileLoginLink = document.getElementById('mobileLoginBtn');
-      if (isLoggedIn) {
-        if (navLoginBtn) { navLoginBtn.textContent = 'Dashboard'; navLoginBtn.href = 'dashboard.html'; }
-        if (mobileLoginLink) {
-          const enSpan = mobileLoginLink.querySelector('.en-text');
-          if (enSpan) enSpan.textContent = 'Dashboard';
-          else mobileLoginLink.textContent = 'Dashboard';
-          mobileLoginLink.href = 'dashboard.html';
-        }
-        if (joinClubBtn) { joinClubBtn.textContent = 'Apply for a Club'; joinClubBtn.href = 'dashboard.html'; }
-      }
-    })();
-
-    // CURATOR AI
-    const pBox = document.getElementById('phantomMiniBox'), pOut = document.getElementById('phantomMiniOutput'), pIn = document.getElementById('phantomMiniInput'), pTrig = document.getElementById('phantomMiniTrigger');
-    function togglePhantomMini() {
-      if (pBox.style.display === 'none') { pBox.style.display = 'block'; setTimeout(() => { pBox.style.opacity = '1'; pBox.style.transform = 'translateY(0)'; }, 10); pTrig.textContent = '[ Close Chat ]'; pTrig.style.background = 'var(--accent-gold)'; pTrig.style.color = '#fff'; pIn.focus(); } 
-      else { pBox.style.opacity = '0'; pBox.style.transform = 'translateY(10px)'; setTimeout(() => { pBox.style.display = 'none'; }, 300); pTrig.textContent = '[ Consult Curator ]'; pTrig.style.background = 'var(--bg-secondary)'; pTrig.style.color = 'var(--text-primary)'; }
-    }
-    window.togglePhantomMini = togglePhantomMini;
-    pIn.addEventListener('keypress', async (e) => {
-      if (e.key === 'Enter') {
-        const query = pIn.value.trim(); if (!query) return; pIn.value = '';
-        if (pOut.innerHTML.includes("Ask the Curator")) pOut.innerHTML = '';
-        pOut.innerHTML += `<div><strong>You:</strong> ${query}</div>`;
-        const loadId = 'load-' + Date.now(); pOut.innerHTML += `<div id="${loadId}" style="color: var(--accent-gold); font-style: italic;">The Curator is thinking...</div>`; pOut.scrollTop = pOut.scrollHeight;
-        try {
-          const response = await fetch(`https://alfaaz-project.onrender.com/phantom/ask`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: query }) });
-          document.getElementById(loadId).remove();
-          if (response.ok) { const data = await response.json(); pOut.innerHTML += `<div style="color: var(--text-primary); border-left: 2px solid var(--accent-gold); padding-left: 10px; margin-bottom: 8px;">${data.answer}</div>`; } 
-          else if (response.status === 429) { pOut.innerHTML += `<div style="color: var(--accent-red); font-style: italic;">The Curator is currently occupied.</div>`; } 
-          else { pOut.innerHTML += `<div style="color: var(--accent-red);">[Error]</div>`; }
-        } catch (error) { if(document.getElementById(loadId)) document.getElementById(loadId).remove(); pOut.innerHTML += `<div style="color: var(--accent-red);">[Offline]</div>`; }
-        pOut.scrollTop = pOut.scrollHeight;
-      }
-    });
-    pIn.addEventListener('focus', () => { pIn.style.borderColor = 'var(--accent-gold)'; }); pIn.addEventListener('blur', () => { pIn.style.borderColor = 'var(--grid-border)'; });
-
-   // LIVE NOTICES
-(function () {
-    let isUpdating = false;
-
-    function renderCards(grid, cards) {
-        grid.innerHTML = '';
-        if (!cards || !cards.length) {
-            grid.innerHTML = `<div class="update-card fade-in visible"><p class="update-date">Alfaaz Collective</p><p class="update-text">No active notices at the moment.</p></div>`;
-            return;
-        }
-
-        cards.forEach(c => {
-            const div = document.createElement('div');
-            div.className = 'update-card fade-in visible';
-            div.innerHTML = `
-                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;">
-                    <span style="font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border:1px solid ${c.tagColor};color:${c.tagColor};border-radius:2px;">${c.tag}</span>
-                    <span style="font-size:10px;letter-spacing:1px;color:var(--text-secondary);text-transform:uppercase;">${c.date}</span>
-                </div>
-                <p class="update-text">${c.title}</p>
-                ${c.body ? `<p style="font-size:12px;color:var(--text-secondary);margin-top:0.8rem;">${c.body}</p>` : ''}
-                ${c.link && !c.disabled ? `<a href="${c.link}" style="display:inline-block;margin-top:1rem;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent-gold);text-decoration:none;border-bottom:1px solid var(--accent-gold);padding-bottom:2px;">${c.linkLabel}</a>` : ''}
-            `;
-            grid.appendChild(div);
-        });
-    }
-
-    function parseToCards(data) {
-    const cards = [];
-    const isLoggedIn = !!localStorage.getItem('alfaaz_token');
-
-    // 1. Exhibition Check with Null-Safety
-    if (data && data.exhibition && data.exhibition.is_open === true) {
-        const ex = data.exhibition;
-        cards.push({
-            tag: 'EXHIBITION',
-            tagColor: 'var(--accent-green)',
-            date: ex.date_text || 'TBD',
-            title: ex.title || 'Upcoming Cycle',
-            body: ex.about_text ? ex.about_text.substring(0, 140) + '...' : 'Applications opening soon.',
-            link: 'exhibition.html',
-            linkLabel: 'Apply Now →'
-        });
-    }
-
-    // 2. Standard Events
-    if (data && data.events && Array.isArray(data.events)) {
-        data.events.forEach(e => {
-            const spots = e.spots_left !== undefined && e.spots_left !== null ? `${e.spots_left} spots remaining` : 'Open';
-            const capText = e.full ? 'At capacity' : spots;
-            cards.push({
-                tag: 'EVENT',
-                tagColor: 'var(--text-secondary)', // Using existing variable
-                date: e.event_date || 'TBD',
-                title: e.name,
-                body: (e.description ? e.description + ' — ' : '') + capText + '.',
-                link: e.full ? null : (isLoggedIn ? 'dashboard.html' : 'login.html'),
-                linkLabel: e.full ? null : (isLoggedIn ? 'Register →' : 'Login to Register →')
-            });
-        });
-    }
-
-// 3. Latest Blog Check
-    if (data && data.latest_blog) {
-        const b = data.latest_blog;
-        
-        // Format the date to match your aesthetic (e.g., "May 1, 2026")
-        let formattedDate = 'Recently';
-        if (b.created_at) {
-            const dateObj = new Date(b.created_at);
-            formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        }
-
-        cards.push({
-            tag: 'JOURNAL',
-            tagColor: 'var(--text-primary)', // Using standard text color to look editorial
-            date: formattedDate,
-            title: b.title,
-            body: b.excerpt ? b.excerpt.substring(0, 140) + '...' : 'New entry from the Curator.',
-            link: `post.html?id=${b.id}`,
-            linkLabel: 'Read Entry →'
-        });
-    }
-
-    return cards;
-}
-
-    async function loadLiveNotices() {
-        const grid = document.getElementById('noticesGrid');
-        if (!grid || isUpdating) return;
-        isUpdating = true;
-
-        try {
-            const ts = Date.now();
-            const res = await fetch(`https://res.cloudinary.com/dmqwjpmjk/raw/upload/alfaaz/notices.json?t=${ts}`, {
-                cache: 'no-store',
-                headers: { 'Cache-Control': 'no-cache' }
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                console.log("✅ Full data received:", data);   // ← Check this in console
-                const cards = parseToCards(data);
-                renderCards(grid, cards);
-            }
-        } catch (err) {
-            console.error("Notices load failed:", err);
-        } finally {
-            isUpdating = false;
-        }
-    }
-
-    // Init
-    document.addEventListener('DOMContentLoaded', loadLiveNotices);
-    window.addEventListener('pageshow', loadLiveNotices);
-    setInterval(loadLiveNotices, 25000);
-})();
-    
-    // VITRINE DESKTOP SLIDER
-    (function() {
-      const vitrine = document.querySelector('.vitrine');
-      const vPrev = document.getElementById('vitrinePrev');
-      const vNext = document.getElementById('vitrineNext');
-      if (vitrine && vPrev && vNext) {
-        const scrollAmount = window.innerWidth > 768 ? 400 : 300;
-        vPrev.addEventListener('click', () => {
-          vitrine.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-        });
-        vNext.addEventListener('click', () => {
-          vitrine.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        });
-      }
-    })();
-  </script>
 </body>
 </html>
