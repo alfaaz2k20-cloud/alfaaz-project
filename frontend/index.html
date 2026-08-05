@@ -494,11 +494,17 @@
       appendCuratorMessage('You', query, 'color: var(--accent-gold);');
       const loadingRow = appendCuratorMessage('', 'The Curator is thinking...', 'color: var(--accent-gold); font-style: italic;');
       try {
-        const response = await window.globalApiFetch('/phantom/ask', { method: 'POST', body: JSON.stringify({ question: query }) });
+        const history = window.alfaazCuratorMemory?.history?.() || [];
+        const response = await window.globalApiFetch('/phantom/ask', {
+          method: 'POST',
+          body: JSON.stringify({ question: query, history })
+        });
         if (loadingRow.isConnected) loadingRow.remove();
         if (response && response.ok) {
           const data = await response.json();
           appendCuratorMessage('Curator', data.answer, 'color: var(--text-primary); border-left: 2px solid var(--accent-gold); padding-left: 10px;');
+          window.alfaazCuratorMemory?.add?.('user', query);
+          window.alfaazCuratorMemory?.add?.('assistant', data.answer);
         } else if (response && response.status === 429) {
           appendCuratorMessage('', 'The Curator is currently occupied.', 'color: var(--accent-red); font-style: italic;');
         } else {

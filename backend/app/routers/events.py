@@ -4,6 +4,7 @@ from app.db.session import get_db
 from app.models.event import DBEvent, DBEventRegistration
 from app.schemas.event import EventRegister
 from app.core.security import require_auth
+from app.services.rate_limiter import form_limiter
 
 router = APIRouter(prefix="/events", tags=["Events"])
 
@@ -22,7 +23,7 @@ def get_active_events(db: Session = Depends(get_db)):
         })
     return result
 
-@router.post("/register")
+@router.post("/register", dependencies=[Depends(form_limiter)])
 def register_for_event(data: EventRegister, db: Session = Depends(get_db), user=Depends(require_auth)):
     event = db.query(DBEvent).filter(DBEvent.id == data.event_id).first()
     if not event or not event.registration_open:

@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
             target.innerHTML = `
                 <div class="post-header">
                     <span class="post-meta">${dateStr} // Curator's Notes</span>
-                    <h1 class="post-title">${article.title}</h1>
+                    <h1 class="post-title">${window.escapeHtml(article.title)}</h1>
                 </div>
                 <div class="post-content">${sanitizeHTML(article.content)}</div>
             `;

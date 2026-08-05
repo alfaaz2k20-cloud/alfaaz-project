@@ -37,7 +37,15 @@ function isSameOrigin(url) {
 }
 
 function isApiRequest(url) {
-  return isSameOrigin(url) && url.pathname.startsWith('/api/');
+  if (url.hostname.includes('onrender.com')) return true;
+  return isSameOrigin(url) && (
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/auth/') ||
+    url.pathname.startsWith('/events/') ||
+    url.pathname.startsWith('/exhibitions/') ||
+    url.pathname.startsWith('/clubs/') ||
+    url.pathname.startsWith('/phantom/')
+  );
 }
 
 function shouldCacheStaticRequest(request, url) {

@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.exhibition import DBExhibitionApplication, DBExhibition
-from app.schemas.exhibition import ExhibitionApplicationCreate, ExhibitionRegistrationSubmit
 from app.core.security import require_auth
 from app.services.email import send_system_email
+from app.services.rate_limiter import form_limiter
 
 router = APIRouter(prefix="/exhibitions", tags=["Exhibitions"])
 
@@ -25,7 +25,8 @@ def get_exhibition_config(db: Session = Depends(get_db)):
         "payment_instructions": config.payment_instructions or "",
         "payment_qr_url": config.payment_qr_url,
     }
-@router.post("/apply")
+
+@router.post("/apply", dependencies=[Depends(form_limiter)])
 def apply_for_exhibition(data: ExhibitionApplicationCreate, db: Session = Depends(get_db), user=Depends(require_auth)):
     if not data.over_19 or not data.agreed_to_screening:
         raise HTTPException(status_code=400, detail="You must agree to the terms to proceed.")
@@ -145,6 +146,6 @@ def complete_exhibition_registration(data: ExhibitionRegistrationSubmit, db: Ses
     )
     return {"status": "SUBMITTED", "message": "Registration submitted. Awaiting payment confirmation."}
 
-@router.post("/finalize")
+@router.post("/finalize", dependencies=[Depends(form_limiter)])
 def finalize_exhibition_registration(data: ExhibitionRegistrationSubmit, db: Session = Depends(get_db), user=Depends(require_auth)):
     return complete_exhibition_registration(data, db, user)
