@@ -1,10 +1,11 @@
 from typing import Optional
 from datetime import datetime
 from sqlmodel import SQLModel, Field
-from sqlalchemy import Column, DateTime, func
+from sqlalchemy import Column, DateTime, UniqueConstraint, func
 
 class DBExhibitionApplication(SQLModel, table=True):
     __tablename__ = "exhibition_applications"
+    __table_args__ = (UniqueConstraint("user_email", "exhibition_cycle", name="uq_user_exhibition_cycle"),)
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     user_email: str = Field(index=True)
     exhibition_cycle: Optional[str] = Field(default=None, index=True)
