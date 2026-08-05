@@ -9,6 +9,7 @@ from app.models.event import DBEvent, DBEventRegistration
 from app.models.club import DBClubApplication
 from app.models.exhibition import DBExhibitionApplication, DBExhibition
 from app.models.submission import DBSubmission
+from app.models.audit import DBAuditLog
 
 # Schemas
 from app.schemas.auth import StatusUpdate
@@ -21,6 +22,7 @@ from app.core.security import require_admin
 from app.core.config import MAKE_WEBHOOK_URL
 from app.services.email import send_system_email
 from app.services.cdn import sync_notices_to_cloudinary
+from app.services.audit import log_admin_action
 
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin)])
 
@@ -265,7 +267,7 @@ def get_all_users(db: Session = Depends(get_db)):
     return [{"email": u.email, "full_name": u.full_name, "status": u.status} for u in users]
 
 @router.delete("/users/{user_email}")
-def delete_user(user_email: str, db: Session = Depends(get_db)):
+def delete_user(user_email: str, db: Session = Depends(get_db), admin_user=Depends(require_admin)):
     user = db.query(DBUser).filter(DBUser.email == user_email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
@@ -277,20 +279,35 @@ def delete_user(user_email: str, db: Session = Depends(get_db)):
     db.query(DBExhibitionApplication).filter(DBExhibitionApplication.user_email == user_email).delete()
     db.delete(user)
     db.commit()
+    log_admin_action(db, admin_user["email"], "PURGE_USER", "user", user_email, f"User {user_email} deleted")
     return {"status": "SUCCESS", "message": f"User {user_email} purged."}
 
 @router.post("/update_status")
-def update_user_status(target: StatusUpdate, db: Session = Depends(get_db)):
+def update_user_status(target: StatusUpdate, db: Session = Depends(get_db), admin_user=Depends(require_admin)):
     db_user = db.query(DBUser).filter(DBUser.email == target.email).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found.")
     db_user.status = target.status
     db.commit()
+    log_admin_action(db, admin_user["email"], "UPDATE_ROLE", "user", target.email, f"Role set to {target.status}")
     return {"status": "SUCCESS"}
 
 @router.get("/submissions")
 def get_all_submissions(db: Session = Depends(get_db)):
     return db.query(DBSubmission).order_by(DBSubmission.created_at.desc()).all()
+
+@router.get("/audit-logs")
+def get_audit_logs(db: Session = Depends(get_db)):
+    logs = db.query(DBAuditLog).order_by(DBAuditLog.created_at.desc()).limit(100).all()
+    return [{
+        "id": l.id,
+        "admin_email": l.admin_email,
+        "action": l.action,
+        "target_type": l.target_type,
+        "target_id": l.target_id,
+        "details": l.details,
+        "created_at": str(l.created_at)
+    } for l in logs]
 
 @router.post("/email/test")
 def send_test_email(user=Depends(require_admin)):

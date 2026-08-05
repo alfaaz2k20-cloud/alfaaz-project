@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import datetime
 from sqlmodel import SQLModel, Field
-from sqlalchemy import Column, DateTime, func
+from sqlalchemy import Column, DateTime, UniqueConstraint, func
 
 class DBEvent(SQLModel, table=True):
     __tablename__ = "events"
@@ -17,6 +17,7 @@ class DBEvent(SQLModel, table=True):
 
 class DBEventRegistration(SQLModel, table=True):
     __tablename__ = "event_registrations"
+    __table_args__ = (UniqueConstraint("event_id", "user_email", name="uq_event_user_reg"),)
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     event_id: int = Field(index=True)
     user_email: str = Field(index=True)

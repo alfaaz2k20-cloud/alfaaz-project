@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import datetime
 from sqlmodel import SQLModel, Field
-from sqlalchemy import Column, DateTime, func
+from sqlalchemy import Column, DateTime, UniqueConstraint, func
 
 class ClubApplicationBase(SQLModel):
     club_name: str
@@ -9,6 +9,7 @@ class ClubApplicationBase(SQLModel):
 
 class DBClubApplication(ClubApplicationBase, table=True):
     __tablename__ = "club_applications"
+    __table_args__ = (UniqueConstraint("user_email", "club_name", name="uq_user_club_app"),)
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     user_email: str = Field(index=True)
     status: str = Field(default="PENDING")
