@@ -8,10 +8,11 @@ from app.schemas.auth import UserRegister, UserLogin, ForgotPassword, ResetPassw
 from app.core.security import get_password_hash, verify_password, create_token, require_auth
 from app.core.config import FRONTEND_URL, JWT_SECRET, JWT_ALGORITHM
 from app.services.email import send_system_email
+from app.services.rate_limiter import auth_limiter, reset_limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post("/register")
+@router.post("/register", dependencies=[Depends(auth_limiter)])
 def register_user(user: UserRegister, db: Session = Depends(get_db)):
     if db.query(DBUser).filter(DBUser.email == user.email).first():
         raise HTTPException(status_code=400, detail="User already registered.")
@@ -27,7 +28,7 @@ def register_user(user: UserRegister, db: Session = Depends(get_db)):
     token = create_token(new_user.email, new_user.status)
     return {"user": {"email": new_user.email, "status": new_user.status}, "token": token}
 
-@router.post("/login")
+@router.post("/login", dependencies=[Depends(auth_limiter)])
 def login_user(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.email == user.email).first()
     if not db_user or not verify_password(user.password, db_user.password):
@@ -35,7 +36,7 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
     token = create_token(db_user.email, db_user.status)
     return {"user": {"email": db_user.email, "status": db_user.status}, "token": token}
 
-@router.post("/forgot-password")
+@router.post("/forgot-password", dependencies=[Depends(reset_limiter)])
 def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.email == req.email).first()
     if not db_user:
@@ -51,7 +52,7 @@ def forgot_password(req: ForgotPassword, db: Session = Depends(get_db)):
     )
     return {"message": "If the email is registered, your reset link has been dispatched to your email."}
 
-@router.post("/reset-password")
+@router.post("/reset-password", dependencies=[Depends(reset_limiter)])
 def reset_password(req: ResetPassword, db: Session = Depends(get_db)):
     try:
         payload = jwt.decode(req.token, JWT_SECRET, algorithms=[JWT_ALGORITHM])

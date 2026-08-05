@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = blogs.map(blog => `
                 <a href="post.html?id=${blog.id}" class="archive-card">
                     <span class="archive-meta">${new Date(blog.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} // Curator's Notes</span>
-                    <h2 class="archive-title">${blog.title}</h2>
-                    <p class="archive-excerpt">${blog.excerpt || ''}</p>
+                    <h2 class="archive-title">${window.escapeHtml(blog.title)}</h2>
+                    <p class="archive-excerpt">${window.escapeHtml(blog.excerpt || '')}</p>
                 </a>`).join('');
                 
             if (window.refreshGlobalEffects) window.refreshGlobalEffects();

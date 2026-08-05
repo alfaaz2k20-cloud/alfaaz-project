@@ -18,6 +18,16 @@ window.ALFAAZ_CLOUDINARY = {
     uploadPreset: CLOUDINARY_UPLOAD_PRESET
 };
 
+window.escapeHtml = function(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
+
 // 2. Assertive Backend Waking (The Pulse)
 // We create a promise that resolves once the backend responds for the first time.
 let isServerReady = false;
@@ -71,6 +81,44 @@ window.globalApiFetch = async function(endpoint, options = {}) {
 // 4. Master UI Binding
 window.refreshGlobalEffects = function() {
     if (window.lucide) { window.lucide.createIcons(); }
+};
+
+const CURATOR_HISTORY_KEY = 'alfaaz_curator_history';
+const CURATOR_HISTORY_LIMIT = 12;
+
+function readCuratorHistory() {
+    try {
+        const raw = sessionStorage.getItem(CURATOR_HISTORY_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+            .filter((item) => item && ['user', 'assistant'].includes(item.role) && typeof item.content === 'string')
+            .map((item) => ({ role: item.role, content: item.content.slice(0, 1000) }))
+            .slice(-CURATOR_HISTORY_LIMIT);
+    } catch (error) {
+        return [];
+    }
+}
+
+function writeCuratorHistory(history) {
+    try {
+        sessionStorage.setItem(CURATOR_HISTORY_KEY, JSON.stringify(history.slice(-CURATOR_HISTORY_LIMIT)));
+    } catch (error) {}
+}
+
+window.alfaazCuratorMemory = {
+    history: readCuratorHistory,
+    add(role, content) {
+        if (!['user', 'assistant'].includes(role) || !content) return;
+        const history = readCuratorHistory();
+        history.push({ role, content: String(content).slice(0, 1000) });
+        writeCuratorHistory(history);
+    },
+    clear() {
+        try {
+            sessionStorage.removeItem(CURATOR_HISTORY_KEY);
+        } catch (error) {}
+    }
 };
 
 document.addEventListener('DOMContentLoaded', () => {

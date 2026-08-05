@@ -59,15 +59,18 @@ document.addEventListener('DOMContentLoaded', () => {
         allEvents.forEach(e => {
           const card = document.createElement('div'); card.className = 'data-card event-card';
           const isOpen = e.registration_open; const capLabel = e.capacity === 0 ? '∞' : `${e.registered}/${e.capacity}`;
+          const safeName = window.escapeHtml(e.name);
+          const safeDesc = window.escapeHtml(e.description || '—');
+          const safeDate = window.escapeHtml(e.event_date || '—');
           card.innerHTML = `
-            <div><div class="data-label">Event</div><div class="data-display">${e.name}</div><div style="font-size:11px; color:var(--text-secondary); margin-top: 4px;">${e.description || '—'}</div></div>
-            <div><div class="data-label">Date</div><div class="data-display" style="font-size:12px;">${e.event_date || '—'}</div></div>
+            <div><div class="data-label">Event</div><div class="data-display">${safeName}</div><div style="font-size:11px; color:var(--text-secondary); margin-top: 4px;">${safeDesc}</div></div>
+            <div><div class="data-label">Date</div><div class="data-display" style="font-size:12px;">${safeDate}</div></div>
             <div><div class="data-label">Registered</div><div class="data-display">${capLabel}</div></div>
             <div><div class="data-label">Status</div><span class="badge ${isOpen ? 'badge-open' : 'badge-closed'}">${isOpen ? 'Open' : 'Closed'}</span></div>
             <div style="display:flex; flex-direction:column; gap:0.6rem;">
               <button class="action-btn ${isOpen ? '' : 'gold'}" style="padding: 0.6rem; font-size:9px;" onclick="toggleEvent(${e.id}, this)">${isOpen ? 'Close Registration' : 'Open Registration'}</button>
               <button class="action-btn gold" style="padding: 0.6rem; font-size:9px;" onclick="viewRegistrations(${e.id})">View List</button>
-              <button class="action-btn" style="padding: 0.6rem; font-size:9px; border-color:var(--accent-red); color:var(--accent-red);" onclick="deleteEvent(${e.id}, '${e.name.replace(/'/g, "\\'")}', this)">Delete</button>
+              <button class="action-btn" style="padding: 0.6rem; font-size:9px; border-color:var(--accent-red); color:var(--accent-red);" onclick="deleteEvent(${e.id}, '${safeName.replace(/'/g, "\\'")}', this)">Delete</button>
             </div>`;
           container.appendChild(card);
         });
@@ -90,7 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!res) return;
       const data = await res.json();
       let html = `<div style="font-size:12px; margin-bottom:1.5rem; color:var(--accent-gold); font-weight:600; letter-spacing: 1px; text-transform: uppercase;">Total Approved: ${data.registrations.length}</div>`;
-      data.registrations.forEach((r, i) => { html += `<div style="padding:1rem 0; border-bottom:1px solid var(--grid-border); font-size:13px; display:flex; justify-content:space-between; align-items: center;"><span><strong style="color: var(--accent-gold); margin-right: 10px;">${i+1}.</strong> ${r.email}</span><span style="color:var(--text-primary); font-size: 11px; background: var(--bg-primary); padding: 4px 10px; border-radius: 2px;">${r.whatsapp ? 'WA: ' + r.whatsapp : 'No WA provided'}</span></div>`; });
+      data.registrations.forEach((r, i) => {
+        const safeEmail = window.escapeHtml(r.email);
+        const safeWa = r.whatsapp ? 'WA: ' + window.escapeHtml(r.whatsapp) : 'No WA provided';
+        html += `<div style="padding:1rem 0; border-bottom:1px solid var(--grid-border); font-size:13px; display:flex; justify-content:space-between; align-items: center;"><span><strong style="color: var(--accent-gold); margin-right: 10px;">${i+1}.</strong> ${safeEmail}</span><span style="color:var(--text-primary); font-size: 11px; background: var(--bg-primary); padding: 4px 10px; border-radius: 2px;">${safeWa}</span></div>`;
+      });
       document.getElementById('modalBody').innerHTML = html || '<div class="empty-state">No registrations.</div>';
     };
     window.closeModal = function() { document.getElementById('regModal').classList.remove('open'); };
@@ -113,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const liveEx = exhibitions.find(e => e.is_active);
       if (liveEx) {
-        statusText.innerHTML = `Currently Live: <strong style="color: var(--accent-green);">${liveEx.title}</strong>`;
+        statusText.innerHTML = `Currently Live: <strong style="color: var(--accent-green);">${window.escapeHtml(liveEx.title)}</strong>`;
       } else {
         statusText.innerHTML = `<strong style="color: var(--accent-red);">CLOSED</strong> (No active exhibition)`;
       }
@@ -131,15 +138,17 @@ document.addEventListener('DOMContentLoaded', () => {
           ? `<span style="font-size: 9px; padding: 3px 8px; background: var(--accent-gold); color: #fff; letter-spacing: 1px; text-transform: uppercase;">Live Now</span>`
           : `<span style="font-size: 9px; padding: 3px 8px; border: 1px solid var(--grid-border); color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase;">Inactive</span>`;
           
+        const safeTitle = window.escapeHtml(ex.title);
+        const safeDateText = window.escapeHtml(ex.date_text);
         const actionBtn = ex.is_active
           ? `<button disabled style="font-family: var(--font-body); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--grid-border); color: var(--text-secondary); cursor: not-allowed;">Currently Active</button>`
-          : `<button onclick="activateExhibition(${ex.id}, '${ex.title.replace(/'/g, "\\'")}')" class="action-btn gold" style="padding: 0.5rem 1rem; font-size: 10px;">Set as Live</button>`;
+          : `<button onclick="activateExhibition(${ex.id}, '${safeTitle.replace(/'/g, "\\'")}')" class="action-btn gold" style="padding: 0.5rem 1rem; font-size: 10px;">Set as Live</button>`;
 
         card.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
             <div>
-              <div style="font-family: var(--font-heading); font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.2rem;">${ex.title}</div>
-              <div style="font-size: 11px; color: var(--text-secondary);">${ex.date_text}</div>
+              <div style="font-family: var(--font-heading); font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.2rem;">${safeTitle}</div>
+              <div style="font-size: 11px; color: var(--text-secondary);">${safeDateText}</div>
             </div>
             ${statusBadge}
           </div>
@@ -278,20 +287,25 @@ document.addEventListener('DOMContentLoaded', () => {
           actionBtns += `<button class="action-btn gold" style="padding:0.6rem;font-size:9px;" onclick="confirmExhibitionPayment(${a.id},this)">Confirm Payment</button>`;
         }
 
-        const cycleName = a.exhibition_cycle ? a.exhibition_cycle : 'LEGACY ARCHIVE';
+        const cycleName = window.escapeHtml(a.exhibition_cycle ? a.exhibition_cycle : 'LEGACY ARCHIVE');
         const cycleTag = `<div style="font-size:10px; margin-top:6px; color:var(--accent-gold); letter-spacing:1.5px; text-transform:uppercase; font-weight:600;">CYCLE: ${cycleName}</div>`;
+
+        const safeFullName = window.escapeHtml(a.full_name);
+        const safeUserEmail = window.escapeHtml(a.user_email);
+        const safeGenre = window.escapeHtml(a.genre);
+        const safeMedium = window.escapeHtml(a.medium);
 
         card.innerHTML = `
           <div>
             <div class="data-label">Artist</div>
-            <div class="data-display">${a.full_name}</div>
-            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">${a.user_email}</div>
+            <div class="data-display">${safeFullName}</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">${safeUserEmail}</div>
             ${cycleTag}
           </div>
           <div>
             <div class="data-label">Art Profile</div>
-            <div class="data-display" style="font-size:13px;">${a.genre}</div>
-            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Medium: ${a.medium}</div>
+            <div class="data-display" style="font-size:13px;">${safeGenre}</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Medium: ${safeMedium}</div>
           </div>
           <div><div class="data-label">Status</div><span class="badge ${badge}">${displayStatus}</span></div>
           <div style="display:flex;flex-direction:column;gap:0.5rem;">${actionBtns}</div>`;
@@ -335,9 +349,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!apps.length) { container.innerHTML = '<div class="empty-state">No applications found.</div>'; return; }
       apps.forEach(a => {
         const card = document.createElement('div'); card.className = 'data-card club-card'; const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
+        const safeEmail = window.escapeHtml(a.user_email);
+        const safeClub = window.escapeHtml(a.club_name);
         card.innerHTML = `
-          <div><div class="data-label">User</div><div class="data-display">${a.user_email}</div></div>
-          <div><div class="data-label">Club</div><div class="data-display">${a.club_name}</div></div>
+          <div><div class="data-label">User</div><div class="data-display">${safeEmail}</div></div>
+          <div><div class="data-label">Club</div><div class="data-display">${safeClub}</div></div>
           <div><div class="data-label">Status</div><span class="badge ${badge}">${a.status}</span></div>
           <div style="display:flex; flex-direction:column; gap:0.5rem;">
           ${a.status === 'PENDING' ? `<button class="action-btn" style="padding:0.6rem; font-size:9px;" onclick="reviewClub(${a.id}, 'APPROVED', this)">Approve</button><button class="action-btn" style="padding:0.6rem; font-size:9px; border-color:var(--accent-red); color:var(--accent-red);" onclick="reviewClub(${a.id}, 'REJECTED', this)">Reject</button>` : ''}
@@ -357,8 +373,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('rosterContainer'); const res = await window.globalApiFetch('/admin/users'); if(!res) return; const users = await res.json(); container.innerHTML = '';
       users.forEach((u, i) => {
         const card = document.createElement('div'); card.className = 'data-card user-card';
+        const safeEmail = window.escapeHtml(u.email);
         card.innerHTML = `
-          <div><div class="data-label">User</div><div class="data-display">${u.email}</div></div>
+          <div><div class="data-label">User</div><div class="data-display">${safeEmail}</div></div>
           <div><div class="data-label">Role</div><select id="st-${i}" style="margin:0;"><option value="PARTICIPANT" ${u.status==='PARTICIPANT'?'selected':''}>Participant</option><option value="ADMIN" ${u.status==='ADMIN'?'selected':''}>Admin</option></select></div>
           <button class="action-btn gold" style="padding:0.8rem; font-size:9px;" onclick="updateStatus('${u.email}', ${i}, this)">Save Role</button>`;
         container.appendChild(card);
