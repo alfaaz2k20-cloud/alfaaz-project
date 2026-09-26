@@ -11,6 +11,7 @@ from app.models.club import DBClubApplication
 from app.models.exhibition import DBExhibitionApplication, DBExhibition
 from app.models.submission import DBSubmission
 from app.models.audit import DBAuditLog
+from app.models.volunteer import DBVolunteerApplication
 
 # Schemas
 from app.schemas.auth import StatusUpdate
@@ -41,50 +42,29 @@ def _first_value(record: dict, *keys: str):
 
 # ── Volunteer recruitment ────────────────────────────────────────────────────
 @router.get("/volunteer-applications")
-def get_volunteer_applications():
-    if not VOLUNTEER_APPS_SCRIPT_URL or not VOLUNTEER_APPS_SCRIPT_READ_KEY:
-        raise HTTPException(
-            status_code=503,
-            detail="Volunteer recruitment is not configured on the server.",
-        )
-
+def get_volunteer_applications(db: Session = Depends(get_db)):
     try:
-        response = requests.get(
-            VOLUNTEER_APPS_SCRIPT_URL,
-            params={"key": VOLUNTEER_APPS_SCRIPT_READ_KEY},
-            timeout=15,
-        )
-        response.raise_for_status()
-        payload = response.json()
-    except requests.RequestException as exc:
-        raise HTTPException(status_code=502, detail="Could not reach volunteer recruitment data.") from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=502, detail="Volunteer recruitment data was not valid JSON.") from exc
-
-    records = payload.get("data", payload.get("candidates", [])) if isinstance(payload, dict) else payload
-    if not isinstance(records, list):
-        raise HTTPException(status_code=502, detail="Volunteer recruitment data had an unexpected format.")
-
-    # Return only the fields the admin interface needs; individual answer choices stay in Sheets.
-    return [
-        {
-            "timestamp": _first_value(record, "Timestamp", "timestamp"),
-            "name": _first_value(record, "Name", "name"),
-            "email": _first_value(record, "Email", "email"),
-            "phone": _first_value(record, "Phone", "phone"),
-            "interests": _first_value(record, "Interests", "interests"),
-            "notes": _first_value(record, "Notes", "notes"),
-            "dominant_trait": _first_value(record, "DominantTrait", "dominant_trait"),
-            "empathy": _first_value(record, "empathy"),
-            "conscientiousness": _first_value(record, "conscientiousness"),
-            "collaborative": _first_value(record, "collaborative"),
-            "emotional": _first_value(record, "emotional"),
-            "curiosity": _first_value(record, "curiosity"),
-            "creative": _first_value(record, "creative"),
-        }
-        for record in records
-        if isinstance(record, dict)
-    ]
+        records = db.query(DBVolunteerApplication).order_by(DBVolunteerApplication.timestamp.desc()).all()
+        return [
+            {
+                "timestamp": r.timestamp.isoformat() if r.timestamp else "",
+                "name": r.name,
+                "email": r.email,
+                "phone": r.phone,
+                "interests": r.interests,
+                "notes": r.notes,
+                "dominant_trait": r.dominant_trait,
+                "empathy": r.empathy,
+                "conscientiousness": r.conscientiousness,
+                "collaborative": r.collaborative,
+                "emotional": r.emotional,
+                "curiosity": r.curiosity,
+                "creative": r.creative,
+            }
+            for r in records
+        ]
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
 
 # ── Events ───────────────────────────────────────────────────────────────────
 @router.post("/events/create")
