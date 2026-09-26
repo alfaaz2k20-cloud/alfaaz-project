@@ -791,7 +791,7 @@
                     body: JSON.stringify(payload),
                     headers: {
                         // A simple request avoids a CORS preflight with Apps Script.
-                        'Content-Type': 'text/plain;charset=utf-8',
+                        'Content-Type': 'application/json',
                     }
                 });
                 if (!res.ok) throw new Error('The application service could not accept your submission.');
