@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (name === 'exhibitions') { window.loadExhibitionManager(); window.loadExhibitionsData('ALL'); }
       if (name === 'clubs') window.loadClubs('ALL'); 
       if (name === 'roster') window.loadRoster();
+      if (name === 'recruitment') window.loadVolunteerApplications();
     }
 
     // ==========================================
@@ -383,6 +384,105 @@ document.addEventListener('DOMContentLoaded', () => {
       if(window.refreshGlobalEffects) window.refreshGlobalEffects();
     };
     window.updateStatus = async function(email, i, btn) { const status = document.getElementById(`st-${i}`).value; btn.textContent = '...'; const res = await window.globalApiFetch('/admin/update_status', { method: 'POST', body: JSON.stringify({ email, status }) }); if (res && res.ok) { if (email === user.email && status === 'PARTICIPANT') { localStorage.clear(); window.location.href = 'login.html'; } btn.textContent = '✓'; setTimeout(() => btn.textContent = 'Save Role', 2000); } };
+
+    // ==========================================
+    // VOLUNTEER RECRUITMENT LOGIC
+    // ==========================================
+    const recruitmentTraits = [
+      ['Empathy', 'empathy'],
+      ['Care', 'conscientiousness'],
+      ['Collab', 'collaborative'],
+      ['Emotional', 'emotional'],
+      ['Curiosity', 'curiosity'],
+      ['Creative', 'creative']
+    ];
+
+    function scoreFor(candidate, key) {
+      const score = Number(candidate[key]);
+      return Number.isFinite(score) ? score : 0;
+    }
+
+    function volunteerRecommendation(candidate) {
+      const empathy = scoreFor(candidate, 'empathy');
+      const emotional = scoreFor(candidate, 'emotional');
+      const creative = scoreFor(candidate, 'creative');
+      const curiosity = scoreFor(candidate, 'curiosity');
+      const collaborative = scoreFor(candidate, 'collaborative');
+      const conscientiousness = scoreFor(candidate, 'conscientiousness');
+
+      if (empathy >= 5 && emotional >= 5) return 'Community Outreach';
+      if (creative >= 5 && curiosity >= 5) return 'Exhibitions & Tchandervar';
+      if (collaborative >= 5 && conscientiousness >= 5) return 'Event Management';
+      if (curiosity >= 5 && empathy >= 5) return 'Philosophy & Literature';
+      return 'General Support';
+    }
+
+    function candidateDate(value) {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString();
+    }
+
+    window.loadVolunteerApplications = async function() {
+      const container = document.getElementById('volunteerApplicationsContainer');
+      if (!container) return;
+
+      container.innerHTML = '<div class="empty-state">Loading volunteer candidates...</div>';
+      try {
+        const res = await window.globalApiFetch('/admin/volunteer-applications');
+        if (!res) throw new Error('No response from the volunteer recruitment service.');
+        const candidates = await res.json();
+        if (!res.ok) throw new Error(candidates.detail || 'Could not load volunteer candidates.');
+        window.renderVolunteerApplications(Array.isArray(candidates) ? candidates : []);
+      } catch (error) {
+        container.innerHTML = `<div class="empty-state">${window.escapeHtml(error.message || 'Could not load volunteer candidates.')}</div>`;
+      }
+    };
+
+    window.renderVolunteerApplications = function(candidates) {
+      const container = document.getElementById('volunteerApplicationsContainer');
+      if (!container) return;
+      if (!candidates.length) {
+        container.innerHTML = '<div class="empty-state">No volunteer candidates yet.</div>';
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'recruitment-grid';
+      candidates.slice().reverse().forEach(candidate => {
+        const card = document.createElement('article');
+        card.className = 'data-card candidate-card';
+        const traits = recruitmentTraits.map(([label, key]) => `
+          <div class="trait-score"><div class="data-label">${label}</div><strong>${scoreFor(candidate, key)}</strong></div>`
+        ).join('');
+
+        card.innerHTML = `
+          <div>
+            <div class="candidate-name">${window.escapeHtml(candidate.name || 'Unnamed candidate')}</div>
+            <div class="candidate-contact">
+              <span>${window.escapeHtml(candidate.email || 'No email supplied')}</span>
+              <span>${window.escapeHtml(candidate.phone || 'No phone supplied')}</span>
+              <span>${window.escapeHtml(candidateDate(candidate.timestamp))}</span>
+            </div>
+          </div>
+          <div><span class="badge badge-pending">${window.escapeHtml(candidate.dominant_trait || 'Trait pending')}</span></div>
+          <div class="trait-scores">${traits}</div>
+          <div>
+            <div class="data-label">Suggested placement</div>
+            <div class="data-display">${window.escapeHtml(volunteerRecommendation(candidate))}</div>
+          </div>
+          <div>
+            <div class="data-label">Interests</div>
+            <div class="data-display">${window.escapeHtml(candidate.interests || '—')}</div>
+          </div>
+          <div>
+            <div class="data-label">Notes</div>
+            <div class="data-display">${window.escapeHtml(candidate.notes || '—')}</div>
+          </div>`;
+        grid.appendChild(card);
+      });
+      container.replaceChildren(grid);
+      if (window.refreshGlobalEffects) window.refreshGlobalEffects();
+    };
 
     // INIT
     window.switchTab('events'); 

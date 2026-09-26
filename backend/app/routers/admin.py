@@ -1,4 +1,5 @@
 import datetime
+import requests
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
@@ -19,12 +20,71 @@ from app.schemas.exhibition import ExhibitionReview, ExhibitionConfigSchema
 
 # Security & Services
 from app.core.security import require_admin
-from app.core.config import MAKE_WEBHOOK_URL
+from app.core.config import (
+    MAKE_WEBHOOK_URL,
+    VOLUNTEER_APPS_SCRIPT_READ_KEY,
+    VOLUNTEER_APPS_SCRIPT_URL,
+)
 from app.services.email import send_system_email
 from app.services.cdn import sync_notices_to_cloudinary
 from app.services.audit import log_admin_action
 
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin)])
+
+
+def _first_value(record: dict, *keys: str):
+    for key in keys:
+        if key in record and record[key] is not None:
+            return record[key]
+    return None
+
+
+# ── Volunteer recruitment ────────────────────────────────────────────────────
+@router.get("/volunteer-applications")
+def get_volunteer_applications():
+    if not VOLUNTEER_APPS_SCRIPT_URL or not VOLUNTEER_APPS_SCRIPT_READ_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="Volunteer recruitment is not configured on the server.",
+        )
+
+    try:
+        response = requests.get(
+            VOLUNTEER_APPS_SCRIPT_URL,
+            params={"key": VOLUNTEER_APPS_SCRIPT_READ_KEY},
+            timeout=15,
+        )
+        response.raise_for_status()
+        payload = response.json()
+    except requests.RequestException as exc:
+        raise HTTPException(status_code=502, detail="Could not reach volunteer recruitment data.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=502, detail="Volunteer recruitment data was not valid JSON.") from exc
+
+    records = payload.get("data", payload.get("candidates", [])) if isinstance(payload, dict) else payload
+    if not isinstance(records, list):
+        raise HTTPException(status_code=502, detail="Volunteer recruitment data had an unexpected format.")
+
+    # Return only the fields the admin interface needs; individual answer choices stay in Sheets.
+    return [
+        {
+            "timestamp": _first_value(record, "Timestamp", "timestamp"),
+            "name": _first_value(record, "Name", "name"),
+            "email": _first_value(record, "Email", "email"),
+            "phone": _first_value(record, "Phone", "phone"),
+            "interests": _first_value(record, "Interests", "interests"),
+            "notes": _first_value(record, "Notes", "notes"),
+            "dominant_trait": _first_value(record, "DominantTrait", "dominant_trait"),
+            "empathy": _first_value(record, "empathy"),
+            "conscientiousness": _first_value(record, "conscientiousness"),
+            "collaborative": _first_value(record, "collaborative"),
+            "emotional": _first_value(record, "emotional"),
+            "curiosity": _first_value(record, "curiosity"),
+            "creative": _first_value(record, "creative"),
+        }
+        for record in records
+        if isinstance(record, dict)
+    ]
 
 # ── Events ───────────────────────────────────────────────────────────────────
 @router.post("/events/create")

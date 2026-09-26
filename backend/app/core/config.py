@@ -53,6 +53,10 @@ CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
 # Email automation
 MAKE_WEBHOOK_URL = os.environ.get("MAKE_WEBHOOK_URL")
 
+# Volunteer recruitment
+VOLUNTEER_APPS_SCRIPT_URL = os.environ.get("VOLUNTEER_APPS_SCRIPT_URL", "").strip()
+VOLUNTEER_APPS_SCRIPT_READ_KEY = os.environ.get("VOLUNTEER_APPS_SCRIPT_READ_KEY", "").strip()
+
 # AI & Others
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 PHANTOM_SECRET_TOKEN = os.environ.get("PHANTOM_SECRET_TOKEN")

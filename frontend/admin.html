@@ -29,6 +29,13 @@
     .section-title { color: var(--text-primary); font-family: var(--font-heading); font-size: 1.8rem; margin-top: 2rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--grid-border); padding-bottom: 0.5rem; font-weight: 400; }
     
     .panel { background: var(--bg-secondary); border: 1px solid var(--grid-border); padding: 3rem; margin-bottom: 3rem; box-shadow: var(--shadow-base); }
+    .recruitment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+    .candidate-card { display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 0; }
+    .candidate-name { font-family: var(--font-heading); font-size: 1.7rem; color: var(--accent-gold); line-height: 1; }
+    .candidate-contact { font-size: 12px; color: var(--text-secondary); display: grid; gap: 0.25rem; word-break: break-word; }
+    .trait-scores { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--grid-border); border-left: 1px solid var(--grid-border); }
+    .trait-score { border-right: 1px solid var(--grid-border); border-bottom: 1px solid var(--grid-border); padding: 0.65rem; }
+    .trait-score strong { display: block; color: var(--text-primary); font-size: 1rem; font-weight: 400; margin-top: 0.2rem; }
     
     .data-card { background: var(--bg-secondary); border: 1px solid var(--grid-border); padding: 1.5rem 2rem; margin-bottom: 1rem; display: grid; gap: 1.5rem; align-items: center; transition: border-color 0.3s ease; }
     .data-card:hover { border-color: var(--accent-gold); }
@@ -75,6 +82,7 @@
       <button class="tab-btn" onclick="switchTab('exhibitions')">Exhibitions</button>
       <button class="tab-btn" onclick="switchTab('clubs')">Club Applications</button>
       <button class="tab-btn" onclick="switchTab('roster')">Collective Roster</button>
+      <button class="tab-btn" onclick="switchTab('recruitment')">Recruitment</button>
     </div>
 
     <div id="tab-events" class="tab-panel active">
@@ -191,6 +199,14 @@
     <div id="tab-roster" class="tab-panel">
       <div class="section-title">Collective Roster</div>
       <div id="rosterContainer"><div class="empty-state">Loading roster...</div></div>
+    </div>
+
+    <div id="tab-recruitment" class="tab-panel">
+      <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+        <span>Volunteer Candidates</span>
+        <button class="action-btn gold" style="padding:0.6rem 1.2rem; font-size:9px;" onclick="loadVolunteerApplications()">Refresh Candidates</button>
+      </div>
+      <div id="volunteerApplicationsContainer"><div class="empty-state">Loading volunteer candidates...</div></div>
     </div>
   </div>
 
