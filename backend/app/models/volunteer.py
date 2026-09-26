@@ -1,14 +1,14 @@
 from sqlmodel import Field, Column
 from sqlalchemy import Text
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from app.db.base import Base
 
 class DBVolunteerApplication(Base, table=True):
     __tablename__ = "volunteer_applications"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     name: str = Field(max_length=150)
     email: str = Field(max_length=150)
     phone: str = Field(max_length=50)
