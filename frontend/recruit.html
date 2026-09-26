@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alfaaz Volunteer Assessment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-primary: #2d2722;
+            --bg-secondary: #352f29;
+            --text-primary: #e8e0d4;
+            --text-secondary: #a89f93;
+            --accent-gold: #bd6f5d;
+            --grid-border: rgba(168, 159, 147, 0.15);
+            --font-heading: 'Cormorant Garamond', serif;
+            --font-body: 'Inter', sans-serif;
+            --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, h4, .heading-font {
+            font-family: var(--font-heading);
+            font-weight: 400;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s var(--transition-smooth), transform 0.8s var(--transition-smooth);
+            flex-direction: column;
+        }
+
+        .section.visible {
+            display: flex;
+        }
+
+        .section.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Progress Bar */
+        #progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: transparent;
+            z-index: 100;
+            display: none;
+        }
+        #progress-bar {
+            height: 100%;
+            background-color: var(--accent-gold);
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* Typography & Utilities */
+        .title {
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .ur-hover {
+            position: relative;
+            display: inline-block;
+        }
+        .ur-hover::after {
+            content: 'الفاظ';
+            position: absolute;
+            left: 50%;
+            top: -20px;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            opacity: 0;
+            color: var(--accent-gold);
+            transition: opacity 0.3s ease;
+            font-family: serif;
+        }
+        .ur-hover:hover::after {
+            opacity: 1;
+        }
+
+        .tagline {
+            text-align: center;
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+        }
+
+        .intro-text {
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+            max-width: 600px;
+            align-self: center;
+        }
+
+        /* Consent Box */
+        .consent-box {
+            border: 1px solid var(--grid-border);
+            padding: 2rem;
+            background-color: var(--bg-secondary);
+            margin-bottom: 2rem;
+        }
+        .consent-box h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-gold);
+        }
+        .consent-box ul {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+        .consent-box li {
+            margin-bottom: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .consent-box li::before {
+            content: '✦';
+            color: var(--accent-gold);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .checkbox-container input {
+            display: none;
+        }
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .checkbox-container input:checked + .custom-checkbox {
+            border-color: var(--accent-gold);
+            background-color: rgba(189, 111, 93, 0.2);
+        }
+        .checkbox-container input:checked + .custom-checkbox::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-gold);
+        }
+
+        /* Buttons */
+        .cta-btn {
+            background: transparent;
+            border: 1px solid var(--text-secondary);
+            color: var(--text-primary);
+            padding: 1rem 3rem;
+            font-family: var(--font-body);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: block;
+            margin: 0 auto;
+        }
+        .cta-btn:hover:not(:disabled) {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+        .cta-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Scenario Section */
+        .act-title {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
+            opacity: 1;
+            transition: opacity 1s ease;
+        }
+        .act-urdu {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-family: serif;
+            opacity: 1;
+            transition: opacity 1s ease;
+        }
+        .act-fade-out {
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .scenario-text {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        @media(min-width: 768px) {
+            .options-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .option-card {
+            border: 1px solid var(--grid-border);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s var(--transition-smooth);
+            background: transparent;
+            color: var(--text-primary);
+            text-align: left;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .option-card:hover {
+            border-color: var(--accent-gold);
+        }
+        .option-card.selected {
+            border-color: var(--accent-gold);
+            background-color: rgba(189, 111, 93, 0.1);
+        }
+        .option-card .check-icon {
+            position: absolute;
+            right: 1.5rem;
+            opacity: 0;
+            color: var(--accent-gold);
+            transition: opacity 0.3s ease;
+        }
+        .option-card.selected .check-icon {
+            opacity: 1;
+        }
+
+        /* Form Section */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-input {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--grid-border);
+            padding: 1rem;
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            transition: border-color 0.3s ease;
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: var(--accent-gold);
+        }
+        textarea.form-input {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .interests-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        @media(min-width: 768px) {
+            .interests-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+        }
+        .form-check input { display: none; }
+        .form-check .custom-box {
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--text-secondary);
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+        .form-check input:checked + .custom-box {
+            background-color: var(--accent-gold);
+            border-color: var(--accent-gold);
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-overlay);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 2px solid var(--grid-border);
+            border-top-color: var(--accent-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Farewell */
+        .farewell-text {
+            font-size: 2.5rem;
+            text-align: center;
+            color: var(--accent-gold);
+            margin-bottom: 2rem;
+            font-family: var(--font-heading);
+            line-height: 1.2;
+        }
+        .farewell-sub {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .social-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .social-links a:hover {
+            color: var(--accent-gold);
+        }
+        
+        .error-message {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <!-- Section A: Landing -->
+    <div id="section-landing" class="container section visible active">
+        <h1 class="title ur-hover">Alfaaz Collective</h1>
+        <p class="tagline">"It belongs to where it lives."</p>
+        
+        <p class="intro-text">
+            We're looking for people who care about art, culture, and community. Before you fill a form, walk through a day at Alfaaz. There are no right or wrong answers — only yours.
+        </p>
+
+        <div class="consent-box">
+            <h3>Before we begin:</h3>
+            <ul>
+                <li>This is not a psychological test or diagnosis of any kind</li>
+                <li>Your responses help us understand how you approach real situations</li>
+                <li>Your data will only be used for volunteer placement at Alfaaz Collective</li>
+                <li>Participation is completely voluntary — you can close this page at any time</li>
+                <li>By proceeding, you consent to the above</li>
+            </ul>
+            <label class="checkbox-container">
+                <input type="checkbox" id="consent-check">
+                <div class="custom-checkbox"></div>
+                <span>I understand and wish to proceed</span>
+            </label>
+        </div>
+
+        <button id="btn-begin" class="cta-btn" disabled>Begin (~10 mins)</button>
+    </div>
+
+    <!-- Section B: Game Scenarios -->
+    <div id="section-game" class="container section">
+        <div id="act-header">
+            <h2 id="act-title" class="act-title"></h2>
+            <div id="act-urdu" class="act-urdu"></div>
+        </div>
+        
+        <div id="scenario-text" class="scenario-text"></div>
+        
+        <div id="options-container" class="options-grid">
+            <!-- Options injected by JS -->
+        </div>
+    </div>
+
+    <!-- Section C: Submission Form -->
+    <div id="section-form" class="container section">
+        <h2 class="title heading-font" style="font-size: 2.5rem;">Almost there.</h2>
+        <p class="intro-text">Tell us a little about yourself.</p>
+
+        <form id="submission-form">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="input-name" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="input-email" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Phone / WhatsApp</label>
+                <input type="tel" id="input-phone" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">What kind of work excites you?</label>
+                <div class="interests-grid">
+                    <label class="form-check"><input type="checkbox" name="interest" value="Visual & Performing Arts"><div class="custom-box"></div> Visual & Performing Arts</label>
+                    <label class="form-check"><input type="checkbox" name="interest" value="Storytelling & Expression"><div class="custom-box"></div> Storytelling & Expression</label>
+                    <label class="form-check"><input type="checkbox" name="interest" value="Ideas & Dialogue"><div class="custom-box"></div> Ideas & Dialogue</label>
+                    <label class="form-check"><input type="checkbox" name="interest" value="Community & Care"><div class="custom-box"></div> Community & Care</label>
+                    <label class="form-check"><input type="checkbox" name="interest" value="Behind the Scenes"><div class="custom-box"></div> Behind the Scenes</label>
+                    <label class="form-check"><input type="checkbox" name="interest" value="Media & Communication"><div class="custom-box"></div> Media & Communication</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Anything you'd like us to know? (Optional)</label>
+                <textarea id="input-notes" class="form-input"></textarea>
+            </div>
+
+            <button type="submit" class="cta-btn">Submit</button>
+            <div id="form-error" class="error-message">Something went wrong. Please try again.</div>
+        </form>
+    </div>
+
+    <!-- Section D: Farewell -->
+    <div id="section-farewell" class="container section">
+        <div id="farewell-poetic" class="farewell-text"></div>
+        <p id="farewell-interests" class="farewell-sub"></p>
+        <p class="farewell-sub">Where you land will depend on where Alfaaz needs you most right now. We'll be in touch.</p>
+        
+        <h1 class="title" style="font-size: 2rem; margin-top: 2rem;">Alfaaz</h1>
+        <div class="social-links">
+            <a href="https://www.instagram.com/alfaaz.2020" target="_blank"><i data-lucide="instagram"></i></a>
+            <a href="mailto:alfaaz2k20@gmail.com"><i data-lucide="mail"></i></a>
+            <a href="https://wa.me/917006613891" target="_blank"><i data-lucide="message-circle"></i></a>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6qP3PVmN6my1lQn8KhkPGaJdYqFeUpOZdqOlf0I9NVJeL6pMEJyFk51FNbNx32jg/exec';
+
+        // --- DATA ---
+        const scenarios = [
+            {
+                act: "Act I: The Exhibition",
+                urdu: "نمائش",
+                text: "It's the morning of 'Kaamil' — Alfaaz's exhibition at Mahatta Art Gallery. You arrive to help set up. The exhibition opens in 2 hours, but one artist's paintings haven't arrived. She's not answering her phone. The curator looks stressed.",
+                options: [
+                    { text: "Quietly take over other setup tasks to free up the curator's time, and keep trying to reach the artist yourself", scores: { empathy: 2, conscientiousness: 3, collaborative: 0, emotional: 0, curiosity: 0, creative: 1 } },
+                    { text: "Suggest rearranging the existing works to fill the gap — the exhibition can still feel complete with a different layout", scores: { empathy: 0, conscientiousness: 1, collaborative: 0, emotional: 2, curiosity: 0, creative: 3 } },
+                    { text: "Sit with the curator for a moment, ask how they're feeling, and then together figure out a plan", scores: { empathy: 3, conscientiousness: 0, collaborative: 2, emotional: 1, curiosity: 0, creative: 0 } },
+                    { text: "Start calling other Alfaaz members to see if anyone has backup artwork or can pick up the missing pieces", scores: { empathy: 0, conscientiousness: 2, collaborative: 3, emotional: 0, curiosity: 0, creative: 1 } }
+                ]
+            },
+            {
+                act: "Act I: The Exhibition",
+                urdu: "نمائش",
+                text: "The exhibition is taking shape. But one of the artists, Faizan, is upset — his pieces have been placed near the entrance where foot traffic is heaviest. He feels his work needs a quieter corner for contemplation. Another artist, Meher, is happy with her quiet spot and doesn't want to swap.",
+                options: [
+                    { text: "Listen to Faizan fully, acknowledge his concern, then talk to Meher separately to understand her perspective before proposing anything", scores: { empathy: 3, conscientiousness: 0, collaborative: 2, emotional: 2, curiosity: 0, creative: 0 } },
+                    { text: "Explain to Faizan that placement was decided by the curator and suggest he trust the process", scores: { empathy: 0, conscientiousness: 2, collaborative: 0, emotional: 1, curiosity: 0, creative: 0 } },
+                    { text: "Propose a creative compromise — maybe Faizan's most contemplative piece goes to a quieter spot, while his bolder work stays at the entrance", scores: { empathy: 1, conscientiousness: 0, collaborative: 2, emotional: 0, curiosity: 0, creative: 3 } },
+                    { text: "Let them work it out between themselves — it's not your place to intervene on your first day", scores: { empathy: 0, conscientiousness: 0, collaborative: 0, emotional: 0, curiosity: 0, creative: 0 } }
+                ]
+            },
+            {
+                act: "Act I: The Exhibition",
+                urdu: "نمائش",
+                text: "Thirty minutes before the exhibition opens, a school teacher arrives with 15 students — unannounced. She says they're studying local art for a project and heard about Kaamil on Instagram. The space isn't set up for a school group, and the curator is still finalizing the lighting.",
+                options: [
+                    { text: "Welcome them warmly, offer to give the students an informal walkthrough of the pieces that are ready", scores: { empathy: 2, conscientiousness: 0, collaborative: 0, emotional: 2, curiosity: 0, creative: 3 } },
+                    { text: "Politely ask them to come back in an hour when the exhibition officially opens", scores: { empathy: 0, conscientiousness: 3, collaborative: 0, emotional: 1, curiosity: 0, creative: 0 } },
+                    { text: "Check with the curator first — it's their call, and you don't want to overstep", scores: { empathy: 0, conscientiousness: 2, collaborative: 3, emotional: 0, curiosity: 0, creative: 0 } },
+                    { text: "Invite the students in but set up a temporary 'preview zone' with just a few pieces, turning it into an exclusive sneak peek", scores: { empathy: 1, conscientiousness: 0, collaborative: 0, emotional: 0, curiosity: 2, creative: 3 } }
+                ]
+            },
+            {
+                act: "Act II: The Circle",
+                urdu: "حلقہ",
+                text: "It's Thursday evening at the Philosophy Club. The topic is 'Does art belong to the artist or the audience?' Two members are passionately debating. You notice Zara — a new member — leaning forward as if she wants to speak, but keeps pulling back. She's fidgeting with her notebook.",
+                options: [
+                    { text: "During a natural pause, gently say: 'Zara, I noticed you might have a thought — we'd love to hear it if you'd like to share'", scores: { empathy: 3, conscientiousness: 0, collaborative: 3, emotional: 0, curiosity: 0, creative: 0 } },
+                    { text: "After the session, approach Zara privately and ask what she thought — offer to help her share next time", scores: { empathy: 2, conscientiousness: 0, collaborative: 0, emotional: 3, curiosity: 1, creative: 0 } },
+                    { text: "Suggest the group try a round-robin format so everyone gets a chance to speak", scores: { empathy: 0, conscientiousness: 1, collaborative: 3, emotional: 0, curiosity: 0, creative: 2 } },
+                    { text: "Let it be — she'll speak up when she's comfortable; forcing it might make things worse", scores: { empathy: 0, conscientiousness: 0, collaborative: 0, emotional: 2, curiosity: 0, creative: 0 } }
+                ]
+            },
+            {
+                act: "Act II: The Circle",
+                urdu: "حلقہ",
+                text: "At a literature club evening, a poet reads a piece that draws on sensitive themes — partition, identity, belonging. Some audience members are visibly moved. One person stands up and says, 'This isn't appropriate for a public event — there are young people here.' The poet looks shaken.",
+                options: [
+                    { text: "Acknowledge the audience member's concern respectfully, then affirm that Alfaaz is a space for all voices — including difficult ones", scores: { empathy: 2, conscientiousness: 0, collaborative: 1, emotional: 3, curiosity: 0, creative: 0 } },
+                    { text: "Step in to support the poet — thank them for their courage and remind the audience that art often lives in uncomfortable places", scores: { empathy: 3, conscientiousness: 0, collaborative: 0, emotional: 0, curiosity: 1, creative: 2 } },
+                    { text: "Propose a brief pause — then open it up as a facilitated conversation, turning the tension into dialogue", scores: { empathy: 0, conscientiousness: 0, collaborative: 3, emotional: 2, curiosity: 0, creative: 3 } },
+                    { text: "Quietly check on the poet while someone else handles the audience — their emotional state is the priority right now", scores: { empathy: 3, conscientiousness: 0, collaborative: 0, emotional: 2, curiosity: 0, creative: 0 } }
+                ]
+            },
+            {
+                act: "Act III: The Outreach",
+                urdu: "رسائی",
+                text: "Alfaaz is running an art therapy workshop at a children's care center. You're leading a painting activity. Most children are engaged, but one boy, around 8, is sitting apart — staring at a blank sheet. Your co-volunteer whispers, 'Just leave him, he never participates.'",
+                options: [
+                    { text: "Sit near him quietly. Start doodling on your own paper without asking him to do anything — let the invitation be wordless", scores: { empathy: 3, conscientiousness: 0, collaborative: 0, emotional: 3, curiosity: 1, creative: 0 } },
+                    { text: "Bring him a different material — clay, crayons, stickers — maybe painting isn't his medium", scores: { empathy: 2, conscientiousness: 0, collaborative: 0, emotional: 0, curiosity: 2, creative: 3 } },
+                    { text: "Gently ask him what he'd like to draw, offer to draw together", scores: { empathy: 2, conscientiousness: 0, collaborative: 2, emotional: 0, curiosity: 0, creative: 0 } },
+                    { text: "Respect his space — participation shouldn't be forced, especially in a care setting", scores: { empathy: 1, conscientiousness: 0, collaborative: 0, emotional: 2, curiosity: 0, creative: 0 } }
+                ]
+            },
+            {
+                act: "Act III: The Outreach",
+                urdu: "رسائی",
+                text: "You've been volunteering with Alfaaz for three weeks now. This Saturday, you committed to helping set up for a community photography walk in the old city. On Friday night, a close friend calls — they're visiting town for one day only, Saturday, and want to spend it with you. You also realize you've been feeling a bit burnt out lately.",
+                options: [
+                    { text: "Show up for the setup as promised, but let the team know you'll need to leave early — then go see your friend afterward", scores: { empathy: 0, conscientiousness: 3, collaborative: 2, emotional: 1, curiosity: 0, creative: 0 } },
+                    { text: "Call the Alfaaz team lead tonight, explain the situation honestly, and ask if someone can cover for you — then offer to take on extra next week", scores: { empathy: 0, conscientiousness: 2, collaborative: 3, emotional: 2, curiosity: 0, creative: 0 } },
+                    { text: "Go see your friend — you need the break, and the team will understand", scores: { empathy: 0, conscientiousness: 0, collaborative: 0, emotional: 1, curiosity: 0, creative: 0 } },
+                    { text: "Show up for the full setup and skip meeting your friend — a commitment is a commitment", scores: { empathy: 0, conscientiousness: 3, collaborative: 0, emotional: 0, curiosity: 0, creative: 0 } }
+                ]
+            }
+        ];
+
+        const traitPoetry = {
+            empathy: "You carry the room's weight before anyone notices it's heavy.",
+            conscientiousness: "You are the thread that holds the fabric taut.",
+            collaborative: "You turn a gathering into a circle.",
+            emotional: "You find the calm inside the noise.",
+            curiosity: "You ask the question the room forgot to wonder.",
+            creative: "You see doors where others see walls."
+        };
+
+        // --- STATE ---
+        let currentScenarioIdx = 0;
+        let cumulativeScores = {
+            empathy: 0, conscientiousness: 0, collaborative: 0,
+            emotional: 0, curiosity: 0, creative: 0
+        };
+        let userResponses = [];
+        let previousAct = "";
+
+        // --- DOM ELEMENTS ---
+        const sLanding = document.getElementById('section-landing');
+        const sGame = document.getElementById('section-game');
+        const sForm = document.getElementById('section-form');
+        const sFarewell = document.getElementById('section-farewell');
+        const progContainer = document.getElementById('progress-container');
+        const progBar = document.getElementById('progress-bar');
+        const consentCheck = document.getElementById('consent-check');
+        const btnBegin = document.getElementById('btn-begin');
+
+        // Initialize icons
+        lucide.createIcons();
+
+        // --- LOGIC ---
+        consentCheck.addEventListener('change', (e) => {
+            btnBegin.disabled = !e.target.checked;
+        });
+
+        btnBegin.addEventListener('click', () => {
+            transitionSection(sLanding, sGame);
+            progContainer.style.display = 'block';
+            renderScenario();
+        });
+
+        function transitionSection(from, to) {
+            // Step 1: fade out current section
+            from.classList.remove('active');
+            setTimeout(() => {
+                // Step 2: hide old, show new (invisible)
+                from.classList.remove('visible');
+                to.classList.add('visible');
+                // Step 3: trigger reflow, then animate in
+                void to.offsetWidth;
+                requestAnimationFrame(() => {
+                    to.classList.add('active');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }, 800);
+        }
+
+        function updateProgress() {
+            const percent = ((currentScenarioIdx) / scenarios.length) * 100;
+            progBar.style.width = percent + '%';
+        }
+
+        function renderScenario() {
+            updateProgress();
+            
+            const scenario = scenarios[currentScenarioIdx];
+            const header = document.getElementById('act-header');
+            const titleEl = document.getElementById('act-title');
+            const urduEl = document.getElementById('act-urdu');
+            const textEl = document.getElementById('scenario-text');
+            const optionsEl = document.getElementById('options-container');
+
+            // Handle Act fade out if same act
+            if (scenario.act !== previousAct) {
+                titleEl.textContent = scenario.act;
+                urduEl.textContent = scenario.urdu;
+                titleEl.classList.remove('act-fade-out');
+                urduEl.classList.remove('act-fade-out');
+                previousAct = scenario.act;
+            } else {
+                titleEl.classList.add('act-fade-out');
+                urduEl.classList.add('act-fade-out');
+            }
+
+            textEl.style.opacity = '0';
+            optionsEl.style.opacity = '0';
+
+            setTimeout(() => {
+                textEl.textContent = scenario.text;
+                optionsEl.innerHTML = '';
+                
+                scenario.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-card';
+                    btn.innerHTML = `
+                        <span>${opt.text}</span>
+                        <i data-lucide="check" class="check-icon"></i>
+                    `;
+                    btn.onclick = () => handleOptionSelect(opt, btn, idx);
+                    optionsEl.appendChild(btn);
+                });
+                lucide.createIcons();
+                
+                textEl.style.transition = 'opacity 0.5s ease';
+                optionsEl.style.transition = 'opacity 0.5s ease';
+                textEl.style.opacity = '1';
+                optionsEl.style.opacity = '1';
+            }, 400);
+        }
+
+        function handleOptionSelect(option, btnElement, idx) {
+            // Disable all buttons
+            const buttons = document.querySelectorAll('.option-card');
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+
+            // Highlight selected
+            btnElement.classList.add('selected');
+
+            // Record score
+            for (let trait in option.scores) {
+                cumulativeScores[trait] += option.scores[trait];
+            }
+            userResponses.push(String.fromCharCode(65 + idx)); // A, B, C, D
+
+            // Transition
+            setTimeout(() => {
+                currentScenarioIdx++;
+                if (currentScenarioIdx < scenarios.length) {
+                    renderScenario();
+                } else {
+                    finishGame();
+                }
+            }, 800);
+        }
+
+        function finishGame() {
+            progBar.style.width = '100%';
+            setTimeout(() => {
+                progContainer.style.display = 'none';
+                transitionSection(sGame, sForm);
+            }, 600);
+        }
+
+        // Form Submit
+        document.getElementById('submission-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            const errorMsg = document.getElementById('form-error');
+            const loading = document.getElementById('loading');
+            
+            errorMsg.style.display = 'none';
+            loading.classList.add('active');
+
+            // Gather Data
+            const formData = new FormData(e.target);
+            const interests = formData.getAll('interest').join(', ');
+            
+            // Calculate dominant trait
+            let dominantTrait = Object.keys(cumulativeScores).reduce((a, b) => cumulativeScores[a] > cumulativeScores[b] ? a : b);
+            
+            const payload = {
+                Name: document.getElementById('input-name').value,
+                Email: document.getElementById('input-email').value,
+                Phone: document.getElementById('input-phone').value,
+                Interests: interests,
+                Notes: document.getElementById('input-notes').value,
+                DominantTrait: dominantTrait,
+                ...cumulativeScores,
+                Responses: JSON.stringify(userResponses)
+            };
+
+            console.log("Submitting:", payload);
+
+            try {
+                if(APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbz6qP3PVmN6my1lQn8KhkPGaJdYqFeUpOZdqOlf0I9NVJeL6pMEJyFk51FNbNx32jg/exec') {
+                    // Simulate successful request for dev
+                    await new Promise(r => setTimeout(r, 1500));
+                } else {
+                    const res = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(payload),
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8', // Apps script CORS workaround
+                        }
+                    });
+                    if(!res.ok) throw new Error('Network response was not ok');
+                }
+
+                // Show farewell
+                showFarewell(dominantTrait, interests);
+                transitionSection(sForm, sFarewell);
+
+            } catch (err) {
+                console.error("Submission error:", err);
+                errorMsg.style.display = 'block';
+            } finally {
+                loading.classList.remove('active');
+            }
+        });
+
+        function showFarewell(dominantTrait, interests) {
+            document.getElementById('farewell-poetic').textContent = traitPoetry[dominantTrait];
+            if(interests) {
+                document.getElementById('farewell-interests').textContent = `You gravitate toward ${interests} — and we see that in you.`;
+            }
+            setTimeout(() => lucide.createIcons(), 100);
+        }
+
+    </script>
+</body>
+</html>
