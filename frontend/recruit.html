@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alfaaz Volunteer Assessment</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest">document.addEventListener('contextmenu', event => event.preventDefault());
+    </script>
     <style>
         :root {
             --bg-primary: #2d2722;
@@ -31,6 +32,8 @@
             font-family: var(--font-body);
             line-height: 1.6;
             min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
@@ -526,7 +529,11 @@
 
     <script>
         // --- CONFIGURATION ---
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6qP3PVmN6my1lQn8KhkPGaJdYqFeUpOZdqOlf0I9NVJeL6pMEJyFk51FNbNx32jg/exec';
+        if (localStorage.getItem('alfaaz_volunteer_submitted')) {
+            document.write('<div style="padding: 3rem; color: #e8e0d4; text-align: center; font-family: sans-serif;">You have already submitted an application. Thank you.</div>');
+            document.close();
+        }
+        const APPS_SCRIPT_URL = 'https://alfaaz-project.onrender.com/volunteers/apply';
 
         // --- DATA ---
         const scenarios = [
@@ -796,6 +803,7 @@
                 });
                 if (!res.ok) throw new Error('The application service could not accept your submission.');
 
+                localStorage.setItem('alfaaz_volunteer_submitted', 'true');
                 // Show farewell
                 showFarewell(dominantTrait, interests);
                 transitionSection(sForm, sFarewell);
@@ -818,6 +826,7 @@
             setTimeout(() => lucide.createIcons(), 100);
         }
 
+    document.addEventListener('contextmenu', event => event.preventDefault());
     </script>
 </body>
 </html>
