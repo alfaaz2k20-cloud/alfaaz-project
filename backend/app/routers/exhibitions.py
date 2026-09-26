@@ -5,6 +5,7 @@ from app.models.exhibition import DBExhibitionApplication, DBExhibition
 from app.core.security import require_auth
 from app.services.email import send_system_email
 from app.services.rate_limiter import form_limiter
+from app.schemas.exhibition import ExhibitionApplicationCreate, ExhibitionRegistrationSubmit
 
 router = APIRouter(prefix="/exhibitions", tags=["Exhibitions"])
 
