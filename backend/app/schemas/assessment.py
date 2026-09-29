@@ -15,12 +15,12 @@ class AssessmentEventCreate(BaseModel):
     timestamp: str
     simulated_time: str
     scene_id: str
-    decision_id: str
+    decision_id: Optional[str] = None
     action: str
     action_duration: int
     timer_expired: bool
-    state_before: str
-    state_after: str
+    state_before: Optional[str] = None
+    state_after: Optional[str] = None
     consequence_id: Optional[str] = None
     behavior_tags: Optional[List[Dict[str, Any]]] = None
 
