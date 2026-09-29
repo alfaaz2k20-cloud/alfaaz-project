@@ -301,7 +301,7 @@
             display: flex;
             justify-content: space-between;
             background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-            color: var(--text-primary);
+            color: #e8e0d4;
             font-family: var(--font-body);
             letter-spacing: 1px;
             font-size: 14px;
@@ -338,7 +338,7 @@
             font-family: var(--font-heading);
             font-size: 1.6rem;
             line-height: 1.5;
-            color: var(--text-primary);
+            color: #e8e0d4;
             min-height: 80px;
         }
 
@@ -357,7 +357,7 @@
         .vn-action-btn {
             background: rgba(30, 25, 20, 0.9);
             border: 1px solid var(--grid-border);
-            color: var(--text-primary);
+            color: #e8e0d4;
             padding: 1rem 1.5rem;
             font-family: var(--font-body);
             font-size: 0.95rem;
@@ -450,8 +450,8 @@
 
         
         <!-- View 2: Simulation Engine (Visual Novel) -->
-        <div id="view-simulation" class="view" style="padding: 0; max-width: none;">
-            <div id="game-canvas">
+        <div id="view-simulation" class="view" style="padding: 0; max-width: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999;">
+            <div id="game-canvas" style="width: 100%; height: 100%;">
                 <div id="game-bg-layer" class="game-bg active"></div>
                 
                 <div class="vn-top-bar">
@@ -584,8 +584,18 @@
                 });
                 
                 window.ASSESSMENT_ID = assessmentId;
-                showView('view-simulation');
-                engine.start();
+                
+                // Show the simulation view immediately
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.getElementById('view-simulation').classList.add('active');
+                
+                // Give the DOM a frame to render, then start the engine
+                requestAnimationFrame(() => {
+                    engine.start().catch(err => {
+                        console.error('GameEngine failed to start:', err);
+                        alert('Game failed to load: ' + err.message);
+                    });
+                });
             } catch (err) {
                 console.error(err);
                 alert("Failed to start session. Please try again.");
