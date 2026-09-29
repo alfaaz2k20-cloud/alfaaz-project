@@ -22,6 +22,8 @@ export class CollectiveGame {
 
     this.shakeTimer = 0;
     this.floatingTexts = [];
+    this.particles = [];
+    this.ripples = [];
 
     this.inventory = [];
     this.inventoryFullTimer = 0;
@@ -45,6 +47,16 @@ export class CollectiveGame {
     };
 
     this.disruptionTriggered = false;
+
+    this.persons.forEach(p => p.y = (p.y / 700) * this.VIRTUAL_HEIGHT);
+    this.projects.forEach(p => p.y = (p.y / 700) * this.VIRTUAL_HEIGHT);
+    this.fogs.forEach(f => f.y = (f.y / 700) * this.VIRTUAL_HEIGHT);
+    if (this.mountain) this.mountain.y = (30 / 700) * this.VIRTUAL_HEIGHT;
+    if (this.creativeZone) this.creativeZone.y = (480 / 700) * this.VIRTUAL_HEIGHT;
+    if (this.helper && this.phaseIndex === 0) {
+       this.helper.y = (this.helper.y / 700) * this.VIRTUAL_HEIGHT;
+    }
+
     this.phaseEventsTriggered = {};
     
     this.entityIdCounter = 1;
@@ -156,6 +168,16 @@ export class CollectiveGame {
     else if (phase === 1) {
       // Phase 2: Afternoon
       this.disruptionTriggered = false;
+
+    this.persons.forEach(p => p.y = (p.y / 700) * this.VIRTUAL_HEIGHT);
+    this.projects.forEach(p => p.y = (p.y / 700) * this.VIRTUAL_HEIGHT);
+    this.fogs.forEach(f => f.y = (f.y / 700) * this.VIRTUAL_HEIGHT);
+    if (this.mountain) this.mountain.y = (30 / 700) * this.VIRTUAL_HEIGHT;
+    if (this.creativeZone) this.creativeZone.y = (480 / 700) * this.VIRTUAL_HEIGHT;
+    if (this.helper && this.phaseIndex === 0) {
+       this.helper.y = (this.helper.y / 700) * this.VIRTUAL_HEIGHT;
+    }
+
       
       // Keep unhelped persons, but cap total
       const surviving = this.persons.filter(p => !p.helped);
@@ -324,6 +346,12 @@ export class CollectiveGame {
     }
 
     for (let i = this.floatingTexts.length - 1; i >= 0; i--) { let ft = this.floatingTexts[i]; ft.life -= dt; ft.y -= 20 * dt; if (ft.life <= 0) this.floatingTexts.splice(i, 1); }
+    
+    this.particles.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; });
+    this.particles = this.particles.filter(p => p.life > 0);
+    this.ripples.forEach(r => { r.radius += 100 * dt; r.life -= dt; });
+    this.ripples = this.ripples.filter(r => r.life > 0);
+
     // Update persons
     this.persons.forEach(p => {
       p.bobPhase += dt * Math.PI;
@@ -476,6 +504,19 @@ export class CollectiveGame {
     }
   }
 
+  
+  spawnParticles(x, y, color) {
+    for(let i = 0; i < 15; i++) {
+      this.particles.push({
+        x, y,
+        vx: (Math.random() - 0.5) * 200,
+        vy: (Math.random() - 0.5) * 200,
+        life: 1.0,
+        color
+      });
+    }
+  }
+
   addFloatingText(text, x, y, color = 'rgb(45, 49, 46)') { this.floatingTexts.push({ text, x, y, life: 1.5, color }); }
 
   handlePointer(e) {
@@ -511,7 +552,7 @@ export class CollectiveGame {
       if (!r.collected && Math.hypot(r.x - x, r.y - y) <= r.radius + tapRadius) {
         if (this.inventory.length < 5) {
           r.collected = true;
-          this.inventory.push(r.resourceType); this.addFloatingText('+1', r.x, r.y, this.resourceColors[r.resourceType]);
+          this.inventory.push(r.resourceType); this.spawnParticles(r.x, r.y, this.resourceColors[r.resourceType]); this.addFloatingText('+1', r.x, r.y, this.resourceColors[r.resourceType]);
           this.onEvent({
             type: 'interaction', action: 'collect_resource', targetId: r.id, phase: this.phaseIndex, gameTime: this.gameTime, phaseTime: this.phaseTime,
             context: { resourceType: r.resourceType, totalCollected: this.inventory.length, inventoryWasFull: false }
@@ -539,7 +580,7 @@ export class CollectiveGame {
           }
           const given = this.inventory.splice(resIndex, 1)[0];
           p.helped = true;
-          p.face = 'happy'; this.addFloatingText('<3', p.x, p.y - 30, 'rgb(189, 111, 93)');
+          p.face = 'happy'; this.spawnParticles(p.x, p.y, 'rgb(189, 111, 93)'); this.addFloatingText('?', p.x, p.y - 30, 'rgb(189, 111, 93)');
           const timeSince = p.distressStart > 0 ? this.phaseTime - p.distressStart : 0;
           p.distressLevel = 0;
           p.distressRate = 0;
@@ -575,7 +616,7 @@ export class CollectiveGame {
           
           if (placedRes) {
             if (proj.placed.length === proj.required.length) {
-              proj.completed = true; this.addFloatingText('Completed!', proj.x + proj.width/2, proj.y - 10, 'rgb(93, 155, 155)');
+              proj.completed = true; this.spawnParticles(proj.x + proj.width/2, proj.y, 'rgb(93, 155, 155)'); this.addFloatingText('Completed!', proj.x + proj.width/2, proj.y - 10, 'rgb(93, 155, 155)');
             }
             this.onEvent({
               type: 'interaction', action: 'place_in_project', targetId: proj.id, phase: this.phaseIndex, gameTime: this.gameTime, phaseTime: this.phaseTime,
@@ -864,6 +905,22 @@ export class CollectiveGame {
       }
     });
 
+    
+    // Effects
+    this.particles.forEach(p => {
+      this.ctx.fillStyle = p.color.replace('rgb', 'rgba').replace(')', ', ' + p.life + ')');
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      this.ctx.fill();
+    });
+    this.ripples.forEach(r => {
+      this.ctx.strokeStyle = 'rgba(189, 111, 93, ' + (r.life * 2) + ')';
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+      this.ctx.stroke();
+    });
+
     // Inventory
     this.ctx.fillStyle = 'rgba(255,255,255,0.7)';
     this.ctx.fillRect(this.VIRTUAL_WIDTH / 2 - 120, 10, 240, 40);
@@ -936,6 +993,10 @@ export class CollectiveGame {
     this.ctx.restore();
   }
 }
+
+
+
+
 
 
 
