@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Alfaaz Volunteer Experience</title>
     <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;1,400;1,500&family=Alegreya+Sans:wght@300;400;500&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Extract from global.css tokens */
         :root {
             --bg-primary: #f4f1ea;
             --bg-secondary: #ffffff;
@@ -21,6 +20,8 @@
             --transition-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
+        * { box-sizing: border-box; }
+
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
@@ -28,19 +29,12 @@
             line-height: 1.6;
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
         }
 
-        h1, h2, h3, h4, h5, h6 {
-            font-family: var(--font-heading);
-            font-weight: 500;
-        }
+        h1, h2, h3 { font-family: var(--font-heading); font-weight: 500; }
+        .urdu-text { font-family: var(--font-urdu); direction: rtl; }
 
-        .urdu-text {
-            font-family: var(--font-urdu);
-            direction: rtl;
-        }
-
-        /* Container setup */
         .app-container {
             max-width: 768px;
             margin: 0 auto;
@@ -51,359 +45,63 @@
         }
 
         /* Views */
-        .view {
-            display: none;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.6s var(--transition-smooth);
-        }
+        .view { display: none; opacity: 0; transform: translateY(10px); transition: all 0.6s var(--transition-smooth); }
+        .view.active { display: block; opacity: 1; transform: translateY(0); }
 
-        .view.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
+        /* Game view is special - fullscreen */
+        #view-game.active { display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999; background: var(--bg-primary); align-items: center; justify-content: center; }
 
-        /* Typography */
-        .alfaaz-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .alfaaz-header h1 {
-            font-size: 2.5rem;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-        }
+        .alfaaz-header { text-align: center; margin-bottom: 3rem; }
+        .alfaaz-header h1 { font-size: 2.5rem; letter-spacing: 0.05em; margin-bottom: 0.5rem; text-transform: uppercase; }
+        .alfaaz-header p { color: var(--text-secondary); font-style: italic; }
 
-        .alfaaz-header p {
-            color: var(--text-secondary);
-            font-style: italic;
-        }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-family: var(--font-heading);
-            font-size: 1.1rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.8rem;
-            background: transparent;
-            border: 1px solid var(--grid-border);
-            color: var(--text-primary);
-            font-family: var(--font-body);
-            font-size: 1rem;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--accent-gold);
-        }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-family: var(--font-heading); font-size: 1.1rem; }
+        .form-control { width: 100%; padding: 0.8rem; background: transparent; border: 1px solid var(--grid-border); color: var(--text-primary); font-family: var(--font-body); font-size: 1rem; }
+        .form-control:focus { outline: none; border-color: var(--accent-gold); }
 
         .btn {
-            display: inline-block;
-            padding: 0.8rem 2rem;
-            background: var(--bg-primary);
-            border: 1px solid var(--text-primary);
-            color: var(--text-primary);
-            text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-family: var(--font-body);
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            text-align: center;
+            display: inline-block; padding: 0.8rem 2rem; background: var(--bg-primary); border: 1px solid var(--text-primary);
+            color: var(--text-primary); text-decoration: none; text-transform: uppercase; letter-spacing: 0.1em;
+            font-family: var(--font-body); font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease; width: 100%; text-align: center;
         }
+        .btn:hover { background: var(--text-primary); color: var(--bg-primary); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .btn:hover {
-            background: var(--text-primary);
-            color: var(--bg-primary);
-        }
+        .consent-box { border: 1px solid var(--grid-border); padding: 2rem; margin: 2rem 0; background: var(--bg-secondary); }
+        .consent-box ul { list-style-type: none; margin-bottom: 1.5rem; padding: 0; }
+        .consent-box li { margin-bottom: 0.8rem; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 10px; }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 0.8rem; cursor: pointer; margin-bottom: 2rem; }
 
-        /* Consent Box */
-        .consent-box {
-            border: 1px solid var(--grid-border);
-            padding: 2rem;
-            margin: 2rem 0;
-            background: var(--bg-secondary);
-        }
+        .loading { opacity: 0.5; pointer-events: none; }
 
-        .consent-box ul {
-            list-style-type: none;
-            margin-bottom: 1.5rem;
-        }
-
-        .consent-box li {
-            margin-bottom: 0.8rem;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            cursor: pointer;
-            margin-bottom: 2rem;
-        }
-
-        /* Simulation UI */
-        .sim-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--grid-border);
-            margin-bottom: 2rem;
-            font-family: var(--font-heading);
-        }
-
-        .sim-clock {
-            font-size: 1.5rem;
-            color: var(--text-primary);
-        }
-
-        .sim-timer-bar {
-            height: 2px;
-            background: var(--accent-gold);
-            width: 100%;
-            transition: width linear;
-        }
-
-        .timer-container {
-            height: 2px;
-            background: var(--grid-border);
-            margin-bottom: 2rem;
-            width: 100%;
-            position: relative;
-        }
-
-        .scene-text {
-            font-size: 1.25rem;
-            line-height: 1.8;
-            margin-bottom: 3rem;
-            font-family: var(--font-heading);
-        }
-
-        .action-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .action-card {
-            padding: 1.5rem;
-            border: 1px solid var(--grid-border);
-            background: transparent;
-            color: var(--text-primary);
-            text-align: left;
-            font-family: var(--font-body);
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            line-height: 1.5;
-        }
-
-        .action-card:hover {
-            border-color: var(--accent-gold);
-            background: rgba(189, 111, 93, 0.05);
-        }
-
-        .action-card:active {
-            transform: scale(0.99);
-        }
-
-        /* Consequence Overlay */
-        #consequence-overlay {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: var(--text-primary);
-            color: var(--bg-primary);
-            padding: 1rem 2rem;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s ease;
-            font-family: var(--font-heading);
-            font-style: italic;
-            z-index: 1000;
-        }
-
-        #consequence-overlay.active {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-        
-        .loading {
-            opacity: 0.5;
-            pointer-events: none;
-        }
-    
-        /* VN Game UI Styles */
+        /* Game Canvas */
         #game-canvas {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            margin-left: -50vw;
-            left: 50%;
-            overflow: hidden;
-            background: #111;
-        }
-        
-        .game-bg {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-size: cover;
-            background-position: center;
-            opacity: 0;
-            transition: opacity 1.5s ease;
-            z-index: 1;
-        }
-        
-        .game-bg.active {
-            opacity: 1;
-        }
-
-        .game-ui-layer {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 5vh 5vw;
-            pointer-events: none; /* Let clicks pass to bg if needed, though we don't need it */
-        }
-
-        .vn-top-bar {
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            padding: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-            color: #e8e0d4;
-            font-family: var(--font-body);
-            letter-spacing: 1px;
-            font-size: 14px;
-        }
-
-        .vn-dialogue-container {
-            background: rgba(45, 39, 34, 0.95);
-            border: 1px solid var(--accent-gold);
-            border-radius: 4px;
-            padding: 2rem;
-            position: relative;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            pointer-events: auto;
-            backdrop-filter: blur(10px);
-        }
-
-        .vn-speaker {
-            position: absolute;
-            top: -15px;
-            left: 20px;
-            background: var(--accent-gold);
-            color: #111;
-            padding: 4px 16px;
-            font-family: var(--font-heading);
-            font-weight: bold;
-            font-size: 1.2rem;
-            border-radius: 2px;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .vn-text {
-            font-family: var(--font-heading);
-            font-size: 1.6rem;
-            line-height: 1.5;
-            color: #e8e0d4;
-            min-height: 80px;
-        }
-
-        .vn-actions {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-            pointer-events: auto;
-        }
-
-        @media(min-width: 768px) {
-            .vn-actions { grid-template-columns: 1fr 1fr; }
-            .game-ui-layer { padding: 5vh 15vw; }
-        }
-
-        .vn-action-btn {
-            background: rgba(30, 25, 20, 0.9);
-            border: 1px solid var(--grid-border);
-            color: #e8e0d4;
-            padding: 1rem 1.5rem;
-            font-family: var(--font-body);
-            font-size: 0.95rem;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-        }
-
-        .vn-action-btn:hover {
-            border-color: var(--accent-gold);
-            background: rgba(189, 111, 93, 0.1);
-            transform: translateX(5px);
-        }
-
-        .vn-timer {
-            position: absolute;
-            bottom: 0; left: 0; height: 3px;
-            background: var(--accent-gold);
             width: 100%;
-            transition: width 1s linear;
+            height: 100%;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        #consequence-overlay {
-            position: fixed;
-            top: 30%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 1rem 2rem;
-            border: 1px solid var(--accent-gold);
-            z-index: 100;
-            font-family: var(--font-heading);
-            font-size: 1.5rem;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+        /* Game intro overlay */
+        #game-intro {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000;
+            background: var(--bg-primary); display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 2rem; opacity: 1; transition: opacity 1s ease; pointer-events: auto;
         }
-        #consequence-overlay.active { opacity: 1; }
+        #game-intro.hidden { opacity: 0; pointer-events: none; }
+        #game-intro h2 { font-family: var(--font-heading); font-size: 2rem; font-weight: 400; color: var(--text-primary); text-align: center; max-width: 400px; }
+        #game-intro p { font-family: var(--font-body); color: var(--text-secondary); font-size: 1rem; text-align: center; max-width: 350px; }
 
+        .scene-text { font-size: 1.25rem; line-height: 1.8; margin-bottom: 3rem; font-family: var(--font-heading); }
     </style>
 </head>
 <body>
     <div class="app-container">
-        
+
         <!-- View 1: Identity & Consent -->
         <div id="view-identity" class="view active">
             <div class="alfaaz-header">
@@ -413,7 +111,7 @@
 
             <div style="text-align: center; margin-bottom: 2rem;">
                 <h2 style="margin-bottom: 1rem;">Volunteer Experience</h2>
-                <p style="color: var(--text-secondary);">We are looking for people who care about art, culture, and community. Before you fill a form, walk through a simulated day at Alfaaz. There are no right or wrong answers — only yours.</p>
+                <p style="color: var(--text-secondary);">We are looking for people who care about art, culture, and community. Before you fill a form, spend a few minutes with a small community we've built. There are no right or wrong ways to play — only yours.</p>
             </div>
 
             <form id="identity-form">
@@ -434,7 +132,7 @@
                     <h3 style="margin-bottom: 1rem;">Before we begin:</h3>
                     <ul>
                         <li><i data-lucide="check" size="18"></i> This is not a psychological test or diagnosis of any kind.</li>
-                        <li><i data-lucide="check" size="18"></i> Your responses help us understand how you approach real situations with limited time.</li>
+                        <li><i data-lucide="check" size="18"></i> Your interactions help us understand how you naturally engage with a community space.</li>
                         <li><i data-lucide="check" size="18"></i> Your data will only be used for volunteer placement at Alfaaz Collective.</li>
                         <li><i data-lucide="check" size="18"></i> Participation is completely voluntary — you can close this page at any time.</li>
                     </ul>
@@ -444,34 +142,18 @@
                     </label>
                 </div>
 
-                <button type="submit" class="btn" id="btn-start">Begin the Day</button>
+                <button type="submit" class="btn" id="btn-start">Begin</button>
             </form>
         </div>
 
-        
-        <!-- View 2: Simulation Engine (Visual Novel) -->
-        <div id="view-simulation" class="view" style="padding: 0; max-width: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999;">
-            <div id="game-canvas" style="width: 100%; height: 100%;">
-                <div id="game-bg-layer" class="game-bg active"></div>
-                
-                <div class="vn-top-bar">
-                    <div id="sim-title" style="text-transform: uppercase;">Morning Setup</div>
-                    <div id="sim-clock" style="color: var(--accent-gold); font-weight: bold;">09:17 AM</div>
-                </div>
-
-                <div class="game-ui-layer">
-                    <div class="vn-dialogue-container">
-                        <div class="vn-speaker" id="vn-speaker">Curator</div>
-                        <div class="vn-text" id="vn-text">...</div>
-                        <div class="vn-timer" id="sim-timer-bar"></div>
-                    </div>
-
-                    <div class="vn-actions" id="action-grid">
-                        <!-- Action buttons injected here -->
-                    </div>
-                </div>
+        <!-- View 2: The Game (fullscreen canvas) -->
+        <div id="view-game" class="view">
+            <canvas id="game-canvas"></canvas>
+            <div id="game-intro">
+                <h2>This is a small community.</h2>
+                <p>See what needs doing.</p>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 1rem;">Tap or click to interact.</p>
             </div>
-            <div id="consequence-overlay"></div>
         </div>
 
         <!-- View 3: Final Form -->
@@ -507,7 +189,7 @@
         <div id="view-complete" class="view">
             <div class="alfaaz-header">
                 <h1>Thank You</h1>
-                <p>Your day at Alfaaz has concluded.</p>
+                <p>Your time with the collective has concluded.</p>
             </div>
             <div style="text-align: center; margin-top: 3rem;">
                 <p class="scene-text">We have received your application.</p>
@@ -522,48 +204,114 @@
 
     </div>
 
-    <div id="consequence-overlay"></div>
-
-    
-    
     <script type="module">
-        import { GameEngine } from './src/game/GameEngine.js';
+        import { CollectiveGame } from './src/game/CollectiveGame.js';
         import { API_URL } from './src/game/ApiClient.js';
-        
+
         lucide.createIcons();
 
         const sessionId = Math.random().toString(36).substring(2, 15);
         const assessmentId = 'assm_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
 
-        // API Client stub
-        const apiClient = {
-            async startAssessment(data) {
-                const res = await fetch(`${API_URL}/volunteers/assessment/start`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                return res.json();
-            },
-            async completeAssessment(assmId, data) {
-                return fetch(`${API_URL}/volunteers/assessment/${assmId}/complete`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-            }
-        };
+        // API helpers
+        async function startAssessment(identity) {
+            const res = await fetch(`${API_URL}/volunteers/assessment/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assessment_id: assessmentId, session_id: sessionId, identity })
+            });
+            return res.json();
+        }
 
-        const engine = new GameEngine();
+        async function sendEvent(eventData) {
+            const tags = [];
+            const ctx = eventData.context || {};
+            
+            if (eventData.type === 'interaction') {
+                // High level motivation metric
+                tags.push({ tag: 'high_interaction_count', direction: 'positive', strength: 0.1 });
+                
+                switch (eventData.action) {
+                    case 'help_person':
+                        if (ctx.distressLevel > 0.6) {
+                            tags.push({ tag: 'distress_response', direction: 'positive', strength: 1.0 });
+                        } else if (ctx.distressLevel === 0) {
+                            tags.push({ tag: 'people_priority', direction: 'positive', strength: 0.5 });
+                        }
+                        if (ctx.timeSinceDistressStart > 30) {
+                            tags.push({ tag: 'ignored_distress', direction: 'negative', strength: 0.5 });
+                        }
+                        break;
+                
+                    case 'place_in_project':
+                        if (ctx.projectProgress >= 1.0) {
+                            tags.push({ tag: 'project_finished', direction: 'positive', strength: 1.0 });
+                        } else {
+                            tags.push({ tag: 'task_completion', direction: 'positive', strength: 0.5 });
+                        }
+                        if (ctx.isShared) {
+                            tags.push({ tag: 'shared_project_preference', direction: 'positive', strength: 1.0 });
+                        }
+                        break;
+                
+                    case 'help_helper':
+                        tags.push({ tag: 'resource_sharing', direction: 'positive', strength: 1.5 });
+                        tags.push({ tag: 'helper_assist', direction: 'positive', strength: 1.0 });
+                        break;
+                
+                    case 'reveal_fog':
+                        tags.push({ tag: 'fog_exploration', direction: 'positive', strength: 1.0 });
+                        if (eventData.phaseTime < 30) {
+                            tags.push({ tag: 'early_exploration', direction: 'positive', strength: 1.0 });
+                        }
+                        break;
+                
+                    case 'tap_mountain':
+                        tags.push({ tag: 'mountain_persistence', direction: 'positive', strength: 0.5 });
+                        break;
+                
+                    case 'place_creative':
+                        tags.push({ tag: 'creative_placement', direction: 'positive', strength: 1.0 });
+                        tags.push({ tag: 'creative_zone_engaged', direction: 'positive', strength: 1.0 });
+                        break;
+                }
+                
+                // Disruption recovery check (Phase 2 happens at t=90s)
+                if (eventData.phase === 1 && eventData.phaseTime > 90 && eventData.phaseTime < 100 && eventData.action !== 'tap_empty') {
+                    tags.push({ tag: 'fast_recovery', direction: 'positive', strength: 1.5 });
+                }
+            }
+
+            // Fire-and-forget telemetry
+            fetch(`${API_URL}/volunteers/assessment/${assessmentId}/event`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    scene_id: `phase_${eventData.phase || 0}`,
+                    action: eventData.action || eventData.type,
+                    action_duration: eventData.gameTime ? Math.round(eventData.gameTime * 1000) : 0,
+                    timer_expired: false,
+                    simulated_time: `Phase ${eventData.phase || 0} @ ${Math.round(eventData.phaseTime || 0)}s`,
+                    behavior_tags: tags
+                })
+            }).catch(err => console.warn('Telemetry error:', err));
+        }
+
+        async function completeAssessment(data) {
+            return fetch(`${API_URL}/volunteers/assessment/${assessmentId}/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }
 
         function showView(id) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            setTimeout(() => {
-                document.getElementById(id).classList.add('active');
-            }, 300);
+            document.getElementById(id).classList.add('active');
         }
 
-        // Event Listeners
+        // Identity form
         document.getElementById('identity-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-start');
@@ -577,33 +325,42 @@
             };
 
             try {
-                await apiClient.startAssessment({
-                    assessment_id: assessmentId,
-                    session_id: sessionId,
-                    identity
+                await startAssessment(identity);
+
+                // Show the game view
+                showView('view-game');
+
+                // Show the intro overlay for 3 seconds, then start the game
+                const intro = document.getElementById('game-intro');
+                const canvas = document.getElementById('game-canvas');
+
+                const game = new CollectiveGame(canvas, {
+                    onComplete: () => {
+                        game.stop();
+                        showView('view-final');
+                    },
+                    onEvent: (eventData) => {
+                        sendEvent(eventData);
+                    }
                 });
-                
-                window.ASSESSMENT_ID = assessmentId;
-                
-                // Show the simulation view immediately
-                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-                document.getElementById('view-simulation').classList.add('active');
-                
-                // Give the DOM a frame to render, then start the engine
-                requestAnimationFrame(() => {
-                    engine.start().catch(err => {
-                        console.error('GameEngine failed to start:', err);
-                        alert('Game failed to load: ' + err.message);
-                    });
-                });
+
+                setTimeout(() => {
+                    intro.classList.add('hidden');
+                    setTimeout(() => {
+                        intro.style.display = 'none';
+                        game.start();
+                    }, 1000);
+                }, 2500);
+
             } catch (err) {
                 console.error(err);
-                alert("Failed to start session. Please try again.");
+                alert('Failed to start session. Please try again.');
                 btn.classList.remove('loading');
-                btn.textContent = 'Begin the Day';
+                btn.textContent = 'Begin';
             }
         });
 
+        // Final form
         document.getElementById('final-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
@@ -611,21 +368,20 @@
             btn.textContent = 'Submitting...';
 
             const interests = Array.from(document.querySelectorAll('input[name="interest"]:checked'))
-                                  .map(cb => cb.value)
-                                  .join(', ');
+                                  .map(cb => cb.value).join(', ');
             const notes = document.getElementById('final-notes').value;
 
             try {
-                await apiClient.completeAssessment(assessmentId, { interests, notes });
+                await completeAssessment({ interests, notes });
                 showView('view-complete');
+                lucide.createIcons();
             } catch (err) {
                 console.error(err);
-                alert("Failed to submit. Please try again.");
+                alert('Failed to submit. Please try again.');
                 btn.classList.remove('loading');
                 btn.textContent = 'Submit Application';
             }
         });
     </script>
-
 </body>
 </html>

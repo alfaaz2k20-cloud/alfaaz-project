@@ -538,9 +538,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
 
-                    <!-- SECTION 3: SIX ALFAAZ CONSTRUCTS -->
+                    <!-- SECTION 2: BEHAVIORAL CONSTRUCTS -->
                     <div>
-                        <h3 class="data-label" style="font-size:12px; border-bottom:1px solid var(--grid-border); padding-bottom:0.5rem; margin-bottom:1rem;">Section 3: Six Alfaaz Constructs</h3>
+                        <h3 class="data-label" style="font-size:12px; border-bottom:1px solid var(--grid-border); padding-bottom:0.5rem; margin-bottom:1rem;">Section 2: Behavioral Constructs</h3>
                         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
                             ${data.constructs.map(c => `
                                 <div style="border: 1px solid var(--grid-border); padding: 1rem;">
@@ -555,9 +555,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
 
-                    <!-- SECTION 10: ROLE FIT MATRIX -->
+                    <!-- SECTION 3: ROLE FIT MATRIX -->
                     <div>
-                        <h3 class="data-label" style="font-size:12px; border-bottom:1px solid var(--grid-border); padding-bottom:0.5rem; margin-bottom:1rem;">Section 10: Role Fit Matrix</h3>
+                        <h3 class="data-label" style="font-size:12px; border-bottom:1px solid var(--grid-border); padding-bottom:0.5rem; margin-bottom:1rem;">Section 3: Role Fit Matrix</h3>
                         <div style="display:grid; gap:0.5rem;">
                             ${data.role_fits.map(r => `
                                 <div style="display:grid; grid-template-columns: 200px 100px 1fr; gap:1rem; border: 1px solid var(--grid-border); padding: 0.8rem; align-items:center;">

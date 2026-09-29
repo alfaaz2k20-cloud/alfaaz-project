@@ -126,70 +126,156 @@ def save_interpretation(assessment_id: str, data: BehavioralInterpretationReques
 
 
 def generate_interpretations(assessment_id: str, db: Session):
-    # Fetch all events
     events = db.query(DBAssessmentEvent).filter(DBAssessmentEvent.assessment_id == assessment_id).all()
     observations = db.query(DBBehavioralObservation).filter(DBBehavioralObservation.assessment_id == assessment_id).all()
-    
-    # 1. Aggregate tags
-    tag_counts = {}
+
+    # Build a tag index: { tag_name: [{ direction, strength, context }, ...] }
+    tag_index = {}
     for obs in observations:
-        tag_counts[obs.behavior_tag] = tag_counts.get(obs.behavior_tag, 0) + (1 if obs.direction == 'positive' else -1)
-    
-    # Simple construct mapping based on tags
-    constructs_setup = [
-        {"name": "Empathy", "tags": ["perspective_consideration", "conflict_navigation"]},
-        {"name": "Conscientiousness", "tags": ["follow_through", "commitment_honoring"]},
-        {"name": "Collaborative Spirit", "tags": ["coordination", "delegation"]},
-        {"name": "Emotional Agility", "tags": ["adaptation", "conflict_navigation"]},
-        {"name": "Curiosity & Learning", "tags": ["information_seeking"]},
-        {"name": "Creative Initiative", "tags": ["creative", "initiative"]},
-        {"name": "Motivation", "tags": ["mission_alignment", "intrinsic_drive"]}
+        tag_index.setdefault(obs.behavior_tag, []).append({
+            "direction": obs.direction,
+            "strength": obs.strength or 1.0,
+            "context": obs.context or ""
+        })
+
+    def score_construct(positive_tags, negative_tags):
+        supporting = 0
+        counter = 0
+        for tag in positive_tags:
+            for entry in tag_index.get(tag, []):
+                if entry["direction"] == "positive":
+                    supporting += entry["strength"]
+                elif entry["direction"] == "negative":
+                    counter += entry["strength"]
+        for tag in negative_tags:
+            for entry in tag_index.get(tag, []):
+                if entry["direction"] == "positive":
+                    counter += entry["strength"]
+                elif entry["direction"] == "negative":
+                    supporting += entry["strength"]
+        total = supporting + counter
+        confidence = "Insufficient Data"
+        if total >= 6: confidence = "High"
+        elif total >= 3: confidence = "Moderate"
+        elif total >= 1: confidence = "Low"
+        return int(supporting), int(counter), int(total), confidence
+
+    constructs = [
+        {
+            "name": "Empathy",
+            "pos": ["distress_response", "edge_sitter_notice", "helper_awareness", "people_priority"],
+            "neg": ["ignored_distress", "task_over_people"],
+            "desc": "Responsiveness to others' emotional states and prioritization of people over tasks."
+        },
+        {
+            "name": "Conscientiousness",
+            "pos": ["task_completion", "project_finished", "sequential_work", "deliberation"],
+            "neg": ["task_abandonment", "scattered_attention", "impulsive_action"],
+            "desc": "Task completion, methodical work patterns, and follow-through on started projects."
+        },
+        {
+            "name": "Collaborative Spirit",
+            "pos": ["resource_sharing", "helper_assist", "shared_project_preference"],
+            "neg": ["resource_hoarding", "solo_preference", "ignored_helper"],
+            "desc": "Willingness to share resources, assist the co-worker, and contribute to shared goals."
+        },
+        {
+            "name": "Emotional Agility",
+            "pos": ["fast_recovery", "strategy_shift", "steady_pace_after_disruption"],
+            "neg": ["slow_recovery", "frozen_after_disruption", "repeated_failed_strategy"],
+            "desc": "Speed of recovery after disruptions and ability to adapt strategy when conditions change."
+        },
+        {
+            "name": "Curiosity & Learning",
+            "pos": ["fog_exploration", "unique_interactions", "early_exploration", "creative_zone_engaged"],
+            "neg": ["no_exploration", "minimal_interaction_variety"],
+            "desc": "Breadth of exploration, discovery of hidden elements, and variety of interactions attempted."
+        },
+        {
+            "name": "Creative Initiative",
+            "pos": ["resource_combination", "creative_placement", "non_obvious_interaction", "solution_variety"],
+            "neg": ["repetitive_strategy", "minimum_effort"],
+            "desc": "Novel resource combinations, creative zone engagement, and variety of problem-solving approaches."
+        },
+        {
+            "name": "Motivation",
+            "pos": ["high_interaction_count", "low_idle_time", "mountain_persistence", "sustained_engagement", "voluntary_return"],
+            "neg": ["high_idle_time", "engagement_drop", "early_disengagement"],
+            "desc": "Total engagement depth, persistence on optional challenges, and sustained effort across all phases."
+        },
     ]
-    
+
     db.query(DBConstructEvidence).filter(DBConstructEvidence.assessment_id == assessment_id).delete()
-    
-    for c in constructs_setup:
-        supporting = sum(1 for o in observations if o.behavior_tag in c["tags"] and o.direction == 'positive')
-        counter = sum(1 for o in observations if o.behavior_tag in c["tags"] and o.direction == 'negative')
-        
-        confidence = "Low"
-        if supporting + counter >= 3: confidence = "High"
-        elif supporting + counter >= 1: confidence = "Moderate"
-        
-        interp = f"Observed {supporting} supporting actions and {counter} contradictory actions for this construct."
-        
+
+    for c in constructs:
+        sup, ctr, total, confidence = score_construct(c["pos"], c["neg"])
+
+        if total == 0:
+            interp = f"No behavioral indicators observed for {c['name'].lower()}."
+        elif sup > ctr:
+            interp = f"Consistent pattern of {c['name'].lower()}-related behaviors. {c['desc']} {sup} supporting signals, {ctr} counter signals."
+        elif sup == ctr:
+            interp = f"Mixed indicators for {c['name'].lower()}. {c['desc']} {sup} supporting vs {ctr} counter signals."
+        else:
+            interp = f"Fewer indicators of {c['name'].lower()} observed. {c['desc']} {sup} supporting vs {ctr} counter signals."
+
         ev = DBConstructEvidence(
             assessment_id=assessment_id,
             construct=c["name"],
-            supporting_count=supporting,
-            counter_count=counter,
+            supporting_count=sup,
+            counter_count=ctr,
             context_count=len(events),
             confidence=confidence,
             interpretation=interp
         )
         db.add(ev)
-        
+
     db.query(DBRoleFit).filter(DBRoleFit.assessment_id == assessment_id).delete()
-    # Simple role fit
-    roles_setup = [
-        {"name": "Event Operations", "req": ["initiative", "follow_through"]},
-        {"name": "Community & Outreach", "req": ["perspective_consideration", "communication"]},
-        {"name": "Creative / Art", "req": ["creative", "adaptation"]}
+
+    roles = [
+        {
+            "name": "Event Operations",
+            "indicators": ["task_completion", "project_finished", "deliberation", "fast_recovery"],
+            "desc": "Operational readiness for managing logistics, setup, and event execution."
+        },
+        {
+            "name": "Community & Outreach",
+            "indicators": ["distress_response", "edge_sitter_notice", "people_priority", "resource_sharing"],
+            "desc": "Suitability for community-facing roles requiring interpersonal sensitivity."
+        },
+        {
+            "name": "Creative / Art",
+            "indicators": ["creative_placement", "resource_combination", "non_obvious_interaction", "fog_exploration"],
+            "desc": "Fit for creative programming, exhibition curation, and artistic projects."
+        },
+        {
+            "name": "Media & Communication",
+            "indicators": ["unique_interactions", "early_exploration", "solution_variety", "high_interaction_count"],
+            "desc": "Aptitude for content creation, documentation, and storytelling roles."
+        },
+        {
+            "name": "Research & Documentation",
+            "indicators": ["fog_exploration", "unique_interactions", "deliberation", "sequential_work"],
+            "desc": "Fit for systematic research, archive work, and knowledge documentation."
+        },
     ]
-    
-    for r in roles_setup:
-        score = sum(1 for o in observations if o.behavior_tag in r["req"] and o.direction == 'positive')
-        strength = "Strong" if score >= 2 else ("Moderate" if score == 1 else "Low")
-        
+
+    for r in roles:
+        score = sum(
+            sum(e["strength"] for e in tag_index.get(ind, []) if e["direction"] == "positive")
+            for ind in r["indicators"]
+        )
+        strength = "Strong" if score >= 4 else ("Moderate" if score >= 2 else "Low")
+        conf = "Moderate" if score >= 1 else "Insufficient Data"
         fit = DBRoleFit(
             assessment_id=assessment_id,
             role=r["name"],
             evidence_strength=strength,
-            confidence="Moderate",
-            interpretation=f"Fit score derived from related behavioral markers."
+            confidence=conf,
+            interpretation=r["desc"]
         )
         db.add(fit)
-        
+
     db.commit()
 
 @router.post("/assessment/{assessment_id}/complete")
