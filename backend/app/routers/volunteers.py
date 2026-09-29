@@ -58,12 +58,12 @@ def log_assessment_event(assessment_id: str, event: AssessmentEventCreate, db: S
             timestamp=ts,
             simulated_time=event.simulated_time,
             scene_id=event.scene_id,
-            decision_id=event.decision_id,
+            decision_id=event.decision_id or "",
             action=event.action,
             action_duration=event.action_duration,
             timer_expired=event.timer_expired,
-            state_before=event.state_before,
-            state_after=event.state_after,
+            state_before=event.state_before or "",
+            state_after=event.state_after or "",
             consequence_id=event.consequence_id
         )
         db.add(db_event)
