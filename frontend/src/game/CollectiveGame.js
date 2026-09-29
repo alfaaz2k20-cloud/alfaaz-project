@@ -16,11 +16,12 @@ export class CollectiveGame {
     this.gameTime = 0;
     this.phaseTime = 0;
     this.phaseIndex = 0;
-    this.phaseDuration = 180;
+    this.phaseDuration = 75;
     this.transitioning = false;
     this.transitionProgress = 0;
 
     this.shakeTimer = 0;
+    this.floatingTexts = [];
 
     this.inventory = [];
     this.inventoryFullTimer = 0;
@@ -307,22 +308,23 @@ export class CollectiveGame {
 
     // Phase specific events
     if (this.phaseIndex === 0) {
-      if (this.phaseTime >= 90 && !this.phaseEventsTriggered['spawn_resources']) {
+      if (this.phaseTime >= 35 && !this.phaseEventsTriggered['spawn_resources']) {
         this.phaseEventsTriggered['spawn_resources'] = true;
         for (let i = 0; i < 4; i++) this.addRandomResource();
       }
     } else if (this.phaseIndex === 1) {
-      if (this.phaseTime >= 90 && !this.disruptionTriggered) {
+      if (this.phaseTime >= 35 && !this.disruptionTriggered) {
         this.triggerDisruption();
       }
     } else if (this.phaseIndex === 2) {
-      if (this.phaseTime >= 90 && !this.phaseEventsTriggered['spawn_resources_3']) {
+      if (this.phaseTime >= 35 && !this.phaseEventsTriggered['spawn_resources_3']) {
         this.phaseEventsTriggered['spawn_resources_3'] = true;
         for (let i = 0; i < 2; i++) this.addRandomResource();
       }
     }
 
-    // Update Persons
+    for (let i = this.floatingTexts.length - 1; i >= 0; i--) { let ft = this.floatingTexts[i]; ft.life -= dt; ft.y -= 20 * dt; if (ft.life <= 0) this.floatingTexts.splice(i, 1); }
+    // Update persons
     this.persons.forEach(p => {
       p.bobPhase += dt * Math.PI;
       if (!p.helped && !p.isEdgeSitter) {
@@ -364,7 +366,7 @@ export class CollectiveGame {
   updateHelper(dt) {
     if (!this.helper.visible) return;
 
-    const speed = this.helper.struggling ? 25 : 60;
+    const speed = this.helper.struggling ? 40 : 85;
     
     // Sometimes drop things if struggling
     if (this.helper.struggling && Math.random() < 0.01 && this.helper.resources.length > 0) {
@@ -474,6 +476,8 @@ export class CollectiveGame {
     }
   }
 
+  addFloatingText(text, x, y, color = 'rgb(45, 49, 46)') { this.floatingTexts.push({ text, x, y, life: 1.5, color }); }
+
   handlePointer(e) {
     if (!this.isRunning || this.transitioning) return;
     
@@ -507,7 +511,7 @@ export class CollectiveGame {
       if (!r.collected && Math.hypot(r.x - x, r.y - y) <= r.radius + tapRadius) {
         if (this.inventory.length < 5) {
           r.collected = true;
-          this.inventory.push(r.resourceType);
+          this.inventory.push(r.resourceType); this.addFloatingText('+1', r.x, r.y, this.resourceColors[r.resourceType]);
           this.onEvent({
             type: 'interaction', action: 'collect_resource', targetId: r.id, phase: this.phaseIndex, gameTime: this.gameTime, phaseTime: this.phaseTime,
             context: { resourceType: r.resourceType, totalCollected: this.inventory.length, inventoryWasFull: false }
@@ -535,7 +539,7 @@ export class CollectiveGame {
           }
           const given = this.inventory.splice(resIndex, 1)[0];
           p.helped = true;
-          p.face = 'happy';
+          p.face = 'happy'; this.addFloatingText('<3', p.x, p.y - 30, 'rgb(189, 111, 93)');
           const timeSince = p.distressStart > 0 ? this.phaseTime - p.distressStart : 0;
           p.distressLevel = 0;
           p.distressRate = 0;
@@ -571,7 +575,7 @@ export class CollectiveGame {
           
           if (placedRes) {
             if (proj.placed.length === proj.required.length) {
-              proj.completed = true;
+              proj.completed = true; this.addFloatingText('Completed!', proj.x + proj.width/2, proj.y - 10, 'rgb(93, 155, 155)');
             }
             this.onEvent({
               type: 'interaction', action: 'place_in_project', targetId: proj.id, phase: this.phaseIndex, gameTime: this.gameTime, phaseTime: this.phaseTime,
@@ -932,3 +936,12 @@ export class CollectiveGame {
     this.ctx.restore();
   }
 }
+
+
+
+
+
+
+
+
+
