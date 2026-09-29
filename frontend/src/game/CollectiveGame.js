@@ -366,6 +366,7 @@ export class CollectiveGame {
 
     const speed = this.helper.struggling ? 25 : 60;
     
+    // Sometimes drop things if struggling
     if (this.helper.struggling && Math.random() < 0.01 && this.helper.resources.length > 0) {
       const type = this.helper.resources.pop();
       this.resources.push({
@@ -374,19 +375,61 @@ export class CollectiveGame {
         y: this.helper.y + (Math.random() * 40 - 20),
         radius: 8, resourceType: type, collected: false, pulsePhase: 0
       });
+      this.helper.emoji = '💦';
     }
 
     if (this.helper.state === 'idle') {
-      // Pick target
-      const targets = [];
-      this.resources.forEach(r => { if (!r.collected) targets.push(r); });
-      this.persons.forEach(p => { if (!p.helped) targets.push(p); });
+      // Pick target smarter
+      let target = null;
+      // If holding resources, prefer highly distressed people or projects
+      if (this.helper.resources.length > 0) {
+        const distressed = this.persons.filter(p => !p.helped).sort((a, b) => b.distressLevel - a.distressLevel);
+        if (distressed.length > 0 && (distressed[0].distressLevel > 0.5 || Math.random() < 0.5)) {
+          target = distressed[0];
+          this.helper.emoji = '💡';
+        } else {
+          // Find incomplete shared projects
+          const unfin = this.projects.filter(p => p.isShared && !p.completed && p.required.length > p.placed.length);
+          if (unfin.length > 0) {
+            target = unfin[0];
+            this.helper.emoji = '🛠️';
+          }
+        }
+      }
       
-      if (targets.length > 0) {
-        this.helper.target = targets[Math.floor(Math.random() * targets.length)];
+      // Otherwise, or if no people need help, look for resources
+      if (!target && this.helper.resources.length < 3) {
+        const availableResources = this.resources.filter(r => !r.collected);
+        if (availableResources.length > 0) {
+          // Find closest resource
+          target = availableResources.reduce((closest, curr) => {
+            const d1 = Math.hypot(closest.x - this.helper.x, closest.y - this.helper.y);
+            const d2 = Math.hypot(curr.x - this.helper.x, curr.y - this.helper.y);
+            return d2 < d1 ? curr : closest;
+          }, availableResources[0]);
+          this.helper.emoji = '🔍';
+        }
+      }
+      
+      if (target) {
+        this.helper.target = target;
         this.helper.state = 'moving';
+      } else {
+        this.helper.emoji = '⏳'; // Just waiting
       }
     } else if (this.helper.state === 'moving' && this.helper.target) {
+      // Validate target is still active
+      const t = this.helper.target;
+      const isInvalid = (t.radius === 8 && t.collected) || (t.radius === 22 && t.helped) || (t.placed && t.completed);
+      
+      if (isInvalid) {
+        this.helper.state = 'idle';
+        this.helper.target = null;
+        this.helper.emoji = '❓';
+        return;
+      }
+      
+      // Move using simple lerp/steering for smoothness
       const tx = this.helper.target.x;
       const ty = this.helper.target.y;
       const dx = tx - this.helper.x;
@@ -395,7 +438,8 @@ export class CollectiveGame {
       
       if (dist < 20) {
         this.helper.state = 'interacting';
-        this.helper.interactTimer = 1.5;
+        this.helper.interactTimer = 1.0; // Faster interactions than before
+        this.helper.emoji = '⚙️';
       } else {
         this.helper.x += (dx / dist) * speed * dt;
         this.helper.y += (dy / dist) * speed * dt;
@@ -403,18 +447,26 @@ export class CollectiveGame {
     } else if (this.helper.state === 'interacting') {
       this.helper.interactTimer -= dt;
       if (this.helper.interactTimer <= 0) {
-        if (this.helper.target.resourceType && !this.helper.target.collected) {
+        const t = this.helper.target;
+        if (t.radius === 8 && !t.collected) {
           // Collected resource
-          this.helper.target.collected = true;
+          t.collected = true;
           if (this.helper.resources.length < 3) {
-            this.helper.resources.push(this.helper.target.resourceType);
+            this.helper.resources.push(t.resourceType);
           }
-        } else if (this.helper.target.face && !this.helper.target.helped && this.helper.resources.length > 0) {
+        } else if (t.radius === 22 && !t.helped && this.helper.resources.length > 0) {
           // Help person
-          this.helper.target.helped = true;
-          this.helper.target.face = 'happy';
-          this.helper.target.distressLevel = 0;
+          t.helped = true;
+          t.face = 'happy';
+          t.distressLevel = 0;
           this.helper.resources.pop();
+        } else if (t.placed && !t.completed && this.helper.resources.length > 0) {
+           // Place in project
+           const res = this.helper.resources.pop();
+           t.placed.push(res);
+           if (t.placed.length >= t.required.length) {
+             t.completed = true;
+           }
         }
         this.helper.state = 'idle';
         this.helper.target = null;
@@ -751,6 +803,13 @@ export class CollectiveGame {
         this.ctx.arc(this.helper.x - 10 + i * 10, this.helper.y - 10, 3, 0, Math.PI * 2);
         this.ctx.fill();
       });
+
+      // Draw emoji
+      if (this.helper.emoji) {
+        this.ctx.font = '16px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(this.helper.emoji, this.helper.x, this.helper.y - this.helper.radius - 5);
+      }
     }
 
     // Persons
@@ -837,6 +896,16 @@ export class CollectiveGame {
     this.ctx.textAlign = 'left';
     const phaseNames = ['Morning', 'Afternoon', 'Evening'];
     this.ctx.fillText(phaseNames[this.phaseIndex] || '', 20, 30);
+
+    // Tutorial Hint
+    if (this.phaseIndex === 0 && this.phaseTime < 15) {
+      const alpha = Math.max(0, 1 - (this.phaseTime - 12) / 3);
+      this.ctx.fillStyle = `rgba(45, 49, 46, ${alpha})`;
+      this.ctx.font = '16px Arial';
+      this.ctx.textAlign = 'center';
+      this.ctx.fillText("Hint: Tap colored resources to collect them, then tap people or projects to help.", this.VIRTUAL_WIDTH / 2, 60);
+      this.ctx.fillText("You can hold up to 5 resources at once.", this.VIRTUAL_WIDTH / 2, 85);
+    }
 
     // Transition Overlay
     if (this.transitioning) {
