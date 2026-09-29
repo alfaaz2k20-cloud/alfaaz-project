@@ -2,6 +2,8 @@ export const Scenarios = {
     intro_exhibition: (state) => ({
         id: 'intro_exhibition',
         title: 'Morning Setup',
+        bg: 'linear-gradient(135deg, #2d2722 0%, #3a322a 100%)', // Gallery warm dark
+        speaker: 'Narrator',
         timeLimitSeconds: 30,
         text: `It's the morning of "Kaamil" — Alfaaz's exhibition at Mahatta Art Gallery. You arrive to help set up.\n\nThe exhibition opens in 43 minutes, but one artist's paintings haven't arrived. She's not answering her phone. The curator looks stressed and is currently attempting to fix the main lighting rig.`,
         actions: [
@@ -11,7 +13,8 @@ export const Scenarios = {
                 timeCost: 15,
                 tags: [
                     { tag: 'initiative', direction: 'positive', strength: 1, context: 'Takes over setup tasks' },
-                    { tag: 'task_completion', direction: 'positive', strength: 1, context: 'Helps curator' }
+                    { tag: 'task_completion', direction: 'positive', strength: 1, context: 'Helps curator' },
+                    { tag: 'mission_alignment', direction: 'positive', strength: 1.5, context: 'Prioritizes the exhibition\'s success' }
                 ],
                 onExecute: (s) => s.setFlag('helped_curator_early'),
                 immediateConsequenceText: "You start arranging the catalogue stand. The curator gives you a grateful nod from the ladder.",
@@ -48,7 +51,8 @@ export const Scenarios = {
                 actionText: 'Keep calling the missing artist yourself',
                 timeCost: 10,
                 tags: [
-                    { tag: 'follow_through', direction: 'positive', strength: 1, context: 'Persists in contacting artist' }
+                    { tag: 'follow_through', direction: 'positive', strength: 1, context: 'Persists in contacting artist' },
+                    { tag: 'intrinsic_drive', direction: 'positive', strength: 1, context: 'Takes ownership of the missing artist problem' }
                 ],
                 onExecute: (s) => s.setFlag('called_artist_persistently'),
                 nextScene: 'missing_art_escalation'
@@ -73,7 +77,10 @@ export const Scenarios = {
             actionId: 'welcome_students',
             actionText: 'Welcome them and offer a mini-preview of ready works',
             timeCost: 10,
-            tags: [{ tag: 'adaptation', direction: 'positive', strength: 1, context: 'Handles unannounced group' }],
+            tags: [
+                { tag: 'adaptation', direction: 'positive', strength: 1, context: 'Handles unannounced group' },
+                { tag: 'mission_alignment', direction: 'positive', strength: 1, context: 'Embraces community education' }
+            ],
             onExecute: (s) => s.setFlag('hosted_students'),
             nextScene: 'artist_conflict'
         });
@@ -99,6 +106,8 @@ export const Scenarios = {
         return {
             id: 'missing_art_escalation',
             title: 'Unexpected Arrivals',
+            bg: 'linear-gradient(135deg, #3a322a 0%, #463d33 100%)',
+            speaker: 'Gallery Entrance',
             timeLimitSeconds: 25,
             text: text,
             actions: actions
@@ -115,6 +124,8 @@ export const Scenarios = {
         return {
             id: 'artist_conflict',
             title: 'The Unhappy Artist',
+            bg: 'linear-gradient(135deg, #463d33 0%, #52473c 100%)',
+            speaker: 'Exhibition Floor',
             timeLimitSeconds: 30,
             text: text,
             actions: [
@@ -144,7 +155,7 @@ export const Scenarios = {
                     actionId: 'do_nothing',
                     actionText: 'Let them work it out themselves; it\'s not your place',
                     timeCost: 0,
-                    tags: [{ tag: 'avoidance', direction: 'positive', strength: 1, context: 'Avoids intervening in artist conflict' }],
+                    tags: [{ tag: 'avoidance', direction: 'positive', strength: 1, context: 'Avoids intervening in artist conflict' }, { tag: 'intrinsic_drive', direction: 'negative', strength: 1, context: 'Lacks drive to resolve exhibition issues' }],
                     nextScene: 'philosophy_club'
                 }
             ]
@@ -154,6 +165,8 @@ export const Scenarios = {
     philosophy_club: (state) => ({
         id: 'philosophy_club',
         title: 'The Silent Voice',
+        bg: 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)', // Cooler tone for club
+        speaker: 'Philosophy Club',
         timeLimitSeconds: 20,
         text: `Later that week at the Philosophy Club. The topic: "Does art belong to the artist or the audience?"\n\nTwo members are passionately debating. Zara, a new member, keeps leaning forward to speak but pulls back, fidgeting with her notebook.`,
         actions: [
@@ -191,6 +204,8 @@ export const Scenarios = {
     poetry_reading: (state) => ({
         id: 'poetry_reading',
         title: 'The Provocative Poem',
+        bg: 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)',
+        speaker: 'Literature Evening',
         timeLimitSeconds: 25,
         text: `At a literature club evening, a poet reads a sensitive piece about partition and identity. \n\nAn audience member stands up and interrupts: "This isn't appropriate for a public event — there are young people here." \n\nThe poet looks shaken. The room goes quiet.`,
         actions: [
@@ -198,7 +213,10 @@ export const Scenarios = {
                 actionId: 'defend_space',
                 actionText: 'Acknowledge the concern but firmly state Alfaaz is a space for all voices',
                 timeCost: 4,
-                tags: [{ tag: 'conflict_navigation', direction: 'positive', strength: 1, context: 'Defends open dialogue' }],
+                tags: [
+                    { tag: 'conflict_navigation', direction: 'positive', strength: 1, context: 'Defends open dialogue' },
+                    { tag: 'mission_alignment', direction: 'positive', strength: 2, context: 'Stands up for Alfaaz core values' }
+                ],
                 nextScene: 'childrens_workshop'
             },
             {
@@ -228,6 +246,8 @@ export const Scenarios = {
     childrens_workshop: (state) => ({
         id: 'childrens_workshop',
         title: 'The Outreach',
+        bg: 'linear-gradient(135deg, #744210 0%, #975a16 100%)', // Warm earthy tone
+        speaker: 'Art Therapy Center',
         timeLimitSeconds: 20,
         text: `Alfaaz is running an art therapy workshop at a children's care center.\n\nMost children are engaged, but an 8-year-old boy is sitting apart, staring at a blank sheet. \n\nYour co-volunteer whispers, "Just leave him, he never participates."`,
         actions: [
@@ -265,6 +285,8 @@ export const Scenarios = {
     commitment_test: (state) => ({
         id: 'commitment_test',
         title: 'The Weekend',
+        bg: 'linear-gradient(135deg, #2d3748 0%, #1a202c 100%)', // Night time
+        speaker: 'Friday Night',
         timeLimitSeconds: 30,
         text: `You've been volunteering for three weeks. This Saturday, you committed to setting up a community photography walk.\n\nOn Friday night, a close friend calls — they are visiting town for one day only (Saturday) and want to spend it with you. You've also been feeling a bit burnt out.`,
         actions: [
@@ -286,14 +308,20 @@ export const Scenarios = {
                 actionId: 'skip_alfaaz',
                 actionText: 'Go see your friend — you need the break and the team will understand',
                 timeCost: 0,
-                tags: [{ tag: 'commitment_honoring', direction: 'negative', strength: 1.5, context: 'Skips volunteer commitment without cover' }],
+                tags: [
+                    { tag: 'commitment_honoring', direction: 'negative', strength: 1.5, context: 'Skips volunteer commitment without cover' },
+                    { tag: 'intrinsic_drive', direction: 'negative', strength: 1, context: 'Drops responsibility when tired' }
+                ],
                 nextScene: 'end'
             },
             {
                 actionId: 'skip_friend',
                 actionText: 'Show up for the full setup and skip meeting your friend. A commitment is a commitment.',
                 timeCost: 0,
-                tags: [{ tag: 'commitment_honoring', direction: 'positive', strength: 1.5, context: 'Prioritizes volunteer duty over personal event' }],
+                tags: [
+                    { tag: 'commitment_honoring', direction: 'positive', strength: 1.5, context: 'Prioritizes volunteer duty over personal event' },
+                    { tag: 'intrinsic_drive', direction: 'positive', strength: 1.5, context: 'Shows high motivation despite burnout' }
+                ],
                 nextScene: 'end'
             }
         ]
@@ -308,8 +336,6 @@ export class ContentRouter {
 
     applyConsequences(state) {
         // Evaluate delayed consequences based on flags
-        // For this demo implementation, delayed texts are injected into the scene text
-        // (as seen in missing_art_escalation and artist_conflict)
     }
 
     async showConsequence(text) {

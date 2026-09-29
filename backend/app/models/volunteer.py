@@ -19,6 +19,7 @@ class DBVolunteerApplication(Base, table=True):
     emotional: int = Field(default=0)
     curiosity: int = Field(default=0)
     creative: int = Field(default=0)
+    motivation: int = Field(default=0)
     dominant_trait: Optional[str] = Field(default="", max_length=100)
     responses: Optional[str] = Field(default="", sa_column=Column(Text))
     notes: Optional[str] = Field(default="", sa_column=Column(Text))

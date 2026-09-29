@@ -257,6 +257,148 @@
             opacity: 0.5;
             pointer-events: none;
         }
+    
+        /* VN Game UI Styles */
+        #game-canvas {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            margin-left: -50vw;
+            left: 50%;
+            overflow: hidden;
+            background: #111;
+        }
+        
+        .game-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            z-index: 1;
+        }
+        
+        .game-bg.active {
+            opacity: 1;
+        }
+
+        .game-ui-layer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 5vh 5vw;
+            pointer-events: none; /* Let clicks pass to bg if needed, though we don't need it */
+        }
+
+        .vn-top-bar {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        .vn-dialogue-container {
+            background: rgba(45, 39, 34, 0.95);
+            border: 1px solid var(--accent-gold);
+            border-radius: 4px;
+            padding: 2rem;
+            position: relative;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .vn-speaker {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: var(--accent-gold);
+            color: #111;
+            padding: 4px 16px;
+            font-family: var(--font-heading);
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-radius: 2px;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .vn-text {
+            font-family: var(--font-heading);
+            font-size: 1.6rem;
+            line-height: 1.5;
+            color: var(--text-primary);
+            min-height: 80px;
+        }
+
+        .vn-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            pointer-events: auto;
+        }
+
+        @media(min-width: 768px) {
+            .vn-actions { grid-template-columns: 1fr 1fr; }
+            .game-ui-layer { padding: 5vh 15vw; }
+        }
+
+        .vn-action-btn {
+            background: rgba(30, 25, 20, 0.9);
+            border: 1px solid var(--grid-border);
+            color: var(--text-primary);
+            padding: 1rem 1.5rem;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .vn-action-btn:hover {
+            border-color: var(--accent-gold);
+            background: rgba(189, 111, 93, 0.1);
+            transform: translateX(5px);
+        }
+
+        .vn-timer {
+            position: absolute;
+            bottom: 0; left: 0; height: 3px;
+            background: var(--accent-gold);
+            width: 100%;
+            transition: width 1s linear;
+        }
+
+        #consequence-overlay {
+            position: fixed;
+            top: 30%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 1rem 2rem;
+            border: 1px solid var(--accent-gold);
+            z-index: 100;
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #consequence-overlay.active { opacity: 1; }
+
     </style>
 </head>
 <body>
@@ -306,24 +448,30 @@
             </form>
         </div>
 
-        <!-- View 2: Simulation Engine -->
-        <div id="view-simulation" class="view">
-            <div class="sim-header">
-                <div class="sim-clock" id="sim-clock">09:17 AM</div>
-                <div style="color: var(--text-secondary); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px;" id="sim-title">Morning Setup</div>
-            </div>
+        
+        <!-- View 2: Simulation Engine (Visual Novel) -->
+        <div id="view-simulation" class="view" style="padding: 0; max-width: none;">
+            <div id="game-canvas">
+                <div id="game-bg-layer" class="game-bg active"></div>
+                
+                <div class="vn-top-bar">
+                    <div id="sim-title" style="text-transform: uppercase;">Morning Setup</div>
+                    <div id="sim-clock" style="color: var(--accent-gold); font-weight: bold;">09:17 AM</div>
+                </div>
 
-            <div class="timer-container" id="timer-container">
-                <div class="sim-timer-bar" id="sim-timer-bar"></div>
-            </div>
+                <div class="game-ui-layer">
+                    <div class="vn-dialogue-container">
+                        <div class="vn-speaker" id="vn-speaker">Curator</div>
+                        <div class="vn-text" id="vn-text">...</div>
+                        <div class="vn-timer" id="sim-timer-bar"></div>
+                    </div>
 
-            <div class="scene-text" id="scene-text">
-                <!-- Scene text injected here -->
+                    <div class="vn-actions" id="action-grid">
+                        <!-- Action buttons injected here -->
+                    </div>
+                </div>
             </div>
-
-            <div class="action-grid" id="action-grid">
-                <!-- Action buttons injected here -->
-            </div>
+            <div id="consequence-overlay"></div>
         </div>
 
         <!-- View 3: Final Form -->
@@ -377,14 +525,13 @@
     <div id="consequence-overlay"></div>
 
     
+    
     <script type="module">
         import { GameEngine } from './src/game/GameEngine.js';
-        import { ContentRouter } from './src/content/Scenarios.js';
         import { API_URL } from './src/game/ApiClient.js';
         
         lucide.createIcons();
 
-        // Unique IDs for the session
         const sessionId = Math.random().toString(36).substring(2, 15);
         const assessmentId = 'assm_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
 
@@ -398,13 +545,6 @@
                 });
                 return res.json();
             },
-            async logEvent(assmId, event) {
-                return fetch(`${API_URL}/volunteers/assessment/${assmId}/event`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(event)
-                });
-            },
             async completeAssessment(assmId, data) {
                 return fetch(`${API_URL}/volunteers/assessment/${assmId}/complete`, {
                     method: 'POST',
@@ -414,62 +554,7 @@
             }
         };
 
-        const engine = new GameEngine(apiClient, new ContentRouter());
-        
-        // Timer UI state
-        let uiTimerInterval;
-
-        engine.onSceneChange = (scene, state) => {
-            if (scene.isComplete || scene.id === 'end') {
-                showView('view-final');
-                return;
-            }
-
-            // Update UI
-            document.getElementById('sim-clock').textContent = state.getFormattedTime();
-            document.getElementById('sim-title').textContent = scene.title || 'Ongoing';
-            
-            const textEl = document.getElementById('scene-text');
-            textEl.style.opacity = 0;
-            setTimeout(() => {
-                textEl.innerHTML = scene.text.replace(/\n/g, '<br>');
-                textEl.style.opacity = 1;
-            }, 300);
-
-            const grid = document.getElementById('action-grid');
-            grid.innerHTML = '';
-            
-            scene.actions.forEach(act => {
-                const btn = document.createElement('button');
-                btn.className = 'action-card';
-                btn.textContent = act.actionText;
-                btn.onclick = () => {
-                    clearInterval(uiTimerInterval);
-                    document.getElementById('sim-timer-bar').style.width = '100%';
-                    engine.recordAction(act);
-                };
-                grid.appendChild(btn);
-            });
-
-            // Handle timer visual
-            const timerContainer = document.getElementById('timer-container');
-            const timerBar = document.getElementById('sim-timer-bar');
-            clearInterval(uiTimerInterval);
-            
-            if (scene.timeLimitSeconds) {
-                timerContainer.style.display = 'block';
-                timerBar.style.transition = 'none';
-                timerBar.style.width = '100%';
-                
-                // Force reflow
-                void timerBar.offsetWidth;
-                
-                timerBar.style.transition = `width ${scene.timeLimitSeconds}s linear`;
-                timerBar.style.width = '0%';
-            } else {
-                timerContainer.style.display = 'none';
-            }
-        };
+        const engine = new GameEngine();
 
         function showView(id) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -498,8 +583,9 @@
                     identity
                 });
                 
+                window.ASSESSMENT_ID = assessmentId;
                 showView('view-simulation');
-                engine.startSimulation(assessmentId, sessionId);
+                engine.start();
             } catch (err) {
                 console.error(err);
                 alert("Failed to start session. Please try again.");
@@ -529,7 +615,7 @@
                 btn.textContent = 'Submit Application';
             }
         });
-
     </script>
+
 </body>
 </html>

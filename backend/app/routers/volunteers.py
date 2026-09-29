@@ -142,7 +142,8 @@ def generate_interpretations(assessment_id: str, db: Session):
         {"name": "Collaborative Spirit", "tags": ["coordination", "delegation"]},
         {"name": "Emotional Agility", "tags": ["adaptation", "conflict_navigation"]},
         {"name": "Curiosity & Learning", "tags": ["information_seeking"]},
-        {"name": "Creative Initiative", "tags": ["creative", "initiative"]}
+        {"name": "Creative Initiative", "tags": ["creative", "initiative"]},
+        {"name": "Motivation", "tags": ["mission_alignment", "intrinsic_drive"]}
     ]
     
     db.query(DBConstructEvidence).filter(DBConstructEvidence.assessment_id == assessment_id).delete()

@@ -1,117 +1,177 @@
+import { ContentRouter } from '../content/Scenarios.js';
 import { GameState } from './GameState.js';
+import { API_URL } from './ApiClient.js'; // Ensure correct logic depending on local vs prod
 
 export class GameEngine {
-    constructor(apiClient, contentRouter) {
-        this.apiClient = apiClient;
-        this.contentRouter = contentRouter;
-        this.state = null;
-        this.onSceneChange = null;
-        this.decisionTimer = null;
-        this.currentSceneData = null;
-        this.sceneStartTime = 0;
+    constructor() {
+        this.state = new GameState();
+        this.router = new ContentRouter();
+        this.currentSceneId = 'intro_exhibition';
+        this.timer = null;
+        this.timeRemaining = 0;
+        
+        // DOM Elements
+        this.uiBg = document.getElementById('game-bg-layer');
+        this.uiSpeaker = document.getElementById('vn-speaker');
+        this.uiText = document.getElementById('vn-text');
+        this.uiActions = document.getElementById('action-grid');
+        this.uiClock = document.getElementById('sim-clock');
+        this.uiTitle = document.getElementById('sim-title');
+        this.uiTimerBar = document.getElementById('sim-timer-bar');
+
+        this.typewriterInterval = null;
     }
 
-    startSimulation(assessmentId, sessionId) {
-        this.state = new GameState(assessmentId, sessionId);
-        this.loadScene('intro_exhibition');
+    async start() {
+        this.updateClock();
+        await this.loadScene(this.currentSceneId);
     }
 
-    loadScene(sceneId) {
-        if (this.decisionTimer) clearTimeout(this.decisionTimer);
-        
-        this.state.currentScene = sceneId;
-        const scene = this.contentRouter.getScene(sceneId, this.state);
-        
-        if (!scene) {
-            this.finishSimulation();
+    async loadScene(sceneId) {
+        if (sceneId === 'end') {
+            document.getElementById('view-simulation').classList.remove('active');
+            document.getElementById('view-final').classList.add('active');
             return;
         }
 
-        this.currentSceneData = scene;
-        this.sceneStartTime = Date.now();
+        const scene = this.router.getScene(sceneId, this.state);
+        if (!scene) return;
+        this.currentSceneId = sceneId;
+
+        // UI Updates
+        this.uiTitle.textContent = scene.title || 'Alfaaz Simulation';
+        this.uiSpeaker.textContent = scene.speaker || 'Narrator';
+        this.uiSpeaker.style.display = scene.speaker ? 'block' : 'none';
         
-        // Execute delayed consequences if any are pending for this time/scene
-        this.checkDelayedConsequences(sceneId);
-
-        if (this.onSceneChange) {
-            this.onSceneChange(scene, this.state);
+        if (scene.bg) {
+            this.uiBg.style.background = scene.bg;
         }
 
-        // Start real-time decision window
-        if (scene.timeLimitSeconds) {
-            this.startTimer(scene.timeLimitSeconds);
-        }
+        this.uiActions.innerHTML = '';
+        this.uiTimerBar.style.width = '100%';
+        
+        await this.typeText(scene.text);
+        this.renderActions(scene);
+        this.startDecisionTimer(scene.timeLimitSeconds || 30);
     }
 
-    startTimer(seconds) {
-        this.decisionTimer = setTimeout(() => {
-            this.handleTimeout();
-        }, seconds * 1000);
-    }
-
-    handleTimeout() {
-        this.state.timerExpired = true;
-        this.recordAction({
-            actionId: 'TIMEOUT',
-            actionText: 'Did not respond in time',
-            timeCost: 2,
-            tags: [{ tag: 'avoidance', direction: 'negative', strength: 1.0, context: 'Timed out on decision' }],
-            nextScene: this.currentSceneData.defaultNext || 'next_default' // Fallback
+    typeText(text) {
+        return new Promise((resolve) => {
+            if (this.typewriterInterval) clearInterval(this.typewriterInterval);
+            this.uiText.innerHTML = '';
+            
+            // Fast typing effect for game feel
+            let i = 0;
+            this.typewriterInterval = setInterval(() => {
+                this.uiText.textContent += text.charAt(i);
+                i++;
+                if (i >= text.length) {
+                    clearInterval(this.typewriterInterval);
+                    resolve();
+                }
+            }, 15); // ms per char
         });
     }
 
-    async recordAction(actionData) {
-        if (this.decisionTimer) clearTimeout(this.decisionTimer);
-        
-        const actionDurationMs = Date.now() - this.sceneStartTime;
-        const timeCost = actionData.timeCost || 1;
-        
-        // Apply state changes from action
-        if (actionData.onExecute) {
-            actionData.onExecute(this.state);
-        }
-        
-        this.state.addTime(timeCost);
-
-        const event = {
-            scene_id: this.state.currentScene,
-            decision_id: actionData.actionId,
-            action: actionData.actionText,
-            action_duration: actionDurationMs,
-            timer_expired: this.state.timerExpired,
-            state_before: "{}", // In a full implementation, serialize relevant state
-            state_after: "{}", 
-            behavior_tags: actionData.tags || [],
-            consequence_id: actionData.consequence || null
-        };
-        
-        this.state.timerExpired = false;
-        this.state.recordEvent(event);
-        
-        // Fire API call asynchronously (don't block the UI)
-        this.apiClient.logEvent(this.state.assessmentId, {
-            timestamp: new Date().toISOString(),
-            simulated_time: this.state.getFormattedTime(),
-            ...event
-        }).catch(err => console.error("Failed to log event", err));
-
-        // Display consequence if immediate
-        if (actionData.immediateConsequenceText) {
-            await this.contentRouter.showConsequence(actionData.immediateConsequenceText);
-        }
-
-        this.loadScene(actionData.nextScene);
+    renderActions(scene) {
+        scene.actions.forEach(action => {
+            const btn = document.createElement('button');
+            btn.className = 'vn-action-btn';
+            btn.textContent = action.actionText;
+            btn.onclick = () => this.handleAction(action);
+            this.uiActions.appendChild(btn);
+        });
     }
 
-    checkDelayedConsequences(sceneId) {
-        // Evaluate flags and inject consequences if conditions are met
-        // (Handled by content router to keep engine agnostic)
-        this.contentRouter.applyConsequences(this.state);
+    startDecisionTimer(seconds) {
+        this.timeRemaining = seconds;
+        let startWidth = 100;
+        const tickRate = 1000;
+        
+        if (this.timer) clearInterval(this.timer);
+        
+        this.timer = setInterval(() => {
+            this.timeRemaining--;
+            startWidth = (this.timeRemaining / seconds) * 100;
+            this.uiTimerBar.style.width = `${startWidth}%`;
+
+            if (this.timeRemaining <= 0) {
+                clearInterval(this.timer);
+                this.handleTimeout();
+            }
+        }, tickRate);
     }
 
-    finishSimulation() {
-        if (this.onSceneChange) {
-            this.onSceneChange({ isComplete: true }, this.state);
+    async handleAction(action) {
+        if (this.timer) clearInterval(this.timer);
+        this.uiActions.innerHTML = ''; // disable clicking
+
+        const duration = 30 - this.timeRemaining;
+        
+        // Log to backend
+        this.logEvent({
+            action: action.actionId,
+            scene_id: this.currentSceneId,
+            action_duration: duration * 1000,
+            timer_expired: false,
+            simulated_time: this.state.getTimeString()
+        });
+
+        // Apply state changes
+        if (action.onExecute) action.onExecute(this.state);
+        this.state.advanceTime(action.timeCost || 5);
+        this.updateClock();
+
+        // Send observation tags to state
+        if (action.tags) {
+            action.tags.forEach(t => this.state.addObservation(t));
         }
+
+        if (action.immediateConsequenceText) {
+            await this.router.showConsequence(action.immediateConsequenceText);
+        }
+
+        this.loadScene(action.nextScene);
+    }
+
+    handleTimeout() {
+        this.uiActions.innerHTML = '';
+        this.logEvent({
+            action: 'TIMEOUT_NO_DECISION',
+            scene_id: this.currentSceneId,
+            action_duration: 30000,
+            timer_expired: true,
+            simulated_time: this.state.getTimeString()
+        });
+        
+        this.state.advanceTime(10);
+        this.updateClock();
+        
+        const scene = this.router.getScene(this.currentSceneId, this.state);
+        if (scene && scene.actions.length > 0) {
+            // Default to last action (usually doing nothing/avoidance)
+            const fallbackAction = scene.actions[scene.actions.length - 1];
+            if (fallbackAction.tags) {
+                fallbackAction.tags.forEach(t => this.state.addObservation(t));
+            }
+            this.loadScene(fallbackAction.nextScene || 'end');
+        } else {
+            this.loadScene('end');
+        }
+    }
+
+    updateClock() {
+        this.uiClock.textContent = this.state.getTimeString();
+    }
+
+    logEvent(payload) {
+        if (!window.ASSESSMENT_ID) return;
+        payload.assessment_id = window.ASSESSMENT_ID;
+        
+        fetch(`${API_URL}/volunteers/assessment/${window.ASSESSMENT_ID}/event`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).catch(err => console.error("Telemetry error", err));
     }
 }
