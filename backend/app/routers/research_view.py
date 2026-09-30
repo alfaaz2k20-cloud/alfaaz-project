@@ -51,6 +51,32 @@ def list_research_sessions(
 
     return results
 
+FEATURE_LABELS = {
+    "cue_response_latency_ms": ("Part 1: Tuning the Hall", "Sound Wave Adjustment Latency (ms)", "The Soundscape"),
+    "clarification_vs_assumption_ratio": ("Part 2: The Gathering Voices", "Constructive Dialogue Balance", "The Soundscape"),
+    "post_shift_adaptation_latency_ms": ("Part 3: The Echo of the Room", "Acoustic Shift Adaptation Time (ms)", "The Soundscape"),
+    "classification_rule_adherence_rate": ("Part 1: The Manuscript Folios", "Folio Sorting Accuracy", "The Living Archive"),
+    "verification_duration_ratio": ("Part 1: The Manuscript Folios", "Guide Consultation Ratio", "The Living Archive"),
+    "exception_flagging_precision": ("Part 2: The Fragile Leaf", "Preservation Choice Precision", "The Living Archive"),
+    "error_detection_sensitivity": ("Part 3: The Exhibition Ledger", "Ledger Proofreading Sensitivity", "The Living Archive"),
+    "false_alarm_rate": ("Part 3: The Exhibition Ledger", "Ledger False Alarm Rate", "The Living Archive"),
+    "need_sensitive_sharing_index": ("Part 1: The Artisan's Basket", "Tile Sharing Balance Index", "The Shared Canvas"),
+    "coordination_collision_avoidance_rate": ("Part 2: The Gallery Wall", "Layout Placement Harmony", "The Shared Canvas"),
+    "constructive_repair_score": ("Part 3: The Dual Lanterns", "Dual Spotlight Balance Score", "The Shared Canvas"),
+    "perseverative_error_count": ("Part 1: The Ceramic Mosaic", "Rule Switch Adaptation Errors", "The Shifting Patterns"),
+    "cadence_stability_ratio": ("Part 2: The Unexpected Guest", "Pace Stability on Interruption", "The Shifting Patterns"),
+    "strategy_shift_efficiency": ("Part 3: The Geometric Harmony", "Pattern Alignment Efficiency", "The Shifting Patterns"),
+    "optional_alcove_exploration_rate": ("Part 1: The Three Chambers", "Gallery Room Exploration Ratio", "The Hidden Courtyard"),
+    "anomaly_investigation_depth": ("Part 2: The Uncataloged Seal", "Artifact Inspection Depth", "The Hidden Courtyard"),
+    "integrated_insight_utilization": ("Part 3: The Weaver's Chronicle", "Storytelling Format Alignment", "The Hidden Courtyard"),
+    "solution_uniqueness_index": ("Part 1: The Artisan's Cord", "Material Adaptation Choice", "The Workshop Bench"),
+    "creative_pivot_latency_ms": ("Part 2: The Central Pillar", "Display Arrangement Latency (ms)", "The Workshop Bench"),
+    "functional_fixedness_overcome_rate": ("Part 3: The Printed Motif", "Creative Layout Selection", "The Workshop Bench"),
+    "mandatory_cadence_consistency": ("Part 1: The Wax Seal", "Stamping Rhythm Consistency", "The Final Gathering"),
+    "optional_units_completed": ("Part 2: The Courtesy Sleeves", "Voluntary Courtesy Sleeves Completed", "The Final Gathering"),
+    "reduced_feedback_persistence_count": ("Part 3: The Evening Threshold", "Readiness Checklist Verified Items", "The Final Gathering")
+}
+
 @router.get("/session/{session_id}")
 def get_session_research_view(
     session_id: str,
@@ -106,6 +132,19 @@ def get_session_research_view(
             "observed_behavior": ev.observed_behavior_summary
         }
 
+    formatted_features = []
+    for f in features:
+        meta = FEATURE_LABELS.get(f.feature_name, (f.mini_game, f.feature_name.replace('_', ' ').title(), "Interactive Task"))
+        formatted_features.append({
+            "mini_game": f.mini_game,
+            "task_title": meta[0],
+            "label": meta[1],
+            "world_name": meta[2],
+            "feature_name": f.feature_name,
+            "value_raw": f.value_raw,
+            "valid": f.valid
+        })
+
     return {
         "metadata": {
             "session_id": sess.session_id,
@@ -122,16 +161,9 @@ def get_session_research_view(
             }
         },
         "evidence_by_parameter": evidence_dict,
-        "features": [
-            {
-                "mini_game": f.mini_game,
-                "feature_name": f.feature_name,
-                "value_raw": f.value_raw,
-                "valid": f.valid
-            }
-            for f in features
-        ],
+        "features": formatted_features,
         "data_quality_flags": [
             {"scope": fl.scope, "flag": fl.flag, "detail": fl.detail} for fl in flags
         ]
     }
+

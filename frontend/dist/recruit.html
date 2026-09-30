@@ -14,20 +14,41 @@
   <script src="https://unpkg.com/lucide@latest" defer></script>
 
   <style>
+    /* Security & Anti-Copy Protection */
+    *, *::before, *::after {
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      user-select: none !important;
+      -webkit-touch-callout: none !important;
+    }
+    input, textarea {
+      -webkit-user-select: text !important;
+      -moz-user-select: text !important;
+      -ms-user-select: text !important;
+      user-select: text !important;
+    }
+    @media print {
+      body {
+        display: none !important;
+        visibility: hidden !important;
+      }
+    }
+
     .assessment-container {
-      max-width: 800px;
+      max-width: 820px;
       margin: 6rem auto 3rem;
       padding: 2.5rem;
       background: var(--bg-secondary);
       border: 1px solid var(--grid-border);
       box-shadow: var(--shadow-base);
-      min-height: 520px;
+      min-height: 540px;
       position: relative;
     }
     .act-badge {
       display: inline-block;
       font-size: 11px;
-      letter-spacing: 2.5px;
+      letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--accent-gold);
       margin-bottom: 0.5rem;
@@ -44,7 +65,7 @@
       border: 1px solid var(--grid-border);
       padding: 1.25rem 1.5rem;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       align-items: flex-start;
       gap: 1rem;
@@ -52,37 +73,64 @@
     .option-card:hover, .option-card:focus-visible {
       border-color: var(--accent-gold);
       background: #fff;
-      outline: 2px solid var(--accent-gold);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      outline: none;
     }
     .option-card.selected {
       border-color: var(--accent-gold);
       background: rgba(189, 111, 93, 0.08);
-    }
-    .skip-btn {
-      color: var(--text-secondary);
-      font-size: 11px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.5rem 1rem;
-      transition: color 0.2s ease;
-    }
-    .skip-btn:hover {
-      color: var(--text-primary);
+      transform: translateY(-1px);
     }
     .progress-bar-inner {
       height: 2px;
       background: var(--accent-gold);
-      transition: width 0.3s ease;
+      transition: width 0.4s ease;
+    }
+
+    /* Tactile Animation Classes */
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(189, 111, 93, 0.2); }
+      50% { transform: scale(1.02); box-shadow: 0 0 0 8px rgba(189, 111, 93, 0); }
+    }
+    .animate-pulse-glow {
+      animation: pulseGlow 2.5s infinite ease-in-out;
+    }
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+    .animate-float {
+      animation: floatSlow 3s infinite ease-in-out;
+    }
+    @keyframes waveFlow {
+      0% { transform: scaleY(0.6); }
+      50% { transform: scaleY(1.1); }
+      100% { transform: scaleY(0.6); }
+    }
+    .animate-wave-bar {
+      animation: waveFlow 1.2s infinite ease-in-out;
+      transform-origin: bottom;
+    }
+    .tutorial-card {
+      background: linear-gradient(135deg, #faf8f5 0%, #f4efe9 100%);
+      border: 1px solid var(--accent-gold);
+      position: relative;
+      overflow: hidden;
+    }
+    .tutorial-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent-gold);
     }
   </style>
-  <script type="module" crossorigin src="/assets/recruit-ys239LXU.js"></script>
+  <script type="module" crossorigin src="/assets/recruit-CQdqF8sc.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/global-DxYxv3W5.js">
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
-<body class="selection:bg-amber-900 selection:text-white">
+<body class="selection:bg-transparent selection:text-inherit">
   <!-- Minimalist Header -->
   <header class="fixed top-0 left-0 w-full py-4 px-8 border-b border-[var(--grid-border)] bg-[var(--bg-primary)]/90 backdrop-blur z-50 flex justify-between items-center">
     <div class="flex items-center gap-3">
@@ -90,10 +138,13 @@
       <span class="text-xs text-[var(--text-secondary)] tracking-widest uppercase">/ Volunteer Assessment</span>
     </div>
     <div id="sessionHeaderControls" class="hidden flex items-center gap-4">
-      <button id="pauseBtn" class="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-1">
+      <button id="pauseBtn" class="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-1.5 transition">
         <i data-lucide="pause" class="w-3.5 h-3.5"></i> Pause
       </button>
-      <div id="segmentProgress" class="text-xs text-[var(--text-secondary)] uppercase tracking-wider"></div>
+      <button id="exitBtn" class="text-xs text-[var(--text-secondary)] hover:text-[var(--accent-red,#c62828)] uppercase tracking-wider flex items-center gap-1.5 transition">
+        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Exit Assessment
+      </button>
+      <div id="segmentProgress" class="text-xs text-[var(--accent-gold)] font-medium uppercase tracking-wider ml-2"></div>
     </div>
   </header>
 

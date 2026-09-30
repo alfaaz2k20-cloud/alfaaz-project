@@ -293,6 +293,15 @@ def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db))
     session_obj.completed_at = datetime.now(timezone.utc)
     db.commit()
 
+    # Automatically extract game telemetry features and integrate evidence
+    from app.services.feature_extractor import extract_session_features
+    from app.services.evidence_integrator import integrate_session_evidence
+    try:
+        extract_session_features(db, req.session_id)
+        integrate_session_evidence(db, req.session_id)
+    except Exception as e:
+        print(f"[Recruit] Auto feature extraction error on complete: {e}")
+
     return {
         "status": "SUCCESS",
         "message": "Assessment Complete. Thank you for your time."

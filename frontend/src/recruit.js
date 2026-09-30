@@ -97,8 +97,24 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// Initialization
+// Initialization & Anti-Copy / Anti-Screenshot Protections
 document.addEventListener('DOMContentLoaded', async () => {
+  // Prevent context menu (right click)
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  // Prevent copy & cut
+  document.addEventListener('copy', e => e.preventDefault());
+  document.addEventListener('cut', e => e.preventDefault());
+  document.addEventListener('dragstart', e => e.preventDefault());
+  // Prevent copy/print/screenshot shortcuts
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && ['c', 'p', 's', 'u'].includes(e.key.toLowerCase())) {
+      e.preventDefault();
+    }
+    if (e.key === 'PrintScreen') {
+      try { navigator.clipboard.writeText(''); } catch(err) {}
+    }
+  });
+
   renderScreen();
   setupGlobalControls();
 });
@@ -106,6 +122,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupGlobalControls() {
   const pauseBtn = document.getElementById('pauseBtn');
   pauseBtn?.addEventListener('click', togglePause);
+
+  const exitBtn = document.getElementById('exitBtn');
+  exitBtn?.addEventListener('click', () => {
+    if (confirm('Are you sure you wish to exit the volunteer assessment? You can return at any time.')) {
+      logEvent(state.screen, 'candidate_exited');
+      flushTelemetry();
+      window.location.href = 'index.html';
+    }
+  });
 }
 
 function togglePause() {
@@ -567,19 +592,6 @@ function renderGames(app, progressBarFill) {
         state.currentWorldIndex++;
       }
       renderGames(app, progressBarFill);
-    },
-    onSkipWorld: () => {
-      const mgId = getMiniGameId(currentWorldCode, state.currentMiniGameIndex);
-      logEvent('game', 'world_skipped', { world: currentWorldCode }, {}, 'mouse', mgId);
-      flushTelemetry();
-      state.currentMiniGameIndex = 0;
-      state.currentWorldIndex++;
-      renderGames(app, progressBarFill);
-    },
-    onSkipAllGames: () => {
-      logEvent('game', 'all_games_skipped');
-      flushTelemetry();
-      finishAssessment();
     }
   });
 }

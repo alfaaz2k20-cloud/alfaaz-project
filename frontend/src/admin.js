@@ -447,7 +447,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!res) return;
         const data = await res.json();
         const meta = data.metadata;
-        const ev = data.evidence_by_parameter;
+        const ev = data.evidence_by_parameter || {};
+        const feats = data.features || [];
+        const flags = data.data_quality_flags || [];
 
         document.getElementById('modalTitle').textContent = `${meta.applicant.full_name || 'Candidate'} — Assessment Dossier`;
 
@@ -468,16 +470,73 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div style="font-size:10px; margin-top:2px;">Random Baseline: L: ${ref.LOW || '—'} · M: ${ref.MODERATE || '—'} · H: ${ref.HIGH || '—'}</div>
                 </div>
                 <div>
-                  <div>Game Status: <strong style="color:var(--text-primary);">${p.game_status}</strong></div>
-                  <div>Confidence: <strong style="color:var(--text-primary);">${p.confidence}</strong></div>
+                  <div>Game Activity Status: <strong style="color:${p.game_status === 'OBSERVED' ? 'var(--accent-green, green)' : 'var(--text-primary)'};">${p.game_status}</strong></div>
+                  <div>Evidence Confidence: <strong style="color:var(--text-primary);">${p.confidence}</strong></div>
                 </div>
               </div>
-              <div style="font-size:11px; color:var(--text-primary); border-top:1px dashed var(--grid-border); pt-2; margin-top:0.5rem; padding-top:0.5rem;">
+              <div style="font-size:11px; color:var(--text-primary); border-top:1px dashed var(--grid-border); margin-top:0.5rem; padding-top:0.5rem;">
                 <em>Observation:</em> ${p.observed_behavior || 'Completed micro-task sequence.'}
               </div>
             </div>
           `;
         }).join('');
+
+        // Format Mini-Game Features Table
+        let featuresHtml = '';
+        if (feats.length > 0) {
+          const featRows = feats.map(f => {
+            const formattedVal = typeof f.value_raw === 'number' ? (Number.isInteger(f.value_raw) ? f.value_raw : f.value_raw.toFixed(2)) : (f.value_raw || '—');
+            return `
+              <tr style="border-bottom: 1px solid var(--grid-border);">
+                <td style="padding: 0.6rem 0.5rem; font-size: 11px; font-weight: 500; color: var(--text-primary);">${f.world_name || '—'}</td>
+                <td style="padding: 0.6rem 0.5rem; font-size: 11px; color: var(--text-secondary);"><span style="font-family:monospace; font-size:10px; background:#f0eeea; padding:1px 4px; border-radius:2px; margin-right:4px;">${f.mini_game}</span> ${f.task_title || f.mini_game}</td>
+                <td style="padding: 0.6rem 0.5rem; font-size: 11px; color: var(--text-primary);">${f.label || f.feature_name}</td>
+                <td style="padding: 0.6rem 0.5rem; font-size: 11px; font-weight: 600; text-align: right; color: var(--accent-gold);">${formattedVal}</td>
+                <td style="padding: 0.6rem 0.5rem; font-size: 10px; text-align: right;"><span style="color: ${f.valid ? 'var(--accent-green, #2e7d32)' : 'var(--accent-red, #c62828)'}; font-weight:600;">${f.valid ? 'VALID' : 'FLAGGED'}</span></td>
+              </tr>
+            `;
+          }).join('');
+
+          featuresHtml = `
+            <div style="margin-top: 2rem;">
+              <h4 style="font-family:var(--font-heading); font-size:1.3rem; margin-bottom:0.75rem; color:var(--text-primary);">Interactive Mini-Game Telemetry (21 Tasks)</h4>
+              <div style="overflow-x: auto; border: 1px solid var(--grid-border); background: #faf8f5;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                  <thead>
+                    <tr style="background: #f0eeea; border-bottom: 1px solid var(--grid-border); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">
+                      <th style="padding: 0.6rem 0.5rem;">World</th>
+                      <th style="padding: 0.6rem 0.5rem;">Interactive Task</th>
+                      <th style="padding: 0.6rem 0.5rem;">Extracted Behavioral Metric</th>
+                      <th style="padding: 0.6rem 0.5rem; text-align: right;">Observed Value</th>
+                      <th style="padding: 0.6rem 0.5rem; text-align: right;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${featRows}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        } else {
+          featuresHtml = `
+            <div style="margin-top: 2rem; padding: 1.5rem; background: #faf8f5; border: 1px solid var(--grid-border); text-align: center; color: var(--text-secondary); font-size: 11px;">
+              No interactive mini-game features recorded yet for this session.
+            </div>
+          `;
+        }
+
+        let flagsHtml = '';
+        if (flags.length > 0) {
+          flagsHtml = `
+            <div style="margin-top: 1.5rem; padding: 1rem; background: #fff3e0; border: 1px solid #ffe0b2; font-size: 11px;">
+              <strong style="color: #e65100; text-transform: uppercase; letter-spacing: 1px;">Data Quality Notices:</strong>
+              <ul style="margin-top: 0.5rem; margin-left: 1.2rem; list-style-type: disc;">
+                ${flags.map(fl => `<li><strong style="font-family:monospace;">${fl.scope}:</strong> ${fl.flag} (${fl.detail || 'Standard observation'})</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        }
 
         body.innerHTML = `
           <div style="font-size:12px; margin-bottom:1.5rem; background:rgba(189,111,93,0.08); border:1px solid var(--accent-gold); padding:1rem; line-height:1.6;">
@@ -489,14 +548,16 @@ document.addEventListener('DOMContentLoaded', () => {
               <div><strong>Session ID:</strong> <span style="font-family:monospace; font-size:10px;">${meta.session_id}</span></div>
             </div>
             <div style="text-align:right;">
-              <div><strong>Status:</strong> ${meta.status}</div>
-              <div><strong>Date:</strong> ${meta.created_at ? new Date(meta.created_at).toLocaleString() : '—'}</div>
+              <div><strong>Status:</strong> <span class="badge ${meta.status === 'COMPLETE' ? 'badge-approved' : 'badge-pending'}">${meta.status}</span></div>
+              <div style="margin-top: 4px;"><strong>Date:</strong> ${meta.created_at ? new Date(meta.created_at).toLocaleString() : '—'}</div>
             </div>
           </div>
           <div>
             <h4 style="font-family:var(--font-heading); font-size:1.3rem; margin-bottom:1rem; color:var(--text-primary);">Evaluated Parameters (7)</h4>
             ${paramRows}
           </div>
+          ${featuresHtml}
+          ${flagsHtml}
         `;
       } catch (err) {
         body.innerHTML = '<div style="padding:2rem; text-align:center; color:red;">Failed to load candidate dossier.</div>';
