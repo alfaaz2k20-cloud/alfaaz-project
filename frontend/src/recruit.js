@@ -21,6 +21,19 @@ let state = {
   isPaused: false
 };
 
+async function apiFetch(endpoint, options = {}) {
+  if (window.globalApiFetch) {
+    const res = await window.globalApiFetch(endpoint, options);
+    return res;
+  }
+  const apiBase = window.ALFAAZ_API_URL || 'https://alfaaz-project.onrender.com';
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  return fetch(`${apiBase}${endpoint}`, {
+    ...options,
+    headers
+  });
+}
+
 // Telemetry Client
 function logEvent(screen, action, data = {}, stateSnapshot = {}, inputType = 'mouse', miniGame = null, trial = null) {
   const t_ms = performance.now();
@@ -50,10 +63,8 @@ async function flushTelemetry() {
   state.telemetryQueue = [];
 
   try {
-    const apiBase = window.ALFAAZ_API_URL || '';
-    await fetch(`${apiBase}/recruit/telemetry`, {
+    await apiFetch('/recruit/telemetry', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         session_id: state.sessionId,
         events: batch
@@ -199,14 +210,19 @@ function renderConsent(app) {
 
   document.getElementById('startForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const origText = btn ? btn.innerHTML : 'Begin Session &rarr;';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = 'Connecting...';
+    }
+
     const fullName = document.getElementById('fullName').value.trim();
     const email = document.getElementById('email').value.trim();
 
-    const apiBase = window.ALFAAZ_API_URL || '';
     try {
-      const resp = await fetch(`${apiBase}/recruit/session/start`, {
+      const resp = await apiFetch('/recruit/session/start', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           full_name: fullName,
           email: email,
@@ -214,6 +230,12 @@ function renderConsent(app) {
           input_modality: 'ontouchstart' in window ? 'touch' : 'mouse'
         })
       });
+
+      if (!resp || !resp.ok) {
+        const errData = resp ? await resp.json().catch(() => ({})) : {};
+        throw new Error(errData.detail || (resp ? `Server returned ${resp.status}` : 'No response from server'));
+      }
+
       const data = await resp.json();
       if (data.session_id) {
         state.sessionId = data.session_id;
@@ -222,9 +244,8 @@ function renderConsent(app) {
         state.seeds = data.seeds;
 
         // Record Consent
-        await fetch(`${apiBase}/recruit/consent`, {
+        await apiFetch('/recruit/consent', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             session_id: state.sessionId,
             consent_text_version: '2026-10-v2',
@@ -236,10 +257,16 @@ function renderConsent(app) {
         logEvent('consent', 'consent_accepted', { full_name: fullName });
         state.screen = 'accessibility';
         renderScreen();
+      } else {
+        throw new Error('Missing session ID');
       }
     } catch (err) {
-      alert('Unable to initialize session. Please check connection.');
+      alert(`Unable to initialize session: ${err.message || 'Please check connection.'}`);
       console.error(err);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
     }
   });
 }
@@ -303,15 +330,17 @@ function renderAccessibility(app) {
 
     state.accessibilityModes = modes;
 
-    const apiBase = window.ALFAAZ_API_URL || '';
-    await fetch(`${apiBase}/recruit/accessibility`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        session_id: state.sessionId,
-        modes_enabled: modes
-      })
-    });
+    try {
+      await apiFetch('/recruit/accessibility', {
+        method: 'POST',
+        body: JSON.stringify({
+          session_id: state.sessionId,
+          modes_enabled: modes
+        })
+      });
+    } catch (err) {
+      console.warn('Accessibility preferences save error:', err);
+    }
 
     logEvent('accessibility', 'preferences_saved', { modes });
     state.screen = 'warmup';
@@ -358,28 +387,34 @@ function renderWarmup(app) {
       const avgLatency = (latencies[0] + latencies[1]) / 2;
       const readingDwell = performance.now() - warmupStartTime;
 
-      const apiBase = window.ALFAAZ_API_URL || '';
-      await fetch(`${apiBase}/recruit/warmup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: state.sessionId,
-          tap_latency_baseline_ms: avgLatency,
-          reading_dwell_baseline_ms: readingDwell,
-          pointer_type: 'ontouchstart' in window ? 'touch' : 'mouse',
-          viewport_class: window.innerWidth < 768 ? 'mobile' : 'desktop'
-        })
-      });
+      try {
+        await apiFetch('/recruit/warmup', {
+          method: 'POST',
+          body: JSON.stringify({
+            session_id: state.sessionId,
+            tap_latency_baseline_ms: avgLatency,
+            reading_dwell_baseline_ms: readingDwell,
+            pointer_type: 'ontouchstart' in window ? 'touch' : 'mouse',
+            viewport_class: window.innerWidth < 768 ? 'mobile' : 'desktop'
+          })
+        });
+      } catch (err) {
+        console.warn('Warmup save error:', err);
+      }
 
       logEvent('warmup', 'warmup_completed', { avgLatency, readingDwell });
       
       // Load Public SJT payload
-      const sjtResp = await fetch(`${apiBase}/recruit/sjt/public`);
-      const sjtData = await sjtResp.json();
-      state.sjtScenarios = sjtData.scenarios || [];
-      state.currentSjtIndex = 0;
-      state.screen = 'sjt';
-      renderScreen();
+      try {
+        const sjtResp = await apiFetch('/recruit/sjt/public');
+        const sjtData = await sjtResp.json();
+        state.sjtScenarios = sjtData.scenarios || [];
+        state.currentSjtIndex = 0;
+        state.screen = 'sjt';
+        renderScreen();
+      } catch (err) {
+        console.error('Failed to load SJT payload:', err);
+      }
     }
   });
 }
@@ -476,11 +511,9 @@ function renderSJT(app, progressBarFill) {
 
 async function submitSjtAndProceed() {
   window.onkeydown = null;
-  const apiBase = window.ALFAAZ_API_URL || '';
   try {
-    await fetch(`${apiBase}/recruit/sjt/submit`, {
+    await apiFetch('/recruit/sjt/submit', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         session_id: state.sessionId,
         responses: state.sjtResponses
@@ -560,12 +593,14 @@ function getMiniGameId(worldCode, mgIndex) {
 }
 
 async function finishAssessment() {
-  const apiBase = window.ALFAAZ_API_URL || '';
-  await fetch(`${apiBase}/recruit/complete`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ session_id: state.sessionId })
-  });
+  try {
+    await apiFetch('/recruit/complete', {
+      method: 'POST',
+      body: JSON.stringify({ session_id: state.sessionId })
+    });
+  } catch (err) {
+    console.warn('Session complete submission error:', err);
+  }
   flushTelemetry();
   state.screen = 'complete';
   renderScreen();

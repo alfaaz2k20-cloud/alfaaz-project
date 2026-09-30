@@ -1,0 +1,28 @@
+{
+  "calibration_status": "UNCALIBRATED",
+  "calibration_source": null,
+  "calibration_timestamp": null,
+  "bands": {
+    "F1": null,
+    "F2": null,
+    "F3": null,
+    "A1": null,
+    "A2": null,
+    "A3": null,
+    "C1": null,
+    "C2": null,
+    "C3": null,
+    "E1": null,
+    "E2": null,
+    "E3": null,
+    "Q1": null,
+    "Q2": null,
+    "Q3": null,
+    "CR1": null,
+    "CR2": null,
+    "CR3": null,
+    "M1": null,
+    "M2": null,
+    "M3": null
+  }
+}
