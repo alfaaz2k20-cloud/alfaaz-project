@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { validateSjt } from './src/validation/sjt_validators.ts';
+import { validateSjt } from './src/validation/sjt_validators.js';
 // (Note: To run via ts-node or similar, ensure imports match the runner)
 
 function run() {

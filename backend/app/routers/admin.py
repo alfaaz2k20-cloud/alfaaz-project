@@ -11,8 +11,6 @@ from app.models.club import DBClubApplication
 from app.models.exhibition import DBExhibitionApplication, DBExhibition
 from app.models.submission import DBSubmission
 from app.models.audit import DBAuditLog
-from app.models.volunteer import DBVolunteerApplication
-from app.models.assessment import DBAssessment, DBAssessmentEvent, DBBehavioralObservation, DBConstructEvidence, DBRoleFit
 
 # Schemas
 from app.schemas.auth import StatusUpdate
@@ -22,11 +20,7 @@ from app.schemas.exhibition import ExhibitionReview, ExhibitionConfigSchema
 
 # Security & Services
 from app.core.security import require_admin
-from app.core.config import (
-    MAKE_WEBHOOK_URL,
-    VOLUNTEER_APPS_SCRIPT_READ_KEY,
-    VOLUNTEER_APPS_SCRIPT_URL,
-)
+from app.core.config import MAKE_WEBHOOK_URL
 from app.services.email import send_system_email
 from app.services.cdn import sync_notices_to_cloudinary
 from app.services.audit import log_admin_action
@@ -40,119 +34,6 @@ def _first_value(record: dict, *keys: str):
             return record[key]
     return None
 
-
-# ── Volunteer recruitment ────────────────────────────────────────────────────
-
-@router.get("/assessments")
-def get_assessments(db: Session = Depends(get_db), admin=Depends(require_admin)):
-    try:
-        records = db.query(DBAssessment).order_by(DBAssessment.started_at.desc()).all()
-        return [
-            {
-                "id": r.id,
-                "name": r.name,
-                "email": r.email,
-                "phone": r.phone,
-                "started_at": r.started_at.isoformat() if r.started_at else "",
-                "completed_at": r.completed_at.isoformat() if r.completed_at else "",
-                "status": r.status,
-                "interests": r.interests
-            }
-            for r in records
-        ]
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-@router.get("/assessments/{assessment_id}")
-def get_assessment_details(assessment_id: str, db: Session = Depends(get_db), admin=Depends(require_admin)):
-    try:
-        assm = db.query(DBAssessment).filter(DBAssessment.id == assessment_id).first()
-        if not assm:
-            raise HTTPException(status_code=404, detail="Assessment not found")
-            
-        events = db.query(DBAssessmentEvent).filter(DBAssessmentEvent.assessment_id == assessment_id).order_by(DBAssessmentEvent.timestamp.asc()).all()
-        observations = db.query(DBBehavioralObservation).filter(DBBehavioralObservation.assessment_id == assessment_id).all()
-        constructs = db.query(DBConstructEvidence).filter(DBConstructEvidence.assessment_id == assessment_id).all()
-        roles = db.query(DBRoleFit).filter(DBRoleFit.assessment_id == assessment_id).all()
-        
-        return {
-            "assessment": {
-                "id": assm.id,
-                "name": assm.name,
-                "email": assm.email,
-                "phone": assm.phone,
-                "started_at": assm.started_at.isoformat() if assm.started_at else "",
-                "completed_at": assm.completed_at.isoformat() if assm.completed_at else "",
-                "status": assm.status,
-                "interests": assm.interests,
-                "notes": assm.notes,
-                "session_id": assm.session_id
-            },
-            "events": [
-                {
-                    "id": e.id,
-                    "timestamp": e.timestamp.isoformat(),
-                    "simulated_time": e.simulated_time,
-                    "scene_id": e.scene_id,
-                    "action": e.action,
-                    "action_duration": e.action_duration,
-                    "timer_expired": e.timer_expired
-                } for e in events
-            ],
-            "observations": [
-                {
-                    "tag": o.behavior_tag,
-                    "direction": o.direction,
-                    "strength": o.strength,
-                    "context": o.context
-                } for o in observations
-            ],
-            "constructs": [
-                {
-                    "construct": c.construct,
-                    "confidence": c.confidence,
-                    "interpretation": c.interpretation,
-                    "supporting": c.supporting_count,
-                    "counter": c.counter_count
-                } for c in constructs
-            ],
-            "role_fits": [
-                {
-                    "role": r.role,
-                    "evidence_strength": r.evidence_strength,
-                    "confidence": r.confidence,
-                    "interpretation": r.interpretation
-                } for r in roles
-            ]
-        }
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-@router.get("/volunteer-applications")
-
-def get_volunteer_applications(db: Session = Depends(get_db)):
-    try:
-        records = db.query(DBVolunteerApplication).order_by(DBVolunteerApplication.timestamp.desc()).all()
-        return [
-            {
-                "timestamp": r.timestamp.isoformat() if r.timestamp else "",
-                "name": r.name,
-                "email": r.email,
-                "phone": r.phone,
-                "interests": r.interests,
-                "notes": r.notes,
-                "dominant_trait": r.dominant_trait,
-                "empathy": r.empathy,
-                "conscientiousness": r.conscientiousness,
-                "collaborative": r.collaborative,
-                "emotional": r.emotional,
-                "curiosity": r.curiosity,
-                "creative": r.creative,
-            }
-            for r in records
-        ]
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
 
 # ── Events ───────────────────────────────────────────────────────────────────
 @router.post("/events/create")

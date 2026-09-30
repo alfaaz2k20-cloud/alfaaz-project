@@ -17,7 +17,6 @@ export default defineConfig({
         register: resolve(__dirname, 'register.html'),
         reset: resolve(__dirname, 'reset.html'),
         submit: resolve(__dirname, 'submit.html'),
-        recruit: resolve(__dirname, 'recruit.html'),
       },
     },
   },

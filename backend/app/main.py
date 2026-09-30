@@ -7,8 +7,6 @@ from app.db.session import engine, SessionLocal
 from app.db.base import Base
 from app.models.user import DBUser
 from app.models.audit import DBAuditLog
-from app.models.volunteer import DBVolunteerApplication
-from app.models.assessment import DBAssessment, DBAssessmentEvent, DBBehavioralObservation, DBConstructEvidence, DBRoleFit
 from app.core.config import ADMIN_PASSWORD, FRONTEND_ORIGINS
 from app.core.security import get_password_hash
 
@@ -47,8 +45,6 @@ app.include_router(exhibitions.router)
 app.include_router(admin.router)
 app.include_router(blogs.router)
 app.include_router(vault.router)
-from app.routers import volunteers
-app.include_router(volunteers.router)
 
 # Server Startup Script (Ensures Admin exists)
 @app.on_event("startup")
