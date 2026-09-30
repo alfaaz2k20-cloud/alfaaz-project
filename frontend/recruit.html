@@ -1,186 +1,523 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alfaaz Volunteer Assessment</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Alfaaz Volunteer Experience</title>
+    <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;1,400;1,500&family=Alegreya+Sans:wght@300;400;500&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'Helvetica Neue', sans-serif; background: #2d2722; color: #e8e0d4; text-align: center; padding: 2rem; }
-        .card { max-width: 600px; margin: 0 auto; background: #352f29; padding: 2rem; border-radius: 8px; border: 1px solid rgba(168, 159, 147, 0.15); display: none; }
-        .card.active { display: block; }
-        button { display: block; width: 100%; margin: 10px 0; padding: 15px; background: transparent; border: 1px solid rgba(168,159,147,0.3); color: #e8e0d4; cursor: pointer; transition: 0.3s; }
-        button:hover { border-color: #bd6f5d; background: rgba(189,111,93,0.1); }
-        h2 { font-family: 'Cormorant Garamond', serif; }
+        :root {
+            --bg-primary: #f4f1ea;
+            --bg-secondary: #ffffff;
+            --text-primary: #2d312e;
+            --text-secondary: #8b908d;
+            --accent-gold: #bd6f5d;
+            --grid-border: rgba(45, 49, 46, 0.12);
+            --font-heading: 'Alegreya', serif;
+            --font-body: 'Alegreya Sans', sans-serif;
+            --font-urdu: 'Noto Nastaliq Urdu', serif;
+            --transition-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3 { font-family: var(--font-heading); font-weight: 500; }
+        .urdu-text { font-family: var(--font-urdu); direction: rtl; }
+
+        .app-container {
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Views */
+        .view { display: none; opacity: 0; transform: translateY(10px); transition: all 0.6s var(--transition-smooth); }
+        .view.active { display: block; opacity: 1; transform: translateY(0); }
+
+        /* Game view is special - fullscreen */
+        #view-game.active { display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999; background: var(--bg-primary); align-items: center; justify-content: center; }
+
+        .alfaaz-header { text-align: center; margin-bottom: 3rem; }
+        .alfaaz-header h1 { font-size: 2.5rem; letter-spacing: 0.05em; margin-bottom: 0.5rem; text-transform: uppercase; }
+        .alfaaz-header p { color: var(--text-secondary); font-style: italic; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-family: var(--font-heading); font-size: 1.1rem; }
+        .form-control { width: 100%; padding: 0.8rem; background: transparent; border: 1px solid var(--grid-border); color: var(--text-primary); font-family: var(--font-body); font-size: 1rem; }
+        .form-control:focus { outline: none; border-color: var(--accent-gold); }
+
+        .btn {
+            display: inline-block; padding: 0.8rem 2rem; background: var(--bg-primary); border: 1px solid var(--text-primary);
+            color: var(--text-primary); text-decoration: none; text-transform: uppercase; letter-spacing: 0.1em;
+            font-family: var(--font-body); font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease; width: 100%; text-align: center;
+        }
+        .btn:hover { background: var(--text-primary); color: var(--bg-primary); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .consent-box { border: 1px solid var(--grid-border); padding: 2rem; margin: 2rem 0; background: var(--bg-secondary); }
+        .consent-box ul { list-style-type: none; margin-bottom: 1.5rem; padding: 0; }
+        .consent-box li { margin-bottom: 0.8rem; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 10px; }
+
+        .checkbox-wrapper { display: flex; align-items: center; gap: 0.8rem; cursor: pointer; margin-bottom: 2rem; }
+
+        .loading { opacity: 0.5; pointer-events: none; }
+
+        /* Game Canvas */
+        #game-canvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Game intro overlay */
+        #game-intro {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000;
+            background: var(--bg-primary); display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 2rem; opacity: 1; transition: opacity 1s ease; pointer-events: auto;
+        }
+        #game-intro.hidden { opacity: 0; pointer-events: none; }
+        #game-intro h2 { font-family: var(--font-heading); font-size: 2rem; font-weight: 400; color: var(--text-primary); text-align: center; max-width: 400px; }
+        #game-intro p { font-family: var(--font-body); color: var(--text-secondary); font-size: 1rem; text-align: center; max-width: 350px; }
+
+        .scene-text { font-size: 1.25rem; line-height: 1.8; margin-bottom: 3rem; font-family: var(--font-heading); }
     </style>
 </head>
 <body>
-    <div id="screen-intro" class="card active">
-        <h2>ALFAAZ COLLECTIVE</h2>
-        <p>Before you fill a form, walk through a day at Alfaaz. There are no right or wrong answers - only yours.</p>
-        <button onclick="startAssessment()">I understand and wish to proceed</button>
-    </div>
-    
-    <div id="screen-sjt" class="card">
-        <h2 id="sjt-title">Scenario</h2>
-        <p id="sjt-text"></p>
-        <div id="sjt-options"></div>
+    <div class="app-container">
+
+        <!-- View 1: Identity & Consent -->
+        <div id="view-identity" class="view active">
+            <div class="alfaaz-header">
+                <h1>ALFAAZ COLLECTIVE <span class="urdu-text">الفاظ</span></h1>
+                <p>It belongs to where it lives.</p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 style="margin-bottom: 1rem;">Volunteer Experience</h2>
+                <p style="color: var(--text-secondary);">We are looking for people who care about art, culture, and community. Before you fill a form, spend a few minutes with a small community we've built. There are no right or wrong ways to play - only yours.</p>
+            </div>
+
+            <form id="identity-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="id-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="id-email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone / WhatsApp</label>
+                    <input type="tel" id="id-phone" class="form-control" required>
+                </div>
+
+                <div class="consent-box">
+                    <h3 style="margin-bottom: 1rem;">Before we begin:</h3>
+                    <ul>
+                        <li><i data-lucide="check" size="18"></i> This is not a psychological test or diagnosis of any kind.</li>
+                        <li><i data-lucide="check" size="18"></i> Your interactions help us understand how you naturally engage with a community space.</li>
+                        <li><i data-lucide="check" size="18"></i> Your data will only be used for volunteer placement at Alfaaz Collective.</li>
+                        <li><i data-lucide="check" size="18"></i> Participation is completely voluntary - you can close this page at any time.</li>
+                    </ul>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="consent-check" required>
+                        <span>I understand and wish to proceed</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn" id="btn-start">Begin</button>
+            </form>
+        </div>
+
+        <!-- View 2: The Game (fullscreen canvas) -->
+        <div id="view-game" class="view">
+            <canvas id="game-canvas"></canvas>
+            <div id="game-intro">
+                <h2>This is a small community.</h2>
+                <p>See what needs doing.</p>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 1rem;">Tap or click to interact.</p>
+            </div>
+        </div>
+
+        
+        
+        <!-- View Intermission -->
+        <div id="view-intermission" class="view">
+            <div class="alfaaz-header">
+                <h1>CYCLE III</h1>
+                <p>Fatigue Degradation</p>
+            </div>
+            <div style="text-align: center; max-width: 600px; margin: 0 auto; padding: 2rem;">
+                <p style="color: var(--text-primary); margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.6;">
+                    Your baseline is secured. We must now observe your response patterns under fatigue. 
+                    The parameters remain identical. Will your instincts hold?
+                </p>
+                <button id="btn-start-cycle2" class="cta-btn">BEGIN CYCLE II</button>
+            </div>
+        </div>
+
+        <!-- View SJT: The Sequence -->
+        <div id="view-sjt" class="view">
+            <div class="alfaaz-header">
+                <h1 id="sjt-phase-title">CYCLE III</h1>
+                <p id="sjt-phase-sub">Explicit Judgment</p>
+            </div>
+            <div id="sjt-container" style="max-width: 600px; margin: 0 auto; text-align: left;">
+                <p id="sjt-scenario" style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 2rem; color: var(--text-primary);"></p>
+                <div id="sjt-options" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+            </div>
+        </div>
+        
+        <!-- View 3: Final Form -->
+
+        <div id="view-final" class="view">
+            <div class="alfaaz-header">
+                <h1>Almost There</h1>
+                <p>The day is winding down.</p>
+            </div>
+
+            <form id="final-form">
+                <div class="form-group">
+                    <label>What kind of work excites you? (Select all that apply)</label>
+                    <div style="display: grid; gap: 0.8rem; margin-top: 1rem;">
+                        <label class="checkbox-wrapper" style="margin-bottom:0"><input type="checkbox" name="interest" value="Visual & Performing Arts"> Visual & Performing Arts</label>
+                        <label class="checkbox-wrapper" style="margin-bottom:0"><input type="checkbox" name="interest" value="Storytelling & Expression"> Storytelling & Expression</label>
+                        <label class="checkbox-wrapper" style="margin-bottom:0"><input type="checkbox" name="interest" value="Ideas & Dialogue"> Ideas & Dialogue</label>
+                        <label class="checkbox-wrapper" style="margin-bottom:0"><input type="checkbox" name="interest" value="Community & Care"> Community & Care</label>
+                        <label class="checkbox-wrapper" style="margin-bottom:0"><input type="checkbox" name="interest" value="Behind the Scenes"> Behind the Scenes</label>
+                        <label class="checkbox-wrapper" style="margin-bottom:0"><input type="checkbox" name="interest" value="Media & Communication"> Media & Communication</label>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 2rem;">
+                    <label>Anything else you'd like us to know? (Optional)</label>
+                    <textarea id="final-notes" class="form-control" rows="4"></textarea>
+                </div>
+
+                <button type="submit" class="btn" id="btn-submit">Submit Application</button>
+            </form>
+        </div>
+
+        <!-- View 4: Completion -->
+        <div id="view-complete" class="view">
+            <div class="alfaaz-header">
+                <h1>Thank You</h1>
+                <p>Your time with the collective has concluded.</p>
+            </div>
+            <div style="text-align: center; margin-top: 3rem;">
+                <p class="scene-text">We have received your application.</p>
+                <p style="color: var(--text-secondary);">Where you land will depend on where Alfaaz needs you most right now. We will be in touch.</p>
+                <div style="margin-top: 4rem; display: flex; justify-content: center; gap: 2rem;">
+                    <a href="https://www.instagram.com/alfaaz.2020" target="_blank" style="color: var(--text-primary);"><i data-lucide="instagram"></i></a>
+                    <a href="mailto:alfaaz2k20@gmail.com" style="color: var(--text-primary);"><i data-lucide="mail"></i></a>
+                    <a href="https://wa.me/917006613891" target="_blank" style="color: var(--text-primary);"><i data-lucide="message-circle"></i></a>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <div id="screen-form" class="card">
-        <h2>Almost there.</h2>
-        <input type="text" id="cand-name" placeholder="Name" style="width:100%; padding:10px; margin-bottom:10px;">
-        <input type="email" id="cand-email" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px;">
-        <input type="text" id="cand-phone" placeholder="Phone" style="width:100%; padding:10px; margin-bottom:10px;">
-        <button onclick="submitAssessment()" id="submit-btn">Complete</button>
-    </div>
+    <script type="module">
+        import { CollectiveGame } from './src/game/CollectiveGame.js';
+        import { API_URL } from './src/game/ApiClient.js';
 
-    <script>
-        const SCENARIOS = [
+        lucide.createIcons();
+
+        const sessionId = Math.random().toString(36).substring(2, 15);
+        const assessmentId = 'assm_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+
+        // API helpers
+        async function startAssessment(identity) {
+            const res = await fetch(`${API_URL}/volunteers/assessment/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assessment_id: assessmentId, session_id: sessionId, identity })
+            });
+            return res.json();
+        }
+
+        async function sendEvent(eventData, explicitTags = null) {
+            const tags = [];
+            const ctx = eventData.context || {};
+            
+            
+            if (explicitTags) {
+                tags.push(...explicitTags);
+            } else if (eventData.type === 'interaction') {
+
+                // High level motivation metric
+                tags.push({ tag: 'high_interaction_count', direction: 'positive', strength: 0.1 });
+                
+                switch (eventData.action) {
+                    case 'help_person':
+                        if (ctx.distressLevel > 0.6) {
+                            tags.push({ tag: 'distress_response', direction: 'positive', strength: 1.0 });
+                        } else if (ctx.distressLevel === 0) {
+                            tags.push({ tag: 'people_priority', direction: 'positive', strength: 0.5 });
+                        }
+                        if (ctx.timeSinceDistressStart > 30) {
+                            tags.push({ tag: 'ignored_distress', direction: 'negative', strength: 0.5 });
+                        }
+                        break;
+                
+                    case 'place_in_project':
+                        if (ctx.projectProgress >= 1.0) {
+                            tags.push({ tag: 'project_finished', direction: 'positive', strength: 1.0 });
+                        } else {
+                            tags.push({ tag: 'task_completion', direction: 'positive', strength: 0.5 });
+                        }
+                        if (ctx.isShared) {
+                            tags.push({ tag: 'shared_project_preference', direction: 'positive', strength: 1.0 });
+                        }
+                        break;
+                
+                    case 'help_helper':
+                        tags.push({ tag: 'resource_sharing', direction: 'positive', strength: 1.5 });
+                        tags.push({ tag: 'helper_assist', direction: 'positive', strength: 1.0 });
+                        break;
+                
+                    case 'reveal_fog':
+                        tags.push({ tag: 'fog_exploration', direction: 'positive', strength: 1.0 });
+                        if (eventData.phaseTime < 30) {
+                            tags.push({ tag: 'early_exploration', direction: 'positive', strength: 1.0 });
+                        }
+                        break;
+                
+                    case 'tap_mountain':
+                        tags.push({ tag: 'mountain_persistence', direction: 'positive', strength: 0.5 });
+                        break;
+                
+                    case 'place_creative':
+                        tags.push({ tag: 'creative_placement', direction: 'positive', strength: 1.0 });
+                        tags.push({ tag: 'creative_zone_engaged', direction: 'positive', strength: 1.0 });
+                        break;
+                }
+                
+                // Disruption recovery check (Phase 2 happens at t=90s)
+                if (eventData.phase === 1 && eventData.phaseTime > 90 && eventData.phaseTime < 100 && eventData.action !== 'tap_empty') {
+                    tags.push({ tag: 'fast_recovery', direction: 'positive', strength: 1.5 });
+                }
+            }
+
+            // Fire-and-forget telemetry
+            fetch(`${API_URL}/volunteers/assessment/${assessmentId}/event`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    scene_id: `phase_${eventData.phase || 0}`,
+                    action: eventData.action || eventData.type,
+                    action_duration: eventData.gameTime ? Math.round(eventData.gameTime * 1000) : 0,
+                    timer_expired: false,
+                    simulated_time: `Phase ${eventData.phase || 0} @ ${Math.round(eventData.phaseTime || 0)}s`,
+                    behavior_tags: tags
+                })
+            }).catch(err => console.warn('Telemetry error:', err));
+        }
+
+        async function completeAssessment(data) {
+            return fetch(`${API_URL}/volunteers/assessment/${assessmentId}/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }
+
+        function showView(id) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        
+        const SJT_SCENARIOS = [
             {
-                title: 'Scenario 1: The Missing Artwork',
-                text: "It's the morning of 'Kaamil' - Alfaaz's exhibition. One artist's paintings haven't arrived. She's not answering her phone. The curator looks stressed.",
+                text: "It's the morning of 'Kaamil' - Alfaaz's exhibition. You arrive to help set up. The exhibition opens in 2 hours, but one artist's paintings haven't arrived. She's not answering her phone. The curator looks stressed.",
                 options: [
-                    { text: 'Quietly take over other setup tasks to free up the curator', tags: ['conscientiousness'] },
-                    { text: 'Suggest rearranging the existing works to fill the gap', tags: ['creative'] },
-                    { text: 'Sit with the curator for a moment, ask how they are feeling', tags: ['empathy'] },
-                    { text: 'Start calling other Alfaaz members for backup artwork', tags: ['collaborative'] }
+                    { text: "Quietly take over other setup tasks to free up the curator's time, and keep trying to reach the artist yourself.", tags: [{tag: 'sjt_conscientiousness', strength: 1.0}] },
+                    { text: "Suggest rearranging the existing works to fill the gap - the exhibition can still feel complete with a different layout.", tags: [{tag: 'sjt_creative', strength: 1.0}] },
+                    { text: "Sit with the curator for a moment, ask how they're feeling, and then together figure out a plan.", tags: [{tag: 'sjt_empathy', strength: 1.0}] },
+                    { text: "Start calling other Alfaaz members to see if anyone has backup artwork or can pick up the missing pieces.", tags: [{tag: 'sjt_collaborative', strength: 1.0}] }
                 ]
             },
             {
-                title: 'Scenario 2: The Unhappy Artist',
-                text: "An artist, Faizan, is upset his pieces are near the entrance. He wants a quiet corner. Another artist, Meher, is happy with her quiet spot and doesn't want to swap.",
+                text: "An artist, Faizan, is upset - his pieces have been placed near the entrance where foot traffic is heaviest. He feels his work needs a quieter corner. Another artist, Meher, is happy with her quiet spot and doesn't want to swap.",
                 options: [
-                    { text: 'Listen to Faizan fully, then talk to Meher separately to understand her perspective', tags: ['empathy'] },
-                    { text: 'Explain to Faizan that placement was decided by the curator', tags: ['conscientiousness'] },
-                    { text: 'Propose a creative compromise for Faizan', tags: ['creative'] },
-                    { text: 'Let them work it out between themselves', tags: ['emotional'] }
+                    { text: "Listen to Faizan fully, acknowledge his concern, then talk to Meher separately to understand her perspective.", tags: [{tag: 'sjt_empathy', strength: 1.0}, {tag: 'sjt_emotional', strength: 0.5}] },
+                    { text: "Explain to Faizan that placement was decided by the curator and suggest he trust the process.", tags: [{tag: 'sjt_conscientiousness', strength: 1.0}] },
+                    { text: "Propose a creative compromise - maybe Faizan's most contemplative piece goes to a quieter spot, while his bolder work stays at the entrance.", tags: [{tag: 'sjt_creative', strength: 1.0}] },
+                    { text: "Let them work it out between themselves - it's not your place to intervene on your first day.", tags: [{tag: 'sjt_emotional', strength: 0.5}] }
                 ]
             },
             {
-                title: 'Scenario 3: The Last-Minute Visitor',
-                text: "Thirty minutes before opening, a school teacher arrives with 15 students unannounced.",
+                text: "Thirty minutes before the exhibition opens, a school teacher arrives with 15 students - unannounced. The space isn't set up for a school group.",
                 options: [
-                    { text: 'Welcome them warmly, offer a quick walkthrough of ready pieces', tags: ['empathy', 'curiosity'] },
-                    { text: 'Politely ask them to come back in an hour when we open', tags: ['conscientiousness'] },
-                    { text: 'Check with the curator first to not overstep', tags: ['collaborative'] },
-                    { text: 'Set up a temporary preview zone with a few pieces', tags: ['creative', 'motivation'] }
+                    { text: "Welcome them warmly, offer to give the students an informal walkthrough of the pieces that are ready.", tags: [{tag: 'sjt_empathy', strength: 1.0}] },
+                    { text: "Politely ask them to come back in an hour when the exhibition officially opens.", tags: [{tag: 'sjt_conscientiousness', strength: 1.0}] },
+                    { text: "Check with the curator first - it's their call, and you don't want to overstep.", tags: [{tag: 'sjt_collaborative', strength: 1.0}] },
+                    { text: "Invite the students in but set up a temporary 'preview zone' with just a few pieces.", tags: [{tag: 'sjt_creative', strength: 1.0}, {tag: 'sjt_curiosity', strength: 0.5}] }
                 ]
             },
             {
-                title: 'Scenario 4: The Silent Voice',
-                text: "During a philosophy debate, Zara keeps leaning forward to speak but pulls back.",
+                text: "At the Philosophy Club, two members are passionately debating. You notice Zara - a new member - leaning forward as if she wants to speak, but keeps pulling back.",
                 options: [
-                    { text: 'During a pause, gently say: "Zara, we would love to hear your thoughts."', tags: ['collaborative', 'empathy'] },
-                    { text: 'After the session, approach Zara privately to encourage her', tags: ['emotional'] },
-                    { text: 'Suggest the group try a round-robin format', tags: ['creative'] },
-                    { text: 'Let it be, forcing it might make it worse', tags: ['emotional'] }
+                    { text: "During a natural pause, gently say: 'Zara, I noticed you might have a thought - we'd love to hear it.'", tags: [{tag: 'sjt_collaborative', strength: 1.0}, {tag: 'sjt_empathy', strength: 0.5}] },
+                    { text: "After the session, approach Zara privately and ask what she thought - offer to help her share next time.", tags: [{tag: 'sjt_emotional', strength: 1.0}] },
+                    { text: "Suggest the group try a round-robin format so everyone gets a chance to speak.", tags: [{tag: 'sjt_creative', strength: 0.5}, {tag: 'sjt_collaborative', strength: 0.5}] },
+                    { text: "Let it be - she'll speak up when she's comfortable; forcing it might make things worse.", tags: [{tag: 'sjt_emotional', strength: 0.5}] }
                 ]
             },
             {
-                title: 'Scenario 5: The Provocative Poem',
-                text: "At a literature event, an audience member complains a poem is inappropriate. The poet looks shaken.",
+                text: "At a literature club evening, an audience member stands up and loudly says a poem being read isn't appropriate for a public event. The poet looks shaken.",
                 options: [
-                    { text: 'Acknowledge the concern, affirm Alfaaz is for all voices', tags: ['emotional'] },
-                    { text: 'Step in to support the poet and thank their courage', tags: ['empathy', 'motivation'] },
-                    { text: 'Propose a brief pause to turn tension into dialogue', tags: ['collaborative', 'creative'] },
-                    { text: 'Quietly check on the poet', tags: ['empathy'] }
-                ]
-            },
-            {
-                title: 'Scenario 6: The Children\'s Workshop',
-                text: "At an art therapy workshop, one boy sits apart staring at a blank sheet.",
-                options: [
-                    { text: 'Sit near him quietly and doodle on your own paper', tags: ['empathy', 'emotional'] },
-                    { text: 'Bring him a different material like clay', tags: ['creative', 'curiosity'] },
-                    { text: 'Gently ask him what he would like to draw', tags: ['collaborative'] },
-                    { text: 'Respect his space completely', tags: ['conscientiousness'] }
-                ]
-            },
-            {
-                title: 'Scenario 7: The Commitment Test',
-                text: "You committed to setup a walk, but a close friend visits for one day only. You also feel burnt out.",
-                options: [
-                    { text: 'Show up, but leave early to see your friend', tags: ['conscientiousness', 'collaborative'] },
-                    { text: 'Call the lead honestly and offer to cover next week', tags: ['collaborative', 'emotional'] },
-                    { text: 'Go see your friend, you need the break', tags: ['emotional'] },
-                    { text: 'Show up for the full setup and skip meeting your friend', tags: ['conscientiousness', 'motivation'] }
+                    { text: "Acknowledge the audience member's concern respectfully, then affirm that Alfaaz is a space for all voices.", tags: [{tag: 'sjt_emotional', strength: 1.0}] },
+                    { text: "Step in to support the poet - thank them for their courage and remind the audience that art often lives in uncomfortable places.", tags: [{tag: 'sjt_empathy', strength: 1.0}] },
+                    { text: "Propose a brief pause - then open it up as a facilitated conversation, turning the tension into dialogue.", tags: [{tag: 'sjt_creative', strength: 1.0}, {tag: 'sjt_collaborative', strength: 0.5}] },
+                    { text: "Quietly check on the poet while someone else handles the audience - their emotional state is the priority.", tags: [{tag: 'sjt_empathy', strength: 1.0}] }
                 ]
             }
         ];
 
-        let currentIndex = 0;
-        let sjtResponses = [];
-        let SESSION_ID = 'SESS_' + Math.random().toString(36).substr(2, 9);
+        let currentSjtIndex = 0;
 
-        function showScreen(id) {
-            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        function startSJT() {
+            showView('view-sjt');
+            currentSjtIndex = 0;
+            renderSJT();
         }
 
-        function startAssessment() {
-            showScreen('screen-sjt');
-            renderScenario();
-        }
-
-        function renderScenario() {
-            if (currentIndex >= SCENARIOS.length) {
-                showScreen('screen-form');
+        function renderSJT() {
+            if (currentSjtIndex >= SJT_SCENARIOS.length) {
+                showView('view-final');
                 return;
             }
-            const s = SCENARIOS[currentIndex];
-            document.getElementById('sjt-title').textContent = s.title;
-            document.getElementById('sjt-text').textContent = s.text;
-            const optsDiv = document.getElementById('sjt-options');
-            optsDiv.innerHTML = '';
+
+            const scenario = SJT_SCENARIOS[currentSjtIndex];
+            document.getElementById('sjt-phase-title').textContent = 'CYCLE III - SCENARIO ' + (currentSjtIndex + 1) + '/' + SJT_SCENARIOS.length;
+            document.getElementById('sjt-scenario').textContent = scenario.text;
             
-            s.options.forEach((opt, idx) => {
+            const optionsContainer = document.getElementById('sjt-options');
+            optionsContainer.innerHTML = '';
+            
+            scenario.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
+                btn.className = 'form-control';
+                btn.style.cursor = 'pointer';
+                btn.style.textAlign = 'left';
+                btn.style.padding = '1.2rem';
+                btn.style.transition = 'all 0.2s';
                 btn.textContent = opt.text;
+                
+                btn.onmouseover = () => { btn.style.borderColor = 'var(--accent-gold)'; };
+                btn.onmouseout = () => { btn.style.borderColor = 'var(--grid-border)'; };
+                
                 btn.onclick = () => {
-                    sjtResponses.push({ question: currentIndex + 1, answer: idx, tags: opt.tags });
-                    currentIndex++;
-                    renderScenario();
+                    // Send event telemetry
+                    sendEvent({
+                        type: 'sjt',
+                        action: 'sjt_answer',
+                        context: { question: currentSjtIndex + 1, answerIndex: idx }
+                    }, opt.tags);
+                    
+                    currentSjtIndex++;
+                    renderSJT();
                 };
-                optsDiv.appendChild(btn);
+                optionsContainer.appendChild(btn);
             });
         }
 
-        function submitAssessment() {
-            const name = document.getElementById('cand-name').value || 'Applicant';
-            const email = document.getElementById('cand-email').value || 'test@alfaaz.org';
-            const phone = document.getElementById('cand-phone').value || '0000000000';
-            const btn = document.getElementById('submit-btn');
-            btn.textContent = 'Submitting...';
-            btn.disabled = true;
+        // We need to modify sendEvent to accept optional override tags
 
-            const payload = { sjtResponses: sjtResponses };
+        // Identity form
+        document.getElementById('identity-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-start');
+            btn.classList.add('loading');
+            btn.textContent = 'Preparing...';
 
-            fetch('/api/volunteers/assessment/start', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    assessment_id: SESSION_ID,
-                    session_id: SESSION_ID,
-                    identity: { name, email, phone }
-                })
-            }).then(() => {
-                return fetch('/api/volunteers/assessment/complete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        assessment_id: SESSION_ID,
-                        interests: '7-Parameter Assessment Completed',
-                        notes: JSON.stringify(payload)
-                    })
+            const identity = {
+                name: document.getElementById('id-name').value,
+                email: document.getElementById('id-email').value,
+                phone: document.getElementById('id-phone').value
+            };
+
+            try {
+                await startAssessment(identity);
+
+                // Show the game view
+                showView('view-game');
+
+                // Show the intro overlay for 3 seconds, then start the game
+                const intro = document.getElementById('game-intro');
+                const canvas = document.getElementById('game-canvas');
+
+                const game = new CollectiveGame(canvas, {
+                    onComplete: () => {
+                        game.stop();
+                        showView('view-final');
+                    },
+                    onEvent: (eventData) => {
+                        sendEvent(eventData);
+                    }
                 });
-            }).then(() => {
-                btn.textContent = 'Success! Redirecting...';
-                setTimeout(() => window.location.href = '/', 1500);
-            }).catch(err => {
+
+                setTimeout(() => {
+                    intro.classList.add('hidden');
+                    setTimeout(() => {
+                        intro.style.display = 'none';
+                        game.start();
+                    }, 1000);
+                }, 2500);
+
+            } catch (err) {
                 console.error(err);
-                btn.textContent = 'Error. Check console.';
-            });
-        }
+                alert('Failed to start session. Please try again.');
+                btn.classList.remove('loading');
+                btn.textContent = 'Begin';
+            }
+        });
+
+        // Final form
+        document.getElementById('final-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            btn.classList.add('loading');
+            btn.textContent = 'Submitting...';
+
+            const interests = Array.from(document.querySelectorAll('input[name="interest"]:checked'))
+                                  .map(cb => cb.value).join(', ');
+            const notes = document.getElementById('final-notes').value;
+
+            try {
+                await completeAssessment({ interests, notes });
+                showView('view-complete');
+                lucide.createIcons();
+            } catch (err) {
+                console.error(err);
+                alert('Failed to submit. Please try again.');
+                btn.classList.remove('loading');
+                btn.textContent = 'Submit Application';
+            }
+        });
     </script>
 </body>
 </html>
+
+
+
