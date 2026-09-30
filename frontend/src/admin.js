@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (name === 'exhibitions') { window.loadExhibitionManager(); window.loadExhibitionsData('ALL'); }
       if (name === 'clubs') window.loadClubs('ALL'); 
       if (name === 'roster') window.loadRoster();
+      if (name === 'recruitment') window.loadRecruitment();
     }
 
     // ==========================================
@@ -383,6 +384,124 @@ document.addEventListener('DOMContentLoaded', () => {
       if(window.refreshGlobalEffects) window.refreshGlobalEffects();
     };
     window.updateStatus = async function(email, i, btn) { const status = document.getElementById(`st-${i}`).value; btn.textContent = '...'; const res = await window.globalApiFetch('/admin/update_status', { method: 'POST', body: JSON.stringify({ email, status }) }); if (res && res.ok) { if (email === user.email && status === 'PARTICIPANT') { localStorage.clear(); window.location.href = 'login.html'; } btn.textContent = '✓'; setTimeout(() => btn.textContent = 'Save Role', 2000); } };
+
+    // ==========================================
+    // VOLUNTEER RECRUITMENT LOGIC
+    // ==========================================
+    window.loadRecruitment = async function() {
+      const container = document.getElementById('recruitmentContainer');
+      if (!container) return;
+      container.innerHTML = '<div class="empty-state">Loading candidate records...</div>';
+
+      try {
+        const res = await window.globalApiFetch('/recruit/research/sessions');
+        if (!res) return;
+        const sessions = await res.json();
+        if (!sessions || !sessions.length) {
+          container.innerHTML = '<div class="empty-state">No recruitment assessment sessions found in registry.</div>';
+          return;
+        }
+
+        container.innerHTML = '';
+        sessions.forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'data-card user-card';
+          const safeName = window.escapeHtml(s.full_name || 'Anonymous Applicant');
+          const safeEmail = window.escapeHtml(s.email || '—');
+          const dateStr = s.created_at ? new Date(s.created_at).toLocaleString() : '—';
+
+          card.innerHTML = `
+            <div>
+              <div class="data-label">Candidate</div>
+              <div class="data-display" style="font-weight: 500;">${safeName}</div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">${safeEmail} · <span style="font-family:monospace; font-size:10px;">${s.session_id.slice(0, 8)}...</span></div>
+            </div>
+            <div>
+              <div class="data-label">Submitted</div>
+              <div class="data-display" style="font-size:12px;">${dateStr}</div>
+              <span class="badge ${s.status === 'COMPLETE' ? 'badge-approved' : 'badge-pending'}" style="margin-top:6px;">${s.status}</span>
+            </div>
+            <div style="display:flex; justify-content:flex-end;">
+              <button class="action-btn gold" style="padding:0.8rem 1.2rem; font-size:10px;" onclick="viewCandidateDossier('${s.session_id}')">
+                Inspect Dossier &rarr;
+              </button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+        if (window.refreshGlobalEffects) window.refreshGlobalEffects();
+      } catch (err) {
+        container.innerHTML = '<div class="empty-state">Error loading recruitment sessions.</div>';
+      }
+    };
+
+    window.viewCandidateDossier = async function(sessionId) {
+      document.getElementById('modalTitle').textContent = 'Candidate Evidence Dossier';
+      const body = document.getElementById('modalBody');
+      body.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--text-secondary);">Loading dossier from registry...</div>';
+      document.getElementById('regModal').classList.add('open');
+
+      try {
+        const res = await window.globalApiFetch(`/recruit/research/session/${sessionId}`);
+        if (!res) return;
+        const data = await res.json();
+        const meta = data.metadata;
+        const ev = data.evidence_by_parameter;
+
+        document.getElementById('modalTitle').textContent = `${meta.applicant.full_name || 'Candidate'} — Assessment Dossier`;
+
+        let paramRows = Object.keys(ev).map(pKey => {
+          const p = ev[pKey];
+          const pName = pKey.replace(/_/g, ' ').toUpperCase();
+          const ref = p.random_responder_reference || {};
+
+          return `
+            <div style="background:#faf8f5; border:1px solid var(--grid-border); padding:1.25rem; margin-bottom:1rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--grid-border); padding-bottom:0.5rem; margin-bottom:0.75rem;">
+                <span style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-primary);">${pName}</span>
+                <span style="font-size:11px; font-weight:600; color:var(--accent-gold); text-transform:uppercase;">SJT Band: ${p.sjt_band || 'UNAVAILABLE'}</span>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:11px; color:var(--text-secondary); margin-bottom:0.5rem;">
+                <div>
+                  <div>Raw Score: <strong style="color:var(--text-primary);">${p.sjt_raw !== null ? p.sjt_raw : '—'}</strong> / ${p.sjt_max} (Span: ${p.sjt_span})</div>
+                  <div style="font-size:10px; margin-top:2px;">Random Baseline: L: ${ref.LOW || '—'} · M: ${ref.MODERATE || '—'} · H: ${ref.HIGH || '—'}</div>
+                </div>
+                <div>
+                  <div>Game Status: <strong style="color:var(--text-primary);">${p.game_status}</strong></div>
+                  <div>Confidence: <strong style="color:var(--text-primary);">${p.confidence}</strong></div>
+                </div>
+              </div>
+              <div style="font-size:11px; color:var(--text-primary); border-top:1px dashed var(--grid-border); pt-2; margin-top:0.5rem; padding-top:0.5rem;">
+                <em>Observation:</em> ${p.observed_behavior || 'Completed micro-task sequence.'}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        body.innerHTML = `
+          <div style="font-size:12px; margin-bottom:1.5rem; background:rgba(189,111,93,0.08); border:1px solid var(--accent-gold); padding:1rem; line-height:1.6;">
+            <strong>Safeguard Note:</strong> ${meta.safeguards.banner} Scores reflect forced-choice trade-offs in scenario judgment and behavioral task observations.
+          </div>
+          <div style="margin-bottom:1.5rem; font-size:12px; display:flex; justify-content:space-between; border-bottom:1px solid var(--grid-border); padding-bottom:1rem;">
+            <div>
+              <div><strong>Email:</strong> ${window.escapeHtml(meta.applicant.email || '—')}</div>
+              <div><strong>Session ID:</strong> <span style="font-family:monospace; font-size:10px;">${meta.session_id}</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div><strong>Status:</strong> ${meta.status}</div>
+              <div><strong>Date:</strong> ${meta.created_at ? new Date(meta.created_at).toLocaleString() : '—'}</div>
+            </div>
+          </div>
+          <div>
+            <h4 style="font-family:var(--font-heading); font-size:1.3rem; margin-bottom:1rem; color:var(--text-primary);">Evaluated Parameters (7)</h4>
+            ${paramRows}
+          </div>
+        `;
+      } catch (err) {
+        body.innerHTML = '<div style="padding:2rem; text-align:center; color:red;">Failed to load candidate dossier.</div>';
+      }
+    };
 
     // INIT
     window.switchTab('events');

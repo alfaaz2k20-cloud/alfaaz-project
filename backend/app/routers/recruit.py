@@ -4,7 +4,7 @@ import random
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
 from app.db.session import get_db

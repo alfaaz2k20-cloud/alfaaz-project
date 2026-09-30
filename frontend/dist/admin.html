@@ -46,11 +46,11 @@
     .form-group { display: flex; flex-direction: column; gap: 0.2rem; } 
     .empty-state { color: var(--text-secondary); font-size: 12px; padding: 3rem; text-align: center; border: 1px dashed var(--grid-border); background: var(--bg-primary); font-style: italic; }
     
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(248, 246, 240, 0.95); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); } .modal-overlay.open { display: flex; } .modal { background: var(--bg-secondary); border: 1px solid var(--grid-border); box-shadow: var(--shadow-float); padding: 3rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; } .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--grid-border); padding-bottom: 1.5rem; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(248, 246, 240, 0.95); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); } .modal-overlay.open { display: flex; } .modal { background: var(--bg-secondary); border: 1px solid var(--grid-border); box-shadow: var(--shadow-float); padding: 3rem; max-width: 750px; width: 90%; max-height: 80vh; overflow-y: auto; } .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--grid-border); padding-bottom: 1.5rem; }
     
     @media (max-width: 768px) { .club-card, .event-card, .user-card, .exhib-card { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; gap: 1.5rem; } nav { padding: 1rem 1.5rem; } .nav-login { display: none !important; } .mobile-only-link { display: block; } .nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; flex-direction: column; background: var(--bg-secondary); padding: 2rem; gap: 1.5rem; border-bottom: 1px solid var(--grid-border); box-shadow: 0 10px 20px rgba(0,0,0,0.05); } .nav-links.active { display: flex; } #menuToggle { display: flex; align-items: center; justify-content: center; margin-left: 0.5rem; } }
   </style>
-  <script type="module" crossorigin src="/assets/admin-PJKyP-OB.js"></script>
+  <script type="module" crossorigin src="/assets/admin-Cxm2g2pI.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/global-DxYxv3W5.js">
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
@@ -74,6 +74,7 @@
       <button class="tab-btn" onclick="switchTab('exhibitions')">Exhibitions</button>
       <button class="tab-btn" onclick="switchTab('clubs')">Club Applications</button>
       <button class="tab-btn" onclick="switchTab('roster')">Collective Roster</button>
+      <button class="tab-btn" onclick="switchTab('recruitment')">Volunteer Recruitment</button>
     </div>
 
     <div id="tab-events" class="tab-panel active">
@@ -190,6 +191,16 @@
     <div id="tab-roster" class="tab-panel">
       <div class="section-title">Collective Roster</div>
       <div id="rosterContainer"><div class="empty-state">Loading roster...</div></div>
+    </div>
+
+    <div id="tab-recruitment" class="tab-panel">
+      <div class="section-title">Volunteer Assessment Records</div>
+      <div class="panel" style="padding: 1.2rem 2rem; margin-bottom: 2rem; background: #faf8f5; border-left: 4px solid var(--accent-gold);">
+        <div style="font-size: 12px; color: var(--text-primary); line-height: 1.6;">
+          <strong>Research Evidence Registry:</strong> This view displays candidate responses on the 7 Alfaaz parameters across the Situational Judgment Test and 21 interactive behavioral tasks. In accordance with the project manifesto, scores are exploratory research indicators for human interviewers, not automated rankings.
+        </div>
+      </div>
+      <div id="recruitmentContainer"><div class="empty-state">Loading candidate records...</div></div>
     </div>
 
   </div>
