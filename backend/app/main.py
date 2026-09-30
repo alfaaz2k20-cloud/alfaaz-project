@@ -1,4 +1,4 @@
-from app.routers import admin, auth, blogs, clubs, curator, events, exhibitions
+from app.routers import admin, auth, blogs, clubs, curator, events, exhibitions, recruit
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -7,6 +7,7 @@ from app.db.session import engine, SessionLocal
 from app.db.base import Base
 from app.models.user import DBUser
 from app.models.audit import DBAuditLog
+import app.models.recruit
 from app.core.config import ADMIN_PASSWORD, FRONTEND_ORIGINS
 from app.core.security import get_password_hash
 
@@ -45,6 +46,7 @@ app.include_router(exhibitions.router)
 app.include_router(admin.router)
 app.include_router(blogs.router)
 app.include_router(vault.router)
+app.include_router(recruit.router)
 
 # Server Startup Script (Ensures Admin exists)
 @app.on_event("startup")
