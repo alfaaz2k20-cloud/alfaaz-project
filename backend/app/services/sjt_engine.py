@@ -19,8 +19,14 @@ PARAMETERS_PATH = resolve_config_path("parameters.json")
 SJT_ITEMS_PATH = resolve_config_path("sjt_items.json")
 
 EXPECTED_HASHES = {
-    "parameters.json": "ed4eb65e958a37d45b539470dfe5dc125932651cbc404e68f56fac31bb5bc64e",
-    "sjt_items.json": "be71fb2f4f0473034dccc5b9affac76ca93a553b50c54c155470ce1b50835890"
+    "parameters.json": [
+        "1262f85b33c6bd64b3331d214363813e218e9fb52efa856cd6342bd6818c70e6",  # LF (Linux/Render)
+        "ed4eb65e958a37d45b539470dfe5dc125932651cbc404e68f56fac31bb5bc64e"   # CRLF (Windows)
+    ],
+    "sjt_items.json": [
+        "c098b401d37cc30b515139d307fef632047c048584e19771c0e014ef027e391d",  # LF (Linux/Render)
+        "be71fb2f4f0473034dccc5b9affac76ca93a553b50c54c155470ce1b50835890"   # CRLF (Windows)
+    ]
 }
 
 _CACHED_PARAMS = None
@@ -40,12 +46,15 @@ def verify_and_load_configs():
     p_hash = get_file_hash(PARAMETERS_PATH)
     s_hash = get_file_hash(SJT_ITEMS_PATH)
 
-    if p_hash.lower() != EXPECTED_HASHES["parameters.json"].lower():
+    valid_p_hashes = [h.lower() for h in EXPECTED_HASHES["parameters.json"]]
+    valid_s_hashes = [h.lower() for h in EXPECTED_HASHES["sjt_items.json"]]
+
+    if p_hash.lower() not in valid_p_hashes:
         raise RuntimeError(f"parameters.json hash mismatch: {p_hash}")
-    if s_hash.lower() != EXPECTED_HASHES["sjt_items.json"].lower():
+    if s_hash.lower() not in valid_s_hashes:
         raise RuntimeError(f"sjt_items.json hash mismatch: {s_hash}")
 
-    combined = (p_hash + s_hash).encode("utf-8")
+    combined = (valid_p_hashes[0] + valid_s_hashes[0]).encode("utf-8")
     _CACHED_CONFIG_HASH = hashlib.sha256(combined).hexdigest()
 
     with open(PARAMETERS_PATH, "r", encoding="utf-8") as f:

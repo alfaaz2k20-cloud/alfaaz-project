@@ -8,8 +8,14 @@ SJT_ITEMS_PATH = os.path.join("config", "sjt_items.json")
 OUTPUT_PATH = os.path.join("docs", "sjt_enumeration.json")
 
 EXPECTED_HASHES = {
-    "parameters.json": "ed4eb65e958a37d45b539470dfe5dc125932651cbc404e68f56fac31bb5bc64e",
-    "sjt_items.json": "be71fb2f4f0473034dccc5b9affac76ca93a553b50c54c155470ce1b50835890"
+    "parameters.json": [
+        "1262f85b33c6bd64b3331d214363813e218e9fb52efa856cd6342bd6818c70e6",
+        "ed4eb65e958a37d45b539470dfe5dc125932651cbc404e68f56fac31bb5bc64e"
+    ],
+    "sjt_items.json": [
+        "c098b401d37cc30b515139d307fef632047c048584e19771c0e014ef027e391d",
+        "be71fb2f4f0473034dccc5b9affac76ca93a553b50c54c155470ce1b50835890"
+    ]
 }
 
 def verify_hashes():
@@ -17,7 +23,8 @@ def verify_hashes():
         path = os.path.join("config", filename)
         with open(path, "rb") as f:
             computed = hashlib.sha256(f.read()).hexdigest()
-        if computed.lower() != expected.lower():
+        valid = [e.lower() for e in expected] if isinstance(expected, list) else [expected.lower()]
+        if computed.lower() not in valid:
             raise ValueError(f"Hash mismatch for {filename}: got {computed}, expected {expected}")
 
 def compute_sjt_enumeration():
