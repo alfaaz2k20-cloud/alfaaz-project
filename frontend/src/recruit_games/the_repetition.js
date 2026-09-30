@@ -1,6 +1,6 @@
 /* ==========================================================================
    ALFAAZ RECRUIT — WORLD 7: THE REPETITION (MOTIVATION)
-   Mini-games: M1 (Minimum Completed), M2 (Optional Continuation), M3 (Reduced Reward)
+   Mini-games: M1 (Mandatory Stamping), M2 (Voluntary Extra), M3 (Final Touches)
    ========================================================================== */
 
 export function runTheRepetition(context, renderHeader) {
@@ -20,13 +20,13 @@ export function runTheRepetition(context, renderHeader) {
 }
 
 // --------------------------------------------------------------------------
-// M1: Minimum Completed
+// M1: Mandatory Stamping (3 Envelopes)
 // --------------------------------------------------------------------------
 function runM1Minimum(app, renderHeader, logEvent, onComplete) {
-  const units = [
-    { id: 'REC-1', raw: 'ALFAAZ  COLLECTIVE —   SPRING  SALON', clean: 'ALFAAZ COLLECTIVE — SPRING SALON' },
-    { id: 'REC-2', raw: 'POETRY   READING   SERIES   VOL  II', clean: 'POETRY READING SERIES VOL II' },
-    { id: 'REC-3', raw: 'DOCUMENTARY   SCREENING   AND   TALK', clean: 'DOCUMENTARY SCREENING AND TALK' }
+  const invitations = [
+    { id: 'INV_1', recipient: 'Senior Calligrapher — Master Ghulam' },
+    { id: 'INV_2', recipient: 'Community Youth Art Collective' },
+    { id: 'INV_3', recipient: 'Regional Heritage Conservation Trust' }
   ];
 
   let currentIdx = 0;
@@ -34,51 +34,53 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
   let unitStart = performance.now();
 
   function render() {
-    if (currentIdx >= units.length) {
+    if (currentIdx >= invitations.length) {
       const mean = latencies.reduce((a, b) => a + b, 0) / latencies.length;
-      const variance = latencies.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / latencies.length;
-      const cv = mean > 0 ? (Math.sqrt(variance) / mean) : 0.0;
-
       onComplete({
         mini_game: 'M1',
-        observations_count: units.length,
-        cadence_consistency: cv
+        observations_count: invitations.length,
+        avg_latency_ms: mean
       });
       return;
     }
 
-    const unit = units[currentIdx];
+    const item = invitations[currentIdx];
     unitStart = performance.now();
 
     app.innerHTML = `
       <div>
-        ${renderHeader('M1: Baseline Formatting', 'Standardize typography spacing for historical event notices (3 mandatory units).')}
+        ${renderHeader('Task 1: Sealing Event Invitations', 'Apply the collective wax seal stamp to each of the 3 handmade invitation envelopes.')}
 
-        <div class="text-xs text-[var(--text-secondary)] uppercase tracking-wider mb-4">
-          Required Unit ${currentIdx + 1} of ${units.length}
+        <div class="text-xs text-[var(--text-secondary)] font-medium mb-4">
+          Envelope ${currentIdx + 1} of ${invitations.length}
         </div>
 
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center">
-          <div class="text-xs text-[var(--text-secondary)] uppercase mb-2">Unformatted Header String:</div>
-          <div class="font-mono text-sm bg-white p-3 border border-[var(--grid-border)] inline-block tracking-wider">
-            ${unit.raw}
+        <!-- Interactive Envelope Preview -->
+        <div class="p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center">
+          <div class="w-full max-w-sm mx-auto h-36 bg-amber-50/60 border border-[var(--grid-border)] flex flex-col items-center justify-center p-4 relative shadow-sm">
+            <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">Exhibition Invitation</span>
+            <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1">${item.recipient}</div>
+            
+            <div id="sealDisplay" class="w-10 h-10 rounded-full border-2 border-dashed border-[var(--accent-gold)] mt-3 flex items-center justify-center text-[10px] text-[var(--accent-gold)] font-bold">
+              SEAL
+            </div>
           </div>
         </div>
 
-        <div class="flex justify-center gap-4">
-          <button id="formatBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
-            Apply Normalized Spacing &rarr;
+        <div class="flex justify-center">
+          <button id="stampBtn" class="px-8 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm flex items-center gap-2">
+            &#9998; Apply Wax Seal Stamp &rarr;
           </button>
         </div>
       </div>
     `;
 
-    logEvent('mandatory_unit_presented', { unit_id: unit.id });
+    logEvent('invitation_presented', { inv_id: item.id });
 
-    document.getElementById('formatBtn')?.addEventListener('click', () => {
+    document.getElementById('stampBtn')?.addEventListener('click', () => {
       const dwell = performance.now() - unitStart;
       latencies.push(dwell);
-      logEvent('mandatory_unit_completed', { unit_id: unit.id, duration_ms: dwell });
+      logEvent('envelope_stamped', { inv_id: item.id, dwell_ms: dwell });
       currentIdx++;
       render();
     });
@@ -88,145 +90,116 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
 }
 
 // --------------------------------------------------------------------------
-// M2: Optional Continuation
+// M2: Voluntary Extra Envelopes
 // --------------------------------------------------------------------------
 function runM2Optional(app, renderHeader, logEvent, onComplete) {
-  let optionalUnitsCompleted = 0;
-  let totalVoluntaryTimeMs = 0;
-  let unitStart = 0;
-  const maxOptional = 5;
+  let optionalCompleted = 0;
+  const maxOptional = 3;
 
-  function renderPrompt() {
-    app.innerHTML = `
-      <div class="text-center py-6 space-y-5">
-        ${renderHeader('M2: Task Continuation', 'Mandatory baseline completed. Additional catalog records remain.')}
-
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] max-w-lg mx-auto text-sm text-[var(--text-primary)]">
-          <p class="font-medium mb-1">Standard required quota is complete.</p>
-          <p class="text-xs text-[var(--text-secondary)]">You may choose to continue formatting additional archival units (${optionalUnitsCompleted}/${maxOptional} completed) or conclude this section now. Stopping now is completely valid.</p>
-        </div>
-
-        <div class="flex justify-center gap-4 pt-2">
-          <button id="finishNowBtn" class="px-6 py-2.5 border border-[var(--grid-border)] text-xs uppercase tracking-widest text-[var(--text-primary)] hover:border-[var(--accent-gold)] transition">
-            Conclude & Continue &rarr;
-          </button>
-          ${optionalUnitsCompleted < maxOptional ? `
-          <button id="continueFormatBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
-            Format Another Record
-          </button>` : ''}
-        </div>
-      </div>
-    `;
-
-    logEvent('optional_prompt_presented', { optional_completed: optionalUnitsCompleted });
-
-    document.getElementById('finishNowBtn')?.addEventListener('click', () => {
-      logEvent('optional_session_concluded', { optional_completed: optionalUnitsCompleted, voluntary_time_ms: totalVoluntaryTimeMs });
-      onComplete({
-        mini_game: 'M2',
-        observations_count: Math.max(1, optionalUnitsCompleted),
-        optional_units: optionalUnitsCompleted,
-        voluntary_duration_ms: totalVoluntaryTimeMs
-      });
-    });
-
-    document.getElementById('continueFormatBtn')?.addEventListener('click', () => {
-      renderFormattingUnit();
-    });
-  }
-
-  function renderFormattingUnit() {
-    unitStart = performance.now();
+  function render() {
     app.innerHTML = `
       <div>
-        ${renderHeader('M2: Optional Formatting', `Optional record ${optionalUnitsCompleted + 1} of ${maxOptional}.`)}
+        ${renderHeader('Task 2: Extra Preparations', 'The required invitations are complete. 3 additional courtesy envelopes remain.')}
 
         <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center">
-          <div class="text-xs text-[var(--text-secondary)] uppercase mb-2">Archival Notice Line:</div>
-          <div class="font-mono text-sm bg-white p-3 border border-[var(--grid-border)] inline-block">
-            EXHIBIT CATALOG — ENTRY 0${optionalUnitsCompleted + 4} / ARCHIVE
+          <div class="text-sm font-serif text-[var(--text-primary)] mb-2 font-medium">
+            Optional Courtesy Envelopes Available
+          </div>
+          <p class="text-xs text-[var(--text-secondary)] max-w-md mx-auto mb-4">
+            You may stamp additional invitations for guest artists, or complete this task at any time.
+          </p>
+
+          <div class="text-base font-serif font-bold text-[var(--accent-gold)] mb-4">
+            ${optionalCompleted} of ${maxOptional} Extra Envelopes Sealed
+          </div>
+
+          <div class="flex justify-center gap-4">
+            ${optionalCompleted < maxOptional ? `
+              <button id="stampExtraBtn" class="px-6 py-2.5 bg-white border border-[var(--accent-gold)] text-[var(--accent-gold)] text-xs uppercase tracking-wider hover:bg-amber-50 transition">
+                + Seal Extra Envelope
+              </button>
+            ` : '<span class="text-xs text-emerald-700 font-semibold">&#10003; All extra envelopes completed.</span>'}
           </div>
         </div>
 
-        <div class="flex justify-center">
-          <button id="saveOptionalBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
-            Verify & Save Record &rarr;
+        <div class="flex justify-end">
+          <button id="finishM2Btn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
+            Proceed to Final Task &rarr;
           </button>
         </div>
       </div>
     `;
 
-    document.getElementById('saveOptionalBtn')?.addEventListener('click', () => {
-      const dwell = performance.now() - unitStart;
-      totalVoluntaryTimeMs += dwell;
-      optionalUnitsCompleted++;
-      logEvent('optional_unit_saved', { unit_index: optionalUnitsCompleted, dwell_ms: dwell });
-      if (optionalUnitsCompleted >= maxOptional) {
-        onComplete({
-          mini_game: 'M2',
-          observations_count: optionalUnitsCompleted,
-          optional_units: optionalUnitsCompleted,
-          voluntary_duration_ms: totalVoluntaryTimeMs
-        });
-      } else {
-        renderPrompt();
-      }
+    document.getElementById('stampExtraBtn')?.addEventListener('click', () => {
+      optionalCompleted++;
+      logEvent('optional_envelope_stamped', { count: optionalCompleted });
+      render();
+    });
+
+    document.getElementById('finishM2Btn')?.addEventListener('click', () => {
+      logEvent('optional_stamping_done', { total_extra: optionalCompleted });
+      onComplete({
+        mini_game: 'M2',
+        observations_count: 1,
+        optional_completed: optionalCompleted
+      });
     });
   }
 
-  renderPrompt();
+  render();
 }
 
 // --------------------------------------------------------------------------
-// M3: Persistence Under Reduced Reward
+// M3: Final Touches
 // --------------------------------------------------------------------------
 function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
-  let count = 0;
-  const maxUnits = 3;
+  const tasks = [
+    { id: 'T_LIGHTS', name: 'Turn on Warm Gallery Spotlights' },
+    { id: 'T_PAMPHLETS', name: 'Arrange Urdu & Kashmiri Poetry Guides on Welcome Table' },
+    { id: 'T_FLOWERS', name: 'Place Fresh Jasmine Petals at the Entrance Urn' }
+  ];
+
+  let completedTasks = {};
 
   function render() {
-    if (count >= maxUnits) {
-      onComplete({
-        mini_game: 'M3',
-        observations_count: count,
-        reduced_feedback_persistence: count
-      });
-      return;
-    }
+    const allDone = tasks.every(t => completedTasks[t.id]);
 
     app.innerHTML = `
       <div>
-        ${renderHeader('M3: Unannounced Batch Sync', 'Low-stimulation archival synchronization.')}
+        ${renderHeader('Task 3: Final Room Warmth', 'Complete the final 3-point checklist to make the gallery ready for evening guests.')}
 
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center">
-          <p class="text-xs text-[var(--text-secondary)] mb-3">Syncing background repository record...</p>
-          <div class="font-mono text-xs text-[var(--text-primary)]">RECORD_ID_00${count + 1}</div>
+        <div class="space-y-3 mb-6">
+          ${tasks.map((t, idx) => `
+            <label class="flex items-center gap-3 p-4 bg-white border ${completedTasks[t.id] ? 'border-emerald-600 bg-emerald-50/20' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition">
+              <input type="checkbox" id="task_${t.id}" ${completedTasks[t.id] ? 'checked' : ''} class="accent-[#bd6f5d]">
+              <span class="text-xs font-medium text-[var(--text-primary)]">${idx + 1}. ${t.name}</span>
+            </label>
+          `).join('')}
         </div>
 
-        <div class="flex justify-between items-center">
-          <button id="concludeM3Btn" class="skip-btn">Proceed to Next World &rarr;</button>
-          <button id="syncUnitBtn" class="px-6 py-2 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
-            Confirm Indexing
+        <div class="flex justify-end">
+          <button id="m3FinishBtn" ${allDone ? '' : 'disabled'} class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition">
+            Finalize Assessment &rarr;
           </button>
         </div>
       </div>
     `;
 
-    logEvent('reduced_reward_unit_displayed', { index: count });
-
-    document.getElementById('concludeM3Btn')?.addEventListener('click', () => {
-      logEvent('m3_concluded_early', { completed: count });
-      onComplete({
-        mini_game: 'M3',
-        observations_count: Math.max(1, count),
-        reduced_feedback_persistence: count
+    tasks.forEach(t => {
+      document.getElementById(`task_${t.id}`)?.addEventListener('change', (e) => {
+        completedTasks[t.id] = e.target.checked;
+        logEvent('readiness_task_toggled', { task_id: t.id, checked: e.target.checked });
+        render();
       });
     });
 
-    document.getElementById('syncUnitBtn')?.addEventListener('click', () => {
-      count++;
-      logEvent('reduced_reward_synced', { index: count });
-      render();
+    document.getElementById('m3FinishBtn')?.addEventListener('click', () => {
+      logEvent('gallery_readiness_complete');
+      onComplete({
+        mini_game: 'M3',
+        observations_count: tasks.length,
+        readiness_score: 1.0
+      });
     });
   }
 

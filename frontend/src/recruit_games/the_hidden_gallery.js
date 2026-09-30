@@ -1,6 +1,6 @@
 /* ==========================================================================
    ALFAAZ RECRUIT — WORLD 5: THE HIDDEN GALLERY (CURIOSITY)
-   Mini-games: Q1 (Optional Discovery), Q2 (Mystery Exploration), Q3 (Information Integration)
+   Mini-games: Q1 (Exploring Rooms), Q2 (Investigating Clues), Q3 (New Art Medium)
    ========================================================================== */
 
 export function runTheHiddenGallery(context, renderHeader) {
@@ -20,74 +20,70 @@ export function runTheHiddenGallery(context, renderHeader) {
 }
 
 // --------------------------------------------------------------------------
-// Q1: Optional Discovery
+// Q1: Exploring Gallery Rooms
 // --------------------------------------------------------------------------
 function runQ1OptionalDiscovery(app, renderHeader, logEvent, onComplete) {
-  let alcovesExplored = 0;
-  const totalAlcoves = 3;
+  let exploredCount = 0;
+  const alcoves = [
+    { id: 'ALC_1', title: 'Room A: Natural Pigments', text: 'Shows how blue lapis lazuli and gold leaf were ground by hand to create vibrant border illuminations.' },
+    { id: 'ALC_2', title: 'Room B: Paper Making', text: 'Explains how traditional Kashmiri rag paper (Koshur Kagaz) is made from hemp and smoothed with agate stone.' },
+    { id: 'ALC_3', title: 'Room C: Oral Verse Metres', text: 'Details how classical Kashmiri poetry metres were sung aloud to remember rhymes before printing existed.' }
+  ];
+
+  let visited = {};
 
   function render() {
     app.innerHTML = `
       <div>
-        ${renderHeader('Q1: Gallery Navigation', 'Navigate the exhibition floorplan to the pavilion exit. Side alcoves contain unrequired archival manuscripts.')}
+        ${renderHeader('Task 1: Gallery Walk', 'Walk through the exhibition. Click any side room to read its short story, or head straight to the exit.')}
 
-        <div class="grid grid-cols-3 gap-4 mb-6">
-          <div class="p-4 bg-white border border-[var(--grid-border)] text-center">
-            <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase">Alcove A</span>
-            <p class="font-serif text-xs text-[var(--text-primary)] mt-1 mb-3">18th C. Astrolabe Schematics</p>
-            <button id="alcoveABtn" class="px-3 py-1 text-xs border border-[var(--grid-border)] hover:border-[var(--accent-gold)]">
-              Inspect Alcove
-            </button>
-          </div>
-          <div class="p-4 bg-white border border-[var(--grid-border)] text-center">
-            <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase">Alcove B</span>
-            <p class="font-serif text-xs text-[var(--text-primary)] mt-1 mb-3">Persian Calligraphy Pigments</p>
-            <button id="alcoveBBtn" class="px-3 py-1 text-xs border border-[var(--grid-border)] hover:border-[var(--accent-gold)]">
-              Inspect Alcove
-            </button>
-          </div>
-          <div class="p-4 bg-white border border-[var(--grid-border)] text-center">
-            <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase">Alcove C</span>
-            <p class="font-serif text-xs text-[var(--text-primary)] mt-1 mb-3">Lal Ded Verse Annotations</p>
-            <button id="alcoveCBtn" class="px-3 py-1 text-xs border border-[var(--grid-border)] hover:border-[var(--accent-gold)]">
-              Inspect Alcove
-            </button>
-          </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          ${alcoves.map(a => `
+            <div class="p-4 bg-white border ${visited[a.id] ? 'border-emerald-600 bg-emerald-50/20' : 'border-[var(--grid-border)]'} text-center space-y-2">
+              <span class="text-[10px] uppercase font-bold text-[var(--accent-gold)] tracking-wider">Side Room</span>
+              <h3 class="text-xs font-serif font-semibold text-[var(--text-primary)]">${a.title}</h3>
+              <button class="alc-btn px-3 py-1.5 text-xs border border-[var(--grid-border)] bg-[#faf8f5] hover:border-[var(--accent-gold)] transition w-full" data-id="${a.id}">
+                ${visited[a.id] ? '&#10003; Read Story' : 'Inspect Room'}
+              </button>
+            </div>
+          `).join('')}
         </div>
 
-        <div id="alcoveContent" class="hidden p-4 bg-amber-50/50 border border-[var(--accent-gold)]/30 text-xs text-[var(--text-primary)] mb-6"></div>
+        <div id="storyBox" class="hidden p-4 mb-6 bg-amber-50/70 border border-[var(--accent-gold)]/40 text-xs text-[var(--text-primary)] leading-relaxed"></div>
 
         <div class="flex justify-between items-center pt-2">
-          <span class="text-xs text-[var(--text-secondary)]">${alcovesExplored} of ${totalAlcoves} optional alcoves visited</span>
-          <button id="exitGalleryBtn" class="px-6 py-2 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
-            Reach Pavilion Exit &rarr;
+          <span class="text-xs text-[var(--text-secondary)]">${exploredCount} of 3 optional rooms explored</span>
+          <button id="exitGalleryBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
+            Proceed to Exit &rarr;
           </button>
         </div>
       </div>
     `;
 
-    logEvent('gallery_floorplan_viewed', { alcoves_visited: alcovesExplored });
-
-    const showAlcove = (name, text) => {
-      alcovesExplored++;
-      const panel = document.getElementById('alcoveContent');
-      if (panel) {
-        panel.classList.remove('hidden');
-        panel.innerHTML = `<strong>${name}:</strong> ${text}`;
-      }
-      logEvent('alcove_explored', { alcove: name });
-    };
-
-    document.getElementById('alcoveABtn')?.addEventListener('click', () => showAlcove('Alcove A (Astrolabe)', 'Notes how brass astrolabes utilized latitude projection plates calibrated for Kashmir valleys.'));
-    document.getElementById('alcoveBBtn')?.addEventListener('click', () => showAlcove('Alcove B (Pigments)', 'Details how lapis lazuli was ground into gum arabic for illuminated Quranic borders.'));
-    document.getElementById('alcoveCBtn')?.addEventListener('click', () => showAlcove('Alcove C (Lal Ded)', 'Examines oral poetic meter structures passed through feminine Kashmiri idioms.'));
+    app.querySelectorAll('.alc-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const item = alcoves.find(a => a.id === id);
+        if (!visited[id]) {
+          visited[id] = true;
+          exploredCount++;
+        }
+        const box = document.getElementById('storyBox');
+        if (box && item) {
+          box.classList.remove('hidden');
+          box.innerHTML = `<strong>${item.title}:</strong> ${item.text}`;
+        }
+        logEvent('alcove_read', { alcove_id: id });
+        render();
+      });
+    });
 
     document.getElementById('exitGalleryBtn')?.addEventListener('click', () => {
-      logEvent('gallery_exited', { total_explored: alcovesExplored });
+      logEvent('gallery_walk_finished', { explored: exploredCount });
       onComplete({
         mini_game: 'Q1',
         observations_count: 1,
-        exploration_rate: alcovesExplored / totalAlcoves
+        exploration_rate: exploredCount / 3.0
       });
     });
   }
@@ -96,55 +92,64 @@ function runQ1OptionalDiscovery(app, renderHeader, logEvent, onComplete) {
 }
 
 // --------------------------------------------------------------------------
-// Q2: Mystery Exploration
+// Q2: Investigating Clues
 // --------------------------------------------------------------------------
 function runQ2MysteryExploration(app, renderHeader, logEvent, onComplete) {
-  let depth = 0;
-  const maxDepth = 3;
+  let cluesRead = 0;
+  const clues = [
+    { id: 'C_PIGMENT', name: 'Pigment Inspection', detail: 'The red ink uses pure saffron flower pigment, common in mid-19th century regional manuscripts.' },
+    { id: 'C_WOOD', name: 'Backing Frame', detail: 'The backing board is carved from seasoned Himalayan cedar with hand-forged iron nails.' },
+    { id: 'C_SEAL', name: 'Seal Impression', detail: 'A faint circular wax seal in the lower corner bears the seal of a Srinagar bookbinder.' }
+  ];
+  let revealed = {};
 
   function render() {
     app.innerHTML = `
       <div>
-        ${renderHeader('Q2: The Inscription Anomaly', 'An exhibit artifact displays an unexplained cipher inscription.')}
+        ${renderHeader('Task 2: Investigating an Artwork', 'An unsigned artwork arrived at the archive. Click on the clue cards below to learn more about its history.')}
 
         <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center">
-          <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase">Artifact Inscription #402</span>
-          <h3 class="text-xl font-serif text-[var(--text-primary)] mt-1 mb-2">Uncatalogued Marginal Cipher</h3>
-          <p class="text-xs text-[var(--text-secondary)] max-w-md mx-auto">
-            A handwritten marginal symbol appears beside the 16th century seal. Standard documentation does not mention this mark.
-          </p>
-          <div id="depthDetails" class="mt-4 text-xs text-[var(--text-primary)] space-y-2">
-            ${depth >= 1 ? '<div class="p-2 bg-white border border-[var(--grid-border)]"><strong>Layer 1:</strong> Cipher resembles 16th century trade shorthand.</div>' : ''}
-            ${depth >= 2 ? '<div class="p-2 bg-white border border-[var(--grid-border)]"><strong>Layer 2:</strong> UV spectroscopy reveals hidden iron gall ink underneath.</div>' : ''}
-            ${depth >= 3 ? '<div class="p-2 bg-white border border-[var(--grid-border)]"><strong>Layer 3:</strong> Cross-referenced with Silk Road merchant marks.</div>' : ''}
-          </div>
+          <span class="text-[10px] tracking-widest text-[var(--accent-gold)] uppercase font-semibold">Unidentified Item</span>
+          <h3 class="text-base font-serif text-[var(--text-primary)] mt-1 mb-2">Illuminated Manuscript Border (Item #402)</h3>
+          <p class="text-xs text-[var(--text-secondary)]">Click any clue below to reveal archival details.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+          ${clues.map(c => `
+            <div class="p-4 bg-white border ${revealed[c.id] ? 'border-[var(--accent-gold)] bg-amber-50/20' : 'border-[var(--grid-border)]'} text-center space-y-2 cursor-pointer clue-card" data-id="${c.id}">
+              <div class="text-xs font-semibold text-[var(--text-primary)]">${c.name}</div>
+              <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${revealed[c.id] ? c.detail : 'Click to inspect clue...'}</div>
+            </div>
+          `).join('')}
         </div>
 
         <div class="flex justify-between items-center">
-          ${depth < maxDepth ? `
-          <button id="probeDeeperBtn" class="px-5 py-2 border border-[var(--accent-gold)] text-[var(--accent-gold)] text-xs uppercase tracking-wider hover:bg-amber-50 transition">
-            Probe Cipher Depth (${depth}/${maxDepth})
-          </button>` : '<span></span>'}
-          <button id="concludeQ2Btn" class="px-6 py-2 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
-            Continue Journey &rarr;
+          <span class="text-xs text-[var(--text-secondary)]">${cluesRead} of 3 clues examined</span>
+          <button id="finishCluesBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
+            Finish Investigation &rarr;
           </button>
         </div>
       </div>
     `;
 
-    logEvent('mystery_station_presented', { current_depth: depth });
-
-    document.getElementById('probeDeeperBtn')?.addEventListener('click', () => {
-      depth++;
-      logEvent('anomaly_layer_unlocked', { depth });
-      render();
+    app.querySelectorAll('.clue-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = card.getAttribute('data-id');
+        if (!revealed[id]) {
+          revealed[id] = true;
+          cluesRead++;
+          logEvent('clue_inspected', { clue_id: id });
+          render();
+        }
+      });
     });
 
-    document.getElementById('concludeQ2Btn')?.addEventListener('click', () => {
+    document.getElementById('finishCluesBtn')?.addEventListener('click', () => {
+      logEvent('investigation_completed', { clues_read: cluesRead });
       onComplete({
         mini_game: 'Q2',
-        observations_count: Math.max(1, depth),
-        investigation_depth: depth / maxDepth
+        observations_count: 1,
+        clues_read: cluesRead
       });
     });
   }
@@ -153,41 +158,57 @@ function runQ2MysteryExploration(app, renderHeader, logEvent, onComplete) {
 }
 
 // --------------------------------------------------------------------------
-// Q3: Information Integration
+// Q3: New Art Medium
 // --------------------------------------------------------------------------
 function runQ3InformationIntegration(app, renderHeader, logEvent, onComplete) {
+  let selectedMedium = null;
+
+  const mediums = [
+    { id: 'M_PROJECTION', title: 'Poetry & Light Projection', desc: 'Projecting animated Urdu and Kashmiri verses onto white plaster walls.' },
+    { id: 'M_SOUND', title: 'Acoustic Soundscapes', desc: 'Recording sounds of mountain streams, paper workshops, and courtyard birds to accompany poetry.' },
+    { id: 'M_TEXTILE', title: 'Embroidered Wall Murals', desc: 'Working with local artisans to embroider literary couplets into woven wool.' }
+  ];
+
   app.innerHTML = `
     <div>
-      ${renderHeader('Q3: Archival Synthesis', 'Synthesize archival observations into a curatorial summary.')}
+      ${renderHeader('Task 3: Creative Exploration', 'Which upcoming experimental showcase would you be most curious to explore and help set up?')}
 
-      <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6">
-        <p class="text-sm font-serif text-[var(--text-primary)] mb-3">
-          Which metallurgical characteristic accounts for the preservation of Kashmiri astrolabe latitude projection plates?
-        </p>
-        <div class="space-y-2">
-          <label class="block p-3 bg-white border border-[var(--grid-border)] text-xs cursor-pointer hover:border-[var(--accent-gold)]">
-            <input type="radio" name="synthQ" value="A" class="mr-2 accent-[#bd6f5d]"> Brass alloy calibrated specifically for valley latitude projection.
-          </label>
-          <label class="block p-3 bg-white border border-[var(--grid-border)] text-xs cursor-pointer hover:border-[var(--accent-gold)]">
-            <input type="radio" name="synthQ" value="B" class="mr-2 accent-[#bd6f5d]"> Standard iron gall coating.
-          </label>
-        </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        ${mediums.map(m => `
+          <div class="med-card p-5 bg-white border border-[var(--grid-border)] cursor-pointer hover:border-[var(--accent-gold)] transition space-y-2 text-center" data-id="${m.id}">
+            <div class="w-10 h-10 mx-auto rounded-full bg-amber-50 border border-[var(--accent-gold)]/40 flex items-center justify-center text-[var(--accent-gold)] font-serif text-base">
+              &#10023;
+            </div>
+            <div class="text-xs font-semibold text-[var(--text-primary)]">${m.title}</div>
+            <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${m.desc}</div>
+          </div>
+        `).join('')}
       </div>
 
       <div class="flex justify-end">
-        <button id="submitSynthesisBtn" class="px-6 py-2 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
-          Submit Synthesis &rarr;
+        <button id="q3FinishBtn" disabled class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition">
+          Finish World 5 &rarr;
         </button>
       </div>
     </div>
   `;
 
-  document.getElementById('submitSynthesisBtn')?.addEventListener('click', () => {
-    logEvent('synthesis_completed');
+  const btn = document.getElementById('q3FinishBtn');
+  app.querySelectorAll('.med-card').forEach(card => {
+    card.addEventListener('click', () => {
+      app.querySelectorAll('.med-card').forEach(c => c.classList.remove('border-[var(--accent-gold)]', 'bg-amber-50/40'));
+      card.classList.add('border-[var(--accent-gold)]', 'bg-amber-50/40');
+      selectedMedium = card.getAttribute('data-id');
+      if (btn) btn.disabled = false;
+    });
+  });
+
+  btn?.addEventListener('click', () => {
+    logEvent('medium_selected', { medium: selectedMedium });
     onComplete({
       mini_game: 'Q3',
       observations_count: 1,
-      synthesis_score: 1.0
+      medium: selectedMedium
     });
   });
 }

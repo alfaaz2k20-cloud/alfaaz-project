@@ -1,6 +1,6 @@
 /* ==========================================================================
    ALFAAZ RECRUIT — WORLD 2: THE ARCHIVE (CONSCIENTIOUSNESS)
-   Mini-games: A1 (Classification), A2 (Exception Handling), A3 (Quality Control)
+   Mini-games: A1 (Item Sorting), A2 (Care for Damaged Item), A3 (Quality Check)
    ========================================================================== */
 
 export function runTheArchive(context, renderHeader) {
@@ -20,24 +20,21 @@ export function runTheArchive(context, renderHeader) {
 }
 
 // --------------------------------------------------------------------------
-// A1: Classification
+// A1: Item Sorting
 // --------------------------------------------------------------------------
 function runA1Classification(app, renderHeader, logEvent, onComplete) {
   const documents = [
-    { id: 'DOC-101', title: 'Calligraphic Ghazal Folio (1842)', tags: ['Manuscript', 'Ink on Parchment', '19th Century'], targetCategory: 'Manuscripts' },
-    { id: 'DOC-102', title: 'Copper Engraved Astrolabe Plate', tags: ['Object', 'Metalwork', 'Classical'], targetCategory: 'Artifacts' },
-    { id: 'DOC-103', title: 'Lal Ded Vakhs Translation Ledger', tags: ['Text', 'Poetry Commentary', 'Kashmiri'], targetCategory: 'Manuscripts' },
-    { id: 'DOC-104', title: 'Silver Zari Textile Fragment', tags: ['Weaving', 'Silk & Metal', 'Decorative'], targetCategory: 'Artifacts' },
-    { id: 'DOC-105', title: '1920 Exhibition Registration Roster', tags: ['Administrative', 'Official Record', 'Modern'], targetCategory: 'Records' },
-    { id: 'DOC-106', title: 'Curatorial Letter on Paper Conservation', tags: ['Correspondence', 'Preservation', 'Archive'], targetCategory: 'Records' }
+    { id: 'ITEM-1', title: 'Handwritten Ghazal Manuscript (1842)', tags: ['Poetry', 'Parchment', 'Ink'], targetCategory: 'Books & Poetry' },
+    { id: 'ITEM-2', title: 'Carved Wooden Printing Block', tags: ['Object', 'Craft Tool', 'Walnut Wood'], targetCategory: 'Art Objects' },
+    { id: 'ITEM-3', title: 'Lal Ded Verse Translations', tags: ['Poetry Book', 'Kashmiri', 'Paper'], targetCategory: 'Books & Poetry' },
+    { id: 'ITEM-4', title: 'Silver Thread Embroidery Sample', tags: ['Fabric', 'Silk & Metal', 'Decorative'], targetCategory: 'Art Objects' },
+    { id: 'ITEM-5', title: '1924 Exhibition Visitor Guestbook', tags: ['Official Record', 'Signatures', 'Archive'], targetCategory: 'Letters & Records' },
+    { id: 'ITEM-6', title: 'Letter from Founder on Art Care', tags: ['Letter', 'Preservation Guide', 'Archive'], targetCategory: 'Letters & Records' }
   ];
 
   let currentDocIdx = 0;
   let correctCount = 0;
-  let ruleGuideOpens = 0;
-  let ruleGuideTimeMs = 0;
-  let docStartTime = performance.now();
-  let ruleOpenTime = null;
+  let guideOpened = false;
 
   function render() {
     if (currentDocIdx >= documents.length) {
@@ -46,89 +43,67 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
         mini_game: 'A1',
         observations_count: documents.length,
         accuracy: accuracy,
-        rule_guide_time_ms: ruleGuideTimeMs
+        guide_opened: guideOpened
       });
       return;
     }
 
     const doc = documents[currentDocIdx];
-    docStartTime = performance.now();
 
     app.innerHTML = `
       <div>
-        ${renderHeader('A1: Document Classification', 'Sort cultural items into designated archival vaults according to preservation criteria.')}
+        ${renderHeader('Task 1: Archiving Items', 'Place each historical item into the correct shelf.')}
 
         <div class="flex justify-between items-center mb-4">
-          <span class="text-xs text-[var(--text-secondary)] uppercase tracking-wider">Document ${currentDocIdx + 1} of ${documents.length}</span>
-          <button id="ruleGuideBtn" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-3 py-1 hover:bg-amber-50 transition">
-            <i data-lucide="book-open" class="w-3.5 h-3.5 inline mr-1"></i> View Archival Rubric
+          <span class="text-xs text-[var(--text-secondary)] font-medium">Item ${currentDocIdx + 1} of ${documents.length}</span>
+          <button id="guideBtn" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-3 py-1 hover:bg-amber-50 transition">
+            &#128214; Shelf Guide
           </button>
         </div>
 
-        <div id="ruleGuideModal" class="hidden p-4 mb-4 bg-amber-50/60 border border-[var(--accent-gold)]/30 text-xs text-[var(--text-primary)] space-y-1.5">
-          <div class="font-semibold uppercase tracking-wider text-[var(--accent-gold)]">Archival Sorting Rubric:</div>
-          <div>• <strong>Manuscripts:</strong> Handwritten poetry folios, literary commentary, vakhs, calligraphy.</div>
-          <div>• <strong>Artifacts:</strong> Metalwork, decorative textiles, physical implements, copper plates.</div>
-          <div>• <strong>Records:</strong> Official administrative rosters, letters, preservation logs, institutional documentation.</div>
+        <div id="guideModal" class="hidden p-4 mb-4 bg-amber-50/70 border border-[var(--accent-gold)]/30 text-xs text-[var(--text-primary)] space-y-1">
+          <div>• <strong>1. Books & Poetry:</strong> Handwritten manuscripts, poetry books, written verse folios.</div>
+          <div>• <strong>2. Art Objects:</strong> Wooden blocks, textile fragments, carved crafts, copper tools.</div>
+          <div>• <strong>3. Letters & Records:</strong> Guestbooks, official letters, event rosters, receipts.</div>
         </div>
 
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center">
-          <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase">${doc.id}</span>
-          <h3 class="text-xl font-serif text-[var(--text-primary)] mt-1 mb-3">${doc.title}</h3>
+        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center shadow-sm">
+          <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase font-mono">${doc.id}</span>
+          <h3 class="text-lg font-serif text-[var(--text-primary)] font-medium mt-1 mb-3">${doc.title}</h3>
           <div class="flex justify-center gap-2">
             ${doc.tags.map(t => `<span class="px-2.5 py-0.5 bg-white border border-[var(--grid-border)] text-xs text-[var(--text-secondary)]">${t}</span>`).join('')}
           </div>
         </div>
 
         <div class="grid grid-cols-3 gap-4">
-          <button class="cat-btn p-4 bg-white border border-[var(--grid-border)] text-xs uppercase tracking-wider hover:border-[var(--accent-gold)] hover:bg-amber-50/30 transition text-center font-medium" data-cat="Manuscripts">
-            1. Manuscripts
+          <button class="cat-btn p-4 bg-white border border-[var(--grid-border)] text-xs font-semibold uppercase tracking-wider hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-center" data-cat="Books & Poetry">
+            1. Books & Poetry
           </button>
-          <button class="cat-btn p-4 bg-white border border-[var(--grid-border)] text-xs uppercase tracking-wider hover:border-[var(--accent-gold)] hover:bg-amber-50/30 transition text-center font-medium" data-cat="Artifacts">
-            2. Artifacts
+          <button class="cat-btn p-4 bg-white border border-[var(--grid-border)] text-xs font-semibold uppercase tracking-wider hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-center" data-cat="Art Objects">
+            2. Art Objects
           </button>
-          <button class="cat-btn p-4 bg-white border border-[var(--grid-border)] text-xs uppercase tracking-wider hover:border-[var(--accent-gold)] hover:bg-amber-50/30 transition text-center font-medium" data-cat="Records">
-            3. Records
+          <button class="cat-btn p-4 bg-white border border-[var(--grid-border)] text-xs font-semibold uppercase tracking-wider hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-center" data-cat="Letters & Records">
+            3. Letters & Records
           </button>
         </div>
       </div>
     `;
 
-    logEvent('document_presented', { doc_id: doc.id, index: currentDocIdx });
+    logEvent('item_presented', { doc_id: doc.id, index: currentDocIdx });
 
-    const ruleBtn = document.getElementById('ruleGuideBtn');
-    const ruleModal = document.getElementById('ruleGuideModal');
-
-    ruleBtn?.addEventListener('click', () => {
-      const isHidden = ruleModal?.classList.contains('hidden');
-      if (isHidden) {
-        ruleModal?.classList.remove('hidden');
-        ruleOpenTime = performance.now();
-        ruleGuideOpens++;
-        logEvent('rule_guide_viewed', { doc_id: doc.id });
-      } else {
-        ruleModal?.classList.add('hidden');
-        if (ruleOpenTime) {
-          ruleGuideTimeMs += (performance.now() - ruleOpenTime);
-          ruleOpenTime = null;
-        }
-      }
+    document.getElementById('guideBtn')?.addEventListener('click', () => {
+      const modal = document.getElementById('guideModal');
+      modal?.classList.toggle('hidden');
+      guideOpened = true;
+      logEvent('guide_viewed', { doc_id: doc.id });
     });
 
     app.querySelectorAll('.cat-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const selected = btn.getAttribute('data-cat');
-        const isCorrect = selected === doc.targetCategory;
+        const cat = btn.getAttribute('data-cat');
+        const isCorrect = (cat === doc.targetCategory);
         if (isCorrect) correctCount++;
-
-        logEvent('document_filed', {
-          doc_id: doc.id,
-          selected_category: selected,
-          target_category: doc.targetCategory,
-          is_correct: isCorrect,
-          dwell_ms: performance.now() - docStartTime
-        });
-
+        logEvent('item_sorted', { doc_id: doc.id, choice: cat, is_correct: isCorrect });
         currentDocIdx++;
         render();
       });
@@ -139,230 +114,117 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
 }
 
 // --------------------------------------------------------------------------
-// A2: Exception Handling
+// A2: Care for Damaged Item
 // --------------------------------------------------------------------------
 function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
-  const edgeCases = [
-    {
-      id: 'EXP-201',
-      title: 'Bilingual Poetry Fragment with Mixed Binding',
-      tags: ['Damaged Paper', 'Dual Period Inscription'],
-      isException: true,
-      description: 'Contains 17th century Persian script overlaid on 19th century binding. Exceeds standard single-vault criteria.'
-    },
-    {
-      id: 'EXP-202',
-      title: 'Standard Exhibition Catalog (1998)',
-      tags: ['Printed Book', 'Single Subject'],
-      isException: false,
-      description: 'Standard publication catalog in pristine condition with complete metadata.'
-    },
-    {
-      id: 'EXP-203',
-      title: 'Severely Oxidized Metal Seal with Illegible Seal Script',
-      tags: ['Physical Seal', 'Fragile', 'Verification Required'],
-      isException: true,
-      description: 'Requires metallurgical assessment before standard drawer assignment.'
-    },
-    {
-      id: 'EXP-204',
-      title: 'Curatorial Diary Notebook (2015)',
-      tags: ['Manuscript', 'Modern Archive'],
-      isException: false,
-      description: 'Complete and verified curatorial notes from the Alfaaz inaugural salon.'
-    }
-  ];
+  let chosenAction = null;
 
-  let currentIdx = 0;
-  let correctDecisions = 0;
+  app.innerHTML = `
+    <div>
+      ${renderHeader('Task 2: Damaged Item Care', 'An old poem folio has faint water spots and the year stamp is partly blurred. How would you record it?')}
 
-  function render() {
-    if (currentIdx >= edgeCases.length) {
-      const precision = correctDecisions / edgeCases.length;
-      onComplete({
-        mini_game: 'A2',
-        observations_count: edgeCases.length,
-        precision: precision
-      });
-      return;
-    }
+      <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center">
+        <span class="text-[10px] tracking-widest text-[#bd6f5d] uppercase font-semibold">Special Inspection</span>
+        <h3 class="text-base font-serif text-[var(--text-primary)] mt-1 mb-2">19th Century Kashmiri Ghazal Leaf</h3>
+        <p class="text-xs text-[var(--text-secondary)] max-w-md mx-auto">
+          Condition: Light water fading on the lower corner. Year is smudged as "18--".
+        </p>
+      </div>
 
-    const item = edgeCases[currentIdx];
-
-    app.innerHTML = `
-      <div>
-        ${renderHeader('A2: Exception Protocol', 'Identify and quarantine records with protocol anomalies or conflicting criteria.')}
-
-        <div class="text-xs text-[var(--text-secondary)] uppercase tracking-wider mb-4">
-          Item ${currentIdx + 1} of ${edgeCases.length}
+      <div class="space-y-3 mb-6">
+        <div class="a2-opt p-4 bg-white border border-[var(--grid-border)] cursor-pointer hover:border-[var(--accent-gold)] transition" data-action="FLAG_CARE">
+          <div class="text-xs font-semibold text-[var(--text-primary)]">Place in protective envelope and mark: "Year Estimated, Needs Conservator Review"</div>
+          <div class="text-[11px] text-[var(--text-secondary)] mt-1">Protects the item and alerts senior archivists to examine with magnifying tools.</div>
         </div>
 
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6">
-          <div class="flex justify-between items-start mb-2">
-            <div>
-              <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase">${item.id}</span>
-              <h3 class="text-xl font-serif text-[var(--text-primary)] mt-0.5">${item.title}</h3>
-            </div>
-          </div>
-          <div class="flex gap-2 my-3">
-            ${item.tags.map(t => `<span class="px-2 py-0.5 bg-white border border-[var(--grid-border)] text-xs text-[var(--text-secondary)]">${t}</span>`).join('')}
-          </div>
-          <p class="text-xs text-[var(--text-primary)] leading-relaxed mt-2 border-t border-[var(--grid-border)] pt-2">
-            <strong>Condition Notes:</strong> ${item.description}
-          </p>
+        <div class="a2-opt p-4 bg-white border border-[var(--grid-border)] cursor-pointer hover:border-[var(--accent-gold)] transition" data-action="ESTIMATE">
+          <div class="text-xs font-semibold text-[var(--text-primary)]">Record as "Circa 1850" based on similar handwriting styles</div>
+          <div class="text-[11px] text-[var(--text-secondary)] mt-1">Assigns a working estimate so it can be cataloged quickly.</div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <button id="standardFileBtn" class="p-4 bg-white border border-[var(--grid-border)] text-xs uppercase tracking-wider hover:border-[var(--accent-gold)] hover:bg-amber-50/30 transition text-center font-medium">
-            File into Standard Catalog
-          </button>
-          <button id="flagExceptionBtn" class="p-4 bg-white border border-amber-300 text-xs uppercase tracking-wider text-[#bd6f5d] hover:bg-amber-50 transition text-center font-medium">
-            <i data-lucide="flag" class="w-3.5 h-3.5 inline mr-1"></i> Quarantine as Protocol Exception
-          </button>
+        <div class="a2-opt p-4 bg-white border border-[var(--grid-border)] cursor-pointer hover:border-[var(--accent-gold)] transition" data-action="HOLD">
+          <div class="text-xs font-semibold text-[var(--text-primary)]">Set aside in the pending box until the original donor is contacted</div>
+          <div class="text-[11px] text-[var(--text-secondary)] mt-1">Waits for complete confirmation before adding to the collection.</div>
         </div>
       </div>
-    `;
 
-    logEvent('exception_presented', { item_id: item.id });
+      <div class="flex justify-end">
+        <button id="a2ConfirmBtn" disabled class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition">
+          Confirm Action &rarr;
+        </button>
+      </div>
+    </div>
+  `;
 
-    document.getElementById('standardFileBtn')?.addEventListener('click', () => {
-      const isCorrect = !item.isException;
-      if (isCorrect) correctDecisions++;
-      logEvent('decision_logged', { item_id: item.id, action: 'standard_file', is_correct: isCorrect });
-      currentIdx++;
-      render();
+  const btn = document.getElementById('a2ConfirmBtn');
+  app.querySelectorAll('.a2-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      app.querySelectorAll('.a2-opt').forEach(o => o.classList.remove('border-[var(--accent-gold)]', 'bg-amber-50/30'));
+      opt.classList.add('border-[var(--accent-gold)]', 'bg-amber-50/30');
+      chosenAction = opt.getAttribute('data-action');
+      if (btn) btn.disabled = false;
     });
+  });
 
-    document.getElementById('flagExceptionBtn')?.addEventListener('click', () => {
-      const isCorrect = item.isException;
-      if (isCorrect) correctDecisions++;
-      logEvent('decision_logged', { item_id: item.id, action: 'flag_exception', is_correct: isCorrect });
-      currentIdx++;
-      render();
+  btn?.addEventListener('click', () => {
+    logEvent('exception_resolved', { action: chosenAction });
+    onComplete({
+      mini_game: 'A2',
+      observations_count: 1,
+      chosen_action: chosenAction
     });
-  }
-
-  render();
+  });
 }
 
 // --------------------------------------------------------------------------
-// A3: Quality Control
+// A3: Quality Check
 // --------------------------------------------------------------------------
 function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
-  const ledger = [
-    { id: 'REC-01', title: 'Lalla Vakhs (14th C)', category: 'Manuscripts', hasError: false },
-    { id: 'REC-02', title: 'Copper Tray Engraving', category: 'Manuscripts', hasError: true, correctCat: 'Artifacts' }, // Error: should be Artifacts
-    { id: 'REC-03', title: 'Kashmir Shawl Pattern', category: 'Artifacts', hasError: false },
-    { id: 'REC-04', title: 'Curatorial Roster 2024', category: 'Records', hasError: false },
-    { id: 'REC-05', title: 'Habba Khatoon Folio', category: 'Records', hasError: true, correctCat: 'Manuscripts' }, // Error: should be Manuscripts
-    { id: 'REC-06', title: 'Clay Terracotta Vessel', category: 'Artifacts', hasError: false }
+  const cards = [
+    { id: 'Q1', text: 'Poet: Habba Khatoon | Era: 16th Century | Language: Kashmiri', hasError: false },
+    { id: 'Q2', text: 'Artwork: Walnut Wood Plaque | Weight: 450 Kilograms (Expected: 450 Grams)', hasError: true },
+    { id: 'Q3', text: 'Notice Date: February 31st, 2026 | Location: Hall A', hasError: true }
   ];
 
-  let correctedMap = {};
+  let checks = {};
 
-  function render() {
-    const rowsHtml = ledger.map(item => {
-      const isEdited = correctedMap[item.id] !== undefined;
-      const displayCat = isEdited ? correctedMap[item.id] : item.category;
+  app.innerHTML = `
+    <div>
+      ${renderHeader('Task 3: Catalog Proofreading', 'Check the cards below before printing. Select any card that contains an error.')}
 
-      return `
-        <tr class="border-b border-[var(--grid-border)] hover:bg-[#faf8f5]">
-          <td class="p-3 font-mono text-xs text-[var(--text-secondary)]">${item.id}</td>
-          <td class="p-3 font-serif text-sm text-[var(--text-primary)]">${item.title}</td>
-          <td class="p-3 text-xs">
-            <span class="px-2 py-0.5 bg-white border border-[var(--grid-border)] ${isEdited ? 'border-emerald-400 text-emerald-800' : 'text-[var(--text-secondary)]'}">
-              ${displayCat} ${isEdited ? '&#10003;' : ''}
-            </span>
-          </td>
-          <td class="p-3 text-right">
-            <select class="cat-select text-xs p-1 bg-white border border-[var(--grid-border)] focus:outline-none" data-id="${item.id}">
-              <option value="">Edit Tag...</option>
-              <option value="Manuscripts">Manuscripts</option>
-              <option value="Artifacts">Artifacts</option>
-              <option value="Records">Records</option>
-            </select>
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    app.innerHTML = `
-      <div>
-        ${renderHeader('A3: Quality Control & Audit', 'Verify catalog records against standard criteria and correct any discrepancies before final archival seal.')}
-
-        <div class="border border-[var(--grid-border)] bg-white overflow-hidden mb-6">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-[#faf8f5] border-b border-[var(--grid-border)] text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">
-                <th class="p-3">ID</th>
-                <th class="p-3">Title</th>
-                <th class="p-3">Current Vault</th>
-                <th class="p-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-        </div>
-
-        <div class="flex justify-between items-center pt-2">
-          <span class="text-xs text-[var(--text-secondary)]">Take your time to review. You may approve as is or submit corrections.</span>
-          <button id="finalizeLedgerBtn" class="px-6 py-2 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
-            Finalize & Seal Archive &rarr;
-          </button>
-        </div>
+      <div class="space-y-4 mb-6">
+        ${cards.map((c, idx) => `
+          <label class="flex items-start gap-3 p-4 bg-white border border-[var(--grid-border)] cursor-pointer hover:border-[var(--accent-gold)] transition">
+            <input type="checkbox" id="check_${c.id}" class="mt-1 accent-[#bd6f5d]">
+            <div>
+              <div class="text-xs font-semibold text-[var(--text-primary)]">Label Card ${idx + 1}</div>
+              <div class="text-xs text-[var(--text-secondary)] font-mono mt-1">${c.text}</div>
+            </div>
+          </label>
+        `).join('')}
       </div>
-    `;
 
-    logEvent('ledger_opened', { total_rows: ledger.length });
+      <div class="flex justify-end">
+        <button id="a3SubmitBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
+          Approve & Finish &rarr;
+        </button>
+      </div>
+    </div>
+  `;
 
-    app.querySelectorAll('.cat-select').forEach(sel => {
-      sel.addEventListener('change', (e) => {
-        const id = sel.getAttribute('data-id');
-        const val = sel.value;
-        if (val) {
-          correctedMap[id] = val;
-          logEvent('correction_applied', { row_id: id, new_category: val });
-          render();
-        }
-      });
+  document.getElementById('a3SubmitBtn')?.addEventListener('click', () => {
+    let correctlySpotted = 0;
+    cards.forEach(c => {
+      const isChecked = document.getElementById(`check_${c.id}`)?.checked || false;
+      if (isChecked === c.hasError) correctlySpotted++;
     });
 
-    document.getElementById('finalizeLedgerBtn')?.addEventListener('click', () => {
-      let trueErrorsDetected = 0;
-      let falseAlarms = 0;
-
-      ledger.forEach(item => {
-        if (item.hasError) {
-          if (correctedMap[item.id] === item.correctCat) {
-            trueErrorsDetected++;
-          }
-        } else {
-          if (correctedMap[item.id] !== undefined && correctedMap[item.id] !== item.category) {
-            falseAlarms++;
-          }
-        }
-      });
-
-      const sensitivity = trueErrorsDetected / 2.0; // 2 true errors
-      const falseAlarmRate = falseAlarms / 4.0; // 4 clean records
-
-      logEvent('ledger_finalized', {
-        true_errors_detected: trueErrorsDetected,
-        false_alarms: falseAlarms,
-        sensitivity: sensitivity,
-        false_alarm_rate: falseAlarmRate
-      });
-
-      onComplete({
-        mini_game: 'A3',
-        observations_count: 1,
-        sensitivity: sensitivity,
-        false_alarm_rate: falseAlarmRate
-      });
+    const accuracy = correctlySpotted / cards.length;
+    logEvent('quality_check_completed', { accuracy });
+    onComplete({
+      mini_game: 'A3',
+      observations_count: cards.length,
+      accuracy
     });
-  }
-
-  render();
+  });
 }

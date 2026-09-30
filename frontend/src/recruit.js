@@ -557,7 +557,9 @@ function renderGames(app, progressBarFill) {
       logEvent('game', action, data, stateSnapshot, inputType, mgId);
     },
     onMiniGameComplete: (mgResult) => {
-      logEvent('game', 'minigame_end', mgResult);
+      const mgId = getMiniGameId(currentWorldCode, state.currentMiniGameIndex);
+      logEvent('game', 'minigame_end', mgResult, {}, 'mouse', mgId);
+      flushTelemetry();
       if (state.currentMiniGameIndex < 2) {
         state.currentMiniGameIndex++;
       } else {
@@ -567,13 +569,16 @@ function renderGames(app, progressBarFill) {
       renderGames(app, progressBarFill);
     },
     onSkipWorld: () => {
-      logEvent('game', 'world_skipped', { world: currentWorldCode });
+      const mgId = getMiniGameId(currentWorldCode, state.currentMiniGameIndex);
+      logEvent('game', 'world_skipped', { world: currentWorldCode }, {}, 'mouse', mgId);
+      flushTelemetry();
       state.currentMiniGameIndex = 0;
       state.currentWorldIndex++;
       renderGames(app, progressBarFill);
     },
     onSkipAllGames: () => {
       logEvent('game', 'all_games_skipped');
+      flushTelemetry();
       finishAssessment();
     }
   });

@@ -13,8 +13,8 @@ EXPECTED_HASHES = {
         "ed4eb65e958a37d45b539470dfe5dc125932651cbc404e68f56fac31bb5bc64e"
     ],
     "sjt_items.json": [
-        "c098b401d37cc30b515139d307fef632047c048584e19771c0e014ef027e391d",
-        "be71fb2f4f0473034dccc5b9affac76ca93a553b50c54c155470ce1b50835890"
+        "91a5b9934ff13a94164cbdb956b1dc8de8d163fbf1e93b024710aacbdb76bc14",
+        "cfd2e4da886c03211beddf13e2ff47c1e3e2bd95068f413238f1f3394b9e39b6"
     ]
 }
 

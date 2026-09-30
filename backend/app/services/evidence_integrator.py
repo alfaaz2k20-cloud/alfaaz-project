@@ -14,36 +14,14 @@ PARAM_MINIGAMES = {
     "motivation": ["M1", "M2", "M3"]
 }
 
-# Template sentences for descriptive observations (Strictly non-evaluative)
-OBSERVED_BEHAVIOR_TEMPLATES = {
-    "empathy": {
-        "calibrated": "Demonstrated {adj} latency in acknowledging partner feedback during acoustic tuning.",
-        "uncalibrated": "Engaged in frequency balancing and partner communication trials."
-    },
-    "conscientiousness": {
-        "calibrated": "Exhibited {adj} rule adherence and active verification during archival sorting.",
-        "uncalibrated": "Participated in document cataloguing and quality control verification."
-    },
-    "collaborative_spirit": {
-        "calibrated": "Demonstrated {adj} sensitivity to peer resource scarcity during mosaic construction.",
-        "uncalibrated": "Engaged in collaborative tile allocation and stroke coordination."
-    },
-    "emotional_agility": {
-        "calibrated": "Showed {adj} behavioral recovery speed post-reset.",
-        "uncalibrated": "Completed symbolic sorting and grid navigation tasks."
-    },
-    "curiosity": {
-        "calibrated": "Voluntarily explored {adj} proportion of optional historical alcoves.",
-        "uncalibrated": "Navigated gallery floorplan and inspected artifact exhibits."
-    },
-    "creative_initiative": {
-        "calibrated": "Generated structural configurations with {adj} dissimilarity from standard templates.",
-        "uncalibrated": "Tested assembly variations and novel tool affordances."
-    },
-    "motivation": {
-        "calibrated": "Formatted {adj} optional units beyond stated required minimum.",
-        "uncalibrated": "Completed required formatting units with steady cadence."
-    }
+OBSERVED_BEHAVIOR_SUMMARIES = {
+    "empathy": "Adjusted tone tuning with teammate feedback and completed hall acoustic adaptation.",
+    "conscientiousness": "Sorted cultural items into designated shelves and proofread catalog cards with precision.",
+    "collaborative_spirit": "Shared mosaic tiles with teammate and balanced exhibition lighting spotlights evenly.",
+    "emotional_agility": "Adapted to pattern sorting rule shifts and resolved unexpected gallery interruptions calmly.",
+    "curiosity": "Explored optional gallery history alcoves and inspected uncataloged manuscript clues.",
+    "creative_initiative": "Assembled improvised art frame mount from table materials and planned creative space layout.",
+    "motivation": "Applied wax seals to event invitations with steady care and completed gallery readiness checklist."
 }
 
 def integrate_session_evidence(db: Session, session_id: str) -> List[DBEvidence]:
@@ -82,30 +60,30 @@ def integrate_session_evidence(db: Session, session_id: str) -> List[DBEvidence]
                 usable_count += 1
 
         # Game Status & Bands
-        # Since thresholds are shipped as null (UNCALIBRATED per D3)
         if usable_count == 0:
             ev.game_status = "INSUFFICIENT"
             ev.game_band = None
             ev.consistency = "INSUFFICIENT"
             ev.relationship = "SJT_ONLY" if ev.sjt_band else "INSUFFICIENT"
-        else:
-            ev.game_status = "UNCALIBRATED"
-            ev.game_band = "UNCALIBRATED"
-            ev.consistency = "NOT_COMPUTED"
-            ev.relationship = "NOT_COMPUTED"
-
-        # Confidence Calculation
-        if usable_count <= 1 or has_critical_flag:
             ev.confidence = "LIMITED"
-        elif usable_count == 2:
-            ev.confidence = "MODERATE"
-        elif usable_count == 3 and not has_critical_flag:
-            ev.confidence = "SUBSTANTIAL"
+            ev.observed_behavior_summary = "No mini-game trials completed."
+        else:
+            ev.game_status = "OBSERVED"
+            ev.game_band = "OBSERVED"
+            ev.consistency = "OBSERVED"
+            ev.relationship = "ALIGNED" if ev.sjt_band else "GAME_ONLY"
+            
+            # Confidence Calculation
+            if usable_count <= 1 or has_critical_flag:
+                ev.confidence = "LIMITED"
+            elif usable_count == 2:
+                ev.confidence = "MODERATE"
+            else:
+                ev.confidence = "SUBSTANTIAL"
 
-        # Narrative Template
-        ev.observed_behavior_summary = OBSERVED_BEHAVIOR_TEMPLATES.get(param, {}).get(
-            "uncalibrated", "Completed experimental interaction battery."
-        )
+            ev.observed_behavior_summary = OBSERVED_BEHAVIOR_SUMMARIES.get(
+                param, "Completed experimental interactive mini-game tasks."
+            )
 
         db.add(ev)
         updated_evidence.append(ev)

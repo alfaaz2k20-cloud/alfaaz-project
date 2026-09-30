@@ -8,11 +8,11 @@
         "en": "The Exhibition",
         "ur": "نمائش"
       },
-      "setup": "The exhibition opens in 2 hours, but an artist's paintings haven't arrived. The curator is highly stressed managing lighting.",
+      "setup": "The community exhibition opens in two hours, but one artist's paintings have not arrived yet. The lead organizer is busy setting up the main lighting.",
       "options": [
         {
           "id": "S1A",
-          "text": "Protect the curator's time by quietly taking over setup tasks, working double-speed.",
+          "text": "Start helping with the lighting and room setup right away so everything else is ready on time.",
           "keys": {
             "empathy": 1,
             "conscientiousness": 3,
@@ -25,7 +25,7 @@
         },
         {
           "id": "S1B",
-          "text": "Suggest immediately pivoting the floor plan to hide the missing art.",
+          "text": "Suggest rearranging the open wall space so the room looks balanced even without those paintings.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 0,
@@ -38,7 +38,7 @@
         },
         {
           "id": "S1C",
-          "text": "Approach the curator and ask directly how you can best support them right now.",
+          "text": "Go to the lead organizer and ask which task they need the most help with right now.",
           "keys": {
             "empathy": 3,
             "conscientiousness": 0,
@@ -51,7 +51,7 @@
         },
         {
           "id": "S1D",
-          "text": "Take initiative to call members to track down the artist or backup art.",
+          "text": "Call the artist or delivery driver to find out exactly where the paintings are and when they will arrive.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 1,
@@ -71,11 +71,11 @@
         "en": "The Exhibition",
         "ur": "نمائش"
       },
-      "setup": "An artist, Faizan, is upset his art is near the noisy entrance and demands a quiet corner. Meher is currently in the quiet corner and is happy.",
+      "setup": "Faizan's artwork is placed near the entrance where people walk in and out, and he feels distracted. Meher's art is in a quiet corner and she is happy with her spot.",
       "options": [
         {
           "id": "S2A",
-          "text": "Bring Faizan and Meher together to mediate a conversation.",
+          "text": "Sit with both Faizan and Meher over tea to see if they can find an arrangement that feels good for both.",
           "keys": {
             "empathy": 3,
             "conscientiousness": 0,
@@ -88,7 +88,7 @@
         },
         {
           "id": "S2B",
-          "text": "Firmly but politely maintain the original floor plan to ensure fairness.",
+          "text": "Politely keep the floor plan as originally planned so everyone's assigned spots remain clear and fair.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 3,
@@ -101,7 +101,7 @@
         },
         {
           "id": "S2C",
-          "text": "Scout the venue for an unconventional, unused space for Faizan.",
+          "text": "Walk around the venue to find another quiet, creative wall or alcove for Faizan's art.",
           "keys": {
             "empathy": 1,
             "conscientiousness": 0,
@@ -114,7 +114,7 @@
         },
         {
           "id": "S2D",
-          "text": "Offer to personally stand near Faizan's exhibit to manage crowd noise.",
+          "text": "Offer to stand by the entrance during the event to welcome visitors and keep the entryway calm and quiet.",
           "keys": {
             "empathy": 2,
             "conscientiousness": 1,
@@ -134,11 +134,11 @@
         "en": "The Exhibition",
         "ur": "نمائش"
       },
-      "setup": "A school teacher arrives unannounced with 15 students while the space is still messy with cables.",
+      "setup": "A teacher arrives unexpectedly with 15 school children while the exhibition hall is still being arranged.",
       "options": [
         {
           "id": "S3A",
-          "text": "Gather the students in the lobby for an impromptu Q&A.",
+          "text": "Gather the children in the front seating area and share a lively, informal story about art.",
           "keys": {
             "empathy": 1,
             "conscientiousness": 0,
@@ -151,7 +151,7 @@
         },
         {
           "id": "S3B",
-          "text": "Enforce the opening time, but take details to arrange a tour later.",
+          "text": "Politely explain the opening time and invite the teacher to book a guided group visit later in the week.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 3,
@@ -164,7 +164,7 @@
         },
         {
           "id": "S3C",
-          "text": "Cordon a safe 'preview zone' and watch the students yourself.",
+          "text": "Set up a safe, clean corner of the hall and personally guide the students through that area.",
           "keys": {
             "empathy": 2,
             "conscientiousness": 1,
@@ -177,7 +177,7 @@
         },
         {
           "id": "S3D",
-          "text": "Show them one relevant artwork without disrupting the room.",
+          "text": "Pick one finished piece of art near the front and show it to the students while the setup continues.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 0,
@@ -197,11 +197,11 @@
         "en": "The Circle",
         "ur": "حلقہ"
       },
-      "setup": "Zara, a new member, leans forward to speak but pulls back nervously.",
+      "setup": "During an evening poetry circle, a new participant leans forward to speak, but hesitates and looks nervous.",
       "options": [
         {
           "id": "S4A",
-          "text": "Wait for a pause and gently invite her to share.",
+          "text": "Wait for a natural pause and gently smile to invite her to share if she feels ready.",
           "keys": {
             "empathy": 3,
             "conscientiousness": 0,
@@ -214,7 +214,7 @@
         },
         {
           "id": "S4B",
-          "text": "Observe her interests and bring those topics up broadly.",
+          "text": "Bring up a broad question related to poetry themes to make the conversation feel open and easy.",
           "keys": {
             "empathy": 1,
             "conscientiousness": 0,
@@ -227,7 +227,7 @@
         },
         {
           "id": "S4C",
-          "text": "Approach her privately after the event to meet 1-on-1.",
+          "text": "Wait until the gathering ends, then go over to chat with her one-on-one over tea.",
           "keys": {
             "empathy": 3,
             "conscientiousness": 0,
@@ -240,7 +240,7 @@
         },
         {
           "id": "S4D",
-          "text": "Propose a round-robin structural rule for future meetings.",
+          "text": "Suggest passing a speaking token around the circle so every person gets an equal, relaxed turn.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 3,
@@ -260,11 +260,11 @@
         "en": "The Circle",
         "ur": "حلقہ"
       },
-      "setup": "An audience member angrily interrupts a poet reading a sensitive piece. The poet freezes.",
+      "setup": "During a poetry reading, an audience member speaks up loudly in disagreement with a poem. The reader stops.",
       "options": [
         {
           "id": "S5A",
-          "text": "Reference guidelines on respect and transition to the next reader.",
+          "text": "Kindly remind everyone of the shared listening guidelines and gently move to the next reader.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 3,
@@ -277,7 +277,7 @@
         },
         {
           "id": "S5B",
-          "text": "Go directly to the poet's side to ensure they feel safe.",
+          "text": "Step beside the reader to offer quiet support and check if they feel comfortable continuing.",
           "keys": {
             "empathy": 3,
             "conscientiousness": 0,
@@ -290,7 +290,7 @@
         },
         {
           "id": "S5C",
-          "text": "Pause the event and invite the angry member to explain briefly.",
+          "text": "Pause briefly and invite the audience member to share their thoughts respectfully for one minute.",
           "keys": {
             "empathy": 1,
             "conscientiousness": 0,
@@ -303,7 +303,7 @@
         },
         {
           "id": "S5D",
-          "text": "Ask the room to take one minute of silence to reflect.",
+          "text": "Invite the room to pause for a quiet minute of shared reflection before continuing the reading.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 0,
@@ -323,11 +323,11 @@
         "en": "The Outreach",
         "ur": "رسائی"
       },
-      "setup": "An 8-year-old boy refuses to paint. Your veteran co-volunteer whispers, 'Just leave him be.'",
+      "setup": "At a community art workshop, an 8-year-old child sits quietly with arms folded and does not want to paint. Another volunteer says, 'Let him be.'",
       "options": [
         {
           "id": "S6A",
-          "text": "Trust the co-volunteer, but keep a watchful eye from a distance.",
+          "text": "Respect his pace and give him space, while keeping a friendly eye from nearby in case he joins later.",
           "keys": {
             "empathy": 1,
             "conscientiousness": 3,
@@ -340,7 +340,7 @@
         },
         {
           "id": "S6B",
-          "text": "Sit near him and doodle wordlessly as a low-pressure invitation.",
+          "text": "Sit at the same table and quietly draw something simple beside him without asking him to join.",
           "keys": {
             "empathy": 3,
             "conscientiousness": 0,
@@ -353,7 +353,7 @@
         },
         {
           "id": "S6C",
-          "text": "Build a 3D structure out of paint pots to spark his interest.",
+          "text": "Build a fun little sculpture using wooden blocks and empty paint cups near him to spark his interest.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 0,
@@ -366,7 +366,7 @@
         },
         {
           "id": "S6D",
-          "text": "Ask the full-time staff about the boy's usual interests.",
+          "text": "Ask the workshop organizers or family what kinds of stories, games, or crafts he usually enjoys.",
           "keys": {
             "empathy": 1,
             "conscientiousness": 1,
@@ -386,11 +386,11 @@
         "en": "The Outreach",
         "ur": "رسائی"
       },
-      "setup": "You're burnt out, a friend is visiting town for one day, but you committed to setup.",
+      "setup": "You signed up to help clean and prepare the gallery on Sunday, but a close friend from out of town visits for just that afternoon.",
       "options": [
         {
           "id": "S7A",
-          "text": "Honor the full commitment. Meet your friend only if it wraps up early.",
+          "text": "Complete your full shift as promised, and meet your friend in the evening after wrapping up.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 3,
@@ -403,7 +403,7 @@
         },
         {
           "id": "S7B",
-          "text": "Call the lead honestly, and swap to a harder shift next week.",
+          "text": "Message the team organizer early to explain, and volunteer to take two upcoming shifts instead.",
           "keys": {
             "empathy": 2,
             "conscientiousness": 1,
@@ -416,7 +416,7 @@
         },
         {
           "id": "S7C",
-          "text": "Bring your friend along as a 'guest volunteer'.",
+          "text": "Invite your friend to come along and help with setup so you can spend time together while helping the gallery.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 0,
@@ -429,7 +429,7 @@
         },
         {
           "id": "S7D",
-          "text": "Do the hardest 2 hours, hand over your tasks smoothly, then leave.",
+          "text": "Work hard on the most demanding tasks for the first two hours, hand over your checklist, and then meet your friend.",
           "keys": {
             "empathy": 0,
             "conscientiousness": 2,
