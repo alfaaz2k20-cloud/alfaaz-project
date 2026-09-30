@@ -439,47 +439,78 @@ document.addEventListener('DOMContentLoaded', () => {
     window.viewCandidateDossier = async function(sessionId) {
       document.getElementById('modalTitle').textContent = 'Candidate Evidence Dossier';
       const body = document.getElementById('modalBody');
-      body.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--text-secondary);">Loading dossier from registry...</div>';
+      body.innerHTML = `
+        <div style="padding: 3rem 1rem; text-align: center; color: var(--text-secondary);">
+          <div class="w-8 h-8 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-3" style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
+          <div style="font-size: 13px; font-family: var(--font-heading);">Retrieving Candidate Dossier...</div>
+          <div style="font-size: 11px; margin-top: 4px;">Loading telemetry records from research registry.</div>
+        </div>
+      `;
       document.getElementById('regModal').classList.add('open');
 
       try {
         const res = await window.globalApiFetch(`/recruit/research/session/${sessionId}`);
-        if (!res) return;
+        if (!res) {
+          body.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--accent-red);">Session expired or network error. Please refresh and try again.</div>';
+          return;
+        }
+
         const data = await res.json();
-        const meta = data.metadata;
+        if (!res.ok) {
+          body.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--accent-red); font-size:13px;">Error loading dossier: ${window.escapeHtml(data.detail || 'Server error')}</div>`;
+          return;
+        }
+
+        const meta = data.metadata || {};
+        const applicant = meta.applicant || {};
         const ev = data.evidence_by_parameter || {};
         const feats = data.features || [];
         const flags = data.data_quality_flags || [];
 
-        document.getElementById('modalTitle').textContent = `${meta.applicant.full_name || 'Candidate'} — Assessment Dossier`;
+        const candidateName = window.escapeHtml(applicant.full_name || 'Candidate');
+        const candidateEmail = window.escapeHtml(applicant.email || '—');
+        const dateStr = meta.created_at ? new Date(meta.created_at).toLocaleString() : '—';
+        const sessionStatus = meta.status || 'ACTIVE';
 
-        let paramRows = Object.keys(ev).map(pKey => {
-          const p = ev[pKey];
-          const pName = pKey.replace(/_/g, ' ').toUpperCase();
-          const ref = p.random_responder_reference || {};
+        document.getElementById('modalTitle').textContent = `${candidateName} — Assessment Dossier`;
 
-          return `
-            <div style="background:#faf8f5; border:1px solid var(--grid-border); padding:1.25rem; margin-bottom:1rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--grid-border); padding-bottom:0.5rem; margin-bottom:0.75rem;">
-                <span style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-primary);">${pName}</span>
-                <span style="font-size:11px; font-weight:600; color:var(--accent-gold); text-transform:uppercase;">SJT Band: ${p.sjt_band || 'UNAVAILABLE'}</span>
-              </div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:11px; color:var(--text-secondary); margin-bottom:0.5rem;">
-                <div>
-                  <div>Raw Score: <strong style="color:var(--text-primary);">${p.sjt_raw !== null ? p.sjt_raw : '—'}</strong> / ${p.sjt_max} (Span: ${p.sjt_span})</div>
-                  <div style="font-size:10px; margin-top:2px;">Random Baseline: L: ${ref.LOW || '—'} · M: ${ref.MODERATE || '—'} · H: ${ref.HIGH || '—'}</div>
+        let paramRows = '';
+        const paramKeys = Object.keys(ev);
+        if (paramKeys.length > 0) {
+          paramRows = paramKeys.map(pKey => {
+            const p = ev[pKey];
+            const pName = pKey.replace(/_/g, ' ').toUpperCase();
+            const ref = p.random_responder_reference || {};
+
+            return `
+              <div style="background:#faf8f5; border:1px solid var(--grid-border); padding:1.25rem; margin-bottom:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--grid-border); padding-bottom:0.5rem; margin-bottom:0.75rem;">
+                  <span style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-primary);">${pName}</span>
+                  <span style="font-size:11px; font-weight:600; color:var(--accent-gold); text-transform:uppercase;">SJT Band: ${p.sjt_band || 'UNAVAILABLE'}</span>
                 </div>
-                <div>
-                  <div>Game Activity Status: <strong style="color:${p.game_status === 'OBSERVED' ? 'var(--accent-green, green)' : 'var(--text-primary)'};">${p.game_status}</strong></div>
-                  <div>Evidence Confidence: <strong style="color:var(--text-primary);">${p.confidence}</strong></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:11px; color:var(--text-secondary); margin-bottom:0.5rem;">
+                  <div>
+                    <div>Raw Score: <strong style="color:var(--text-primary);">${p.sjt_raw !== null && p.sjt_raw !== undefined ? p.sjt_raw : '—'}</strong> / ${p.sjt_max || 12} (Span: ${p.sjt_span || 12})</div>
+                    <div style="font-size:10px; margin-top:2px;">Random Baseline: L: ${ref.LOW || '—'} · M: ${ref.MODERATE || '—'} · H: ${ref.HIGH || '—'}</div>
+                  </div>
+                  <div>
+                    <div>Game Activity Status: <strong style="color:${p.game_status === 'OBSERVED' ? 'var(--accent-green, green)' : 'var(--text-primary)'};">${p.game_status || 'UNCALIBRATED'}</strong></div>
+                    <div>Evidence Confidence: <strong style="color:var(--text-primary);">${p.confidence || 'LIMITED'}</strong></div>
+                  </div>
+                </div>
+                <div style="font-size:11px; color:var(--text-primary); border-top:1px dashed var(--grid-border); margin-top:0.5rem; padding-top:0.5rem;">
+                  <em>Observation:</em> ${window.escapeHtml(p.observed_behavior || 'Awaiting assessment activity.')}
                 </div>
               </div>
-              <div style="font-size:11px; color:var(--text-primary); border-top:1px dashed var(--grid-border); margin-top:0.5rem; padding-top:0.5rem;">
-                <em>Observation:</em> ${p.observed_behavior || 'Completed micro-task sequence.'}
-              </div>
+            `;
+          }).join('');
+        } else {
+          paramRows = `
+            <div style="padding: 1.5rem; background: #faf8f5; border: 1px solid var(--grid-border); text-align: center; color: var(--text-secondary); font-size: 11px;">
+              SJT responses are currently being recorded for this session.
             </div>
           `;
-        }).join('');
+        }
 
         // Format Mini-Game Features Table
         let featuresHtml = '';
@@ -499,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           featuresHtml = `
             <div style="margin-top: 2rem;">
-              <h4 style="font-family:var(--font-heading); font-size:1.3rem; margin-bottom:0.75rem; color:var(--text-primary);">Interactive Mini-Game Telemetry (21 Tasks)</h4>
+              <h4 style="font-family:var(--font-heading); font-size:1.3rem; margin-bottom:0.75rem; color:var(--text-primary);">Interactive Mini-Game Telemetry (${feats.length} Metrics Extracted)</h4>
               <div style="overflow-x: auto; border: 1px solid var(--grid-border); background: #faf8f5;">
                 <table style="width: 100%; border-collapse: collapse; text-align: left;">
                   <thead>
@@ -521,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           featuresHtml = `
             <div style="margin-top: 2rem; padding: 1.5rem; background: #faf8f5; border: 1px solid var(--grid-border); text-align: center; color: var(--text-secondary); font-size: 11px;">
-              No interactive mini-game features recorded yet for this session.
+              Interactive mini-game telemetry features will be extracted upon game battery submission.
             </div>
           `;
         }
@@ -540,16 +571,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         body.innerHTML = `
           <div style="font-size:12px; margin-bottom:1.5rem; background:rgba(189,111,93,0.08); border:1px solid var(--accent-gold); padding:1rem; line-height:1.6;">
-            <strong>Safeguard Note:</strong> ${meta.safeguards.banner} Scores reflect forced-choice trade-offs in scenario judgment and behavioral task observations.
+            <strong>Safeguard Note:</strong> ${meta.safeguards?.banner || 'Research evidence view. Not for automated selection decisions.'} Scores reflect forced-choice trade-offs in scenario judgment and behavioral task observations.
           </div>
           <div style="margin-bottom:1.5rem; font-size:12px; display:flex; justify-content:space-between; border-bottom:1px solid var(--grid-border); padding-bottom:1rem;">
             <div>
-              <div><strong>Email:</strong> ${window.escapeHtml(meta.applicant.email || '—')}</div>
-              <div><strong>Session ID:</strong> <span style="font-family:monospace; font-size:10px;">${meta.session_id}</span></div>
+              <div><strong>Email:</strong> ${candidateEmail}</div>
+              <div><strong>Session ID:</strong> <span style="font-family:monospace; font-size:10px;">${sessionId}</span></div>
             </div>
             <div style="text-align:right;">
-              <div><strong>Status:</strong> <span class="badge ${meta.status === 'COMPLETE' ? 'badge-approved' : 'badge-pending'}">${meta.status}</span></div>
-              <div style="margin-top: 4px;"><strong>Date:</strong> ${meta.created_at ? new Date(meta.created_at).toLocaleString() : '—'}</div>
+              <div><strong>Status:</strong> <span class="badge ${sessionStatus === 'COMPLETE' ? 'badge-approved' : 'badge-pending'}">${sessionStatus}</span></div>
+              <div style="margin-top: 4px;"><strong>Date:</strong> ${dateStr}</div>
             </div>
           </div>
           <div>
@@ -560,7 +591,8 @@ document.addEventListener('DOMContentLoaded', () => {
           ${flagsHtml}
         `;
       } catch (err) {
-        body.innerHTML = '<div style="padding:2rem; text-align:center; color:red;">Failed to load candidate dossier.</div>';
+        console.error('Candidate dossier load error:', err);
+        body.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--accent-red);">Failed to load candidate dossier. Please check server connection.</div>';
       }
     };
 

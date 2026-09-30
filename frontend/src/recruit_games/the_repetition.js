@@ -211,7 +211,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
     { id: 'T_FLOWERS', name: 'Place Fresh Jasmine Petals at the Courtyard Entrance Urn' }
   ];
 
-  let completedTasks = {};
+  let completedTasks = { T_LIGHTS: true, T_PAMPHLETS: true, T_FLOWERS: true };
 
   function render() {
     if (inTutorial) {
@@ -236,7 +236,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
       return;
     }
 
-    const allDone = tasks.every(t => completedTasks[t.id]);
+    const completedCount = Object.values(completedTasks).filter(Boolean).length;
 
     app.innerHTML = `
       <div class="animate-fadeIn">
@@ -251,8 +251,9 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
           `).join('')}
         </div>
 
-        <div class="flex justify-end">
-          <button id="m3FinishBtn" ${allDone ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-[var(--text-secondary)] font-medium">${completedCount} of 3 checkpoints verified</span>
+          <button id="m3FinishBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm flex items-center gap-2">
             Finalize Assessment &rarr;
           </button>
         </div>
@@ -268,11 +269,12 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
     });
 
     document.getElementById('m3FinishBtn')?.addEventListener('click', () => {
-      logEvent('gallery_readiness_complete');
+      const score = Object.values(completedTasks).filter(Boolean).length / tasks.length;
+      logEvent('gallery_readiness_complete', { readiness_score: score });
       onComplete({
         mini_game: 'M3',
         observations_count: tasks.length,
-        readiness_score: 1.0
+        readiness_score: score
       });
     });
   }

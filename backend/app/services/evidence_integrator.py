@@ -32,6 +32,30 @@ def integrate_session_evidence(db: Session, session_id: str) -> List[DBEvidence]
         select(DBEvidence).where(DBEvidence.session_id == session_id)
     ).all()
 
+    # Ensure all 7 core parameters have evidence records initialized
+    existing_params = {ev.parameter: ev for ev in evidence_records}
+    for param_name in PARAM_MINIGAMES.keys():
+        if param_name not in existing_params:
+            new_ev = DBEvidence(
+                session_id=session_id,
+                parameter=param_name,
+                sjt_raw=None,
+                sjt_min=0,
+                sjt_max=12,
+                sjt_span=12,
+                sjt_band="UNCALIBRATED",
+                game_status="UNCALIBRATED",
+                game_band=None,
+                consistency="NOT_COMPUTED",
+                relationship="INSUFFICIENT",
+                confidence="LIMITED",
+                observed_behavior_summary="Awaiting assessment completion."
+            )
+            db.add(new_ev)
+            existing_params[param_name] = new_ev
+    db.commit()
+    evidence_records = list(existing_params.values())
+
     features = db.exec(
         select(DBFeature).where(DBFeature.session_id == session_id)
     ).all()

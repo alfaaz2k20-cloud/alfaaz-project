@@ -107,7 +107,7 @@ def _extract_A1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
         data = json.loads(e.data_json) if e.data_json else {}
         if data.get("is_correct"):
             correct_count += 1
-        total_dwell += float(data.get("dwell_ms", 2000.0))
+        total_dwell += float(data.get("dwell_ms") or 2000.0)
 
     accuracy = (correct_count / obs_count) if obs_count > 0 else 1.0
 
@@ -174,8 +174,8 @@ def _extract_A3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
 
     if final_events:
         data = json.loads(final_events[-1].data_json) if final_events[-1].data_json else {}
-        sensitivity = float(data.get("sensitivity", data.get("accuracy", 1.0)))
-        false_alarm = float(data.get("false_alarm_rate", 0.0))
+        sensitivity = float(data.get("sensitivity") or data.get("accuracy") or 1.0)
+        false_alarm = float(data.get("false_alarm_rate") or 0.0)
     else:
         sensitivity = 1.0
         false_alarm = 0.0
@@ -204,7 +204,12 @@ def _extract_A3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
 # --------------------------------------------------------------------------
 def _extract_F1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
     end_ev = [e for e in events if e.action in ["tuning_locked", "minigame_end"]]
-    val = float(json.loads(end_ev[-1].data_json).get("latency_ms", 1200.0)) if end_ev and end_ev[-1].data_json else 1200.0
+    val = 1200.0
+    if end_ev and end_ev[-1].data_json:
+        try:
+            val = float(json.loads(end_ev[-1].data_json).get("latency_ms") or 1200.0)
+        except Exception:
+            val = 1200.0
     return [DBFeature(session_id=session_id, mini_game="F1", feature_name="cue_response_latency_ms", value_raw=val, valid=True)]
 
 def _extract_F2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
@@ -256,9 +261,12 @@ def _extract_M2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
     end_evs = [e for e in events if e.action in ["optional_session_concluded", "optional_stamping_done", "optional_unit_saved", "minigame_end"]]
     count = 3.0
     if end_evs:
-        data = json.loads(end_evs[-1].data_json or "{}")
-        if "total_extra" in data:
-            count = float(data["total_extra"])
+        try:
+            data = json.loads(end_evs[-1].data_json or "{}")
+            if "total_extra" in data:
+                count = float(data.get("total_extra") or 0.0)
+        except Exception:
+            count = 3.0
     return [DBFeature(session_id=session_id, mini_game="M2", feature_name="optional_units_completed", value_raw=count, valid=True)]
 
 def _extract_M3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:

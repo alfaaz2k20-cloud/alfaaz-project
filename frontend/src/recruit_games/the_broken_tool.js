@@ -26,7 +26,7 @@ export function runTheBrokenTool(context, renderHeader) {
 // --------------------------------------------------------------------------
 function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
-  let selectedItems = [];
+  let selectedItems = ['Twisted Hemp Cord', 'Steel Hanging Ring'];
 
   const availableTools = [
     { id: 'T_HEMP', name: 'Twisted Hemp Cord', icon: '&#129526;' },
@@ -84,8 +84,8 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <div class="flex justify-between items-center">
-          <span class="text-xs text-[var(--text-secondary)] font-medium">${selectedItems.length} materials selected (Min. 2)</span>
-          <button id="testMountBtn" ${selectedItems.length >= 2 ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm">
+          <span class="text-xs text-[var(--text-secondary)] font-medium">${selectedItems.length} materials selected</span>
+          <button id="testMountBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm">
             Test Mount Stability &rarr;
           </button>
         </div>
@@ -96,7 +96,9 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
       btn.addEventListener('click', () => {
         const name = btn.getAttribute('data-name');
         if (selectedItems.includes(name)) {
-          selectedItems = selectedItems.filter(i => i !== name);
+          if (selectedItems.length > 1) {
+            selectedItems = selectedItems.filter(i => i !== name);
+          }
         } else {
           selectedItems.push(name);
         }
@@ -123,7 +125,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
 // --------------------------------------------------------------------------
 function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
-  let chosenLayout = null;
+  let chosenLayout = 'S_360';
 
   const solutions = [
     { id: 'S_360', title: '360° Wrap Display', desc: 'Hang miniature framed poetry on all four faces of the stone pillar for a 360° walking gallery.' },
@@ -160,7 +162,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           ${solutions.map(s => `
-            <div class="cr2-card p-5 bg-white border border-[var(--grid-border)] cursor-pointer hover:border-[var(--accent-gold)] transition space-y-2.5 text-center shadow-xs rounded-xs" data-id="${s.id}">
+            <div class="cr2-card p-5 bg-white border ${chosenLayout === s.id ? 'border-[var(--accent-gold)] bg-amber-50/40 font-semibold shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition space-y-2.5 text-center shadow-xs rounded-xs" data-id="${s.id}">
               <div class="w-10 h-10 mx-auto rounded-full bg-amber-50 border border-[var(--accent-gold)]/40 flex items-center justify-center text-[var(--accent-gold)] font-serif text-lg">
                 &#10038;
               </div>
@@ -171,24 +173,21 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <div class="flex justify-end">
-          <button id="cr2ConfirmBtn" disabled class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm">
+          <button id="cr2ConfirmBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm">
             Confirm Space Concept &rarr;
           </button>
         </div>
       </div>
     `;
 
-    const btn = document.getElementById('cr2ConfirmBtn');
     app.querySelectorAll('.cr2-card').forEach(card => {
       card.addEventListener('click', () => {
-        app.querySelectorAll('.cr2-card').forEach(c => c.classList.remove('border-[var(--accent-gold)]', 'bg-amber-50/40'));
-        card.classList.add('border-[var(--accent-gold)]', 'bg-amber-50/40');
         chosenLayout = card.getAttribute('data-id');
-        if (btn) btn.disabled = false;
+        render();
       });
     });
 
-    btn?.addEventListener('click', () => {
+    document.getElementById('cr2ConfirmBtn')?.addEventListener('click', () => {
       logEvent('pillar_solution_selected', { solution: chosenLayout });
       onComplete({
         mini_game: 'CR2',
@@ -206,7 +205,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 // --------------------------------------------------------------------------
 function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
-  let chosenPoster = null;
+  let chosenPoster = 'P_MINIMAL';
 
   const styles = [
     { id: 'P_MINIMAL', title: 'Serene Minimalist', desc: 'Spacious parchment backdrop highlighting a single handwritten verse in classical calligraphy.' },
@@ -243,7 +242,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           ${styles.map(st => `
-            <div class="cr3-card p-5 bg-white border border-[var(--grid-border)] cursor-pointer hover:border-[var(--accent-gold)] transition space-y-2.5 text-center shadow-xs rounded-xs" data-id="${st.id}">
+            <div class="cr3-card p-5 bg-white border ${chosenPoster === st.id ? 'border-[var(--accent-gold)] bg-amber-50/40 font-semibold shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition space-y-2.5 text-center shadow-xs rounded-xs" data-id="${st.id}">
               <div class="w-full h-24 bg-[#faf8f5] border border-[var(--grid-border)] flex flex-col items-center justify-center font-serif text-xs text-[var(--accent-gold)] mb-2 rounded-xs">
                 <span class="text-xs uppercase font-medium tracking-wider">[Card Style]</span>
                 <span class="text-[11px] text-[var(--text-secondary)] italic mt-1">${st.title}</span>
@@ -255,24 +254,21 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <div class="flex justify-end">
-          <button id="cr3FinishBtn" disabled class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm">
+          <button id="cr3FinishBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm">
             Confirm Style Choice &rarr;
           </button>
         </div>
       </div>
     `;
 
-    const btn = document.getElementById('cr3FinishBtn');
     app.querySelectorAll('.cr3-card').forEach(card => {
       card.addEventListener('click', () => {
-        app.querySelectorAll('.cr3-card').forEach(c => c.classList.remove('border-[var(--accent-gold)]', 'bg-amber-50/40'));
-        card.classList.add('border-[var(--accent-gold)]', 'bg-amber-50/40');
         chosenPoster = card.getAttribute('data-id');
-        if (btn) btn.disabled = false;
+        render();
       });
     });
 
-    btn?.addEventListener('click', () => {
+    document.getElementById('cr3FinishBtn')?.addEventListener('click', () => {
       logEvent('poster_style_selected', { style: chosenPoster });
       onComplete({
         mini_game: 'CR3',

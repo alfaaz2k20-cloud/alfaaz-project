@@ -610,6 +610,16 @@ function getMiniGameId(worldCode, mgIndex) {
 }
 
 async function finishAssessment() {
+  const app = document.getElementById('recruitApp');
+  if (app) {
+    app.innerHTML = `
+      <div class="space-y-6 text-center py-16 animate-fadeIn">
+        <div class="w-10 h-10 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <h2 class="text-2xl font-serif text-[var(--text-primary)]">Finalizing Assessment...</h2>
+        <p class="text-xs text-[var(--text-secondary)]">Safely recording research telemetry and saving your session profile.</p>
+      </div>
+    `;
+  }
   try {
     await apiFetch('/recruit/complete', {
       method: 'POST',
