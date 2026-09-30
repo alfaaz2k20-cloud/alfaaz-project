@@ -1,4 +1,4 @@
-from app.routers import admin, auth, blogs, clubs, curator, events, exhibitions, recruit
+from app.routers import admin, auth, blogs, clubs, curator, events, exhibitions, recruit, research_view
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -47,6 +47,7 @@ app.include_router(admin.router)
 app.include_router(blogs.router)
 app.include_router(vault.router)
 app.include_router(recruit.router)
+app.include_router(research_view.router)
 
 # Server Startup Script (Ensures Admin exists)
 @app.on_event("startup")

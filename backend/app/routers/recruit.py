@@ -42,7 +42,7 @@ LATIN_SQUARE_7 = [
 
 class StartSessionRequest(BaseModel):
     full_name: str = Field(..., min_length=2, max_length=150)
-    email: EmailStr
+    email: str = Field(..., min_length=5, max_length=150)
     phone_or_contact: Optional[str] = Field(None, max_length=50)
     device_class: Optional[str] = "desktop"
     input_modality: Optional[str] = "mouse"
