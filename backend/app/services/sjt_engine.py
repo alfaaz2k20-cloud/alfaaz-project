@@ -3,8 +3,20 @@ import json
 import hashlib
 from typing import Dict, Any, List, Tuple
 
-PARAMETERS_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "config", "parameters.json")
-SJT_ITEMS_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "config", "sjt_items.json")
+def resolve_config_path(filename: str) -> str:
+    candidates = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "config", filename),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config", filename),
+        os.path.join(os.getcwd(), "config", filename),
+        os.path.join(os.getcwd(), "..", "config", filename),
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return os.path.abspath(c)
+    return candidates[0]
+
+PARAMETERS_PATH = resolve_config_path("parameters.json")
+SJT_ITEMS_PATH = resolve_config_path("sjt_items.json")
 
 EXPECTED_HASHES = {
     "parameters.json": "ed4eb65e958a37d45b539470dfe5dc125932651cbc404e68f56fac31bb5bc64e",
