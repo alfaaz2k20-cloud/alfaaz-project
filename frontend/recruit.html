@@ -105,13 +105,13 @@
         <!-- View 1: Identity & Consent -->
         <div id="view-identity" class="view active">
             <div class="alfaaz-header">
-                <h1>ALFAAZ COLLECTIVE <span class="urdu-text">الفاظ</span></h1>
+                <h1>ALFAAZ COLLECTIVE <span class="urdu-text"></span></h1>
                 <p>It belongs to where it lives.</p>
             </div>
 
             <div style="text-align: center; margin-bottom: 2rem;">
                 <h2 style="margin-bottom: 1rem;">Volunteer Experience</h2>
-                <p style="color: var(--text-secondary);">We are looking for people who care about art, culture, and community. Before you fill a form, spend a few minutes with a small community we've built. There are no right or wrong ways to play — only yours.</p>
+                <p style="color: var(--text-secondary);">We are looking for people who care about art, culture, and community. Before you fill a form, spend a few minutes with a small community we've built. There are no right or wrong ways to play - only yours.</p>
             </div>
 
             <form id="identity-form">
@@ -134,7 +134,7 @@
                         <li><i data-lucide="check" size="18"></i> This is not a psychological test or diagnosis of any kind.</li>
                         <li><i data-lucide="check" size="18"></i> Your interactions help us understand how you naturally engage with a community space.</li>
                         <li><i data-lucide="check" size="18"></i> Your data will only be used for volunteer placement at Alfaaz Collective.</li>
-                        <li><i data-lucide="check" size="18"></i> Participation is completely voluntary — you can close this page at any time.</li>
+                        <li><i data-lucide="check" size="18"></i> Participation is completely voluntary - you can close this page at any time.</li>
                     </ul>
                     <label class="checkbox-wrapper">
                         <input type="checkbox" id="consent-check" required>
@@ -332,48 +332,48 @@
         
         const SJT_SCENARIOS = [
             {
-                text: "It's the morning of 'Kaamil' — Alfaaz's exhibition. You arrive to help set up. The exhibition opens in 2 hours, but one artist's paintings haven't arrived. She's not answering her phone. The curator looks stressed.",
+                text: "It's the morning of 'Kaamil' - Alfaaz's exhibition. You arrive to help set up. The exhibition opens in 2 hours, but one artist's paintings haven't arrived. She's not answering her phone. The curator looks stressed.",
                 options: [
                     { text: "Quietly take over other setup tasks to free up the curator's time, and keep trying to reach the artist yourself.", tags: [{tag: 'sjt_conscientiousness', strength: 1.0}] },
-                    { text: "Suggest rearranging the existing works to fill the gap — the exhibition can still feel complete with a different layout.", tags: [{tag: 'sjt_creative', strength: 1.0}] },
+                    { text: "Suggest rearranging the existing works to fill the gap - the exhibition can still feel complete with a different layout.", tags: [{tag: 'sjt_creative', strength: 1.0}] },
                     { text: "Sit with the curator for a moment, ask how they're feeling, and then together figure out a plan.", tags: [{tag: 'sjt_empathy', strength: 1.0}] },
                     { text: "Start calling other Alfaaz members to see if anyone has backup artwork or can pick up the missing pieces.", tags: [{tag: 'sjt_collaborative', strength: 1.0}] }
                 ]
             },
             {
-                text: "An artist, Faizan, is upset — his pieces have been placed near the entrance where foot traffic is heaviest. He feels his work needs a quieter corner. Another artist, Meher, is happy with her quiet spot and doesn't want to swap.",
+                text: "An artist, Faizan, is upset - his pieces have been placed near the entrance where foot traffic is heaviest. He feels his work needs a quieter corner. Another artist, Meher, is happy with her quiet spot and doesn't want to swap.",
                 options: [
                     { text: "Listen to Faizan fully, acknowledge his concern, then talk to Meher separately to understand her perspective.", tags: [{tag: 'sjt_empathy', strength: 1.0}, {tag: 'sjt_emotional', strength: 0.5}] },
                     { text: "Explain to Faizan that placement was decided by the curator and suggest he trust the process.", tags: [{tag: 'sjt_conscientiousness', strength: 1.0}] },
-                    { text: "Propose a creative compromise — maybe Faizan's most contemplative piece goes to a quieter spot, while his bolder work stays at the entrance.", tags: [{tag: 'sjt_creative', strength: 1.0}] },
-                    { text: "Let them work it out between themselves — it's not your place to intervene on your first day.", tags: [{tag: 'sjt_emotional', strength: 0.5}] }
+                    { text: "Propose a creative compromise - maybe Faizan's most contemplative piece goes to a quieter spot, while his bolder work stays at the entrance.", tags: [{tag: 'sjt_creative', strength: 1.0}] },
+                    { text: "Let them work it out between themselves - it's not your place to intervene on your first day.", tags: [{tag: 'sjt_emotional', strength: 0.5}] }
                 ]
             },
             {
-                text: "Thirty minutes before the exhibition opens, a school teacher arrives with 15 students — unannounced. The space isn't set up for a school group.",
+                text: "Thirty minutes before the exhibition opens, a school teacher arrives with 15 students - unannounced. The space isn't set up for a school group.",
                 options: [
                     { text: "Welcome them warmly, offer to give the students an informal walkthrough of the pieces that are ready.", tags: [{tag: 'sjt_empathy', strength: 1.0}] },
                     { text: "Politely ask them to come back in an hour when the exhibition officially opens.", tags: [{tag: 'sjt_conscientiousness', strength: 1.0}] },
-                    { text: "Check with the curator first — it's their call, and you don't want to overstep.", tags: [{tag: 'sjt_collaborative', strength: 1.0}] },
+                    { text: "Check with the curator first - it's their call, and you don't want to overstep.", tags: [{tag: 'sjt_collaborative', strength: 1.0}] },
                     { text: "Invite the students in but set up a temporary 'preview zone' with just a few pieces.", tags: [{tag: 'sjt_creative', strength: 1.0}, {tag: 'sjt_curiosity', strength: 0.5}] }
                 ]
             },
             {
-                text: "At the Philosophy Club, two members are passionately debating. You notice Zara — a new member — leaning forward as if she wants to speak, but keeps pulling back.",
+                text: "At the Philosophy Club, two members are passionately debating. You notice Zara - a new member - leaning forward as if she wants to speak, but keeps pulling back.",
                 options: [
-                    { text: "During a natural pause, gently say: 'Zara, I noticed you might have a thought — we'd love to hear it.'", tags: [{tag: 'sjt_collaborative', strength: 1.0}, {tag: 'sjt_empathy', strength: 0.5}] },
-                    { text: "After the session, approach Zara privately and ask what she thought — offer to help her share next time.", tags: [{tag: 'sjt_emotional', strength: 1.0}] },
+                    { text: "During a natural pause, gently say: 'Zara, I noticed you might have a thought - we'd love to hear it.'", tags: [{tag: 'sjt_collaborative', strength: 1.0}, {tag: 'sjt_empathy', strength: 0.5}] },
+                    { text: "After the session, approach Zara privately and ask what she thought - offer to help her share next time.", tags: [{tag: 'sjt_emotional', strength: 1.0}] },
                     { text: "Suggest the group try a round-robin format so everyone gets a chance to speak.", tags: [{tag: 'sjt_creative', strength: 0.5}, {tag: 'sjt_collaborative', strength: 0.5}] },
-                    { text: "Let it be — she'll speak up when she's comfortable; forcing it might make things worse.", tags: [{tag: 'sjt_emotional', strength: 0.5}] }
+                    { text: "Let it be - she'll speak up when she's comfortable; forcing it might make things worse.", tags: [{tag: 'sjt_emotional', strength: 0.5}] }
                 ]
             },
             {
                 text: "At a literature club evening, an audience member stands up and loudly says a poem being read isn't appropriate for a public event. The poet looks shaken.",
                 options: [
                     { text: "Acknowledge the audience member's concern respectfully, then affirm that Alfaaz is a space for all voices.", tags: [{tag: 'sjt_emotional', strength: 1.0}] },
-                    { text: "Step in to support the poet — thank them for their courage and remind the audience that art often lives in uncomfortable places.", tags: [{tag: 'sjt_empathy', strength: 1.0}] },
-                    { text: "Propose a brief pause — then open it up as a facilitated conversation, turning the tension into dialogue.", tags: [{tag: 'sjt_creative', strength: 1.0}, {tag: 'sjt_collaborative', strength: 0.5}] },
-                    { text: "Quietly check on the poet while someone else handles the audience — their emotional state is the priority.", tags: [{tag: 'sjt_empathy', strength: 1.0}] }
+                    { text: "Step in to support the poet - thank them for their courage and remind the audience that art often lives in uncomfortable places.", tags: [{tag: 'sjt_empathy', strength: 1.0}] },
+                    { text: "Propose a brief pause - then open it up as a facilitated conversation, turning the tension into dialogue.", tags: [{tag: 'sjt_creative', strength: 1.0}, {tag: 'sjt_collaborative', strength: 0.5}] },
+                    { text: "Quietly check on the poet while someone else handles the audience - their emotional state is the priority.", tags: [{tag: 'sjt_empathy', strength: 1.0}] }
                 ]
             }
         ];
@@ -393,7 +393,7 @@
             }
 
             const scenario = SJT_SCENARIOS[currentSjtIndex];
-            document.getElementById('sjt-phase-title').textContent = CYCLE II - SCENARIO /;
+            document.getElementById('sjt-phase-title').textContent = 'CYCLE II - SCENARIO ' + (currentSjtIndex + 1) + '/' + SJT_SCENARIOS.length;
             document.getElementById('sjt-scenario').textContent = scenario.text;
             
             const optionsContainer = document.getElementById('sjt-options');
@@ -502,3 +502,6 @@
     </script>
 </body>
 </html>
+
+
+
