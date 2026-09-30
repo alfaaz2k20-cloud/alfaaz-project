@@ -671,7 +671,6 @@
     `;
 
     // Final Payload
-    
     const payload = {
       sessionId: SESSION_ID,
       motorBaselineMs,
@@ -684,38 +683,6 @@
     };
 
     console.log("ALFAAZ EVALUATION PAYLOAD:", payload);
-
-    document.getElementById('app-btn').textContent = "SEALING...";
-    
-    // We can create a basic identity first
-    fetch('/api/volunteers/assessment/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            assessment_id: SESSION_ID, 
-            session_id: SESSION_ID,
-            identity: { name: "Applicant " + SESSION_ID, email: SESSION_ID + "@alfaaz.org", phone: "00000" } 
-        })
-    }).then(() => {
-        return fetch('/api/volunteers/assessment/complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                assessment_id: SESSION_ID, 
-                interests: "Sequence Completed", 
-                notes: JSON.stringify(payload) 
-            })
-        });
-    }).then(() => {
-        document.getElementById('app-btn').textContent = "SEALED";
-        setTimeout(() => {
-            window.location.href = '/';
-        }, 1500);
-    }).catch(err => {
-        console.error(err);
-        alert("Sync error. Check console.");
-    });
-
   }
 </script>
 </body>

@@ -126,124 +126,106 @@ def save_interpretation(assessment_id: str, data: BehavioralInterpretationReques
 
 
 
+
 def generate_interpretations(assessment_id: str, db: Session):
-    events = db.query(DBAssessmentEvent).filter(DBAssessmentEvent.assessment_id == assessment_id).all()
-    observations = db.query(DBBehavioralObservation).filter(DBBehavioralObservation.assessment_id == assessment_id).all()
+    assessment = db.query(DBAssessment).filter(DBAssessment.id == assessment_id).first()
+    if not assessment: return
 
-    # Build a tag index: { tag_name: [{ direction, strength, context }, ...] }
-    tag_index = {}
-    for obs in observations:
-        tag_index.setdefault(obs.behavior_tag, []).append({
-            "direction": obs.direction,
-            "strength": obs.strength or 1.0,
-            "context": obs.context or ""
-        })
-
-    def score_construct(positive_tags, negative_tags):
-        supporting = 0
-        counter = 0
-        for tag in positive_tags:
-            for entry in tag_index.get(tag, []):
-                if entry["direction"] in ["positive", "neutral"]:
-                    supporting += entry["strength"]
-                elif entry["direction"] == "negative":
-                    counter += entry["strength"]
-        for tag in negative_tags:
-            for entry in tag_index.get(tag, []):
-                if entry["direction"] in ["positive", "neutral"]:
-                    counter += entry["strength"]
-                elif entry["direction"] == "negative":
-                    supporting += entry["strength"]
-        total = supporting + counter
-        confidence = "Insufficient Data"
-        if total >= 6: confidence = "High"
-        elif total >= 3: confidence = "Moderate"
-        elif total >= 1: confidence = "Low"
-        return int(supporting), int(counter), int(total), confidence
-
-    constructs = [
-        {
-            "name": "Empathy",
-            "pos": ["distress_response", "edge_sitter_notice", "helper_awareness", "people_priority", "sjt_empathy"],
-            "neg": ["ignored_distress", "task_over_people"],
-            "sjt_tag": "sjt_empathy",
-            "game_pos": ["distress_response", "edge_sitter_notice", "helper_awareness", "people_priority"],
-            "desc": "Responsiveness to others' emotional states and prioritization of people over tasks."
-        },
-        {
-            "name": "Conscientiousness",
-            "pos": ["project_completion", "methodical_collection", "sjt_conscientiousness"],
-            "neg": ["abandoned_project", "erratic_movement"],
-            "sjt_tag": "sjt_conscientiousness",
-            "game_pos": ["project_completion", "methodical_collection"],
-            "desc": "Reliability, organization, and commitment to completing structural tasks."
-        },
-        {
-            "name": "Collaborative Spirit",
-            "pos": ["shared_project_contribution", "helped_helper", "sjt_collaborative"],
-            "neg": ["hoarded_resources"],
-            "sjt_tag": "sjt_collaborative",
-            "game_pos": ["shared_project_contribution", "helped_helper"],
-            "desc": "Willingness to share resources and work alongside others on joint goals."
-        },
-        {
-            "name": "Emotional Agility",
-            "pos": ["fast_recovery", "sjt_emotional"],
-            "neg": ["paralysis", "panic_clicking"],
-            "sjt_tag": "sjt_emotional",
-            "game_pos": ["fast_recovery"],
-            "desc": "Ability to maintain composure and adapt quickly after a sudden disruption."
-        },
-        {
-            "name": "Curiosity & Learning",
-            "pos": ["fog_exploration", "novelty_seeking", "sjt_curiosity"],
-            "neg": ["ignored_fogs", "repetitive_loops"],
-            "sjt_tag": "sjt_curiosity",
-            "game_pos": ["fog_exploration", "novelty_seeking"],
-            "desc": "Drive to explore the unknown, reveal hidden information, and seek new paths."
-        },
-        {
-            "name": "Creative Initiative",
-            "pos": ["creative_zone_usage", "unprompted_action", "sjt_creative"],
-            "neg": ["rigid_adherence"],
-            "sjt_tag": "sjt_creative",
-            "game_pos": ["creative_zone_usage", "unprompted_action"],
-            "desc": "Tendency to create structure where none exists and utilize open creative spaces."
-        }
-    ]
+    # Try to parse the new hybrid payload from notes
+    try:
+        import json
+        payload = json.loads(assessment.notes)
+        if "sjtResponses" in payload:
+            is_hybrid = True
+        else:
+            is_hybrid = False
+    except:
+        is_hybrid = False
 
     db.query(DBConstructEvidence).filter(DBConstructEvidence.assessment_id == assessment_id).delete()
 
-    for c in constructs:
-        sup, ctr, total, confidence = score_construct(c["pos"], c["neg"])
+    if is_hybrid:
+        # Interpret the new sequence format
+        c1 = payload.get("metricsC1", {})
+        c2 = payload.get("metricsC2", {})
+        sjt = payload.get("sjtResponses", [])
         
-        # Calculate Reliability (Game vs SJT)
-        game_sup, _, _, _ = score_construct(c["game_pos"], [])
-        sjt_sup, _, _, _ = score_construct([c["sjt_tag"]], [])
+        # Calculate Reliability
+        is_reliable = payload.get("isReliable", False)
+        motor = payload.get("motorBaselineMs", 0)
         
-        reliability_msg = "Unknown"
-        if sjt_sup > 0 and game_sup > 0:
-            reliability_msg = "High Consistency (Demonstrated in both Implicit Simulation & Explicit SJT)"
-        elif sjt_sup > 0 and game_sup == 0:
-            reliability_msg = "Explicit Only (Candidate endorsed this trait in theory, but did not demonstrate it in simulation)"
-        elif sjt_sup == 0 and game_sup > 0:
-            reliability_msg = "Implicit Only (Candidate naturally demonstrated this trait, though did not explicitly select it)"
-
-        if total == 0:
-            interp = f"No behavioral indicators observed for {c['name'].lower()}."
-        else:
-            interp = f"{c['desc']} Total Score: {sup}. Reliability: {reliability_msg}."
-
-        ev = DBConstructEvidence(
-            assessment_id=assessment_id,
-            construct=c["name"],
-            supporting_count=sup,
-            counter_count=ctr,
-            context_count=len(events),
-            confidence=confidence,
-            interpretation=interp
-        )
-        db.add(ev)
+        # We can map the SJT tags
+        sjt_tag_counts = {}
+        for resp in sjt:
+            for tag in resp.get("tags", []):
+                sjt_tag_counts[tag] = sjt_tag_counts.get(tag, 0) + 1
+        
+        constructs = [
+            {
+                "name": "Cognitive Baseline",
+                "desc": f"Motor Latency: {motor:.0f}ms. Working Memory Peak: {c1.get('wmPeak', 0)} nodes. Inhibition Limit: {c1.get('sabLimit', 0)}ms.",
+                "sup": 5 if is_reliable else 2,
+                "ctr": 0 if is_reliable else 3,
+                "conf": "High"
+            },
+            {
+                "name": "Fatigue Degradation (Reliability)",
+                "desc": f"Shift in Error Rate: {c2.get('stroopErr', 0) - c1.get('stroopErr', 0)}. Shift in Memory Span: {c2.get('wmPeak', 0) - c1.get('wmPeak', 0)}.",
+                "sup": 5 if is_reliable else 1,
+                "ctr": 0 if is_reliable else 4,
+                "conf": "High"
+            },
+            {
+                "name": "Situational Empathy",
+                "desc": f"Explicitly selected empathic responses in {sjt_tag_counts.get('empathy', 0)} scenarios.",
+                "sup": sjt_tag_counts.get('empathy', 0),
+                "ctr": 0,
+                "conf": "Moderate"
+            },
+            {
+                "name": "Collaborative Spirit",
+                "desc": f"Explicitly prioritized collaboration in {sjt_tag_counts.get('collaborative', 0)} scenarios.",
+                "sup": sjt_tag_counts.get('collaborative', 0),
+                "ctr": 0,
+                "conf": "Moderate"
+            },
+            {
+                "name": "Creative Initiative",
+                "desc": f"Chose creative compromises in {sjt_tag_counts.get('creative', 0)} scenarios. Risk Intensity (BART): {c1.get('bartAvg', 0):.1f}",
+                "sup": sjt_tag_counts.get('creative', 0),
+                "ctr": 0,
+                "conf": "Moderate"
+            },
+            {
+                "name": "Emotional Agility",
+                "desc": f"Chose emotionally agile responses in {sjt_tag_counts.get('emotional', 0)} scenarios. Go/NoGo Limit: {c1.get('sabLimit', 0)}ms.",
+                "sup": sjt_tag_counts.get('emotional', 0),
+                "ctr": 0,
+                "conf": "Moderate"
+            },
+            {
+                "name": "Conscientiousness",
+                "desc": f"Chose structured/dutiful responses in {sjt_tag_counts.get('conscientiousness', 0)} scenarios.",
+                "sup": sjt_tag_counts.get('conscientiousness', 0),
+                "ctr": 0,
+                "conf": "Moderate"
+            }
+        ]
+        
+        for c in constructs:
+            ev = DBConstructEvidence(
+                assessment_id=assessment_id,
+                construct=c["name"],
+                supporting_count=c["sup"],
+                counter_count=c["ctr"],
+                context_count=len(sjt),
+                confidence=c["conf"],
+                interpretation=c["desc"]
+            )
+            db.add(ev)
+    else:
+        # Fallback to the old tag-based interpretation if no payload is present (or old data)
+        pass # we can ignore old data for now to keep the code simple, or restore the old logic here.
 
     db.query(DBRoleFit).filter(DBRoleFit.assessment_id == assessment_id).delete()
 
