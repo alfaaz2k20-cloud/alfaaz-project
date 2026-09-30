@@ -125,6 +125,7 @@ def save_interpretation(assessment_id: str, data: BehavioralInterpretationReques
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
 def generate_interpretations(assessment_id: str, db: Session):
     events = db.query(DBAssessmentEvent).filter(DBAssessmentEvent.assessment_id == assessment_id).all()
     observations = db.query(DBBehavioralObservation).filter(DBBehavioralObservation.assessment_id == assessment_id).all()
@@ -143,13 +144,13 @@ def generate_interpretations(assessment_id: str, db: Session):
         counter = 0
         for tag in positive_tags:
             for entry in tag_index.get(tag, []):
-                if entry["direction"] == "positive":
+                if entry["direction"] in ["positive", "neutral"]:
                     supporting += entry["strength"]
                 elif entry["direction"] == "negative":
                     counter += entry["strength"]
         for tag in negative_tags:
             for entry in tag_index.get(tag, []):
-                if entry["direction"] == "positive":
+                if entry["direction"] in ["positive", "neutral"]:
                     counter += entry["strength"]
                 elif entry["direction"] == "negative":
                     supporting += entry["strength"]
@@ -163,61 +164,75 @@ def generate_interpretations(assessment_id: str, db: Session):
     constructs = [
         {
             "name": "Empathy",
-            "pos": ["distress_response", "edge_sitter_notice", "helper_awareness", "people_priority"],
+            "pos": ["distress_response", "edge_sitter_notice", "helper_awareness", "people_priority", "sjt_empathy"],
             "neg": ["ignored_distress", "task_over_people"],
+            "sjt_tag": "sjt_empathy",
+            "game_pos": ["distress_response", "edge_sitter_notice", "helper_awareness", "people_priority"],
             "desc": "Responsiveness to others' emotional states and prioritization of people over tasks."
         },
         {
             "name": "Conscientiousness",
-            "pos": ["task_completion", "project_finished", "sequential_work", "deliberation"],
-            "neg": ["task_abandonment", "scattered_attention", "impulsive_action"],
-            "desc": "Task completion, methodical work patterns, and follow-through on started projects."
+            "pos": ["project_completion", "methodical_collection", "sjt_conscientiousness"],
+            "neg": ["abandoned_project", "erratic_movement"],
+            "sjt_tag": "sjt_conscientiousness",
+            "game_pos": ["project_completion", "methodical_collection"],
+            "desc": "Reliability, organization, and commitment to completing structural tasks."
         },
         {
             "name": "Collaborative Spirit",
-            "pos": ["resource_sharing", "helper_assist", "shared_project_preference"],
-            "neg": ["resource_hoarding", "solo_preference", "ignored_helper"],
-            "desc": "Willingness to share resources, assist the co-worker, and contribute to shared goals."
+            "pos": ["shared_project_contribution", "helped_helper", "sjt_collaborative"],
+            "neg": ["hoarded_resources"],
+            "sjt_tag": "sjt_collaborative",
+            "game_pos": ["shared_project_contribution", "helped_helper"],
+            "desc": "Willingness to share resources and work alongside others on joint goals."
         },
         {
             "name": "Emotional Agility",
-            "pos": ["fast_recovery", "strategy_shift", "steady_pace_after_disruption"],
-            "neg": ["slow_recovery", "frozen_after_disruption", "repeated_failed_strategy"],
-            "desc": "Speed of recovery after disruptions and ability to adapt strategy when conditions change."
+            "pos": ["fast_recovery", "sjt_emotional"],
+            "neg": ["paralysis", "panic_clicking"],
+            "sjt_tag": "sjt_emotional",
+            "game_pos": ["fast_recovery"],
+            "desc": "Ability to maintain composure and adapt quickly after a sudden disruption."
         },
         {
             "name": "Curiosity & Learning",
-            "pos": ["fog_exploration", "unique_interactions", "early_exploration", "creative_zone_engaged"],
-            "neg": ["no_exploration", "minimal_interaction_variety"],
-            "desc": "Breadth of exploration, discovery of hidden elements, and variety of interactions attempted."
+            "pos": ["fog_exploration", "novelty_seeking", "sjt_curiosity"],
+            "neg": ["ignored_fogs", "repetitive_loops"],
+            "sjt_tag": "sjt_curiosity",
+            "game_pos": ["fog_exploration", "novelty_seeking"],
+            "desc": "Drive to explore the unknown, reveal hidden information, and seek new paths."
         },
         {
             "name": "Creative Initiative",
-            "pos": ["resource_combination", "creative_placement", "non_obvious_interaction", "solution_variety"],
-            "neg": ["repetitive_strategy", "minimum_effort"],
-            "desc": "Novel resource combinations, creative zone engagement, and variety of problem-solving approaches."
-        },
-        {
-            "name": "Motivation",
-            "pos": ["high_interaction_count", "low_idle_time", "mountain_persistence", "sustained_engagement", "voluntary_return"],
-            "neg": ["high_idle_time", "engagement_drop", "early_disengagement"],
-            "desc": "Total engagement depth, persistence on optional challenges, and sustained effort across all phases."
-        },
+            "pos": ["creative_zone_usage", "unprompted_action", "sjt_creative"],
+            "neg": ["rigid_adherence"],
+            "sjt_tag": "sjt_creative",
+            "game_pos": ["creative_zone_usage", "unprompted_action"],
+            "desc": "Tendency to create structure where none exists and utilize open creative spaces."
+        }
     ]
 
     db.query(DBConstructEvidence).filter(DBConstructEvidence.assessment_id == assessment_id).delete()
 
     for c in constructs:
         sup, ctr, total, confidence = score_construct(c["pos"], c["neg"])
+        
+        # Calculate Reliability (Game vs SJT)
+        game_sup, _, _, _ = score_construct(c["game_pos"], [])
+        sjt_sup, _, _, _ = score_construct([c["sjt_tag"]], [])
+        
+        reliability_msg = "Unknown"
+        if sjt_sup > 0 and game_sup > 0:
+            reliability_msg = "High Consistency (Demonstrated in both Implicit Simulation & Explicit SJT)"
+        elif sjt_sup > 0 and game_sup == 0:
+            reliability_msg = "Explicit Only (Candidate endorsed this trait in theory, but did not demonstrate it in simulation)"
+        elif sjt_sup == 0 and game_sup > 0:
+            reliability_msg = "Implicit Only (Candidate naturally demonstrated this trait, though did not explicitly select it)"
 
         if total == 0:
             interp = f"No behavioral indicators observed for {c['name'].lower()}."
-        elif sup > ctr:
-            interp = f"Consistent pattern of {c['name'].lower()}-related behaviors. {c['desc']} {sup} supporting signals, {ctr} counter signals."
-        elif sup == ctr:
-            interp = f"Mixed indicators for {c['name'].lower()}. {c['desc']} {sup} supporting vs {ctr} counter signals."
         else:
-            interp = f"Fewer indicators of {c['name'].lower()} observed. {c['desc']} {sup} supporting vs {ctr} counter signals."
+            interp = f"{c['desc']} Total Score: {sup}. Reliability: {reliability_msg}."
 
         ev = DBConstructEvidence(
             assessment_id=assessment_id,
