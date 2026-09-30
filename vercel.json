@@ -2,5 +2,15 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/recruit/(.*)",
+      "destination": "/recruit_v1.3/$1"
+    },
+    {
+      "source": "/recruit",
+      "destination": "/recruit_v1.3/index.html"
+    }
+  ]
 }
