@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#2d2722">
+  <meta name="application-name" content="Alfaaz Recruit">
+  <meta name="description" content="Alfaaz Collective — Volunteer Exploratory Assessment" />
+  <title>ALFAAZ COLLECTIVE — Volunteer Assessment</title>
+  <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
+  
+  <script src="https://cdn.tailwindcss.com" defer></script>
+  <script src="https://unpkg.com/lucide@latest" defer></script>
+
+  <style>
+    .assessment-container {
+      max-width: 800px;
+      margin: 6rem auto 3rem;
+      padding: 2.5rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--grid-border);
+      box-shadow: var(--shadow-base);
+      min-height: 520px;
+      position: relative;
+    }
+    .act-badge {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--accent-gold);
+      margin-bottom: 0.5rem;
+    }
+    .act-title-ur {
+      font-family: var(--font-urdu);
+      font-size: 1.4rem;
+      color: var(--text-secondary);
+      margin-left: 0.5rem;
+      direction: rtl;
+    }
+    .option-card {
+      background: #faf8f5;
+      border: 1px solid var(--grid-border);
+      padding: 1.25rem 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .option-card:hover, .option-card:focus-visible {
+      border-color: var(--accent-gold);
+      background: #fff;
+      outline: 2px solid var(--accent-gold);
+    }
+    .option-card.selected {
+      border-color: var(--accent-gold);
+      background: rgba(189, 111, 93, 0.08);
+    }
+    .skip-btn {
+      color: var(--text-secondary);
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      transition: color 0.2s ease;
+    }
+    .skip-btn:hover {
+      color: var(--text-primary);
+    }
+    .progress-bar-inner {
+      height: 2px;
+      background: var(--accent-gold);
+      transition: width 0.3s ease;
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/recruit-B9rW2dDC.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/global-DxYxv3W5.js">
+  <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
+</head>
+<body class="selection:bg-amber-900 selection:text-white">
+  <!-- Minimalist Header -->
+  <header class="fixed top-0 left-0 w-full py-4 px-8 border-b border-[var(--grid-border)] bg-[var(--bg-primary)]/90 backdrop-blur z-50 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="font-serif tracking-widest text-lg text-[var(--text-primary)]">ALFAAZ</a>
+      <span class="text-xs text-[var(--text-secondary)] tracking-widest uppercase">/ Volunteer Assessment</span>
+    </div>
+    <div id="sessionHeaderControls" class="hidden flex items-center gap-4">
+      <button id="pauseBtn" class="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-1">
+        <i data-lucide="pause" class="w-3.5 h-3.5"></i> Pause
+      </button>
+      <div id="segmentProgress" class="text-xs text-[var(--text-secondary)] uppercase tracking-wider"></div>
+    </div>
+  </header>
+
+  <main class="min-h-screen pt-12 pb-16 px-4 flex items-center justify-center">
+    <div class="w-full max-w-3xl">
+      <!-- Progress Bar -->
+      <div id="topProgressBar" class="w-full bg-[var(--grid-border)] h-[2px] mb-4 hidden">
+        <div id="progressBarFill" class="progress-bar-inner w-0"></div>
+      </div>
+
+      <!-- Dynamic App Container -->
+      <div id="recruitApp" class="assessment-container">
+        <!-- Rendered by src/recruit.js -->
+        <div class="flex items-center justify-center py-20 text-[var(--text-secondary)] font-serif text-lg">
+          Loading assessment environment...
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>
