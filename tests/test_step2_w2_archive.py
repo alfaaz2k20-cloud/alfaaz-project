@@ -196,27 +196,108 @@ class TestStep2W2Archive(unittest.TestCase):
         self.assertIn("INSUFFICIENT_OBSERVATIONS", json.loads(feats["exception_flagging_precision"].flags_json))
 
     def test_a3_raw_telemetry_and_quarantine_preservation(self):
-        """A3 emits granular inspect/toggle/verify telemetry, and extractor remains quarantined under feature_not_implemented."""
-        events = [
-            DBTelemetryEvent(
-                session_id=self.session_id, seq=10, segment_id=1, t_ms=15000.0,
-                screen="game", mini_game="A3", action="record_inspected", task_def_version="1.0",
-                data_json=json.dumps({"trial_index": 0, "stimulus_id": "REC_01"})
-            ),
-            DBTelemetryEvent(
-                session_id=self.session_id, seq=11, segment_id=1, t_ms=16000.0,
-                screen="game", mini_game="A3", action="discrepancy_toggled", task_def_version="1.0",
-                data_json=json.dumps({"trial_index": 0, "stimulus_id": "REC_01", "flagged_state": True})
-            ),
-            DBTelemetryEvent(
-                session_id=self.session_id, seq=12, segment_id=1, t_ms=25000.0,
-                screen="game", mini_game="A3", action="ledger_verified", task_def_version="1.0",
-                data_json=json.dumps({"inspected_count": 5, "flagged_count": 3, "flagged_records": ["REC_01", "REC_03", "REC_05"]})
-            )
-        ]
-        self.db.add_all(events)
-        self.db.commit()
+        """A3 emits granular inspect/toggle/verify telemetry, client summaries are rejected, and server reconstructs state."""
+        from app.services.task_definitions import reconstruct_a3_inspection_state
 
+        # 1. Ingest primitive events: 5 inspected records, 3 toggled discrepancies, verification finalized
+        primitive_events = []
+        seq = 10
+        # Candidate inspects all 5 records
+        for i in range(1, 6):
+            primitive_events.append({
+                "seq": seq,
+                "screen": "game",
+                "mini_game": "A3",
+                "action": "record_inspected",
+                "task_def_version": "1.0",
+                "data": {"trial_index": i - 1, "stimulus_id": f"REC_0{i}"},
+                "t_ms": 10000.0 + i * 1000
+            })
+            seq += 1
+
+        # Candidate flags discrepancy on REC_01, REC_03, REC_05 (true error records in task definitions)
+        for i in [1, 3, 5]:
+            primitive_events.append({
+                "seq": seq,
+                "screen": "game",
+                "mini_game": "A3",
+                "action": "discrepancy_toggled",
+                "task_def_version": "1.0",
+                "data": {"trial_index": i - 1, "stimulus_id": f"REC_0{i}", "flagged_state": True},
+                "t_ms": 16000.0 + i * 500
+            })
+            seq += 1
+
+        # Candidate finalizes verification without client-authored summaries
+        primitive_events.append({
+            "seq": seq,
+            "screen": "game",
+            "mini_game": "A3",
+            "action": "verification_finalized",
+            "task_def_version": "1.0",
+            "data": {"action_id": "approve_ledger"},
+            "t_ms": 25000.0
+        })
+
+        ingest_telemetry_batch(self.db, self.session_id, primitive_events)
+
+        # 2. Server deterministic reconstruction from raw events
+        stored_events = self.db.exec(
+            select(DBTelemetryEvent).where(
+                DBTelemetryEvent.session_id == self.session_id,
+                DBTelemetryEvent.mini_game == "A3"
+            )
+        ).all()
+        reconstruction = reconstruct_a3_inspection_state(stored_events)
+
+        self.assertEqual(reconstruction["inspected_count"], 5)
+        self.assertEqual(reconstruction["flagged_count"], 3)
+        self.assertEqual(reconstruction["flagged_records"], ["REC_01", "REC_03", "REC_05"])
+        self.assertEqual(reconstruction["detection_accuracy"], 1.0) # 3 true errors caught + 2 clean controls untouched = 5/5
+        self.assertTrue(reconstruction["verification_finalized"])
+
+        # 3. Test that client attempting to author summary fields is stripped and flagged
+        client_summary_batch = [{
+            "seq": 999,
+            "screen": "game",
+            "mini_game": "A3",
+            "action": "verification_finalized",
+            "task_def_version": "1.0",
+            "data": {
+                "inspected_count": 5,
+                "flagged_count": 3,
+                "flagged_records": ["REC_01", "REC_03", "REC_05"],
+                "action_id": "approve_ledger"
+            },
+            "t_ms": 26000.0
+        }]
+        ingest_telemetry_batch(self.db, self.session_id, client_summary_batch)
+
+        # Forbidden client field flag must be recorded
+        flag = self.db.exec(
+            select(DBDataQualityFlag).where(
+                DBDataQualityFlag.session_id == self.session_id,
+                DBDataQualityFlag.flag == "forbidden_client_field_detected"
+            )
+        ).first()
+        self.assertIsNotNone(flag)
+        self.assertIn("inspected_count", flag.detail)
+        self.assertIn("flagged_count", flag.detail)
+        self.assertIn("flagged_records", flag.detail)
+
+        # Stripped event payload in DB must not contain summary fields
+        ev999 = self.db.exec(
+            select(DBTelemetryEvent).where(
+                DBTelemetryEvent.session_id == self.session_id,
+                DBTelemetryEvent.seq == 999
+            )
+        ).first()
+        d999 = json.loads(ev999.data_json)
+        self.assertNotIn("inspected_count", d999)
+        self.assertNotIn("flagged_count", d999)
+        self.assertNotIn("flagged_records", d999)
+
+        # 4. Extractor remains quarantined under feature_not_implemented
         features = extract_session_features(self.db, self.session_id)
         a3_feats = [f for f in features if f.mini_game == "A3"]
 

@@ -96,7 +96,8 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
         "target_container", "is_context_appropriate", "perseverative_choice",
         "perseverative_error", "switch_cost_latency_ms", "insight_applied_correctly",
         "spontaneous_application", "rule_adherence_score", "exploration_efficiency",
-        "creative_breakthrough_flag", "deficit_detected"
+        "creative_breakthrough_flag", "deficit_detected",
+        "inspected_count", "flagged_count", "flagged_records", "inspected_records"
     }
 
     new_events = []

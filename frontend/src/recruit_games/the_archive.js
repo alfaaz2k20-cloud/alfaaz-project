@@ -533,10 +533,9 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
     });
 
     document.getElementById('a3SubmitBtn')?.addEventListener('click', () => {
-      logEvent('ledger_verified', {
-        inspected_count: records.length,
-        flagged_count: flaggedRecords.size,
-        flagged_records: Array.from(flaggedRecords),
+      logEvent('verification_finalized', {
+        action_id: 'approve_ledger',
+        input_modality: lastInputModality,
         task_def_version: '1.0'
       });
 
