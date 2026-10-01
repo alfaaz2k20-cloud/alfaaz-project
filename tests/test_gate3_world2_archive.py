@@ -61,6 +61,26 @@ class TestGate3World2Archive(unittest.TestCase):
             self.assertFalse(a2_feats["exception_flagging_precision"].valid)
             self.assertIn("INSUFFICIENT_OBSERVATIONS", json.loads(a2_feats["exception_flagging_precision"].flags_json))
 
+    def test_a2_n1_bypass_removed_exception_resolved_is_insufficient(self):
+        """Verifies that an N=1 A2 observation with exception_resolved does not bypass N >= 3 requirement."""
+        with Session(self.engine) as db:
+            session_id = str(uuid.uuid4())
+            db.add(DBSession(session_id=session_id, status="GAMES"))
+
+            # Single exception_resolved event (N=1)
+            events = [
+                DBTelemetryEvent(session_id=session_id, seq=1, segment_id=1, t_ms=500.0, screen="game", mini_game="A2", action="exception_resolved", data_json=json.dumps({"is_correct": True}))
+            ]
+            db.add_all(events)
+            db.commit()
+
+            features = extract_session_features(db, session_id)
+            a2_feats = {f.feature_name: f for f in features if f.mini_game == "A2"}
+
+            self.assertIn("exception_flagging_precision", a2_feats)
+            self.assertFalse(a2_feats["exception_flagging_precision"].valid)
+            self.assertIn("INSUFFICIENT_OBSERVATIONS", json.loads(a2_feats["exception_flagging_precision"].flags_json))
+
     def test_recomputation_determinism(self):
         with Session(self.engine) as db:
             session_id = str(uuid.uuid4())

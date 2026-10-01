@@ -1,0 +1,408 @@
+{
+  "task_def_version": "1.0",
+  "generated_at": "2026-10-01T18:48:00Z",
+  "games": {
+    "F1": {
+      "game_id": "F1",
+      "world_id": "W1",
+      "parameter_id": "empathy",
+      "facet": "attunement_to_cues",
+      "total_trials": 6,
+      "trials": [
+        {
+          "stimulus_id": "F1_T1",
+          "condition_id": "strain_reverberant",
+          "condition_type": "accommodate",
+          "partner_state": "vocal_strain_high_reverb",
+          "expected_action": "attenuate_reverb"
+        },
+        {
+          "stimulus_id": "F1_T2",
+          "condition_id": "effortless_resonance",
+          "condition_type": "maintain_objective",
+          "partner_state": "acoustics_clear_effortless",
+          "expected_action": "maintain_baseline"
+        },
+        {
+          "stimulus_id": "F1_T3",
+          "condition_id": "whisper_passage",
+          "condition_type": "accommodate",
+          "partner_state": "quiet_verse_monitoring_deficit",
+          "expected_action": "boost_intelligibility"
+        },
+        {
+          "stimulus_id": "F1_T4",
+          "condition_id": "ambiguous_pause",
+          "condition_type": "clarify",
+          "partner_state": "dramatic_silence_vs_monitor_fault",
+          "expected_action": "clarify_channel"
+        },
+        {
+          "stimulus_id": "F1_T5",
+          "condition_id": "balanced_choral",
+          "condition_type": "maintain_objective",
+          "partner_state": "acoustics_stable_in_rhythm",
+          "expected_action": "maintain_baseline"
+        },
+        {
+          "stimulus_id": "F1_T6",
+          "condition_id": "projected_forte",
+          "condition_type": "accommodate",
+          "partner_state": "vocal_projection_peaking",
+          "expected_action": "dampen_harshness"
+        }
+      ]
+    },
+    "F2": {
+      "game_id": "F2",
+      "world_id": "W1",
+      "parameter_id": "empathy",
+      "facet": "cognitive_perspective_taking",
+      "total_trials": 4,
+      "trials": [
+        {
+          "stimulus_id": "F2_T1",
+          "condition_id": "clear_coordination_need",
+          "condition_type": "act",
+          "partner_state": "explicit_request_for_cue",
+          "expected_action": "support_cue"
+        },
+        {
+          "stimulus_id": "F2_T2",
+          "condition_id": "ambiguous_interpersonal_cue",
+          "condition_type": "clarify",
+          "partner_state": "hesitation_uncertainty",
+          "expected_action": "clarify_intent"
+        },
+        {
+          "stimulus_id": "F2_T3",
+          "condition_id": "misleading_surface_frustration",
+          "condition_type": "maintain",
+          "partner_state": "expressive_performance_intensity_not_distress",
+          "expected_action": "maintain_cadence"
+        },
+        {
+          "stimulus_id": "F2_T4",
+          "condition_id": "unspoken_timing_drift",
+          "condition_type": "act",
+          "partner_state": "tempo_misalignment_seeking_synchrony",
+          "expected_action": "realign_tempo"
+        }
+      ]
+    },
+    "F3": {
+      "game_id": "F3",
+      "world_id": "W1",
+      "parameter_id": "empathy",
+      "facet": "dynamic_context_updating",
+      "total_trials": 3,
+      "trials": [
+        {
+          "stimulus_id": "F3_T1",
+          "condition_id": "chamber_transition_1",
+          "condition_type": "baseline_to_stone_hall",
+          "partner_state": "acoustic_shift_heavy_echo",
+          "expected_action": "update_filtering"
+        },
+        {
+          "stimulus_id": "F3_T2",
+          "condition_id": "chamber_transition_2",
+          "condition_type": "carpeted_courtyard",
+          "partner_state": "acoustic_shift_deadened_absorption",
+          "expected_action": "update_amplification"
+        },
+        {
+          "stimulus_id": "F3_T3",
+          "condition_id": "chamber_transition_3",
+          "condition_type": "open_colonnade_wind",
+          "partner_state": "acoustic_shift_ambient_breeze",
+          "expected_action": "update_lowcut_filter"
+        }
+      ]
+    },
+    "A1": {
+      "game_id": "A1",
+      "world_id": "W2",
+      "parameter_id": "conscientiousness",
+      "facet": "rule_governed_classification",
+      "total_trials": 5,
+      "trials": [
+        { "stimulus_id": "DOC_01", "rule": "PERIOD", "target_folder": "19th_century" },
+        { "stimulus_id": "DOC_02", "rule": "GENRE", "target_folder": "poetry" },
+        { "stimulus_id": "DOC_03", "rule": "PERIOD", "target_folder": "20th_century" },
+        { "stimulus_id": "DOC_04", "rule": "LANGUAGE", "target_folder": "kashmiri" },
+        { "stimulus_id": "DOC_05", "rule": "GENRE", "target_folder": "chronicle" }
+      ]
+    },
+    "A2": {
+      "game_id": "A2",
+      "world_id": "W2",
+      "parameter_id": "conscientiousness",
+      "facet": "exception_handling",
+      "total_trials": 3,
+      "trials": [
+        {
+          "stimulus_id": "EXC_01",
+          "condition_id": "catalog_anomaly_watermark",
+          "condition_type": "true_exception",
+          "expected_action": "flag_exception"
+        },
+        {
+          "stimulus_id": "EXC_02",
+          "condition_id": "standard_catalog_clean",
+          "condition_type": "clean_control",
+          "expected_action": "file_standard"
+        },
+        {
+          "stimulus_id": "EXC_03",
+          "condition_id": "catalog_anomaly_pagination",
+          "condition_type": "true_exception",
+          "expected_action": "flag_exception"
+        }
+      ]
+    },
+    "A3": {
+      "game_id": "A3",
+      "world_id": "W2",
+      "parameter_id": "conscientiousness",
+      "facet": "proofreading_vigilance",
+      "total_trials": 5,
+      "trials": [
+        { "stimulus_id": "REC_01", "has_error": true, "error_type": "transposition_error" },
+        { "stimulus_id": "REC_02", "has_error": false, "error_type": "clean_control" },
+        { "stimulus_id": "REC_03", "has_error": true, "error_type": "omitted_attribution" },
+        { "stimulus_id": "REC_04", "has_error": false, "error_type": "clean_control" },
+        { "stimulus_id": "REC_05", "has_error": true, "error_type": "mismatched_date" }
+      ]
+    },
+    "C1": {
+      "game_id": "C1",
+      "world_id": "W3",
+      "parameter_id": "collaborative_spirit",
+      "facet": "need_sensitive_resource_sharing",
+      "total_trials": 3,
+      "trials": [
+        {
+          "stimulus_id": "C1_R1",
+          "condition_id": "partner_deficit",
+          "condition_type": "share_needed",
+          "partner_state": "partner_short_by_3_tiles",
+          "expected_action": "allocate_tiles"
+        },
+        {
+          "stimulus_id": "C1_R2",
+          "condition_id": "balanced_need",
+          "condition_type": "equal_distribution",
+          "partner_state": "partner_adequate_materials",
+          "expected_action": "maintain_equal_distribution"
+        },
+        {
+          "stimulus_id": "C1_R3",
+          "condition_id": "surplus_no_need_control",
+          "condition_type": "sharing_unnecessary",
+          "partner_state": "partner_has_excess_tiles",
+          "expected_action": "retain_own_tiles"
+        }
+      ]
+    },
+    "C2": {
+      "game_id": "C2",
+      "world_id": "W3",
+      "parameter_id": "collaborative_spirit",
+      "facet": "coordinated_spatial_placement",
+      "total_trials": 3,
+      "trials": [
+        {
+          "stimulus_id": "C2_R1",
+          "condition_id": "open_canvas_turn",
+          "partner_state": "partner_placed_north_cluster",
+          "expected_action": "complementary_placement"
+        },
+        {
+          "stimulus_id": "C2_R2",
+          "condition_id": "restricted_wall_space",
+          "partner_state": "partner_framing_center",
+          "expected_action": "avoid_blocking_partner"
+        },
+        {
+          "stimulus_id": "C2_R3",
+          "condition_id": "dynamic_canvas_adjustment",
+          "partner_state": "partner_shifted_composition_south",
+          "expected_action": "align_composition"
+        }
+      ]
+    },
+    "C3": {
+      "game_id": "C3",
+      "world_id": "W3",
+      "parameter_id": "collaborative_spirit",
+      "facet": "breakdown_repair",
+      "total_trials": 3,
+      "trials": [
+        {
+          "stimulus_id": "C3_R1",
+          "condition_id": "lighting_imbalance",
+          "condition_type": "identify_and_repair",
+          "partner_state": "partner_lantern_circuit_dark",
+          "repair_steps": ["identify_fault", "adjust_conduit", "restore_power"]
+        },
+        {
+          "stimulus_id": "C3_R2",
+          "condition_id": "balanced_lighting_control",
+          "condition_type": "clean_control",
+          "partner_state": "partner_lanterns_optimal",
+          "repair_steps": ["verify_adequate"]
+        },
+        {
+          "stimulus_id": "C3_R3",
+          "condition_id": "shadow_corridor_breakdown",
+          "condition_type": "identify_and_repair",
+          "partner_state": "partner_blindspot_obstruction",
+          "repair_steps": ["identify_fault", "shift_lantern", "illuminate_path"]
+        }
+      ]
+    },
+    "E1": {
+      "game_id": "E1",
+      "world_id": "W4",
+      "parameter_id": "emotional_agility",
+      "facet": "set_shifting_adaptation",
+      "total_trials": 9,
+      "shift_trial_index": 4,
+      "trials": [
+        { "stimulus_id": "E1_T1", "rule": "COLOR", "tile_color": "Gold", "tile_shape": "Square", "target_container": "container_1" },
+        { "stimulus_id": "E1_T2", "rule": "COLOR", "tile_color": "Sage", "tile_shape": "Circle", "target_container": "container_2" },
+        { "stimulus_id": "E1_T3", "rule": "COLOR", "tile_color": "Gold", "tile_shape": "Circle", "target_container": "container_1" },
+        { "stimulus_id": "E1_T4", "rule": "SHAPE", "tile_color": "Sage", "tile_shape": "Square", "target_container": "container_2", "is_shift_point": true },
+        { "stimulus_id": "E1_T5", "rule": "SHAPE", "tile_color": "Gold", "tile_shape": "Square", "target_container": "container_2" },
+        { "stimulus_id": "E1_T6", "rule": "SHAPE", "tile_color": "Sage", "tile_shape": "Circle", "target_container": "container_1" },
+        { "stimulus_id": "E1_T7", "rule": "SHAPE", "tile_color": "Gold", "tile_shape": "Circle", "target_container": "container_1" },
+        { "stimulus_id": "E1_T8", "rule": "SHAPE", "tile_color": "Gold", "tile_shape": "Square", "target_container": "container_2" },
+        { "stimulus_id": "E1_T9", "rule": "SHAPE", "tile_color": "Sage", "tile_shape": "Circle", "target_container": "container_1" }
+      ]
+    },
+    "E2": {
+      "game_id": "E2",
+      "world_id": "W4",
+      "parameter_id": "emotional_agility",
+      "facet": "disruption_recovery",
+      "total_trials": 4,
+      "trials": [
+        { "stimulus_id": "E2_S1", "has_disruption": true, "disruption_type": "ink_spill_masking_workspace", "target_action": "clear_workspace" },
+        { "stimulus_id": "E2_S2", "has_disruption": false, "disruption_type": "undisrupted_control", "target_action": "standard_sequence" },
+        { "stimulus_id": "E2_S3", "has_disruption": true, "disruption_type": "draft_blows_reference_card", "target_action": "stabilize_reference" },
+        { "stimulus_id": "E2_S4", "has_disruption": true, "disruption_type": "misplaced_pigment_tray", "target_action": "reposition_tray" }
+      ]
+    },
+    "E3": {
+      "game_id": "E3",
+      "world_id": "W4",
+      "parameter_id": "emotional_agility",
+      "facet": "constraint_adaptation",
+      "total_trials": 3,
+      "trials": [
+        { "stimulus_id": "E3_C1", "constraint_state": "standard_three_color_palette", "target_action": "standard_layout" },
+        { "stimulus_id": "E3_C2", "constraint_state": "monochrome_indigo_only", "target_action": "tonal_adaptation" },
+        { "stimulus_id": "E3_C3", "constraint_state": "boundary_constricted_half_grid", "target_action": "compact_adaptation" }
+      ]
+    },
+    "Q1": {
+      "game_id": "Q1",
+      "world_id": "W5",
+      "parameter_id": "curiosity",
+      "facet": "information_seeking",
+      "total_required_decisions": 4,
+      "optional_resources": [
+        { "resource_id": "OPT_USEFUL_1", "info_value": "high", "topic": "calligraphy_binding_technique" },
+        { "resource_id": "OPT_USEFUL_2", "info_value": "high", "topic": "paper_mache_lacquer_curing" },
+        { "resource_id": "OPT_CONTROL_1", "info_value": "low", "topic": "catalog_inventory_stamp_dates" },
+        { "resource_id": "OPT_CONTROL_2", "info_value": "low", "topic": "storage_cabinet_hinge_repairs" }
+      ]
+    },
+    "Q2": {
+      "game_id": "Q2",
+      "world_id": "W5",
+      "parameter_id": "curiosity",
+      "facet": "investigation_under_uncertainty",
+      "total_trials": 4,
+      "trials": [
+        { "stimulus_id": "Q2_T1", "uncertainty_level": "moderate", "expected_value": "high", "artifact_id": "manuscript_seal_1" },
+        { "stimulus_id": "Q2_T2", "uncertainty_level": "high", "expected_value": "high", "artifact_id": "ciphered_marginalia_2" },
+        { "stimulus_id": "Q2_T3", "uncertainty_level": "low", "expected_value": "low_control", "artifact_id": "standard_receipt_3" },
+        { "stimulus_id": "Q2_T4", "uncertainty_level": "high", "expected_value": "moderate", "artifact_id": "unknown_crest_impression_4" }
+      ]
+    },
+    "Q3": {
+      "game_id": "Q3",
+      "world_id": "W5",
+      "parameter_id": "curiosity",
+      "facet": "downstream_knowledge_integration",
+      "total_trials": 3,
+      "trials": [
+        { "stimulus_id": "Q3_E1", "ambiguity_type": "unattributed_artisan_folio", "optional_context_available": true, "context_id": "provenance_context_1" },
+        { "stimulus_id": "Q3_E2", "ambiguity_type": "mismatched_period_provenance", "optional_context_available": true, "context_id": "provenance_context_2" },
+        { "stimulus_id": "Q3_E3", "ambiguity_type": "regional_dialect_verse_origin", "optional_context_available": true, "context_id": "provenance_context_3" }
+      ]
+    },
+    "CR1": {
+      "game_id": "CR1",
+      "world_id": "W6",
+      "parameter_id": "creative_initiative",
+      "facet": "functional_assembly_under_constraint",
+      "total_stages": 2,
+      "stages": [
+        { "stage_id": "CR1_S1", "constraint": "missing_crossbar_shuttle", "valid_solution_count": 3 },
+        { "stage_id": "CR1_S2", "constraint": "tension_wire_unanchored", "valid_solution_count": 2 }
+      ]
+    },
+    "CR2": {
+      "game_id": "CR2",
+      "world_id": "W6",
+      "parameter_id": "creative_initiative",
+      "facet": "spatial_reframing",
+      "total_episodes": 3,
+      "episodes": [
+        { "episode_id": "CR2_E1", "constraint_change": "central_pillar_blocks_corridor", "target_reframing": "split_flow" },
+        { "episode_id": "CR2_E2", "constraint_change": "emergency_exit_clearance_widened", "target_reframing": "perimeter_flow" },
+        { "episode_id": "CR2_E3", "constraint_change": "low_ceiling_arch_support", "target_reframing": "linear_flow" }
+      ]
+    },
+    "CR3": {
+      "game_id": "CR3",
+      "world_id": "W6",
+      "parameter_id": "creative_initiative",
+      "facet": "affordance_synthesis",
+      "total_trials": 3,
+      "trials": [
+        { "stimulus_id": "CR3_T1", "tool_options": ["bone_folder", "metal_stylus", "bamboo_wedge"], "target_motif": "burnished_crease" },
+        { "stimulus_id": "CR3_T2", "tool_options": ["horsehair_brush", "sponge_block", "linen_swab"], "target_motif": "fine_stipple" },
+        { "stimulus_id": "CR3_T3", "tool_options": ["agate_stone", "polished_wood", "copper_burnisher"], "target_motif": "gold_leaf_seal" }
+      ]
+    },
+    "M1": {
+      "game_id": "M1",
+      "world_id": "W7",
+      "parameter_id": "motivation",
+      "facet": "baseline_diligence",
+      "mandatory_units": 3,
+      "optional_units": 0
+    },
+    "M2": {
+      "game_id": "M2",
+      "world_id": "W7",
+      "parameter_id": "motivation",
+      "facet": "voluntary_continuation",
+      "mandatory_units": 2,
+      "max_optional_units": 3
+    },
+    "M3": {
+      "game_id": "M3",
+      "world_id": "W7",
+      "parameter_id": "motivation",
+      "facet": "persistence_under_reduced_feedback",
+      "mandatory_units": 3,
+      "feedback_saliency": "minimal",
+      "explicit_permission_to_stop": true
+    }
+  }
+}

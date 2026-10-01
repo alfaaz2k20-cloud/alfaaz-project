@@ -141,7 +141,6 @@ def _extract_A1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
 def _extract_A2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
     decision_events = [e for e in events if e.action in ["decision_logged", "exception_resolved"]]
     obs_count = len(decision_events)
-    valid = obs_count >= 1
 
     correct = 0
     for e in decision_events:
@@ -151,8 +150,8 @@ def _extract_A2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
 
     precision = (correct / obs_count) if obs_count > 0 else 1.0
 
-    # If specifically tested for minimum 3 observations
-    strict_valid = obs_count >= 3 or any(e.action == "exception_resolved" for e in decision_events)
+    # Strictly require minimum 3 observations; N=1 observation bypass removed
+    valid = obs_count >= 3
 
     return [
         DBFeature(
@@ -160,8 +159,8 @@ def _extract_A2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
             mini_game="A2",
             feature_name="exception_flagging_precision",
             value_raw=round(precision, 4),
-            valid=strict_valid,
-            flags_json=json.dumps(["INSUFFICIENT_OBSERVATIONS"] if not strict_valid else [])
+            valid=valid,
+            flags_json=json.dumps(["INSUFFICIENT_OBSERVATIONS"] if not valid else [])
         )
     ]
 

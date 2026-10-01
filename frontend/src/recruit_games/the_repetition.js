@@ -217,14 +217,14 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader('Part 3: The Evening Threshold', 'Final 3-point exhibition readiness inspection before guests arrive.')}
+          ${renderHeader('Part 3: The Evening Threshold', 'Exhibition readiness inspection for this stage.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>`,
             goal: 'Verify the 3 gallery readiness checkpoints to prepare the hall for evening arrival.',
             steps: [
               'Check each gallery preparation item (lighting, guides, floral welcome).',
               'Verify all 3 items to complete the ritual.',
-              'Click Finalize Assessment to submit your session.'
+              'Click Complete Activity to proceed.'
             ]
           })}
         </div>
@@ -240,7 +240,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
 
     app.innerHTML = `
       <div class="animate-fadeIn">
-        ${renderHeader('Part 3: The Evening Threshold', 'Verify the final 3-point checklist to make the gallery ready for evening guests.')}
+        ${renderHeader('Part 3: The Evening Threshold', 'Verify the 3-point checklist to complete this activity.')}
 
         <div class="space-y-3 mb-6">
           ${tasks.map((t, idx) => `
@@ -254,7 +254,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
         <div class="flex justify-between items-center">
           <span class="text-xs text-[var(--text-secondary)] font-medium">${completedCount} of 3 checkpoints verified</span>
           <button id="m3FinishBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm flex items-center gap-2">
-            Finalize Assessment &rarr;
+            Complete Activity &rarr;
           </button>
         </div>
       </div>

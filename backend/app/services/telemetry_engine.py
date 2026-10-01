@@ -83,6 +83,12 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
         if seq is None:
             continue
 
+        # Filter out continuous pointer streaming (discrete events only)
+        action = ev.get("action", "unknown")
+        if action in ["mousemove", "pointermove", "touchmove", "continuous_drag"]:
+            ignored_count += 1
+            continue
+
         state_data = ev.get("state")
         data_payload = ev.get("data")
         state_json_str = json.dumps(state_data) if state_data is not None else None

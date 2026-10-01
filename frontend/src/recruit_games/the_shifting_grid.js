@@ -45,11 +45,11 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
           ${renderHeader('Part 1: The Ceramic Mosaic', 'Sorting geometric tiles under changing design requirements.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>`,
-            goal: 'Sort each geometric tile into the correct bin based on the active sorting rule badge.',
+            goal: 'Sort each geometric tile into the appropriate gallery container.',
             steps: [
-              'Check the active sorting rule badge at the top (e.g. Color or Shape).',
               'Observe the tile presented in the center stage.',
-              'Click the matching target bin to place the tile.'
+              'Select Container 1 or Container 2 to place the tile.',
+              'Sort all 6 tiles to complete the activity.'
             ]
           })}
         </div>
@@ -72,20 +72,15 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
     }
 
     const currentCard = cards[currentIdx];
-    const activeRuleName = currentIdx < 3 ? 'Match by Color' : 'Match by Shape';
 
     app.innerHTML = `
       <div class="animate-fadeIn">
-        ${renderHeader('Part 1: The Ceramic Mosaic', 'Sort each tile into the matching container according to the active rule.')}
+        ${renderHeader('Part 1: The Ceramic Mosaic', 'Sort each tile into the corresponding container.')}
 
         <div class="flex justify-between items-center mb-4">
           <span class="text-xs text-[var(--text-secondary)] font-medium flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-[var(--accent-gold)] inline-block"></span>
             Tile ${currentIdx + 1} of ${cards.length}
-          </span>
-          <span class="text-xs font-semibold px-3 py-1 bg-amber-50 text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 shadow-xs flex items-center gap-1">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-            Active Rule: ${activeRuleName}
           </span>
         </div>
 
@@ -97,37 +92,34 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
           <div class="text-sm font-serif font-semibold text-[var(--text-primary)]">${currentCard.label}</div>
         </div>
 
-        <!-- Target Bins -->
+        <!-- Target Bins: Static Reference Exemplars (No Dynamic Relabeling) -->
         <div class="grid grid-cols-2 gap-4">
-          ${currentIdx < 3 ? `
-            <button class="bin-btn p-4 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-center shadow-xs" data-choice="Gold">
-              <span class="text-xs font-semibold text-[var(--accent-gold)] block">Container 1: Gold Items</span>
-            </button>
-            <button class="bin-btn p-4 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-center shadow-xs" data-choice="Sage">
-              <span class="text-xs font-semibold text-emerald-800 block">Container 2: Sage Items</span>
-            </button>
-          ` : `
-            <button class="bin-btn p-4 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-center shadow-xs" data-choice="Circle">
-              <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 1: Circles (&#9679;)</span>
-            </button>
-            <button class="bin-btn p-4 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-center shadow-xs" data-choice="Square">
-              <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 2: Squares (&#9632;)</span>
-            </button>
-          `}
+          <button class="bin-btn p-4 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-center shadow-xs" data-choice="container_1">
+            <span class="text-2xl text-[var(--accent-gold)] block mb-1">&#9679;</span>
+            <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 1</span>
+          </button>
+          <button class="bin-btn p-4 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-center shadow-xs" data-choice="container_2">
+            <span class="text-2xl text-emerald-800 block mb-1">&#9632;</span>
+            <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 2</span>
+          </button>
         </div>
       </div>
     `;
 
-    logEvent('card_presented', { card_id: currentCard.id, rule: activeRuleName });
+    logEvent('card_presented', { card_id: currentCard.id });
 
     app.querySelectorAll('.bin-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const choice = btn.getAttribute('data-choice');
         let isCorrect = false;
         if (currentIdx < 3) {
-          isCorrect = (choice === currentCard.color);
+          // Pre-shift trials 1-3: Match by Color (Gold -> container_1, Sage -> container_2)
+          isCorrect = (choice === 'container_1' && currentCard.color === 'Gold') ||
+                      (choice === 'container_2' && currentCard.color === 'Sage');
         } else {
-          isCorrect = (choice === currentCard.shape);
+          // Post-shift trials 4-6: Match by Shape (Circle -> container_1, Square -> container_2)
+          isCorrect = (choice === 'container_1' && currentCard.shape === 'Circle') ||
+                      (choice === 'container_2' && currentCard.shape === 'Square');
         }
         if (isCorrect) correctCount++;
         logEvent('card_sorted', { card_id: currentCard.id, choice, is_correct: isCorrect });

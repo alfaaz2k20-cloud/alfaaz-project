@@ -116,17 +116,41 @@ class TestGate5R5RecruiterViewAndAntiCopy(unittest.TestCase):
                 action="document_filed",
                 data_json=json.dumps({"is_correct": True, "dwell_ms": 2000.0})
             ))
-            db.add(DBTelemetryEvent(
-                session_id=s_id,
-                seq=2,
-                segment_id=1,
-                t_ms=2000.0,
-                screen="archive",
-                server_received=datetime.now(timezone.utc),
-                mini_game="A2",
-                action="exception_resolved",
-                data_json=json.dumps({"is_correct": True})
-            ))
+            db.add_all([
+                DBTelemetryEvent(
+                    session_id=s_id,
+                    seq=2,
+                    segment_id=1,
+                    t_ms=2000.0,
+                    screen="archive",
+                    server_received=datetime.now(timezone.utc),
+                    mini_game="A2",
+                    action="exception_resolved",
+                    data_json=json.dumps({"is_correct": True})
+                ),
+                DBTelemetryEvent(
+                    session_id=s_id,
+                    seq=3,
+                    segment_id=1,
+                    t_ms=2500.0,
+                    screen="archive",
+                    server_received=datetime.now(timezone.utc),
+                    mini_game="A2",
+                    action="decision_logged",
+                    data_json=json.dumps({"is_correct": True})
+                ),
+                DBTelemetryEvent(
+                    session_id=s_id,
+                    seq=4,
+                    segment_id=1,
+                    t_ms=3000.0,
+                    screen="archive",
+                    server_received=datetime.now(timezone.utc),
+                    mini_game="A2",
+                    action="decision_logged",
+                    data_json=json.dumps({"is_correct": True})
+                )
+            ])
             db.commit()
 
         res = self.client.get(f"/recruit/research/session/{s_id}", headers=self.headers)
