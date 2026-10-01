@@ -2,7 +2,9 @@ import unittest
 import os
 import sys
 import json
+import hashlib
 import uuid
+from pathlib import Path
 
 # Add backend to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
@@ -39,6 +41,63 @@ class TestGate2SJTAndTelemetry(unittest.TestCase):
             self.assertEqual(ranges[p]["min"], exp["min"], f"Min mismatch for {p}")
             self.assertEqual(ranges[p]["max"], exp["max"], f"Max mismatch for {p}")
             self.assertEqual(ranges[p]["span"], exp["span"], f"Span mismatch for {p}")
+
+    def test_recruit_config_copies_are_byte_identical(self):
+        root = Path(__file__).resolve().parents[1]
+        for filename in ("sjt_items.json", "parameters.json", "locked_hashes.json"):
+            self.assertEqual(
+                (root / "config" / filename).read_bytes(),
+                (root / "backend" / "config" / filename).read_bytes(),
+                f"{filename} must be synchronized with backend/config",
+            )
+
+    def test_locked_hashes_and_fingerprints(self):
+        root = Path(__file__).resolve().parents[1]
+        with open(root / "config" / "locked_hashes.json", "r", encoding="utf-8") as f:
+            locked = json.load(f)
+
+        sjt_bytes = (root / "config" / "sjt_items.json").read_bytes()
+        sjt_lf = hashlib.sha256(sjt_bytes.replace(b"\r\n", b"\n")).hexdigest()
+        self.assertEqual(sjt_lf, locked["sjt_reference_lf_sha256"])
+
+        param_bytes = (root / "config" / "parameters.json").read_bytes()
+        param_lf = hashlib.sha256(param_bytes.replace(b"\r\n", b"\n")).hexdigest()
+        self.assertEqual(param_lf, locked["parameters_lf_sha256"])
+
+        param_data = json.loads(param_bytes.decode("utf-8"))
+        canonical_p = json.dumps(param_data, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        self.assertEqual(hashlib.sha256(canonical_p).hexdigest(), locked["parameters_canonical_sha256"])
+
+        sjt_data = json.loads(sjt_bytes.decode("utf-8"))
+        from app.services.sjt_engine import compute_keys_fingerprint
+        self.assertEqual(compute_keys_fingerprint(sjt_data), locked["sjt_keys_fingerprint"])
+
+    def test_tampering_with_sjt_keys_fails(self):
+        import app.services.sjt_engine as engine
+        # Clear cache
+        engine._CACHED_PARAMS = None
+        engine._CACHED_SJT = None
+
+        orig_path = engine.SJT_ITEMS_PATH
+        import tempfile
+        try:
+            with open(orig_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            # Tamper key value
+            data["scenarios"][0]["options"][0]["keys"]["empathy"] += 1
+            with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", encoding="utf-8") as tf:
+                json.dump(data, tf)
+                temp_name = tf.name
+
+            engine.SJT_ITEMS_PATH = temp_name
+            with self.assertRaises(RuntimeError):
+                engine.verify_and_load_configs()
+        finally:
+            engine.SJT_ITEMS_PATH = orig_path
+            engine._CACHED_PARAMS = None
+            engine._CACHED_SJT = None
+            if 'temp_name' in locals() and os.path.exists(temp_name):
+                os.remove(temp_name)
 
     def test_sjt_band_boundary_cutoffs(self):
         params, sjt, _, _ = verify_and_load_configs()

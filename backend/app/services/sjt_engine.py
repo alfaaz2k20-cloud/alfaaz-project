@@ -15,19 +15,9 @@ def resolve_config_path(filename: str) -> str:
             return os.path.abspath(c)
     return candidates[0]
 
+LOCKED_HASHES_PATH = resolve_config_path("locked_hashes.json")
 PARAMETERS_PATH = resolve_config_path("parameters.json")
 SJT_ITEMS_PATH = resolve_config_path("sjt_items.json")
-
-EXPECTED_HASHES = {
-    "parameters.json": [
-        "1262f85b33c6bd64b3331d214363813e218e9fb52efa856cd6342bd6818c70e6",  # LF (Linux/Render)
-        "ed4eb65e958a37d45b539470dfe5dc125932651cbc404e68f56fac31bb5bc64e"   # CRLF (Windows)
-    ],
-    "sjt_items.json": [
-        "91a5b9934ff13a94164cbdb956b1dc8de8d163fbf1e93b024710aacbdb76bc14",  # LF (Linux/Render)
-        "cfd2e4da886c03211beddf13e2ff47c1e3e2bd95068f413238f1f3394b9e39b6"   # CRLF (Windows)
-    ]
-}
 
 _CACHED_PARAMS = None
 _CACHED_SJT = None
@@ -38,30 +28,61 @@ def get_file_hash(path: str) -> str:
     with open(path, "rb") as f:
         return hashlib.sha256(f.read()).hexdigest()
 
+def compute_keys_fingerprint(sjt_data: Dict[str, Any]) -> str:
+    obj = {
+        "sjt_version": sjt_data.get("sjt_version"),
+        "scenario_ids": [s["id"] for s in sjt_data.get("scenarios", [])],
+        "options": {
+            opt["id"]: opt.get("keys", {})
+            for s in sjt_data.get("scenarios", [])
+            for opt in s.get("options", [])
+        }
+    }
+    canonical = json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
+
 def verify_and_load_configs():
     global _CACHED_PARAMS, _CACHED_SJT, _CACHED_CONFIG_HASH, _CACHED_RANGES
     if _CACHED_PARAMS is not None and _CACHED_SJT is not None:
         return _CACHED_PARAMS, _CACHED_SJT, _CACHED_CONFIG_HASH, _CACHED_RANGES
 
-    p_hash = get_file_hash(PARAMETERS_PATH)
-    s_hash = get_file_hash(SJT_ITEMS_PATH)
+    if not os.path.exists(LOCKED_HASHES_PATH):
+        raise RuntimeError(f"locked_hashes.json missing at {LOCKED_HASHES_PATH}")
 
-    valid_p_hashes = [h.lower() for h in EXPECTED_HASHES["parameters.json"]]
-    valid_s_hashes = [h.lower() for h in EXPECTED_HASHES["sjt_items.json"]]
+    with open(LOCKED_HASHES_PATH, "r", encoding="utf-8") as f:
+        locked = json.load(f)
 
-    if p_hash.lower() not in valid_p_hashes:
-        raise RuntimeError(f"parameters.json hash mismatch: {p_hash}")
-    if s_hash.lower() not in valid_s_hashes:
-        raise RuntimeError(f"sjt_items.json hash mismatch: {s_hash}")
+    with open(PARAMETERS_PATH, "rb") as f:
+        p_bytes = f.read()
+    p_raw_sha = hashlib.sha256(p_bytes).hexdigest()
+    p_lf_sha = hashlib.sha256(p_bytes.replace(b"\r\n", b"\n")).hexdigest()
+    valid_p_hashes = [locked["parameters_lf_sha256"].lower(), locked["parameters_crlf_sha256"].lower()]
+    if p_raw_sha.lower() not in valid_p_hashes and p_lf_sha.lower() not in valid_p_hashes:
+        raise RuntimeError(f"parameters.json hash mismatch: raw={p_raw_sha}, lf={p_lf_sha}")
 
-    combined = (valid_p_hashes[0] + valid_s_hashes[0]).encode("utf-8")
+    p_data = json.loads(p_bytes.decode("utf-8"))
+    p_canonical = json.dumps(p_data, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode("utf-8")
+    if hashlib.sha256(p_canonical).hexdigest() != locked["parameters_canonical_sha256"]:
+        raise RuntimeError("parameters.json canonical hash mismatch")
+
+    with open(SJT_ITEMS_PATH, "rb") as f:
+        s_bytes = f.read()
+    s_raw_sha = hashlib.sha256(s_bytes).hexdigest()
+    s_lf_sha = hashlib.sha256(s_bytes.replace(b"\r\n", b"\n")).hexdigest()
+    valid_s_hashes = [locked["sjt_reference_lf_sha256"].lower(), locked["sjt_reference_crlf_sha256"].lower()]
+    if s_raw_sha.lower() not in valid_s_hashes and s_lf_sha.lower() not in valid_s_hashes:
+        raise RuntimeError(f"sjt_items.json hash mismatch: raw={s_raw_sha}, lf={s_lf_sha}")
+
+    s_data = json.loads(s_bytes.decode("utf-8"))
+    s_fp = compute_keys_fingerprint(s_data)
+    if s_fp != locked["sjt_keys_fingerprint"]:
+        raise RuntimeError(f"sjt_items.json keys fingerprint mismatch: {s_fp}")
+
+    combined = (locked["parameters_lf_sha256"] + locked["sjt_reference_lf_sha256"]).encode("utf-8")
     _CACHED_CONFIG_HASH = hashlib.sha256(combined).hexdigest()
 
-    with open(PARAMETERS_PATH, "r", encoding="utf-8") as f:
-        _CACHED_PARAMS = json.load(f)
-
-    with open(SJT_ITEMS_PATH, "r", encoding="utf-8") as f:
-        _CACHED_SJT = json.load(f)
+    _CACHED_PARAMS = p_data
+    _CACHED_SJT = s_data
 
     # Precalculate min, max, span per parameter
     params = list(_CACHED_PARAMS.keys())
