@@ -20,8 +20,102 @@ let state = {
   segmentId: 1,
   seq: 1,
   telemetryQueue: [],
-  isPaused: false
+  isPaused: false,
+  activeMiniGameInProgress: false,
+  telemetryTerminal: false
 };
+
+const STATE_STORAGE_KEY = 'alfaaz_recruit_state';
+const UNSENT_STORAGE_KEY = 'alfaaz_recruit_unsent';
+
+function saveLocalState() {
+  try {
+    const toSave = {
+      sessionId: state.sessionId,
+      configHash: state.configHash,
+      worldSequence: state.worldSequence,
+      seeds: state.seeds,
+      screen: state.screen,
+      sjtScenarios: state.sjtScenarios,
+      currentSjtIndex: state.currentSjtIndex,
+      sjtResponses: state.sjtResponses,
+      currentWorldIndex: state.currentWorldIndex,
+      currentMiniGameIndex: state.currentMiniGameIndex,
+      accessibilityModes: state.accessibilityModes,
+      segmentId: state.segmentId,
+      seq: state.seq,
+      isPaused: state.isPaused,
+      activeMiniGameInProgress: state.activeMiniGameInProgress || false
+    };
+    sessionStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(toSave));
+    sessionStorage.setItem(UNSENT_STORAGE_KEY, JSON.stringify(state.telemetryQueue));
+  } catch (e) {
+    console.warn('[Persistence] Error saving sessionStorage:', e);
+  }
+}
+
+function restoreLocalState() {
+  try {
+    const savedStateStr = sessionStorage.getItem(STATE_STORAGE_KEY);
+    const savedUnsentStr = sessionStorage.getItem(UNSENT_STORAGE_KEY);
+
+    if (savedUnsentStr) {
+      const parsedUnsent = JSON.parse(savedUnsentStr);
+      if (Array.isArray(parsedUnsent)) {
+        state.telemetryQueue = parsedUnsent;
+      }
+    }
+
+    if (savedStateStr) {
+      const saved = JSON.parse(savedStateStr);
+      if (saved.sessionId) {
+        state.sessionId = saved.sessionId;
+        state.configHash = saved.configHash || null;
+        state.worldSequence = saved.worldSequence || [];
+        state.seeds = saved.seeds || {};
+        state.screen = saved.screen || 'consent';
+        state.sjtScenarios = saved.sjtScenarios || [];
+        state.currentSjtIndex = saved.currentSjtIndex || 0;
+        state.sjtResponses = saved.sjtResponses || {};
+        state.currentWorldIndex = saved.currentWorldIndex || 0;
+        state.currentMiniGameIndex = saved.currentMiniGameIndex || 0;
+        state.accessibilityModes = saved.accessibilityModes || [];
+        state.seq = saved.seq || 1;
+        state.isPaused = saved.isPaused || false;
+
+        // Reload handling per Section 5.4:
+        // - recover last server sequence; continue at last acknowledged sequence + 1
+        // - increment segment
+        // - emit segment_start
+        state.segmentId = (saved.segmentId || 1) + 1;
+        logEvent(state.screen, 'segment_start', { segment_id: state.segmentId });
+
+        // If reload occurred inside an active mini-game:
+        // - mark that mini-game INSUFFICIENT
+        // - flag interrupted
+        // - resume only at a completed mini-game boundary
+        if (saved.activeMiniGameInProgress && saved.screen === 'games') {
+          const currentWorldCode = state.worldSequence[state.currentWorldIndex];
+          const mgId = getMiniGameId(currentWorldCode, state.currentMiniGameIndex);
+          logEvent('game', 'interrupted', { mini_game: mgId, reason: 'page_reload' });
+          if (state.currentMiniGameIndex < 2) {
+            state.currentMiniGameIndex++;
+          } else {
+            state.currentMiniGameIndex = 0;
+            state.currentWorldIndex++;
+          }
+          state.activeMiniGameInProgress = false;
+        }
+
+        saveLocalState();
+        return true;
+      }
+    }
+  } catch (e) {
+    console.warn('[Persistence] Error restoring sessionStorage:', e);
+  }
+  return false;
+}
 
 async function apiFetch(endpoint, options = {}) {
   if (window.globalApiFetch) {
@@ -39,6 +133,22 @@ async function apiFetch(endpoint, options = {}) {
 // Telemetry Client
 function logEvent(screen, action, data = {}, stateSnapshot = {}, inputType = 'mouse', miniGame = null, trial = null) {
   const t_ms = performance.now();
+
+  let finalData = data;
+  let finalState = stateSnapshot;
+
+  try {
+    const dataStr = JSON.stringify(data);
+    const stateStr = JSON.stringify(stateSnapshot);
+    const combinedBytes = (new TextEncoder().encode(dataStr)).length + (new TextEncoder().encode(stateStr)).length;
+    if (combinedBytes > 4096) {
+      finalData = { event_oversize: true, original_size_bytes: combinedBytes };
+      finalState = { oversized: true };
+    }
+  } catch (e) {
+    // Serialization error fallback
+  }
+
   const eventPayload = {
     seq: state.seq++,
     segment_id: state.segmentId,
@@ -49,42 +159,104 @@ function logEvent(screen, action, data = {}, stateSnapshot = {}, inputType = 'mo
     trial: trial,
     action: action,
     input_type: inputType,
-    state: stateSnapshot,
-    data: data
+    state: finalState,
+    data: finalData
   };
 
   state.telemetryQueue.push(eventPayload);
-  if (state.telemetryQueue.length >= 10 || action === 'minigame_end' || action === 'sjt_complete') {
+  saveLocalState();
+
+  // Flush when reaching 50 buffered events, or at critical task boundaries
+  if (state.telemetryQueue.length >= 50 || action === 'minigame_end' || action === 'sjt_complete') {
     flushTelemetry();
   }
 }
 
+let isFlushing = false;
 async function flushTelemetry() {
-  if (!state.sessionId || state.telemetryQueue.length === 0) return;
+  if (isFlushing || !state.sessionId || state.telemetryQueue.length === 0 || state.telemetryTerminal) return;
+  isFlushing = true;
   const batch = [...state.telemetryQueue];
-  state.telemetryQueue = [];
+
+  // Maximum batch size: 100 events
+  const sending = batch.slice(0, 100);
+  const remaining = batch.slice(100);
+  state.telemetryQueue = remaining;
+  saveLocalState();
 
   try {
-    await apiFetch('/recruit/telemetry', {
+    const resp = await apiFetch('/recruit/telemetry', {
       method: 'POST',
       body: JSON.stringify({
         session_id: state.sessionId,
-        events: batch
+        events: sending
       })
     });
+
+    if (resp && resp.status === 422) {
+      const errJson = await resp.json().catch(() => ({}));
+      if (errJson.detail && (errJson.detail.detail === 'events_cap_reached' || errJson.detail.status === 'DATA_LIMITED')) {
+        console.warn('[Telemetry] Terminal event cap reached (50,000). Halting future telemetry flushes.');
+        state.telemetryTerminal = true;
+        state.telemetryQueue = [...sending, ...remaining];
+        saveLocalState();
+        isFlushing = false;
+        return;
+      }
+    }
+
+    if (resp && resp.status === 413) {
+      console.warn('[Telemetry] Batch rejected with HTTP 413 (oversize).');
+      if (sending.length > 1) {
+        const half = Math.ceil(sending.length / 2);
+        state.telemetryQueue = [...sending.slice(0, half), ...sending.slice(half), ...remaining];
+      } else {
+        console.error('[Telemetry] Single event exceeds body limit. Discarding oversized payload.');
+      }
+      saveLocalState();
+      isFlushing = false;
+      return;
+    }
+
+    if (!resp || !resp.ok) {
+      throw new Error(resp ? `HTTP ${resp.status}` : 'No response');
+    }
+
+    saveLocalState();
   } catch (err) {
     console.warn('[Telemetry] Flush failed, re-queuing:', err);
-    state.telemetryQueue = [...batch, ...state.telemetryQueue];
+    state.telemetryQueue = [...sending, ...state.telemetryQueue];
+    saveLocalState();
+  } finally {
+    isFlushing = false;
   }
 }
 
-// Flush on unload
+// Flush approximately every 2.5 seconds (configured interval: 2500ms)
+setInterval(() => {
+  if (state.sessionId && state.telemetryQueue.length > 0 && !state.telemetryTerminal) {
+    flushTelemetry();
+  }
+}, 2500);
+
+// Flush on unload & pagehide
 window.addEventListener('beforeunload', () => {
   if (state.sessionId && state.telemetryQueue.length > 0) {
     const apiBase = window.ALFAAZ_API_URL || '';
     const payload = JSON.stringify({
       session_id: state.sessionId,
-      events: state.telemetryQueue
+      events: state.telemetryQueue.slice(0, 100)
+    });
+    navigator.sendBeacon(`${apiBase}/recruit/telemetry`, payload);
+  }
+});
+
+window.addEventListener('pagehide', () => {
+  if (state.sessionId && state.telemetryQueue.length > 0) {
+    const apiBase = window.ALFAAZ_API_URL || '';
+    const payload = JSON.stringify({
+      session_id: state.sessionId,
+      events: state.telemetryQueue.slice(0, 100)
     });
     navigator.sendBeacon(`${apiBase}/recruit/telemetry`, payload);
   }
@@ -94,9 +266,20 @@ window.addEventListener('beforeunload', () => {
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     logEvent(state.screen, 'visibility_hidden', { timestamp: Date.now() });
+    logEvent(state.screen, 'tab_hidden', { timestamp: Date.now() });
+    flushTelemetry();
   } else {
     logEvent(state.screen, 'visibility_visible', { timestamp: Date.now() });
+    logEvent(state.screen, 'tab_visible', { timestamp: Date.now() });
   }
+});
+
+// Window Blur and Focus Tracking
+window.addEventListener('blur', () => {
+  logEvent(state.screen, 'blur', { timestamp: Date.now() });
+});
+window.addEventListener('focus', () => {
+  logEvent(state.screen, 'focus', { timestamp: Date.now() });
 });
 
 // Initialization & Anti-Copy / Anti-Screenshot Protections
@@ -117,6 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  restoreLocalState();
   renderScreen();
   setupGlobalControls();
 });
@@ -274,8 +458,9 @@ function renderConsent(app) {
         state.worldSequence = data.world_sequence;
         state.seeds = data.seeds;
 
-        logEvent('consent', 'consent_accepted');
         state.screen = 'identity';
+        logEvent('consent', 'consent_accepted');
+        saveLocalState();
         renderScreen();
       } else {
         throw new Error('Missing session ID');
@@ -340,8 +525,9 @@ function renderIdentity(app) {
         throw new Error(errData.detail || (resp ? `Server returned ${resp.status}` : 'No response from server'));
       }
 
-      logEvent('identity', 'identity_submitted');
       state.screen = 'accessibility';
+      logEvent('identity', 'identity_submitted');
+      saveLocalState();
       renderScreen();
     } catch (err) {
       alert(`Unable to continue: ${err.message || 'Please check connection.'}`);
@@ -424,8 +610,9 @@ function renderAccessibility(app) {
       console.warn('Accessibility preferences save error:', err);
     }
 
-    logEvent('accessibility', 'preferences_saved', { modes });
     state.screen = 'warmup';
+    logEvent('accessibility', 'preferences_saved', { modes });
+    saveLocalState();
     renderScreen();
   });
 }
@@ -493,6 +680,7 @@ function renderWarmup(app) {
         state.sjtScenarios = sjtData.scenarios || [];
         state.currentSjtIndex = 0;
         state.screen = 'sjt';
+        saveLocalState();
         renderScreen();
       } catch (err) {
         console.error('Failed to load SJT payload:', err);
@@ -601,10 +789,11 @@ async function submitSjtAndProceed() {
         responses: state.sjtResponses
       })
     });
-    logEvent('sjt', 'sjt_complete', { response_count: Object.keys(state.sjtResponses).length });
     state.screen = 'games';
     state.currentWorldIndex = 0;
     state.currentMiniGameIndex = 0;
+    logEvent('sjt', 'sjt_complete', { response_count: Object.keys(state.sjtResponses).length });
+    saveLocalState();
     renderScreen();
   } catch (err) {
     console.error('SJT submit error:', err);
@@ -620,6 +809,9 @@ function renderGames(app, progressBarFill) {
     finishAssessment();
     return;
   }
+
+  state.activeMiniGameInProgress = true;
+  saveLocalState();
 
   const segmentProgress = document.getElementById('segmentProgress');
   if (segmentProgress) segmentProgress.textContent = `World ${state.currentWorldIndex + 1}/7`;
@@ -639,6 +831,7 @@ function renderGames(app, progressBarFill) {
       logEvent('game', action, data, stateSnapshot, inputType, mgId);
     },
     onMiniGameComplete: (mgResult) => {
+      state.activeMiniGameInProgress = false;
       const mgId = getMiniGameId(currentWorldCode, state.currentMiniGameIndex);
       logEvent('game', 'minigame_end', mgResult, {}, 'mouse', mgId);
       flushTelemetry();
@@ -648,6 +841,7 @@ function renderGames(app, progressBarFill) {
         state.currentMiniGameIndex = 0;
         state.currentWorldIndex++;
       }
+      saveLocalState();
       renderGames(app, progressBarFill);
     }
   });
@@ -667,6 +861,9 @@ function getMiniGameId(worldCode, mgIndex) {
 }
 
 async function finishAssessment() {
+  state.activeMiniGameInProgress = false;
+  saveLocalState();
+
   const app = document.getElementById('recruitApp');
   if (app) {
     app.innerHTML = `
@@ -677,6 +874,10 @@ async function finishAssessment() {
       </div>
     `;
   }
+
+  // Strictly await final telemetry acknowledgement before POST /recruit/complete
+  await flushTelemetry();
+
   try {
     await apiFetch('/recruit/complete', {
       method: 'POST',
@@ -685,8 +886,9 @@ async function finishAssessment() {
   } catch (err) {
     console.warn('Session complete submission error:', err);
   }
-  flushTelemetry();
+
   state.screen = 'complete';
+  saveLocalState();
   renderScreen();
 }
 

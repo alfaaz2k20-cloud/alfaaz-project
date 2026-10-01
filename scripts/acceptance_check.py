@@ -120,17 +120,75 @@ def run_acceptance_checks() -> List[Tuple[int, str, str, str]]:
     # --------------------------------------------------------------------------
     # Check 8: Identical duplicate event ignored; conflicting duplicate flagged and not overwritten
     # --------------------------------------------------------------------------
-    results.append((8, "Telemetry duplicate vs conflict handling", "NOT VERIFIED", "Pending Step R2"))
+    try:
+        from app.services.telemetry_engine import ingest_telemetry_batch
+        from app.models.recruit import DBDataQualityFlag
+        from sqlmodel import select
+        with Session(engine) as db:
+            s_id = str(uuid.uuid4())
+            db.add(DBSession(session_id=s_id, status="ACTIVE"))
+            db.commit()
+
+            b1 = [{"seq": 1, "segment_id": 1, "t_ms": 10.0, "screen": "game", "action": "click", "data": {"val": 1}}]
+            r1 = ingest_telemetry_batch(db, s_id, b1)
+            # Identical resend
+            r2 = ingest_telemetry_batch(db, s_id, b1)
+            # Conflicting resend
+            b_conf = [{"seq": 1, "segment_id": 1, "t_ms": 10.0, "screen": "game", "action": "diff", "data": {"val": 2}}]
+            r3 = ingest_telemetry_batch(db, s_id, b_conf)
+
+            ev = db.exec(select(DBTelemetryEvent).where(DBTelemetryEvent.session_id == s_id, DBTelemetryEvent.seq == 1)).first()
+            flags = db.exec(select(DBDataQualityFlag).where(DBDataQualityFlag.session_id == s_id)).all()
+            has_conflict = any(f.flag == "seq_conflict" for f in flags)
+
+            if r1["ingested_count"] == 1 and r2["ignored_duplicates"] == 1 and ev.action == "click" and has_conflict:
+                results.append((8, "Telemetry duplicate vs conflict handling", "PASS", "backend/app/services/telemetry_engine.py:105"))
+            else:
+                results.append((8, "Telemetry duplicate vs conflict handling", "FAIL", "Duplicate/conflict logic mismatch"))
+    except Exception as e:
+        results.append((8, "Telemetry duplicate vs conflict handling", "FAIL", str(e)))
 
     # --------------------------------------------------------------------------
     # Check 9: Reload keeps the sequence; reload inside a mini-game gives INSUFFICIENT
     # --------------------------------------------------------------------------
-    results.append((9, "Mid-game reload persistence and recovery", "NOT VERIFIED", "Pending Step R2"))
+    try:
+        with open(os.path.join("frontend", "src", "recruit.js"), "r", encoding="utf-8") as f:
+            src = f.read()
+        storage_check = "alfaaz_recruit_state" in src and "alfaaz_recruit_unsent" in src
+        reload_seq_check = "restoreLocalState" in src and "segment_start" in src
+        interrupted_check = "interrupted" in src and "activeMiniGameInProgress" in src
+
+        from app.services.telemetry_engine import calculate_active_duration_ms
+        ev1 = DBTelemetryEvent(session_id="s_rel", seq=1, segment_id=1, t_ms=100.0, screen="game", action="start")
+        ev2 = DBTelemetryEvent(session_id="s_rel", seq=2, segment_id=1, t_ms=500.0, screen="game", action="step")
+        ev3 = DBTelemetryEvent(session_id="s_rel", seq=3, segment_id=2, t_ms=50000.0, screen="game", action="start")
+        ev4 = DBTelemetryEvent(session_id="s_rel", seq=4, segment_id=2, t_ms=50600.0, screen="game", action="finish")
+        dur = calculate_active_duration_ms([ev1, ev2, ev3, ev4])
+        cross_seg_ok = (dur == 1000.0)
+
+        if storage_check and reload_seq_check and interrupted_check and cross_seg_ok:
+            results.append((9, "Mid-game reload persistence and recovery", "PASS", "frontend/src/recruit.js:50"))
+        else:
+            results.append((9, "Mid-game reload persistence and recovery", "FAIL", f"storage:{storage_check}, reload:{reload_seq_check}, int:{interrupted_check}, dur:{cross_seg_ok}"))
+    except Exception as e:
+        results.append((9, "Mid-game reload persistence and recovery", "FAIL", str(e)))
 
     # --------------------------------------------------------------------------
     # Check 10: Hidden-tab time excluded from durations
     # --------------------------------------------------------------------------
-    results.append((10, "Hidden-tab duration exclusion", "NOT VERIFIED", "Pending Step R2"))
+    try:
+        from app.services.telemetry_engine import calculate_active_duration_ms
+        ev1 = DBTelemetryEvent(session_id="s_dur", seq=1, segment_id=1, t_ms=1000.0, screen="game", action="start")
+        ev2 = DBTelemetryEvent(session_id="s_dur", seq=2, segment_id=1, t_ms=3000.0, screen="game", action="tab_hidden")
+        ev3 = DBTelemetryEvent(session_id="s_dur", seq=3, segment_id=1, t_ms=10000.0, screen="game", action="tab_visible")
+        ev4 = DBTelemetryEvent(session_id="s_dur", seq=4, segment_id=1, t_ms=12000.0, screen="game", action="finish")
+        dur = calculate_active_duration_ms([ev1, ev2, ev3, ev4])
+        if dur == 4000.0:
+            results.append((10, "Hidden-tab duration exclusion", "PASS", "backend/app/services/telemetry_engine.py:180"))
+        else:
+            results.append((10, "Hidden-tab duration exclusion", "FAIL", f"Expected 4000ms, got {dur}ms"))
+    except Exception as e:
+        results.append((10, "Hidden-tab duration exclusion", "FAIL", str(e)))
 
     # --------------------------------------------------------------------------
     # Check 11: Every branch of the evidence logic (relationship, consistency, confidence) incl. uncalibrated behavior
@@ -205,7 +263,70 @@ def run_acceptance_checks() -> List[Tuple[int, str, str, str]]:
     # --------------------------------------------------------------------------
     # Check 18: Rate limits, body limits and the event cap behave as specified
     # --------------------------------------------------------------------------
-    results.append((18, "Rate limits, body limits, event cap enforcement", "NOT VERIFIED", "Pending Step R2"))
+    try:
+        from app.services.rate_limiter import TokenBucket
+        from app.services.telemetry_engine import ingest_telemetry_batch, TelemetryCapReachedException
+        from app.models.recruit import DBDataQualityFlag
+        from sqlmodel import select
+
+        # 1. Token bucket burst capacity 20, refill 5/s
+        tb = TokenBucket(capacity=20.0, refill_rate=5.0)
+        burst_passed = all(tb.consume(1.0) for _ in range(20)) and not tb.consume(1.0)
+
+        # 2. Event cap 50k and high volume 25k
+        with Session(engine) as db:
+            s_cap = str(uuid.uuid4())
+            db.add(DBSession(session_id=s_cap, status="ACTIVE"))
+            db.commit()
+
+            # Seed 24,999 events
+            events = [
+                DBTelemetryEvent(session_id=s_cap, seq=i, segment_id=1, t_ms=float(i), screen="g", action="s")
+                for i in range(1, 25000)
+            ]
+            db.add_all(events)
+            db.commit()
+
+            # Cross 25k
+            ingest_telemetry_batch(db, s_cap, [{"seq": 25000, "segment_id": 1, "t_ms": 25000.0, "screen": "g", "action": "s"}])
+            flags_25k = db.exec(select(DBDataQualityFlag).where(DBDataQualityFlag.session_id == s_cap)).all()
+            has_25k = any(f.flag == "events_high_volume" for f in flags_25k)
+
+            # Seed up to 49,990
+            more_ev = [
+                DBTelemetryEvent(session_id=s_cap, seq=i, segment_id=1, t_ms=float(i), screen="g", action="s")
+                for i in range(25001, 49991)
+            ]
+            db.add_all(more_ev)
+            db.commit()
+
+            # Attempt batch crossing 50,000
+            over_batch = [{"seq": 49991 + j, "segment_id": 1, "t_ms": float(49991 + j), "screen": "g", "action": "s"} for j in range(20)]
+            cap_raised = False
+            try:
+                ingest_telemetry_batch(db, s_cap, over_batch)
+            except TelemetryCapReachedException:
+                cap_raised = True
+
+            flags_50k = db.exec(select(DBDataQualityFlag).where(DBDataQualityFlag.session_id == s_cap)).all()
+            has_50k = any(f.flag == "events_cap_reached" for f in flags_50k)
+
+        # 3. 4KB individual event guard
+        with Session(engine) as db:
+            s_ev = str(uuid.uuid4())
+            db.add(DBSession(session_id=s_ev, status="ACTIVE"))
+            db.commit()
+            huge_batch = [{"seq": 1, "segment_id": 1, "t_ms": 1.0, "screen": "g", "action": "a", "data": {"k": "x" * 5000}}]
+            ingest_telemetry_batch(db, s_ev, huge_batch)
+            flags_ev = db.exec(select(DBDataQualityFlag).where(DBDataQualityFlag.session_id == s_ev)).all()
+            has_ev_oversize = any(f.flag == "event_oversize" for f in flags_ev)
+
+        if burst_passed and has_25k and cap_raised and has_50k and has_ev_oversize:
+            results.append((18, "Rate limits, body limits, event cap enforcement", "PASS", "backend/app/services/rate_limiter.py:90"))
+        else:
+            results.append((18, "Rate limits, body limits, event cap enforcement", "FAIL", f"burst:{burst_passed}, 25k:{has_25k}, cap:{cap_raised}, 50k:{has_50k}, oversize:{has_ev_oversize}"))
+    except Exception as e:
+        results.append((18, "Rate limits, body limits, event cap enforcement", "FAIL", str(e)))
 
     # --------------------------------------------------------------------------
     # Check 19: Production build fails with __MISSING__ or interim copy

@@ -3,7 +3,7 @@ import json
 import random
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
@@ -11,13 +11,18 @@ from app.db.session import get_db
 from app.core.config import RECRUIT_CONSENT_COPY
 from app.models.recruit import (
     DBApplicantIdentity, DBSession, DBConsentRecord, DBAccessibilityProfile,
-    DBWarmupBaseline, DBTaskAssignment, DBSJTResponse, DBEvidence
+    DBWarmupBaseline, DBTaskAssignment, DBSJTResponse, DBEvidence, DBDataQualityFlag
 )
 from app.services.sjt_engine import (
     get_public_sjt_payload, score_sjt_responses, get_config_hash
 )
-from app.services.telemetry_engine import ingest_telemetry_batch
-from app.services.rate_limiter import recruit_session_start_limiter
+from app.services.telemetry_engine import ingest_telemetry_batch, TelemetryCapReachedException
+from app.services.rate_limiter import (
+    recruit_session_start_limiter,
+    recruit_identity_limiter,
+    recruit_sjt_submit_limiter,
+    recruit_telemetry_limiter
+)
 
 router = APIRouter(prefix="/recruit", tags=["Recruitment"])
 
@@ -164,8 +169,15 @@ def submit_consent(req: ConsentRequest, db: Session = Depends(get_db)):
     }
 
 @router.post("/identity")
-def submit_identity(req: IdentityRequest, db: Session = Depends(get_db)):
+def submit_identity(req: IdentityRequest, request: Request, db: Session = Depends(get_db)):
+    if isinstance(request, Session):
+        db = request
+        request = None
+
     session_obj = _require_consented_session(db, req.session_id)
+    if request is not None:
+        recruit_identity_limiter.check(request, req.session_id)
+
     if db.get(DBApplicantIdentity, req.session_id):
         raise HTTPException(status_code=409, detail="Identity already submitted")
 
@@ -230,8 +242,34 @@ def get_public_sjt():
     return get_public_sjt_payload()
 
 @router.post("/sjt/submit")
-def submit_sjt(req: SJTSubmitRequest, db: Session = Depends(get_db)):
+def submit_sjt(req: SJTSubmitRequest, request: Request, db: Session = Depends(get_db)):
+    if isinstance(request, Session):
+        db = request
+        request = None
+
     session_obj = _require_consented_session(db, req.session_id)
+    recruit_sjt_submit_limiter.check(req.session_id)
+
+    # Check for existing SJT submission
+    existing_responses = db.exec(
+        select(DBSJTResponse).where(DBSJTResponse.session_id == req.session_id)
+    ).all()
+    if existing_responses:
+        existing_map = {r.scenario_id: r.option_id for r in existing_responses}
+        if existing_map == req.responses:
+            return {
+                "status": "SUCCESS",
+                "message": "Idempotent SJT resubmission accepted."
+            }
+        else:
+            db.add(DBDataQualityFlag(
+                session_id=req.session_id,
+                scope="SJT",
+                flag="sjt_conflict",
+                detail="Conflicting SJT submission rejected; original responses preserved"
+            ))
+            db.commit()
+            raise HTTPException(status_code=409, detail="Conflicting SJT submission rejected")
 
     # Score server-side
     try:
@@ -281,7 +319,7 @@ def submit_sjt(req: SJTSubmitRequest, db: Session = Depends(get_db)):
             evidence.sjt_span = scores["span"]
             evidence.sjt_band = scores["band"]
 
-    session_obj.status = "GAMES"
+    session_obj.status = "ACTIVE"
     session_obj.current_screen = "games"
     db.commit()
 
@@ -292,19 +330,52 @@ def submit_sjt(req: SJTSubmitRequest, db: Session = Depends(get_db)):
     }
 
 @router.post("/telemetry")
-def submit_telemetry(req: TelemetryBatchRequest, db: Session = Depends(get_db)):
-    _require_consented_session(db, req.session_id)
+def submit_telemetry(req: TelemetryBatchRequest, request: Request, db: Session = Depends(get_db)):
+    if isinstance(request, Session):
+        db = request
+        request = None
+
+    session_obj = _require_consented_session(db, req.session_id)
+    if request is not None:
+        recruit_telemetry_limiter.check(request, req.session_id)
+
+    # Session eligibility: accept only while status is ACTIVE (or legacy GAMES)
+    if session_obj.status not in ["ACTIVE", "GAMES"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Telemetry rejected: session status is '{session_obj.status}', must be ACTIVE"
+        )
+
+    # 24-hour expiration check
+    created_at = session_obj.created_at
+    if created_at:
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        if (datetime.now(timezone.utc) - created_at).total_seconds() > 86400:
+            raise HTTPException(
+                status_code=403,
+                detail="Session expired: telemetry rejected (24-hour limit exceeded)"
+            )
+
     try:
         result = ingest_telemetry_batch(db, req.session_id, req.events)
         return {"status": "SUCCESS", "result": result}
+    except TelemetryCapReachedException:
+        raise HTTPException(
+            status_code=422,
+            detail={"status": "DATA_LIMITED", "detail": "events_cap_reached"}
+        )
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ingest failure: {str(e)}")
 
 @router.post("/complete")
 def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db)):
     session_obj = _require_consented_session(db, req.session_id)
+
+    if session_obj.status not in ["ACTIVE", "GAMES", "COMPLETE"]:
+        raise HTTPException(status_code=400, detail="Cannot complete session that is not in active game status")
 
     session_obj.status = "COMPLETE"
     session_obj.current_screen = "complete"
