@@ -21,7 +21,7 @@ class DBSession(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
-    status: str = Field(default="INIT", index=True)  # INIT, CONSENTED, WARMUP, SJT, GAMES, COMPLETE
+    status: str = Field(default="CONSENTED", index=True)  # CONSENTED, SJT, ACTIVE, COMPLETE
     current_screen: Optional[str] = None
     order_id: Optional[int] = Field(default=None, index=True)
     spec_version: str = Field(default="2026-10-v2")

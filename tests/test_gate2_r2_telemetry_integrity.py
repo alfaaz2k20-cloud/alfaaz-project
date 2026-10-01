@@ -336,6 +336,105 @@ class TestGate2R2TelemetryIntegrity(unittest.TestCase):
             self.assertEqual(ctx.exception.status_code, 403)
             self.assertIn("24-hour limit exceeded", ctx.exception.detail)
 
+    # =========================================================================
+    # 8. R1/R2 Consent Datastore Invariants & Active Game Period Strictness
+    # =========================================================================
+    def test_r1_consent_datastore_invariants(self):
+        """
+        Verify:
+        - initial page load / no action: 0 rows
+        - consent declined: 0 rows
+        - identity before consent: rejected, 0 rows
+        - affirmative consent: exactly 1 session ('CONSENTED'), 1 consent record, 1 assignment, 0 identity
+        """
+        from app.routers.recruit import submit_consent, submit_identity, ConsentRequest, IdentityRequest
+        from app.models.recruit import DBApplicantIdentity, DBTaskAssignment
+
+        with Session(self.engine) as db:
+            # 1. Initial datastore state: completely empty
+            self.assertEqual(db.exec(select(DBSession)).all(), [])
+            self.assertEqual(db.exec(select(DBConsentRecord)).all(), [])
+            self.assertEqual(db.exec(select(DBApplicantIdentity)).all(), [])
+            self.assertEqual(db.exec(select(DBTaskAssignment)).all(), [])
+
+            # 2. Consent declined (under 18 or research unchecked): 0 rows
+            with self.assertRaises(HTTPException):
+                submit_consent(ConsentRequest(choices={"research_telemetry": False}, confirmed_18_plus=True), db)
+            with self.assertRaises(HTTPException):
+                submit_consent(ConsentRequest(choices={"research_telemetry": True}, confirmed_18_plus=False), db)
+
+            self.assertEqual(db.exec(select(DBSession)).all(), [])
+            self.assertEqual(db.exec(select(DBConsentRecord)).all(), [])
+            self.assertEqual(db.exec(select(DBApplicantIdentity)).all(), [])
+
+            # 3. Identity before consent: rejected, 0 rows
+            with self.assertRaises(HTTPException):
+                submit_identity(IdentityRequest(session_id="nonexistent", full_name="Test", email="t@example.com"), None, db)
+
+            self.assertEqual(db.exec(select(DBSession)).all(), [])
+            self.assertEqual(db.exec(select(DBApplicantIdentity)).all(), [])
+
+            # 4. Affirmative consent: atomic creation of 1 session ('CONSENTED'), 1 consent, 1 assignment
+            res = submit_consent(ConsentRequest(choices={"research_telemetry": True}, confirmed_18_plus=True), db)
+            sess_id = res["session_id"]
+
+            sessions = db.exec(select(DBSession)).all()
+            self.assertEqual(len(sessions), 1)
+            self.assertEqual(sessions[0].session_id, sess_id)
+            self.assertEqual(sessions[0].status, "CONSENTED")  # Never 'INIT'
+
+            consents = db.exec(select(DBConsentRecord)).all()
+            self.assertEqual(len(consents), 1)
+            self.assertEqual(consents[0].session_id, sess_id)
+
+            assignments = db.exec(select(DBTaskAssignment)).all()
+            self.assertEqual(len(assignments), 1)
+            self.assertEqual(assignments[0].session_id, sess_id)
+
+            # Identity must remain 0 rows until explicitly submitted
+            self.assertEqual(db.exec(select(DBApplicantIdentity)).all(), [])
+
+    def test_active_game_period_strictness(self):
+        """
+        Verify that telemetry and completion strictly require status == 'ACTIVE'.
+        Legacy 'GAMES', 'INIT', 'CONSENTED', 'SJT', or 'COMPLETE' cannot submit telemetry.
+        """
+        from app.routers.recruit import submit_telemetry, complete_session, TelemetryBatchRequest, CompleteSessionRequest
+
+        with Session(self.engine) as db:
+            s_id = str(uuid.uuid4())
+            sess = DBSession(session_id=s_id, status="CONSENTED")
+            db.add(sess)
+            db.add(DBConsentRecord(session_id=s_id, consent_text_version="2.0", choices_json="{}", confirmed_18_plus=True))
+            db.commit()
+
+            req = TelemetryBatchRequest(session_id=s_id, events=[{"seq": 1, "t_ms": 1.0}])
+            dummy_request = make_dummy_request()
+
+            # Disallowed statuses for telemetry
+            for disallowed in ["CONSENTED", "SJT", "GAMES", "COMPLETE"]:
+                sess.status = disallowed
+                db.commit()
+                with self.assertRaises(HTTPException) as ctx:
+                    submit_telemetry(req, dummy_request, db)
+                self.assertEqual(ctx.exception.status_code, 403)
+                self.assertIn("must be ACTIVE", ctx.exception.detail)
+
+            # Completion disallowed when not ACTIVE
+            sess.status = "SJT"
+            db.commit()
+            with self.assertRaises(HTTPException) as ctx:
+                complete_session(CompleteSessionRequest(session_id=s_id), db)
+            self.assertEqual(ctx.exception.status_code, 400)
+            self.assertIn("Cannot complete session", ctx.exception.detail)
+
+            # Only ACTIVE status succeeds
+            sess.status = "ACTIVE"
+            db.commit()
+            comp_res = complete_session(CompleteSessionRequest(session_id=s_id), db)
+            self.assertEqual(comp_res["status"], "SUCCESS")
+            self.assertEqual(sess.status, "COMPLETE")
+
 
 if __name__ == "__main__":
     unittest.main()

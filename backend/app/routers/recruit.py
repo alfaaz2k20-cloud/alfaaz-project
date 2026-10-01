@@ -339,8 +339,8 @@ def submit_telemetry(req: TelemetryBatchRequest, request: Request, db: Session =
     if request is not None:
         recruit_telemetry_limiter.check(request, req.session_id)
 
-    # Session eligibility: accept only while status is ACTIVE (or legacy GAMES)
-    if session_obj.status not in ["ACTIVE", "GAMES"]:
+    # Session eligibility: accept only while status is ACTIVE per Addendum 5.1
+    if session_obj.status != "ACTIVE":
         raise HTTPException(
             status_code=403,
             detail=f"Telemetry rejected: session status is '{session_obj.status}', must be ACTIVE"
@@ -374,7 +374,7 @@ def submit_telemetry(req: TelemetryBatchRequest, request: Request, db: Session =
 def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db)):
     session_obj = _require_consented_session(db, req.session_id)
 
-    if session_obj.status not in ["ACTIVE", "GAMES", "COMPLETE"]:
+    if session_obj.status not in ["ACTIVE", "COMPLETE"]:
         raise HTTPException(status_code=400, detail="Cannot complete session that is not in active game status")
 
     session_obj.status = "COMPLETE"

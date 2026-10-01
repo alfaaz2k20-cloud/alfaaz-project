@@ -130,7 +130,7 @@ class TestGate2SJTAndTelemetry(unittest.TestCase):
     def test_telemetry_idempotency_and_gap_detection(self):
         with Session(self.engine) as db:
             session_id = str(uuid.uuid4())
-            sess = DBSession(session_id=session_id, status="INIT")
+            sess = DBSession(session_id=session_id, status="ACTIVE")
             db.add(sess)
             db.commit()
 
