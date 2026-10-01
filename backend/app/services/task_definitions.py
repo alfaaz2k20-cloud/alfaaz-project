@@ -433,4 +433,166 @@ def reconstruct_e3_adaptation_state(events: list) -> Dict[str, Any]:
         "all_completed": len(confirmed) == len(trials)
     }
 
+def reconstruct_q1_information_seeking_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs Q1 Information Seeking state strictly from primitive events:
+    - decision_presented
+    - optional_resource_viewed
+    - decision_submitted
+    Differentiates high-value useful resources from low-value control resources.
+    """
+    defs = get_task_definitions().get("games", {}).get("Q1", {})
+    opt_resources = defs.get("optional_resources", [])
+    useful_ids = {r["resource_id"] for r in opt_resources if r.get("info_value") == "high"}
+    control_ids = {r["resource_id"] for r in opt_resources if r.get("info_value") == "low"}
+
+    decisions = {}
+    useful_viewed = set()
+    control_viewed = set()
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "Q1":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        s_id = data.get("stimulus_id")
+
+        if action == "optional_resource_viewed":
+            res_id = data.get("resource_id")
+            if res_id in useful_ids:
+                useful_viewed.add((s_id, res_id))
+            elif res_id in control_ids:
+                control_viewed.add((s_id, res_id))
+        elif action == "decision_submitted" and s_id:
+            decisions[s_id] = {
+                "choice": data.get("choice"),
+                "input_modality": data.get("input_modality")
+            }
+
+    completed_count = len(decisions)
+    return {
+        "decisions": decisions,
+        "completed_count": completed_count,
+        "useful_resources_viewed_count": len(useful_viewed),
+        "control_resources_viewed_count": len(control_viewed),
+        "all_completed": completed_count == 4
+    }
+
+def reconstruct_q2_investigation_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs Q2 Investigation Under Uncertainty state strictly from primitive events:
+    - artifact_presented
+    - clue_inspected
+    - investigation_finalized
+    """
+    defs = get_task_definitions().get("games", {}).get("Q2", {})
+    trials = defs.get("trials", [])
+
+    clues_by_relic = {}
+    attributions = {}
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "Q2":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        s_id = data.get("stimulus_id")
+        if not s_id:
+            continue
+
+        if s_id not in clues_by_relic:
+            clues_by_relic[s_id] = set()
+
+        if action == "clue_inspected":
+            clue_id = data.get("clue_id")
+            if clue_id:
+                clues_by_relic[s_id].add(clue_id)
+        elif action == "investigation_finalized":
+            attributions[s_id] = data.get("attribution_choice")
+
+    total_clues = sum(len(clues) for clues in clues_by_relic.values())
+    completed_count = len(attributions)
+
+    return {
+        "attributions": attributions,
+        "clues_by_relic": {k: sorted(list(v)) for k, v in clues_by_relic.items()},
+        "completed_count": completed_count,
+        "total_clues_inspected": total_clues,
+        "all_completed": completed_count == len(trials)
+    }
+
+def reconstruct_q3_integration_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs Q3 Knowledge Integration state strictly from primitive events:
+    - episode_presented
+    - context_requested
+    - decision_integrated
+    Distinguishes voluntary context retrieval from accurate downstream integration.
+    """
+    defs = get_task_definitions().get("games", {}).get("Q3", {})
+    trials = defs.get("trials", [])
+
+    ground_truth_targets = {
+        "Q3_E1": "choice_sadiq_rainawari",
+        "Q3_E2": "choice_post_flood_cedar",
+        "Q3_E3": "choice_southern_vakh_shrine"
+    }
+
+    context_requested = set()
+    decisions = {}
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "Q3":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        s_id = data.get("stimulus_id")
+
+        if action == "context_requested" and s_id:
+            context_requested.add(s_id)
+        elif action == "decision_integrated" and s_id:
+            choice = data.get("choice")
+            decisions[s_id] = {
+                "choice": choice,
+                "context_retrieved": data.get("context_retrieved", s_id in context_requested),
+                "is_aligned": choice == ground_truth_targets.get(s_id)
+            }
+
+    completed_count = len(decisions)
+    aligned_count = sum(1 for d in decisions.values() if d["is_aligned"])
+    retrieved_count = sum(1 for d in decisions.values() if d["context_retrieved"])
+
+    return {
+        "episodes": decisions,
+        "completed_count": completed_count,
+        "context_retrieved_count": retrieved_count,
+        "integrated_correctly_count": aligned_count,
+        "all_completed": completed_count == len(trials)
+    }
+
+
 
