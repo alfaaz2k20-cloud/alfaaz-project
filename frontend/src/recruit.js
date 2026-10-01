@@ -282,24 +282,8 @@ window.addEventListener('focus', () => {
   logEvent(state.screen, 'focus', { timestamp: Date.now() });
 });
 
-// Initialization & Anti-Copy / Anti-Screenshot Protections
+// Initialization
 document.addEventListener('DOMContentLoaded', async () => {
-  // Prevent context menu (right click)
-  document.addEventListener('contextmenu', e => e.preventDefault());
-  // Prevent copy & cut
-  document.addEventListener('copy', e => e.preventDefault());
-  document.addEventListener('cut', e => e.preventDefault());
-  document.addEventListener('dragstart', e => e.preventDefault());
-  // Prevent copy/print/screenshot shortcuts
-  document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && ['c', 'p', 's', 'u'].includes(e.key.toLowerCase())) {
-      e.preventDefault();
-    }
-    if (e.key === 'PrintScreen') {
-      try { navigator.clipboard.writeText(''); } catch(err) {}
-    }
-  });
-
   restoreLocalState();
   renderScreen();
   setupGlobalControls();

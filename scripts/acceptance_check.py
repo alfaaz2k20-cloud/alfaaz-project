@@ -375,7 +375,30 @@ def run_acceptance_checks() -> List[Tuple[int, str, str, str]]:
     # --------------------------------------------------------------------------
     # Check 17: No clipboard.write* or key-interception code in the frontend source
     # --------------------------------------------------------------------------
-    results.append((17, "No clipboard or key interception in frontend", "NOT VERIFIED", "Pending Step R5 (interception scheduled for removal)"))
+    try:
+        f_dir = "frontend"
+        violations_17 = []
+        for root, _, files in os.walk(f_dir):
+            if "node_modules" in root or "dist" in root:
+                continue
+            for f in files:
+                if f.endswith(".js") or f.endswith(".html"):
+                    fpath = os.path.join(root, f)
+                    with open(fpath, "r", encoding="utf-8") as fp:
+                        content = fp.read()
+                    if "clipboard.write" in content or "clipboard.writeText" in content:
+                        violations_17.append(f"{f}: clipboard.write*")
+                    if "contextmenu" in content and "preventDefault" in content:
+                        violations_17.append(f"{f}: contextmenu block")
+                    if ("user-select: none !important" in content or "user-select:none !important" in content) and ("*" in content or "body" in content):
+                        violations_17.append(f"{f}: global user-select:none")
+
+        if not violations_17:
+            results.append((17, "No clipboard or key interception in frontend", "PASS", "frontend/src/recruit.js:286 (clean)"))
+        else:
+            results.append((17, "No clipboard or key interception in frontend", "FAIL", f"Found: {violations_17}"))
+    except Exception as e:
+        results.append((17, "No clipboard or key interception in frontend", "FAIL", str(e)))
 
     # --------------------------------------------------------------------------
     # Check 18: Rate limits, body limits and the event cap behave as specified

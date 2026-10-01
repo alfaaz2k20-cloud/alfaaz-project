@@ -1,3 +1,4 @@
+import json
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -27,16 +28,33 @@ RANDOM_RESPONDER_REFERENCE = {
 
 @router.get("/sessions")
 def list_research_sessions(
+    request: Request,
+    status: Optional[str] = None,
     admin_user: dict = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
     """
     Lists candidates strictly in chronological order of submission.
-    Sorting, ranking, or filtering by evidence metrics is prohibited.
+    Operational session-status filtering is permitted.
+    Sorting, ranking, or filtering by evidence fields is strictly prohibited.
     """
-    sessions = db.exec(
-        select(DBSession).order_by(DBSession.created_at.desc())
-    ).all()
+    # Safeguard: disallow sorting, filtering, or searching by evidence metrics
+    prohibited_evidence_params = {
+        "band", "parameter", "confidence", "relationship", "score",
+        "sort", "search", "rank", "fit", "features", "trait"
+    }
+    present_disallowed = prohibited_evidence_params.intersection(request.query_params.keys())
+    if present_disallowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Evidence-field sorting/filtering/searching is prohibited: {', '.join(sorted(present_disallowed))}"
+        )
+
+    query = select(DBSession).order_by(DBSession.created_at.desc())
+    if status:
+        query = query.where(DBSession.status == status)
+
+    sessions = db.exec(query).all()
 
     results = []
     for s in sessions:
@@ -163,7 +181,8 @@ def get_session_research_view(
             },
             "safeguards": {
                 "banner": "Research evidence view. Not validated. Not for selection decisions.",
-                "ipsative_note": "SJT profiles are nearly ipsative by design. A higher emphasis on one parameter balances other parameters. A LOW band indicates lower relative emphasis within this specific scenario trade-off, not a deficit in personal ability or moral standing."
+                "ipsative_note": "SJT profiles are nearly ipsative by design. A higher emphasis on one parameter balances other parameters. A LOW band indicates lower relative emphasis within this specific scenario trade-off, not a deficit in personal ability or moral standing.",
+                "sjt_emphasis_note": "Relative emphasis in this SJT's trade-offs: higher / middle / lower."
             }
         },
         "evidence_by_parameter": evidence_dict,

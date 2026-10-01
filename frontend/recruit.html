@@ -16,19 +16,12 @@
   <script type="module" src="global.js"></script>
 
   <style>
-    /* Security & Anti-Copy Protection */
-    *, *::before, *::after {
-      -webkit-user-select: none !important;
-      -moz-user-select: none !important;
-      -ms-user-select: none !important;
-      user-select: none !important;
-      -webkit-touch-callout: none !important;
-    }
-    input, textarea {
-      -webkit-user-select: text !important;
-      -moz-user-select: text !important;
-      -ms-user-select: text !important;
-      user-select: text !important;
+    /* Selective user-select:none only on interactive game surfaces to prevent accidental selection */
+    .game-interactive-surface, canvas, .game-canvas {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
     @media print {
       body {

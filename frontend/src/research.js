@@ -20,13 +20,14 @@ function setupLogout() {
   });
 }
 
-async function loadSessionsList() {
+async function loadSessionsList(selectedStatus = '') {
   const container = document.getElementById('researchContent');
   const apiBase = window.ALFAAZ_API_URL || '';
 
   try {
     const token = localStorage.getItem('alfaaz_token');
-    const resp = await fetch(`${apiBase}/recruit/research/sessions`, {
+    const url = `${apiBase}/recruit/research/sessions${selectedStatus ? `?status=${encodeURIComponent(selectedStatus)}` : ''}`;
+    const resp = await fetch(url, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -38,12 +39,35 @@ async function loadSessionsList() {
 
     const sessions = await resp.json();
 
+    const filterToolbar = `
+      <div class="flex justify-between items-center bg-white border border-[var(--grid-border)] p-4">
+        <div>
+          <h2 class="text-lg font-serif text-[var(--text-primary)]">Applicant Assessment Records</h2>
+          <span class="text-xs text-[var(--text-secondary)]">Ordered strictly by submission time</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <label for="statusFilter" class="text-xs uppercase tracking-wider text-[var(--text-secondary)]">Session Status:</label>
+          <select id="statusFilter" class="px-2 py-1 text-xs border border-[var(--grid-border)] bg-[#faf8f5] text-[var(--text-primary)] focus:outline-none">
+            <option value="" ${selectedStatus === '' ? 'selected' : ''}>All Operational Statuses</option>
+            <option value="CONSENTED" ${selectedStatus === 'CONSENTED' ? 'selected' : ''}>Consented</option>
+            <option value="SJT" ${selectedStatus === 'SJT' ? 'selected' : ''}>SJT</option>
+            <option value="ACTIVE" ${selectedStatus === 'ACTIVE' ? 'selected' : ''}>Active (Games)</option>
+            <option value="COMPLETE" ${selectedStatus === 'COMPLETE' ? 'selected' : ''}>Complete</option>
+          </select>
+        </div>
+      </div>
+    `;
+
     if (!sessions || sessions.length === 0) {
       container.innerHTML = `
-        <div class="p-12 text-center text-[var(--text-secondary)] font-serif text-base bg-white border border-[var(--grid-border)]">
-          No recruitment assessment sessions have been recorded yet.
+        ${filterToolbar}
+        <div class="p-12 text-center text-[var(--text-secondary)] font-serif text-base bg-white border border-[var(--grid-border)] mt-4">
+          No recruitment assessment sessions found for this status.
         </div>
       `;
+      document.getElementById('statusFilter')?.addEventListener('change', (e) => {
+        loadSessionsList(e.target.value);
+      });
       return;
     }
 
@@ -64,30 +88,32 @@ async function loadSessionsList() {
     `).join('');
 
     container.innerHTML = `
-      <div class="bg-white border border-[var(--grid-border)] p-6 space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-serif text-[var(--text-primary)]">Applicant Assessment Records</h2>
-          <span class="text-xs text-[var(--text-secondary)]">Ordered strictly by submission time</span>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-[#faf8f5] border-b border-[var(--grid-border)] text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">
-                <th class="p-4">Applicant Name</th>
-                <th class="p-4">Email</th>
-                <th class="p-4">Submission Date</th>
-                <th class="p-4">Status</th>
-                <th class="p-4 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
+      <div class="space-y-4">
+        ${filterToolbar}
+        <div class="bg-white border border-[var(--grid-border)] p-6 space-y-4">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-[#faf8f5] border-b border-[var(--grid-border)] text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">
+                  <th class="p-4">Applicant Name</th>
+                  <th class="p-4">Email</th>
+                  <th class="p-4">Submission Date</th>
+                  <th class="p-4">Status</th>
+                  <th class="p-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     `;
+
+    document.getElementById('statusFilter')?.addEventListener('change', (e) => {
+      loadSessionsList(e.target.value);
+    });
 
     container.querySelectorAll('.view-session-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -144,6 +170,8 @@ async function loadSessionDetail(sessionId) {
             <div class="bg-[#faf8f5] p-3 border border-[var(--grid-border)] space-y-1">
               <div class="font-semibold text-[10px] text-[var(--text-secondary)] uppercase">Game Observational Evidence</div>
               <div>Status: <span class="badge-neutral">${p.game_status}</span></div>
+              <div>Band: <span class="badge-neutral">${p.game_band}</span></div>
+              <div>Consistency: <span class="badge-neutral">${p.consistency}</span></div>
               <div>Relationship with SJT: <span class="badge-neutral">${p.relationship}</span></div>
               <div>Confidence Level: <span class="badge-neutral">${p.confidence}</span></div>
             </div>
@@ -168,7 +196,7 @@ async function loadSessionDetail(sessionId) {
         <div class="bg-white border border-[var(--grid-border)] p-6 space-y-4">
           <div class="flex justify-between items-start border-b border-[var(--grid-border)] pb-4">
             <div>
-              <span class="text-xs uppercase tracking-widest text-[var(--accent-gold)]">Applicant Evidence Dossier</span>
+              <h2 class="text-xs uppercase tracking-widest text-[var(--accent-gold)]">Evidence by parameter</h2>
               <h1 class="text-2xl font-serif text-[var(--text-primary)] mt-1">${meta.applicant.full_name || 'Anonymous'}</h1>
               <p class="text-xs text-[var(--text-secondary)]">${meta.applicant.email || ''}</p>
             </div>
@@ -178,8 +206,9 @@ async function loadSessionDetail(sessionId) {
             </div>
           </div>
 
-          <div class="p-4 bg-amber-50/50 border border-[var(--accent-gold)]/30 text-xs text-[var(--text-primary)] leading-relaxed">
-            <strong>Methodological Note:</strong> ${meta.safeguards.ipsative_note}
+          <div class="p-4 bg-amber-50/50 border border-[var(--accent-gold)]/30 text-xs text-[var(--text-primary)] leading-relaxed space-y-1">
+            <div><strong>Methodological Note:</strong> ${meta.safeguards.ipsative_note}</div>
+            <div class="text-[11px] text-[var(--text-secondary)] italic">${meta.safeguards.sjt_emphasis_note || "Relative emphasis in this SJT's trade-offs: higher / middle / lower."}</div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">

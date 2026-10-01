@@ -14,19 +14,12 @@
   <script src="https://unpkg.com/lucide@latest" defer></script>
 
   <style>
-    /* Security & Anti-Copy Protection */
-    *, *::before, *::after {
-      -webkit-user-select: none !important;
-      -moz-user-select: none !important;
-      -ms-user-select: none !important;
-      user-select: none !important;
-      -webkit-touch-callout: none !important;
-    }
-    input, textarea {
-      -webkit-user-select: text !important;
-      -moz-user-select: text !important;
-      -ms-user-select: text !important;
-      user-select: text !important;
+    /* Selective user-select:none only on interactive game surfaces to prevent accidental selection */
+    .game-interactive-surface, canvas, .game-canvas {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
     @media print {
       body {
@@ -126,7 +119,7 @@
       background: var(--accent-gold);
     }
   </style>
-  <script type="module" crossorigin src="/assets/recruit-BqyaSV_O.js"></script>
+  <script type="module" crossorigin src="/assets/recruit-BMyOGFDj.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/global-DxYxv3W5.js">
   <link rel="stylesheet" crossorigin href="/assets/global-AdwKa-Dy.css">
 </head>
