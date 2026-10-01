@@ -20,17 +20,13 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
     - Enforces sequence idempotency: identical payload -> ignore idempotently
     - Enforces sequence conflict: differing payload -> retain original, record seq_conflict
     - Detects sequence gaps -> records seq_gap
+    - Discards continuous pointer events before batch, cap, or sequence accounting
+    - Validates task_def_version presence on candidate task events
+    - Strips client-authored derived and psychological fields
     """
     session_obj = db.get(DBSession, session_id)
     if not session_obj:
         raise ValueError(f"Unknown session_id: {session_id}")
-
-    if not events:
-        return {"ingested_count": 0, "ignored_duplicates": 0, "total_session_events": 0}
-
-    # 1. Batch size limit (maximum 100 events)
-    if len(events) > 100:
-        raise ValueError("Batch exceeds maximum size of 100 events")
 
     # Fetch existing events for this session
     existing_events = db.exec(
@@ -39,7 +35,27 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
     existing_map = {e.seq: e for e in existing_events}
     existing_count = len(existing_map)
 
-    # 2. Hard Cap Enforcement (50,000 events)
+    if not events:
+        return {"ingested_count": 0, "ignored_duplicates": 0, "total_session_events": existing_count}
+
+    # 0. Defensive Backstop: Discard continuous pointer stream events BEFORE ANY accounting
+    # (prevents pointer events from consuming sequence numbers, batch limits, event cap, or causing gaps/conflicts)
+    filtered_events = []
+    for ev in events:
+        action = ev.get("action", "unknown")
+        if action in ["mousemove", "pointermove", "touchmove", "continuous_drag"]:
+            continue
+        filtered_events.append(ev)
+    events = filtered_events
+
+    if not events:
+        return {"ingested_count": 0, "ignored_duplicates": 0, "total_session_events": existing_count}
+
+    # 1. Batch size limit (maximum 100 accepted discrete events)
+    if len(events) > 100:
+        raise ValueError("Batch exceeds maximum size of 100 events")
+
+    # 2. Hard Cap Enforcement (50,000 accepted events)
     if existing_count >= 50000 or (existing_count + len(events) > 50000):
         # Record session-critical events_cap_reached flag
         cap_flag = db.exec(
@@ -75,6 +91,14 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
             ))
             db.commit()
 
+    FORBIDDEN_CLIENT_FIELDS = {
+        "condition_id", "correctness", "is_correct", "target_state", "target_category",
+        "target_container", "is_context_appropriate", "perseverative_choice",
+        "perseverative_error", "switch_cost_latency_ms", "insight_applied_correctly",
+        "spontaneous_application", "rule_adherence_score", "exploration_efficiency",
+        "creative_breakthrough_flag", "deficit_detected"
+    }
+
     new_events = []
     ignored_count = 0
 
@@ -83,18 +107,61 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
         if seq is None:
             continue
 
-        # Filter out continuous pointer streaming (discrete events only)
+        screen = ev.get("screen", "unknown")
         action = ev.get("action", "unknown")
-        if action in ["mousemove", "pointermove", "touchmove", "continuous_drag"]:
-            ignored_count += 1
-            continue
+        mini_game = ev.get("mini_game")
+        task_def_version = ev.get("task_def_version")
+
+        # 4. Require task_def_version on candidate telemetry events
+        if (screen in ["game", "sjt", "warmup"] or mini_game) and action not in ["session_ping", "page_hidden", "page_visible"]:
+            if not task_def_version:
+                db.add(DBDataQualityFlag(
+                    session_id=session_id,
+                    scope="telemetry",
+                    flag="missing_task_def_version",
+                    detail=f"Event seq {seq} missing required task_def_version"
+                ))
+            elif task_def_version != "1.0":
+                db.add(DBDataQualityFlag(
+                    session_id=session_id,
+                    scope="telemetry",
+                    flag="invalid_task_def_version",
+                    detail=f"Event seq {seq} has invalid task_def_version '{task_def_version}'"
+                ))
 
         state_data = ev.get("state")
         data_payload = ev.get("data")
+
+        # 5. Sanitize forbidden client-authored derived and psychological fields
+        forbidden_found = []
+        if isinstance(data_payload, dict):
+            sanitized_data = dict(data_payload)
+            for k in list(sanitized_data.keys()):
+                if k in FORBIDDEN_CLIENT_FIELDS:
+                    forbidden_found.append(k)
+                    del sanitized_data[k]
+            data_payload = sanitized_data
+
+        if isinstance(state_data, dict):
+            sanitized_state = dict(state_data)
+            for k in list(sanitized_state.keys()):
+                if k in FORBIDDEN_CLIENT_FIELDS:
+                    forbidden_found.append(k)
+                    del sanitized_state[k]
+            state_data = sanitized_state
+
+        if forbidden_found:
+            db.add(DBDataQualityFlag(
+                session_id=session_id,
+                scope="telemetry",
+                flag="forbidden_client_field_detected",
+                detail=f"Event seq {seq} contained forbidden client fields: {', '.join(sorted(forbidden_found))}; stripped"
+            ))
+
         state_json_str = json.dumps(state_data) if state_data is not None else None
         data_json_str = json.dumps(data_payload) if data_payload is not None else None
 
-        # 4. Individual Event Size Limit (4 KB combined data + state)
+        # 6. Individual Event Size Limit (4 KB combined data + state)
         combined_size = (len(state_json_str.encode('utf-8')) if state_json_str else 0) + \
                         (len(data_json_str.encode('utf-8')) if data_json_str else 0)
         if combined_size > 4096:
@@ -107,14 +174,14 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
             state_json_str = json.dumps({"oversized": True, "size_bytes": combined_size})
             data_json_str = json.dumps({"oversized": True, "size_bytes": combined_size})
 
-        # 5. Sequence Duplicate / Conflict Check
+        # 7. Sequence Duplicate / Conflict Check
         if seq in existing_map:
             prev = existing_map[seq]
             is_identical = (
-                prev.action == ev.get("action", "unknown") and
-                prev.screen == ev.get("screen", "unknown") and
+                prev.action == action and
+                prev.screen == screen and
                 prev.game_world == ev.get("game_world") and
-                prev.mini_game == ev.get("mini_game") and
+                prev.mini_game == mini_game and
                 prev.trial == ev.get("trial") and
                 prev.input_type == ev.get("input_type") and
                 (prev.state_json == state_json_str or (prev.state_json is None and state_json_str is None)) and
@@ -140,12 +207,13 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
             seq=seq,
             segment_id=ev.get("segment_id", 1),
             t_ms=float(ev.get("t_ms", 0.0)),
-            screen=ev.get("screen", "unknown"),
+            screen=screen,
             game_world=ev.get("game_world"),
-            mini_game=ev.get("mini_game"),
+            mini_game=mini_game,
             trial=ev.get("trial"),
-            action=ev.get("action", "unknown"),
+            action=action,
             input_type=ev.get("input_type"),
+            task_def_version=task_def_version or "1.0",
             state_json=state_json_str,
             data_json=data_json_str
         )

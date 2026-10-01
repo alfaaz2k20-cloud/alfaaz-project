@@ -19,6 +19,18 @@ from app.routers import vault
 # Create Database Tables
 Base.metadata.create_all(bind=engine)
 
+# Ensure schema backward-compatibility for newly added columns
+from sqlalchemy import inspect as sa_inspect, text as sa_text
+try:
+    with engine.begin() as _conn:
+        _insp = sa_inspect(_conn)
+        if "telemetry_events" in _insp.get_table_names():
+            _existing_cols = [c["name"] for c in _insp.get_columns("telemetry_events")]
+            if "task_def_version" not in _existing_cols:
+                _conn.execute(sa_text("ALTER TABLE telemetry_events ADD COLUMN task_def_version VARCHAR DEFAULT '1.0'"))
+except Exception as _e:
+    pass
+
 # Initialize Application
 app = FastAPI(title="Alfaaz Collective API", version="2.0")
 

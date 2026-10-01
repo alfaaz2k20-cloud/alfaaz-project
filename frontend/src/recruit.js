@@ -159,6 +159,7 @@ function logEvent(screen, action, data = {}, stateSnapshot = {}, inputType = 'mo
     trial: trial,
     action: action,
     input_type: inputType,
+    task_def_version: (data && data.task_def_version) || '1.0',
     state: finalState,
     data: finalData
   };
