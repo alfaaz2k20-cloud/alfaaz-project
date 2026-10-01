@@ -4,7 +4,7 @@ import json
 import uuid
 import threading
 import unittest
-from concurrent.futures import ThreadPoolExecutor
+import multiprocessing
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
@@ -21,9 +21,37 @@ from app.services.world_order import (
     generate_minigame_seeds,
     assign_world_order,
     get_world_order_distribution,
-    ALL_MINIGAMES,
-    assignment_lock
+    assignment_lock,
+    acquire_assignment_transaction_lock,
+    ALL_MINIGAMES
 )
+
+
+def _multiprocess_assign_worker(db_path: str, count: int, results_queue, errors_queue):
+    """
+    Independent OS process worker that does NOT share memory or threads
+    with the parent process. Relies solely on database-level transaction locking.
+    """
+    try:
+        eng = create_engine(f"sqlite:///{db_path}", connect_args={"timeout": 30.0})
+        assigned = []
+        for _ in range(count):
+            s_id = str(uuid.uuid4())
+            with Session(eng) as session:
+                order_id, seq, seeds = assign_world_order(session, s_id)
+                session.add(DBTaskAssignment(
+                    session_id=s_id,
+                    world_order_id=order_id,
+                    world_sequence_json=json.dumps(seq),
+                    seeds_json=json.dumps(seeds)
+                ))
+                session.commit()
+                assigned.append(order_id)
+        eng.dispose()
+        results_queue.put(assigned)
+    except Exception as e:
+        import traceback
+        errors_queue.put(f"{e}\n{traceback.format_exc()}")
 
 
 class TestGate4R4WorldOrder(unittest.TestCase):
@@ -233,6 +261,93 @@ class TestGate4R4WorldOrder(unittest.TestCase):
             # Row 2: 0 consented, 0 completed
             self.assertEqual(dist["consented"][2], 0)
             self.assertEqual(dist["completed"][2], 0)
+
+    def test_database_dialect_locking_routing(self):
+        """
+        Verify that acquire_assignment_transaction_lock executes dialect-appropriate locking:
+        - PostgreSQL: SELECT pg_advisory_xact_lock(714142);
+        - SQLite: BEGIN IMMEDIATE;
+        """
+        from unittest.mock import MagicMock
+
+        # Test PostgreSQL mock
+        mock_pg_db = MagicMock(spec=Session)
+        mock_pg_bind = MagicMock()
+        mock_pg_bind.dialect.name = "postgresql"
+        mock_pg_db.get_bind.return_value = mock_pg_bind
+
+        acquire_assignment_transaction_lock(mock_pg_db)
+        mock_pg_db.execute.assert_called_once()
+        call_arg = str(mock_pg_db.execute.call_args[0][0])
+        self.assertIn("pg_advisory_xact_lock", call_arg)
+        self.assertIn("714142", call_arg)
+
+        # Test SQLite mock
+        mock_sqlite_db = MagicMock(spec=Session)
+        mock_sqlite_bind = MagicMock()
+        mock_sqlite_bind.dialect.name = "sqlite"
+        mock_sqlite_db.get_bind.return_value = mock_sqlite_bind
+
+        acquire_assignment_transaction_lock(mock_sqlite_db)
+        mock_sqlite_db.execute.assert_called_once()
+        call_arg_sqlite = str(mock_sqlite_db.execute.call_args[0][0])
+        self.assertIn("BEGIN IMMEDIATE", call_arg_sqlite)
+
+    def test_cross_process_persistence_concurrency(self):
+        """
+        Exercises the real persistence/transaction concurrency boundary:
+        Launches 2 independent operating system processes that do NOT share memory
+        or Python thread locks, executing concurrent assignments against a real file-based SQLite database.
+        Verifies that database-level transaction locking (BEGIN IMMEDIATE) coordinates
+        multi-process execution and ensures balanced allocation without stale-count corruption.
+        """
+        db_path = os.path.abspath("test_cross_process_gate4.db")
+        if os.path.exists(db_path):
+            os.remove(db_path)
+
+        init_eng = create_engine(f"sqlite:///{db_path}", connect_args={"timeout": 30.0})
+        SQLModel.metadata.create_all(init_eng)
+        init_eng.dispose()
+
+        ctx = multiprocessing.get_context("spawn")
+        q_res = ctx.Queue()
+        q_err = ctx.Queue()
+
+        # 2 independent processes, 14 assignments each -> 28 total assignments
+        p1 = ctx.Process(target=_multiprocess_assign_worker, args=(db_path, 14, q_res, q_err))
+        p2 = ctx.Process(target=_multiprocess_assign_worker, args=(db_path, 14, q_res, q_err))
+
+        p1.start()
+        p2.start()
+
+        p1.join(timeout=30)
+        p2.join(timeout=30)
+
+        errors = []
+        while not q_err.empty():
+            errors.append(q_err.get())
+
+        self.assertEqual(len(errors), 0, f"Cross-process workers failed: {errors}")
+
+        results = []
+        while not q_res.empty():
+            results.extend(q_res.get())
+
+        self.assertEqual(len(results), 28, f"Expected 28 results, got {len(results)}")
+
+        # Verify exact balance: 28 total assignments across 14 rows = exactly 2 per row
+        counts = {i: 0 for i in range(14)}
+        for o_id in results:
+            counts[o_id] += 1
+
+        for o_id, count in counts.items():
+            self.assertEqual(count, 2, f"Row {o_id} expected exactly 2 assignments across processes, got {count}")
+
+        if os.path.exists(db_path):
+            try:
+                os.remove(db_path)
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":

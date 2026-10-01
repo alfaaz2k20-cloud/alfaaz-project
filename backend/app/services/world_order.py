@@ -4,7 +4,7 @@ import json
 import secrets
 import threading
 from typing import Dict, List, Tuple, Any
-from sqlmodel import Session, select
+from sqlmodel import Session, select, text
 from app.models.recruit import DBSession, DBTaskAssignment
 
 # Approved 14-row first-order balanced Latin square design
@@ -36,6 +36,28 @@ ALL_MINIGAMES = [
 
 assignment_lock = threading.RLock()
 _assignment_lock = assignment_lock
+
+
+def acquire_assignment_transaction_lock(db: Session):
+    """
+    Acquires an exclusive database-level transaction lock to prevent
+    concurrent processes/replicas from selecting the same least-used row
+    based on stale counts.
+    
+    - PostgreSQL: pg_advisory_xact_lock(714142) (transaction-scoped advisory lock).
+    - SQLite: BEGIN IMMEDIATE (acquires RESERVED lock on database immediately).
+    """
+    bind = db.get_bind()
+    dialect = bind.dialect.name if bind else ""
+    if dialect == "postgresql":
+        db.execute(text("SELECT pg_advisory_xact_lock(714142);"))
+    elif dialect == "sqlite":
+        try:
+            db.execute(text("BEGIN IMMEDIATE;"))
+        except Exception as e:
+            # If already in an immediate transaction, ignore error
+            if "cannot start a transaction within a transaction" not in str(e).lower():
+                raise
 
 
 def verify_latin_square_balance() -> Tuple[bool, str]:
@@ -101,6 +123,7 @@ def assign_world_order(db: Session, session_id: str) -> Tuple[int, List[str], Di
     Returns (chosen_order_id, world_sequence, seeds).
     """
     with _assignment_lock:
+        acquire_assignment_transaction_lock(db)
         order_counts = {i: 0 for i in range(len(LATIN_SQUARE_14))}
         assignments = db.exec(select(DBTaskAssignment.world_order_id)).all()
         for o_id in assignments:
