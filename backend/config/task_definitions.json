@@ -248,10 +248,10 @@
         },
         {
           "stimulus_id": "C3_R2",
-          "condition_id": "balanced_lighting_control",
-          "condition_type": "clean_control",
-          "partner_state": "partner_lanterns_optimal",
-          "repair_steps": ["verify_adequate"]
+          "condition_id": "suspension_pulley_jam",
+          "condition_type": "identify_and_repair",
+          "partner_state": "partner_suspension_cable_jammed_in_pulley",
+          "repair_steps": ["identify_fault", "reseat_pulley_cable", "align_panel_height"]
         },
         {
           "stimulus_id": "C3_R3",

@@ -10,7 +10,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 from sqlmodel import Session, SQLModel, create_engine, select
 from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
 from app.services.telemetry_engine import ingest_telemetry_batch
-from app.services.task_definitions import get_task_definitions, get_game_definition
+from app.services.task_definitions import (
+    get_task_definitions,
+    reconstruct_c1_allocation_state,
+    reconstruct_c3_repair_state
+)
 from app.services.feature_extractor import extract_session_features
 
 class TestStep3W3SharedCanvas(unittest.TestCase):
@@ -31,7 +35,7 @@ class TestStep3W3SharedCanvas(unittest.TestCase):
         self.db.close()
 
     def test_w3_task_definitions_golden_fixture(self):
-        """Verify task definitions for C1 (3 rounds), C2 (3 rounds), C3 (3 repair opportunities)."""
+        """Verify task definitions for C1 (3 rounds), C2 (3 rounds), C3 (3 breakdown opportunities)."""
         defs = get_task_definitions()
         games = defs.get("games", {})
 
@@ -54,7 +58,7 @@ class TestStep3W3SharedCanvas(unittest.TestCase):
         c2_stims = [t["stimulus_id"] for t in c2["trials"]]
         self.assertEqual(c2_stims, ["C2_R1", "C2_R2", "C2_R3"])
 
-        # C3: 3 breakdown opportunities (electrical, balanced control, shadow)
+        # C3: Exactly 3 genuine breakdown/recovery opportunities
         self.assertIn("C3", games)
         c3 = games["C3"]
         self.assertEqual(c3.get("total_trials"), 3)
@@ -62,68 +66,37 @@ class TestStep3W3SharedCanvas(unittest.TestCase):
         c3_stims = [t["stimulus_id"] for t in c3["trials"]]
         self.assertEqual(c3_stims, ["C3_R1", "C3_R2", "C3_R3"])
         self.assertEqual(c3["trials"][0]["condition_type"], "identify_and_repair")
-        self.assertEqual(c3["trials"][1]["condition_type"], "clean_control")
+        self.assertEqual(c3["trials"][1]["condition_type"], "identify_and_repair")
         self.assertEqual(c3["trials"][2]["condition_type"], "identify_and_repair")
+        self.assertEqual(c3["trials"][0]["condition_id"], "lighting_imbalance")
+        self.assertEqual(c3["trials"][1]["condition_id"], "suspension_pulley_jam")
+        self.assertEqual(c3["trials"][2]["condition_id"], "shadow_corridor_breakdown")
 
-    def test_c1_raw_telemetry_ingestion_and_no_client_scores(self):
-        """C1 emits raw adjustments and round submissions without client-authored scores."""
+    def test_c1_primitive_actions_and_server_state_reconstruction(self):
+        """C1 emits primitive transfer and confirmation actions; server deterministically reconstructs counts."""
         events = [
-            # Round 1: Deficit
-            {
-                "seq": 1, "screen": "game", "mini_game": "C1", "action": "round_presented",
-                "task_def_version": "1.0", "t_ms": 1000.0,
-                "data": {"trial_index": 0, "stimulus_id": "C1_R1", "partner_initial": 2, "user_initial": 8}
-            },
-            {
-                "seq": 2, "screen": "game", "mini_game": "C1", "action": "allocation_adjusted",
-                "task_def_version": "1.0", "t_ms": 2500.0,
-                "data": {"trial_index": 0, "stimulus_id": "C1_R1", "allocated_amount": 3, "input_modality": "mouse"}
-            },
-            {
-                "seq": 3, "screen": "game", "mini_game": "C1", "action": "round_submit",
-                "task_def_version": "1.0", "t_ms": 4000.0,
-                "data": {
-                    "trial_index": 0, "stimulus_id": "C1_R1",
-                    "transferred_count": 3, "remaining_count": 5, "partner_final_count": 5,
-                    "input_modality": "mouse"
-                }
-            },
-            # Round 2: Balanced
-            {
-                "seq": 4, "screen": "game", "mini_game": "C1", "action": "round_presented",
-                "task_def_version": "1.0", "t_ms": 5000.0,
-                "data": {"trial_index": 1, "stimulus_id": "C1_R2", "partner_initial": 5, "user_initial": 5}
-            },
-            {
-                "seq": 5, "screen": "game", "mini_game": "C1", "action": "round_submit",
-                "task_def_version": "1.0", "t_ms": 7000.0,
-                "data": {
-                    "trial_index": 1, "stimulus_id": "C1_R2",
-                    "transferred_count": 0, "remaining_count": 5, "partner_final_count": 5,
-                    "input_modality": "mouse"
-                }
-            },
-            # Round 3: Surplus
-            {
-                "seq": 6, "screen": "game", "mini_game": "C1", "action": "round_presented",
-                "task_def_version": "1.0", "t_ms": 8000.0,
-                "data": {"trial_index": 2, "stimulus_id": "C1_R3", "partner_initial": 8, "user_initial": 5}
-            },
-            {
-                "seq": 7, "screen": "game", "mini_game": "C1", "action": "round_submit",
-                "task_def_version": "1.0", "t_ms": 10000.0,
-                "data": {
-                    "trial_index": 2, "stimulus_id": "C1_R3",
-                    "transferred_count": 0, "remaining_count": 5, "partner_final_count": 8,
-                    "input_modality": "mouse"
-                }
-            }
+            # Round 1: Deficit (User initial: 8, Partner initial: 2) -> Transfer 3
+            {"seq": 1, "screen": "game", "mini_game": "C1", "action": "round_presented", "task_def_version": "1.0", "t_ms": 1000.0, "data": {"trial_index": 0, "stimulus_id": "C1_R1"}},
+            {"seq": 2, "screen": "game", "mini_game": "C1", "action": "resource_transferred", "task_def_version": "1.0", "t_ms": 2000.0, "data": {"trial_index": 0, "stimulus_id": "C1_R1", "delta": 1, "action_type": "transfer_to_partner", "input_modality": "mouse"}},
+            {"seq": 3, "screen": "game", "mini_game": "C1", "action": "resource_transferred", "task_def_version": "1.0", "t_ms": 2500.0, "data": {"trial_index": 0, "stimulus_id": "C1_R1", "delta": 1, "action_type": "transfer_to_partner", "input_modality": "mouse"}},
+            {"seq": 4, "screen": "game", "mini_game": "C1", "action": "resource_transferred", "task_def_version": "1.0", "t_ms": 3000.0, "data": {"trial_index": 0, "stimulus_id": "C1_R1", "delta": 1, "action_type": "transfer_to_partner", "input_modality": "mouse"}},
+            {"seq": 5, "screen": "game", "mini_game": "C1", "action": "allocation_confirmed", "task_def_version": "1.0", "t_ms": 4000.0, "data": {"trial_index": 0, "stimulus_id": "C1_R1", "input_modality": "mouse"}},
+
+            # Round 2: Balanced (User: 5, Partner: 5) -> Transfer 0
+            {"seq": 6, "screen": "game", "mini_game": "C1", "action": "round_presented", "task_def_version": "1.0", "t_ms": 5000.0, "data": {"trial_index": 1, "stimulus_id": "C1_R2"}},
+            {"seq": 7, "screen": "game", "mini_game": "C1", "action": "allocation_confirmed", "task_def_version": "1.0", "t_ms": 6500.0, "data": {"trial_index": 1, "stimulus_id": "C1_R2", "input_modality": "mouse"}},
+
+            # Round 3: Surplus (User: 5, Partner: 8) -> Increment 1 then decrement 1 -> Transfer 0
+            {"seq": 8, "screen": "game", "mini_game": "C1", "action": "round_presented", "task_def_version": "1.0", "t_ms": 7500.0, "data": {"trial_index": 2, "stimulus_id": "C1_R3"}},
+            {"seq": 9, "screen": "game", "mini_game": "C1", "action": "resource_transferred", "task_def_version": "1.0", "t_ms": 8000.0, "data": {"trial_index": 2, "stimulus_id": "C1_R3", "delta": 1, "action_type": "transfer_to_partner", "input_modality": "mouse"}},
+            {"seq": 10, "screen": "game", "mini_game": "C1", "action": "resource_transferred", "task_def_version": "1.0", "t_ms": 8500.0, "data": {"trial_index": 2, "stimulus_id": "C1_R3", "delta": -1, "action_type": "return_to_user", "input_modality": "mouse"}},
+            {"seq": 11, "screen": "game", "mini_game": "C1", "action": "allocation_confirmed", "task_def_version": "1.0", "t_ms": 9500.0, "data": {"trial_index": 2, "stimulus_id": "C1_R3", "input_modality": "mouse"}}
         ]
 
         result = ingest_telemetry_batch(self.db, self.session_id, events)
-        self.assertEqual(result["ingested_count"], 7)
+        self.assertEqual(result["ingested_count"], 11)
 
-        # Confirm no data quality flags for forbidden fields
+        # Confirm no forbidden fields triggered
         flags = self.db.exec(
             select(DBDataQualityFlag).where(
                 DBDataQualityFlag.session_id == self.session_id,
@@ -132,28 +105,93 @@ class TestStep3W3SharedCanvas(unittest.TestCase):
         ).all()
         self.assertEqual(len(flags), 0)
 
-        # Verify C1 extractor is quarantined under feature_not_implemented
-        features = extract_session_features(self.db, self.session_id)
-        c1_feats = [f for f in features if f.mini_game == "C1"]
-        self.assertEqual(len(c1_feats), 1)
-        self.assertFalse(c1_feats[0].valid)
-        self.assertIsNone(c1_feats[0].value_raw)
-        self.assertIn("feature_not_implemented", json.loads(c1_feats[0].flags_json))
+        # Server-side deterministic state reconstruction
+        stored = self.db.exec(
+            select(DBTelemetryEvent).where(
+                DBTelemetryEvent.session_id == self.session_id,
+                DBTelemetryEvent.mini_game == "C1"
+            )
+        ).all()
+        recon = reconstruct_c1_allocation_state(stored)
+
+        # Round 1 reconstruction: 3 transferred, 5 remaining, 5 partner final
+        self.assertEqual(recon["rounds"]["C1_R1"]["transferred_count"], 3)
+        self.assertEqual(recon["rounds"]["C1_R1"]["remaining_count"], 5)
+        self.assertEqual(recon["rounds"]["C1_R1"]["partner_final_count"], 5)
+        self.assertTrue(recon["rounds"]["C1_R1"]["is_confirmed"])
+
+        # Round 2 reconstruction: 0 transferred, 5 remaining, 5 partner final
+        self.assertEqual(recon["rounds"]["C1_R2"]["transferred_count"], 0)
+        self.assertEqual(recon["rounds"]["C1_R2"]["remaining_count"], 5)
+        self.assertEqual(recon["rounds"]["C1_R2"]["partner_final_count"], 5)
+        self.assertTrue(recon["rounds"]["C1_R2"]["is_confirmed"])
+
+        # Round 3 reconstruction: 0 transferred, 5 remaining, 8 partner final
+        self.assertEqual(recon["rounds"]["C1_R3"]["transferred_count"], 0)
+        self.assertEqual(recon["rounds"]["C1_R3"]["remaining_count"], 5)
+        self.assertEqual(recon["rounds"]["C1_R3"]["partner_final_count"], 8)
+        self.assertTrue(recon["rounds"]["C1_R3"]["is_confirmed"])
+
+        self.assertTrue(recon["all_rounds_confirmed"])
+
+    def test_c1_client_authored_summaries_are_rejected_and_stripped(self):
+        """Any client attempt to supply transferred_count or remaining_count is stripped and flagged."""
+        hostile_events = [
+            {
+                "seq": 99,
+                "screen": "game",
+                "mini_game": "C1",
+                "action": "allocation_confirmed",
+                "task_def_version": "1.0",
+                "t_ms": 10000.0,
+                "data": {
+                    "trial_index": 0,
+                    "stimulus_id": "C1_R1",
+                    "transferred_count": 999,
+                    "remaining_count": -999,
+                    "partner_final_count": 9999
+                }
+            }
+        ]
+        ingest_telemetry_batch(self.db, self.session_id, hostile_events)
+
+        flag = self.db.exec(
+            select(DBDataQualityFlag).where(
+                DBDataQualityFlag.session_id == self.session_id,
+                DBDataQualityFlag.flag == "forbidden_client_field_detected"
+            )
+        ).first()
+        self.assertIsNotNone(flag)
+        self.assertIn("transferred_count", flag.detail)
+        self.assertIn("remaining_count", flag.detail)
+        self.assertIn("partner_final_count", flag.detail)
+
+        # Ingested event must have those fields stripped from data_json
+        ev = self.db.exec(
+            select(DBTelemetryEvent).where(
+                DBTelemetryEvent.session_id == self.session_id,
+                DBTelemetryEvent.seq == 99
+            )
+        ).first()
+        d = json.loads(ev.data_json)
+        self.assertNotIn("transferred_count", d)
+        self.assertNotIn("remaining_count", d)
+        self.assertNotIn("partner_final_count", d)
 
     def test_c2_coordination_per_placement_events(self):
         """C2 records discrete placement attempts and confirmations across 3 rounds."""
         events = [
             # C2 Round 1
-            {"seq": 10, "screen": "game", "mini_game": "C2", "action": "round_presented", "task_def_version": "1.0", "t_ms": 11000.0, "data": {"trial_index": 0, "stimulus_id": "C2_R1"}},
-            {"seq": 11, "screen": "game", "mini_game": "C2", "action": "placement_attempted", "task_def_version": "1.0", "t_ms": 12000.0, "data": {"trial_index": 0, "stimulus_id": "C2_R1", "slot_id": "SLOT_OVERLAP_LEFT", "input_modality": "mouse"}},
-            {"seq": 12, "screen": "game", "mini_game": "C2", "action": "placement_attempted", "task_def_version": "1.0", "t_ms": 13000.0, "data": {"trial_index": 0, "stimulus_id": "C2_R1", "slot_id": "SLOT_NORTH_RIGHT", "input_modality": "mouse"}},
-            {"seq": 13, "screen": "game", "mini_game": "C2", "action": "placement_confirmed", "task_def_version": "1.0", "t_ms": 14000.0, "data": {"trial_index": 0, "stimulus_id": "C2_R1", "chosen_slot": "SLOT_NORTH_RIGHT", "input_modality": "mouse"}},
+            {"seq": 20, "screen": "game", "mini_game": "C2", "action": "round_presented", "task_def_version": "1.0", "t_ms": 11000.0, "data": {"trial_index": 0, "stimulus_id": "C2_R1"}},
+            {"seq": 21, "screen": "game", "mini_game": "C2", "action": "placement_attempted", "task_def_version": "1.0", "t_ms": 12000.0, "data": {"trial_index": 0, "stimulus_id": "C2_R1", "slot_id": "SLOT_OVERLAP_LEFT", "input_modality": "mouse"}},
+            {"seq": 22, "screen": "game", "mini_game": "C2", "action": "placement_attempted", "task_def_version": "1.0", "t_ms": 13000.0, "data": {"trial_index": 0, "stimulus_id": "C2_R1", "slot_id": "SLOT_NORTH_RIGHT", "input_modality": "mouse"}},
+            {"seq": 23, "screen": "game", "mini_game": "C2", "action": "placement_confirmed", "task_def_version": "1.0", "t_ms": 14000.0, "data": {"trial_index": 0, "stimulus_id": "C2_R1", "chosen_slot": "SLOT_NORTH_RIGHT", "input_modality": "mouse"}},
             # C2 Round 2
-            {"seq": 14, "screen": "game", "mini_game": "C2", "action": "round_presented", "task_def_version": "1.0", "t_ms": 15000.0, "data": {"trial_index": 1, "stimulus_id": "C2_R2"}},
-            {"seq": 15, "screen": "game", "mini_game": "C2", "action": "placement_confirmed", "task_def_version": "1.0", "t_ms": 17000.0, "data": {"trial_index": 1, "stimulus_id": "C2_R2", "chosen_slot": "SLOT_PERIMETER_EAST", "input_modality": "keyboard"}},
+            {"seq": 24, "screen": "game", "mini_game": "C2", "action": "round_presented", "task_def_version": "1.0", "t_ms": 15000.0, "data": {"trial_index": 1, "stimulus_id": "C2_R2"}},
+            {"seq": 25, "screen": "game", "mini_game": "C2", "action": "placement_confirmed", "task_def_version": "1.0", "t_ms": 17000.0, "data": {"trial_index": 1, "stimulus_id": "C2_R2", "chosen_slot": "SLOT_PERIMETER_EAST", "input_modality": "keyboard"}},
             # C2 Round 3
-            {"seq": 16, "screen": "game", "mini_game": "C2", "action": "round_presented", "task_def_version": "1.0", "t_ms": 18000.0, "data": {"trial_index": 2, "stimulus_id": "C2_R3"}},
-            {"seq": 17, "screen": "game", "mini_game": "C2", "action": "placement_confirmed", "task_def_version": "1.0", "t_ms": 20000.0, "data": {"trial_index": 2, "stimulus_id": "C2_R3", "chosen_slot": "SLOT_UPPER_GALLERY", "input_modality": "mouse"}}
+            {"seq": 26, "screen": "game", "mini_game": "C2", "action": "round_presented", "task_def_version": "1.0", "t_ms": 18000.0, "data": {"trial_index": 2, "stimulus_id": "C2_R3"}},
+            {"seq": 27, "screen": "game", "mini_game": "C2", "action": "placement_confirmed", "task_def_version": "1.0", "t_ms": 20000.0, "data": {"trial_index": 2, "stimulus_id": "C2_R3", "chosen_slot": "SLOT_UPPER_GALLERY", "input_modality": "mouse"}}
         ]
 
         result = ingest_telemetry_batch(self.db, self.session_id, events)
@@ -167,30 +205,45 @@ class TestStep3W3SharedCanvas(unittest.TestCase):
         self.assertIsNone(c2_feats[0].value_raw)
         self.assertIn("feature_not_implemented", json.loads(c2_feats[0].flags_json))
 
-    def test_c3_multi_step_repair_progression(self):
-        """C3 verifies multi-step repair progression: identify breakdown -> perform useful repair -> execute repaired action."""
+    def test_c3_three_genuine_breakdowns_and_server_state_reconstruction(self):
+        """C3 verifies 3 genuine breakdown/recovery opportunities: identify -> repair -> execute."""
         events = [
             # Opportunity 1: Electrical breakdown
-            {"seq": 20, "screen": "game", "mini_game": "C3", "action": "repair_presented", "task_def_version": "1.0", "t_ms": 21000.0, "data": {"trial_index": 0, "stimulus_id": "C3_R1"}},
-            {"seq": 21, "screen": "game", "mini_game": "C3", "action": "breakdown_identified", "task_def_version": "1.0", "t_ms": 23000.0, "data": {"trial_index": 0, "stimulus_id": "C3_R1", "fault_id": "fault_conduit_disconnected", "input_modality": "mouse"}},
-            {"seq": 22, "screen": "game", "mini_game": "C3", "action": "repair_action_performed", "task_def_version": "1.0", "t_ms": 25000.0, "data": {"trial_index": 0, "stimulus_id": "C3_R1", "repair_action_id": "adjust_conduit", "input_modality": "mouse"}},
-            {"seq": 23, "screen": "game", "mini_game": "C3", "action": "repaired_action_executed", "task_def_version": "1.0", "t_ms": 27000.0, "data": {"trial_index": 0, "stimulus_id": "C3_R1", "fault_id": "fault_conduit_disconnected", "repair_action_id": "adjust_conduit", "execution_action_id": "restore_power", "input_modality": "mouse"}},
+            {"seq": 30, "screen": "game", "mini_game": "C3", "action": "repair_presented", "task_def_version": "1.0", "t_ms": 21000.0, "data": {"trial_index": 0, "stimulus_id": "C3_R1"}},
+            {"seq": 31, "screen": "game", "mini_game": "C3", "action": "breakdown_identified", "task_def_version": "1.0", "t_ms": 23000.0, "data": {"trial_index": 0, "stimulus_id": "C3_R1", "fault_id": "fault_conduit_disconnected", "input_modality": "mouse"}},
+            {"seq": 32, "screen": "game", "mini_game": "C3", "action": "repair_action_performed", "task_def_version": "1.0", "t_ms": 25000.0, "data": {"trial_index": 0, "stimulus_id": "C3_R1", "repair_action_id": "adjust_conduit", "input_modality": "mouse"}},
+            {"seq": 33, "screen": "game", "mini_game": "C3", "action": "repaired_action_executed", "task_def_version": "1.0", "t_ms": 27000.0, "data": {"trial_index": 0, "stimulus_id": "C3_R1", "fault_id": "fault_conduit_disconnected", "repair_action_id": "adjust_conduit", "execution_action_id": "restore_power", "input_modality": "mouse"}},
 
-            # Opportunity 2: Clean control (balanced)
-            {"seq": 24, "screen": "game", "mini_game": "C3", "action": "repair_presented", "task_def_version": "1.0", "t_ms": 28000.0, "data": {"trial_index": 1, "stimulus_id": "C3_R2"}},
-            {"seq": 25, "screen": "game", "mini_game": "C3", "action": "breakdown_identified", "task_def_version": "1.0", "t_ms": 30000.0, "data": {"trial_index": 1, "stimulus_id": "C3_R2", "fault_id": "fault_none_adequate", "input_modality": "keyboard"}},
-            {"seq": 26, "screen": "game", "mini_game": "C3", "action": "repair_action_performed", "task_def_version": "1.0", "t_ms": 32000.0, "data": {"trial_index": 1, "stimulus_id": "C3_R2", "repair_action_id": "verify_adequate", "input_modality": "keyboard"}},
-            {"seq": 27, "screen": "game", "mini_game": "C3", "action": "repaired_action_executed", "task_def_version": "1.0", "t_ms": 34000.0, "data": {"trial_index": 1, "stimulus_id": "C3_R2", "fault_id": "fault_none_adequate", "repair_action_id": "verify_adequate", "execution_action_id": "verify_adequate", "input_modality": "keyboard"}},
+            # Opportunity 2: Hanging rig counterweight pulley jam
+            {"seq": 34, "screen": "game", "mini_game": "C3", "action": "repair_presented", "task_def_version": "1.0", "t_ms": 28000.0, "data": {"trial_index": 1, "stimulus_id": "C3_R2"}},
+            {"seq": 35, "screen": "game", "mini_game": "C3", "action": "breakdown_identified", "task_def_version": "1.0", "t_ms": 30000.0, "data": {"trial_index": 1, "stimulus_id": "C3_R2", "fault_id": "fault_cable_pulley_pinch", "input_modality": "keyboard"}},
+            {"seq": 36, "screen": "game", "mini_game": "C3", "action": "repair_action_performed", "task_def_version": "1.0", "t_ms": 32000.0, "data": {"trial_index": 1, "stimulus_id": "C3_R2", "repair_action_id": "reseat_pulley_cable", "input_modality": "keyboard"}},
+            {"seq": 37, "screen": "game", "mini_game": "C3", "action": "repaired_action_executed", "task_def_version": "1.0", "t_ms": 34000.0, "data": {"trial_index": 1, "stimulus_id": "C3_R2", "fault_id": "fault_cable_pulley_pinch", "repair_action_id": "reseat_pulley_cable", "execution_action_id": "align_panel_height", "input_modality": "keyboard"}},
 
             # Opportunity 3: Shadow corridor obstruction
-            {"seq": 28, "screen": "game", "mini_game": "C3", "action": "repair_presented", "task_def_version": "1.0", "t_ms": 35000.0, "data": {"trial_index": 2, "stimulus_id": "C3_R3"}},
-            {"seq": 29, "screen": "game", "mini_game": "C3", "action": "breakdown_identified", "task_def_version": "1.0", "t_ms": 37000.0, "data": {"trial_index": 2, "stimulus_id": "C3_R3", "fault_id": "fault_blindspot_obstruction", "input_modality": "mouse"}},
-            {"seq": 30, "screen": "game", "mini_game": "C3", "action": "repair_action_performed", "task_def_version": "1.0", "t_ms": 39000.0, "data": {"trial_index": 2, "stimulus_id": "C3_R3", "repair_action_id": "shift_lantern", "input_modality": "mouse"}},
-            {"seq": 31, "screen": "game", "mini_game": "C3", "action": "repaired_action_executed", "task_def_version": "1.0", "t_ms": 41000.0, "data": {"trial_index": 2, "stimulus_id": "C3_R3", "fault_id": "fault_blindspot_obstruction", "repair_action_id": "shift_lantern", "execution_action_id": "illuminate_path", "input_modality": "mouse"}}
+            {"seq": 38, "screen": "game", "mini_game": "C3", "action": "repair_presented", "task_def_version": "1.0", "t_ms": 35000.0, "data": {"trial_index": 2, "stimulus_id": "C3_R3"}},
+            {"seq": 39, "screen": "game", "mini_game": "C3", "action": "breakdown_identified", "task_def_version": "1.0", "t_ms": 37000.0, "data": {"trial_index": 2, "stimulus_id": "C3_R3", "fault_id": "fault_blindspot_obstruction", "input_modality": "mouse"}},
+            {"seq": 40, "screen": "game", "mini_game": "C3", "action": "repair_action_performed", "task_def_version": "1.0", "t_ms": 39000.0, "data": {"trial_index": 2, "stimulus_id": "C3_R3", "repair_action_id": "shift_lantern", "input_modality": "mouse"}},
+            {"seq": 41, "screen": "game", "mini_game": "C3", "action": "repaired_action_executed", "task_def_version": "1.0", "t_ms": 41000.0, "data": {"trial_index": 2, "stimulus_id": "C3_R3", "fault_id": "fault_blindspot_obstruction", "repair_action_id": "shift_lantern", "execution_action_id": "illuminate_path", "input_modality": "mouse"}}
         ]
 
         result = ingest_telemetry_batch(self.db, self.session_id, events)
         self.assertEqual(result["ingested_count"], 12)
+
+        # Server-side deterministic reconstruction
+        stored = self.db.exec(
+            select(DBTelemetryEvent).where(
+                DBTelemetryEvent.session_id == self.session_id,
+                DBTelemetryEvent.mini_game == "C3"
+            )
+        ).all()
+        recon = reconstruct_c3_repair_state(stored)
+
+        self.assertEqual(recon["completed_count"], 3)
+        self.assertTrue(recon["all_completed"])
+        self.assertEqual(recon["opportunities"]["C3_R1"]["repair_action_id"], "adjust_conduit")
+        self.assertEqual(recon["opportunities"]["C3_R2"]["repair_action_id"], "reseat_pulley_cable")
+        self.assertEqual(recon["opportunities"]["C3_R3"]["repair_action_id"], "shift_lantern")
 
         # Verify C3 extractor is quarantined
         features = extract_session_features(self.db, self.session_id)
@@ -226,8 +279,8 @@ class TestStep3W3SharedCanvas(unittest.TestCase):
         evs = [
             DBTelemetryEvent(
                 session_id=self.session_id, seq=200, segment_id=1, t_ms=5000.0,
-                screen="game", mini_game="C1", action="round_submit", task_def_version="1.0",
-                data_json=json.dumps({"trial_index": 0, "stimulus_id": "C1_R1", "transferred_count": 3})
+                screen="game", mini_game="C1", action="allocation_confirmed", task_def_version="1.0",
+                data_json=json.dumps({"trial_index": 0, "stimulus_id": "C1_R1"})
             )
         ]
         self.db.add_all(evs)

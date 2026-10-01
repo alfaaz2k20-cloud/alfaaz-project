@@ -148,7 +148,14 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
       lastInputModality = 'mouse';
       if (transferCount > 0) {
         transferCount--;
-        logAllocationAdjusted();
+        logEvent('resource_transferred', {
+          trial_index: currentRound,
+          stimulus_id: r.stimulus_id,
+          delta: -1,
+          action_type: 'return_to_user',
+          input_modality: lastInputModality,
+          task_def_version: '1.0'
+        });
         render();
       }
     });
@@ -157,18 +164,22 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
       lastInputModality = 'mouse';
       if (transferCount < r.user_initial) {
         transferCount++;
-        logAllocationAdjusted();
+        logEvent('resource_transferred', {
+          trial_index: currentRound,
+          stimulus_id: r.stimulus_id,
+          delta: 1,
+          action_type: 'transfer_to_partner',
+          input_modality: lastInputModality,
+          task_def_version: '1.0'
+        });
         render();
       }
     });
 
     document.getElementById('confirmTransferBtn')?.addEventListener('click', () => {
-      logEvent('round_submit', {
+      logEvent('allocation_confirmed', {
         trial_index: currentRound,
         stimulus_id: r.stimulus_id,
-        transferred_count: transferCount,
-        remaining_count: r.user_initial - transferCount,
-        partner_final_count: r.partner_initial + transferCount,
         input_modality: lastInputModality,
         task_def_version: '1.0'
       });
@@ -192,18 +203,6 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
     logEvent('round_presented', {
       trial_index: currentRound,
       stimulus_id: r.stimulus_id,
-      partner_initial: r.partner_initial,
-      user_initial: r.user_initial,
-      task_def_version: '1.0'
-    });
-  }
-
-  function logAllocationAdjusted() {
-    const r = rounds[currentRound];
-    logEvent('allocation_adjusted', {
-      trial_index: currentRound,
-      stimulus_id: r.stimulus_id,
-      allocated_amount: transferCount,
       input_modality: lastInputModality,
       task_def_version: '1.0'
     });
@@ -413,18 +412,20 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
     },
     {
       stimulus_id: 'C3_R2',
-      title: 'Opportunity 2: Balanced Pavilion Inspection',
-      partner_state: 'Both gallery pavilions are currently operating at optimal lighting equilibrium.',
-      condition_type: 'clean_control',
+      title: 'Opportunity 2: Hanging Rig Counterweight Jam',
+      partner_state: 'Partner’s ceiling suspension cable is jammed in the pulley guide, preventing joint panel alignment.',
+      condition_type: 'identify_and_repair',
       fault_options: [
-        { id: 'fault_none_adequate', label: 'No fault detected — illumination is adequate and balanced' },
-        { id: 'fault_phantom_surge', label: 'Suspected phantom electrical surge' }
+        { id: 'fault_cable_pulley_pinch', label: 'Suspension cable wedged between pulley wheel and guide bracket' },
+        { id: 'fault_cable_snapped', label: 'Counterweight line severed completely' },
+        { id: 'fault_wall_anchor_loose', label: 'Wall anchor bolt loosened' }
       ],
       repair_options: [
-        { id: 'verify_adequate', label: 'Confirm adequate operation without disturbing settings' },
-        { id: 'unnecessary_reset', label: 'Shut down partner circuit for full reset' }
+        { id: 'reseat_pulley_cable', label: 'Release tension lever and reseat cable into center pulley groove' },
+        { id: 'call_facility_maintenance', label: 'Log generic facility maintenance request ticket' },
+        { id: 'force_pull_cable', label: 'Yank cable forcefully downward' }
       ],
-      execution_action: 'verify_adequate'
+      execution_action: 'align_panel_height'
     },
     {
       stimulus_id: 'C3_R3',

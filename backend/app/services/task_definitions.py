@@ -110,3 +110,133 @@ def reconstruct_a3_inspection_state(events: list) -> Dict[str, Any]:
         "false_positives": fp,
         "false_negatives": fn
     }
+
+def reconstruct_c1_allocation_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs C1 allocation state strictly from primitive observable events:
+    - resource_transferred (stimulus_id / trial_index, delta)
+    - allocation_confirmed (stimulus_id / trial_index)
+    Derives transferred_count, remaining_count, partner_final_count, and final_allocation_state.
+    Never relies on client-authored summary fields.
+    """
+    round_baselines = {
+        "C1_R1": {"user_initial": 8, "partner_initial": 2, "trial_index": 0},
+        "C1_R2": {"user_initial": 5, "partner_initial": 5, "trial_index": 1},
+        "C1_R3": {"user_initial": 5, "partner_initial": 8, "trial_index": 2}
+    }
+    
+    # State tracking per stimulus_id
+    transfers = {"C1_R1": 0, "C1_R2": 0, "C1_R3": 0}
+    confirmed = {"C1_R1": False, "C1_R2": False, "C1_R3": False}
+
+    idx_to_stim = {0: "C1_R1", 1: "C1_R2", 2: "C1_R3"}
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "C1":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        stim_id = data.get("stimulus_id")
+        if not stim_id and "trial_index" in data and data["trial_index"] in idx_to_stim:
+            stim_id = idx_to_stim[data["trial_index"]]
+
+        if not stim_id or stim_id not in round_baselines:
+            continue
+
+        base = round_baselines[stim_id]
+
+        if action in ["resource_transferred", "tile_transferred", "allocation_adjusted"]:
+            delta = data.get("delta")
+            if delta is not None:
+                transfers[stim_id] = max(0, min(base["user_initial"], transfers[stim_id] + delta))
+            elif "allocated_amount" in data:
+                transfers[stim_id] = max(0, min(base["user_initial"], int(data["allocated_amount"])))
+        elif action in ["allocation_confirmed", "round_submit"]:
+            confirmed[stim_id] = True
+
+    results = {}
+    for s_id, base in round_baselines.items():
+        t_count = transfers[s_id]
+        rem = base["user_initial"] - t_count
+        p_final = base["partner_initial"] + t_count
+        results[s_id] = {
+            "stimulus_id": s_id,
+            "transferred_count": t_count,
+            "remaining_count": rem,
+            "partner_final_count": p_final,
+            "is_confirmed": confirmed[s_id],
+            "final_allocation_state": {
+                "user_final": rem,
+                "partner_final": p_final,
+                "transferred": t_count
+            }
+        }
+
+    return {
+        "rounds": results,
+        "all_rounds_confirmed": all(confirmed.values()),
+        "total_transferred": sum(transfers.values())
+    }
+
+def reconstruct_c3_repair_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs C3 collaboration repair state strictly from primitive events:
+    - repair_presented
+    - breakdown_identified
+    - repair_action_performed
+    - repaired_action_executed
+    """
+    opportunities = {
+        "C3_R1": {"presented": False, "fault_id": None, "repair_action_id": None, "execution_action_id": None, "completed": False},
+        "C3_R2": {"presented": False, "fault_id": None, "repair_action_id": None, "execution_action_id": None, "completed": False},
+        "C3_R3": {"presented": False, "fault_id": None, "repair_action_id": None, "execution_action_id": None, "completed": False}
+    }
+    idx_to_stim = {0: "C3_R1", 1: "C3_R2", 2: "C3_R3"}
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "C3":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        stim_id = data.get("stimulus_id")
+        if not stim_id and "trial_index" in data and data["trial_index"] in idx_to_stim:
+            stim_id = idx_to_stim[data["trial_index"]]
+
+        if not stim_id or stim_id not in opportunities:
+            continue
+
+        opp = opportunities[stim_id]
+        if action == "repair_presented":
+            opp["presented"] = True
+        elif action == "breakdown_identified":
+            opp["fault_id"] = data.get("fault_id")
+        elif action == "repair_action_performed":
+            opp["repair_action_id"] = data.get("repair_action_id")
+        elif action == "repaired_action_executed":
+            opp["execution_action_id"] = data.get("execution_action_id")
+            if opp["fault_id"] and opp["repair_action_id"] and opp["execution_action_id"]:
+                opp["completed"] = True
+
+    completed_count = sum(1 for o in opportunities.values() if o["completed"])
+    return {
+        "opportunities": opportunities,
+        "completed_count": completed_count,
+        "all_completed": completed_count == 3
+    }
+
