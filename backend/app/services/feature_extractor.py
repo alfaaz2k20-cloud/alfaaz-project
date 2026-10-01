@@ -168,106 +168,93 @@ def _extract_A2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
 # --------------------------------------------------------------------------
 # A3: Quality Control
 # --------------------------------------------------------------------------
+# A3: Quality Control (QUARANTINED: PARTIAL extractor reading end payload)
+# --------------------------------------------------------------------------
 def _extract_A3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    final_events = [e for e in events if e.action in ["ledger_finalized", "quality_check_completed"]]
-    valid = len(final_events) >= 1
-
-    if final_events:
-        data = json.loads(final_events[-1].data_json) if final_events[-1].data_json else {}
-        sensitivity = float(data.get("sensitivity") or data.get("accuracy") or 1.0)
-        false_alarm = float(data.get("false_alarm_rate") or 0.0)
-    else:
-        sensitivity = 1.0
-        false_alarm = 0.0
-
     return [
         DBFeature(
             session_id=session_id,
             mini_game="A3",
             feature_name="error_detection_sensitivity",
-            value_raw=round(sensitivity, 4),
-            valid=valid,
-            flags_json=json.dumps(["INSUFFICIENT_OBSERVATIONS"] if not valid else [])
+            value_raw=None,
+            valid=False,
+            flags_json=json.dumps(["feature_not_implemented", "INSUFFICIENT_OBSERVATIONS"])
         ),
         DBFeature(
             session_id=session_id,
             mini_game="A3",
             feature_name="false_alarm_rate",
-            value_raw=round(false_alarm, 4),
-            valid=valid,
-            flags_json=json.dumps(["INSUFFICIENT_OBSERVATIONS"] if not valid else [])
+            value_raw=None,
+            valid=False,
+            flags_json=json.dumps(["feature_not_implemented", "INSUFFICIENT_OBSERVATIONS"])
         )
     ]
 
 # --------------------------------------------------------------------------
-# Generic & Game Extractors
+# Quarantined Extractors (Constant or Partial Stubs)
 # --------------------------------------------------------------------------
+def _quarantined_stub(session_id: str, mini_game: str, feature_name: str) -> List[DBFeature]:
+    return [
+        DBFeature(
+            session_id=session_id,
+            mini_game=mini_game,
+            feature_name=feature_name,
+            value_raw=None,
+            valid=False,
+            flags_json=json.dumps(["feature_not_implemented", "INSUFFICIENT_OBSERVATIONS"])
+        )
+    ]
+
 def _extract_F1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    end_ev = [e for e in events if e.action in ["tuning_locked", "minigame_end"]]
-    val = 1200.0
-    if end_ev and end_ev[-1].data_json:
-        try:
-            val = float(json.loads(end_ev[-1].data_json).get("latency_ms") or 1200.0)
-        except Exception:
-            val = 1200.0
-    return [DBFeature(session_id=session_id, mini_game="F1", feature_name="cue_response_latency_ms", value_raw=val, valid=True)]
+    return _quarantined_stub(session_id, "F1", "cue_response_latency_ms")
 
 def _extract_F2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="F2", feature_name="clarification_vs_assumption_ratio", value_raw=0.67, valid=True)]
+    return _quarantined_stub(session_id, "F2", "clarification_vs_assumption_ratio")
 
 def _extract_F3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="F3", feature_name="post_shift_adaptation_latency_ms", value_raw=1500.0, valid=True)]
+    return _quarantined_stub(session_id, "F3", "post_shift_adaptation_latency_ms")
 
 def _extract_C1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="C1", feature_name="need_sensitive_sharing_index", value_raw=0.75, valid=True)]
+    return _quarantined_stub(session_id, "C1", "need_sensitive_sharing_index")
 
 def _extract_C2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="C2", feature_name="coordination_collision_avoidance_rate", value_raw=0.90, valid=True)]
+    return _quarantined_stub(session_id, "C2", "coordination_collision_avoidance_rate")
 
 def _extract_C3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="C3", feature_name="constructive_repair_score", value_raw=0.85, valid=True)]
+    return _quarantined_stub(session_id, "C3", "constructive_repair_score")
 
 def _extract_E1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="E1", feature_name="perseverative_error_count", value_raw=1.0, valid=True)]
+    return _quarantined_stub(session_id, "E1", "perseverative_error_count")
 
 def _extract_E2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="E2", feature_name="cadence_stability_ratio", value_raw=1.05, valid=True)]
+    return _quarantined_stub(session_id, "E2", "cadence_stability_ratio")
 
 def _extract_E3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="E3", feature_name="strategy_shift_efficiency", value_raw=0.88, valid=True)]
+    return _quarantined_stub(session_id, "E3", "strategy_shift_efficiency")
 
 def _extract_Q1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="Q1", feature_name="optional_alcove_exploration_rate", value_raw=0.67, valid=True)]
+    return _quarantined_stub(session_id, "Q1", "optional_alcove_exploration_rate")
 
 def _extract_Q2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="Q2", feature_name="anomaly_investigation_depth", value_raw=0.80, valid=True)]
+    return _quarantined_stub(session_id, "Q2", "anomaly_investigation_depth")
 
 def _extract_Q3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="Q3", feature_name="integrated_insight_utilization", value_raw=1.0, valid=True)]
+    return _quarantined_stub(session_id, "Q3", "integrated_insight_utilization")
 
 def _extract_CR1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="CR1", feature_name="solution_uniqueness_index", value_raw=0.72, valid=True)]
+    return _quarantined_stub(session_id, "CR1", "solution_uniqueness_index")
 
 def _extract_CR2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="CR2", feature_name="creative_pivot_latency_ms", value_raw=1800.0, valid=True)]
+    return _quarantined_stub(session_id, "CR2", "creative_pivot_latency_ms")
 
 def _extract_CR3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="CR3", feature_name="functional_fixedness_overcome_rate", value_raw=0.67, valid=True)]
+    return _quarantined_stub(session_id, "CR3", "functional_fixedness_overcome_rate")
 
 def _extract_M1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="M1", feature_name="mandatory_cadence_consistency", value_raw=0.15, valid=True)]
+    return _quarantined_stub(session_id, "M1", "mandatory_cadence_consistency")
 
 def _extract_M2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    end_evs = [e for e in events if e.action in ["optional_session_concluded", "optional_stamping_done", "optional_unit_saved", "minigame_end"]]
-    count = 3.0
-    if end_evs:
-        try:
-            data = json.loads(end_evs[-1].data_json or "{}")
-            if "total_extra" in data:
-                count = float(data.get("total_extra") or 0.0)
-        except Exception:
-            count = 3.0
-    return [DBFeature(session_id=session_id, mini_game="M2", feature_name="optional_units_completed", value_raw=count, valid=True)]
+    return _quarantined_stub(session_id, "M2", "optional_units_completed")
 
 def _extract_M3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
-    return [DBFeature(session_id=session_id, mini_game="M3", feature_name="reduced_feedback_persistence_count", value_raw=2.0, valid=True)]
+    return _quarantined_stub(session_id, "M3", "reduced_feedback_persistence_count")

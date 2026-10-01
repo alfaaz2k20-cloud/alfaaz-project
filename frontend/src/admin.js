@@ -516,14 +516,17 @@ document.addEventListener('DOMContentLoaded', () => {
         let featuresHtml = '';
         if (feats.length > 0) {
           const featRows = feats.map(f => {
-            const formattedVal = typeof f.value_raw === 'number' ? (Number.isInteger(f.value_raw) ? f.value_raw : f.value_raw.toFixed(2)) : (f.value_raw || '—');
+            const isQuarantined = (f.flags && f.flags.includes('feature_not_implemented')) || f.display_value === 'Not implemented' || f.value_raw === null;
+            const formattedVal = isQuarantined ? 'Not implemented' : (typeof f.value_raw === 'number' ? (Number.isInteger(f.value_raw) ? f.value_raw : f.value_raw.toFixed(2)) : (f.value_raw || '—'));
+            const statusLabel = isQuarantined ? 'INSUFFICIENT' : (f.valid ? 'VALID' : 'FLAGGED');
+            const statusColor = isQuarantined ? 'var(--text-secondary, #666)' : (f.valid ? 'var(--accent-green, #2e7d32)' : 'var(--accent-red, #c62828)');
             return `
               <tr style="border-bottom: 1px solid var(--grid-border);">
                 <td style="padding: 0.6rem 0.5rem; font-size: 11px; font-weight: 500; color: var(--text-primary);">${f.world_name || '—'}</td>
                 <td style="padding: 0.6rem 0.5rem; font-size: 11px; color: var(--text-secondary);"><span style="font-family:monospace; font-size:10px; background:#f0eeea; padding:1px 4px; border-radius:2px; margin-right:4px;">${f.mini_game}</span> ${f.task_title || f.mini_game}</td>
                 <td style="padding: 0.6rem 0.5rem; font-size: 11px; color: var(--text-primary);">${f.label || f.feature_name}</td>
-                <td style="padding: 0.6rem 0.5rem; font-size: 11px; font-weight: 600; text-align: right; color: var(--accent-gold);">${formattedVal}</td>
-                <td style="padding: 0.6rem 0.5rem; font-size: 10px; text-align: right;"><span style="color: ${f.valid ? 'var(--accent-green, #2e7d32)' : 'var(--accent-red, #c62828)'}; font-weight:600;">${f.valid ? 'VALID' : 'FLAGGED'}</span></td>
+                <td style="padding: 0.6rem 0.5rem; font-size: 11px; font-weight: ${isQuarantined ? 'normal' : '600'}; text-align: right; color: ${isQuarantined ? 'var(--text-secondary)' : 'var(--accent-gold)'}; font-style: ${isQuarantined ? 'italic' : 'normal'};">${formattedVal}</td>
+                <td style="padding: 0.6rem 0.5rem; font-size: 10px; text-align: right;"><span style="color: ${statusColor}; font-weight:600;">${statusLabel}</span></td>
               </tr>
             `;
           }).join('');

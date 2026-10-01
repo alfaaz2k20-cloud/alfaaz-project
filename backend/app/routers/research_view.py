@@ -135,14 +135,20 @@ def get_session_research_view(
     formatted_features = []
     for f in features:
         meta = FEATURE_LABELS.get(f.feature_name, (f.mini_game, f.feature_name.replace('_', ' ').title(), "Interactive Task"))
+        flags_list = json.loads(f.flags_json) if f.flags_json else []
+        is_quarantined = "feature_not_implemented" in flags_list
         formatted_features.append({
             "mini_game": f.mini_game,
             "task_title": meta[0],
             "label": meta[1],
             "world_name": meta[2],
             "feature_name": f.feature_name,
-            "value_raw": f.value_raw,
-            "valid": f.valid
+            "value_raw": None if is_quarantined else f.value_raw,
+            "display_value": "Not implemented" if is_quarantined else (
+                str(round(f.value_raw, 2)) if isinstance(f.value_raw, float) else str(f.value_raw)
+            ),
+            "valid": False if is_quarantined else f.valid,
+            "flags": flags_list
         })
 
     return {

@@ -80,7 +80,7 @@ def integrate_session_evidence(db: Session, session_id: str) -> List[DBEvidence]
         usable_count = 0
         for mg in mgs:
             m_feats = mg_features.get(mg, [])
-            if m_feats and all(f.valid for f in m_feats):
+            if m_feats and all(f.valid and "feature_not_implemented" not in (f.flags_json or "") for f in m_feats):
                 usable_count += 1
 
         # Game Status & Bands
