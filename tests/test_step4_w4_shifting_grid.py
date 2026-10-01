@@ -104,16 +104,17 @@ class TestStep4W4ShiftingGrid(unittest.TestCase):
 
         seq = 1
         for idx, (stim_id, choice) in enumerate(choices):
+            t_pres = 1000.0 * seq
             events.append({
                 "seq": seq, "screen": "game", "mini_game": "E1", "action": "trial_presented",
-                "task_def_version": "1.0", "t_ms": 1000.0 * seq,
+                "task_def_version": "1.0", "t_ms": t_pres,
                 "data": {"trial_index": idx, "stimulus_id": stim_id}
             })
             seq += 1
             events.append({
                 "seq": seq, "screen": "game", "mini_game": "E1", "action": "tile_sorted",
-                "task_def_version": "1.0", "t_ms": 1000.0 * seq + 450.0,
-                "data": {"trial_index": idx, "stimulus_id": stim_id, "choice": choice, "dwell_ms": 450, "input_modality": "mouse"}
+                "task_def_version": "1.0", "t_ms": t_pres + 450.0,
+                "data": {"trial_index": idx, "stimulus_id": stim_id, "choice": choice, "input_modality": "mouse"}
             })
             seq += 1
 
@@ -136,6 +137,54 @@ class TestStep4W4ShiftingGrid(unittest.TestCase):
         self.assertEqual(recon["accuracy"], round(8/9, 4))
         # Exactly 1 perseverative error detected on E1_T5
         self.assertEqual(recon["perseverative_error_count"], 1)
+
+    def test_e1_client_supplied_dwell_ms_is_stripped_and_timing_deterministic(self):
+        """Any client attempt to author dwell_ms is stripped and server timing derives from timestamps."""
+        hostile_events = [
+            {
+                "seq": 80, "screen": "game", "mini_game": "E1", "action": "trial_presented",
+                "task_def_version": "1.0", "t_ms": 10000.0,
+                "data": {"trial_index": 0, "stimulus_id": "E1_T1"}
+            },
+            {
+                "seq": 81, "screen": "game", "mini_game": "E1", "action": "tile_sorted",
+                "task_def_version": "1.0", "t_ms": 10600.0,
+                "data": {"trial_index": 0, "stimulus_id": "E1_T1", "choice": "container_1", "dwell_ms": 99999.0}
+            }
+        ]
+        ingest_telemetry_batch(self.db, self.session_id, hostile_events)
+
+        # Flag detected
+        flag = self.db.exec(
+            select(DBDataQualityFlag).where(
+                DBDataQualityFlag.session_id == self.session_id,
+                DBDataQualityFlag.flag == "forbidden_client_field_detected"
+            )
+        ).first()
+        self.assertIsNotNone(flag)
+        self.assertIn("dwell_ms", flag.detail)
+
+        # Stripped from stored payload
+        ev = self.db.exec(
+            select(DBTelemetryEvent).where(
+                DBTelemetryEvent.session_id == self.session_id,
+                DBTelemetryEvent.seq == 81
+            )
+        ).first()
+        d = json.loads(ev.data_json)
+        self.assertNotIn("dwell_ms", d)
+
+        # Server-derived timing is exactly 600.0ms from timestamps, immune to client 99999.0
+        stored = self.db.exec(
+            select(DBTelemetryEvent).where(
+                DBTelemetryEvent.session_id == self.session_id,
+                DBTelemetryEvent.mini_game == "E1",
+                DBTelemetryEvent.seq.in_([80, 81])
+            )
+        ).all()
+        recon = reconstruct_e1_sorting_state(stored)
+        self.assertEqual(recon["trial_results"][0]["stimulus_id"], "E1_T1")
+        self.assertEqual(recon["trials_completed"], 1)
 
     def test_e2_setback_recovery_progression_and_reconstruction(self):
         """E2 verifies 4 sequences (3 disrupted, 1 control) and constructive recovery action tracking."""

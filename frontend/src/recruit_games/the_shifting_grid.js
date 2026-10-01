@@ -119,13 +119,10 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
       const handleSort = (modality) => {
         lastInputModality = modality;
         const choice = btn.getAttribute('data-choice');
-        const dwellMs = Math.max(10.0, performance.now() - trialStartTime);
-
         logEvent('tile_sorted', {
           trial_index: currentIdx,
           stimulus_id: t.stimulus_id,
           choice: choice,
-          dwell_ms: Math.round(dwellMs),
           input_modality: lastInputModality,
           task_def_version: '1.0'
         });

@@ -243,14 +243,16 @@ def reconstruct_c3_repair_state(events: list) -> Dict[str, Any]:
 def reconstruct_e1_sorting_state(events: list) -> Dict[str, Any]:
     """
     Reconstructs E1 Rule Shift state strictly from primitive events:
-    - trial_presented (stimulus_id, trial_index)
-    - tile_sorted (stimulus_id, trial_index, choice, dwell_ms)
+    - trial_presented (stimulus_id, trial_index, t_ms)
+    - tile_sorted (stimulus_id, trial_index, choice, t_ms)
+    Derives dwell time / response latency strictly from event timestamps.
     Evaluates accuracy against server task ground truth.
     Tracks perseverative errors (post-shift adherence to pre-shift color rule).
     """
     defs = get_task_definitions().get("games", {}).get("E1", {})
     trials = defs.get("trials", [])
 
+    presented_times = {}
     sorted_trials = {}
 
     for ev in events:
@@ -266,13 +268,19 @@ def reconstruct_e1_sorting_state(events: list) -> Dict[str, Any]:
             data = {}
 
         action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
-        if action == "tile_sorted":
-            s_id = data.get("stimulus_id")
+        t_ms = getattr(ev, "t_ms", None) or (ev.get("t_ms") if isinstance(ev, dict) else 0.0)
+        s_id = data.get("stimulus_id")
+
+        if action == "trial_presented" and s_id:
+            presented_times[s_id] = float(t_ms)
+        elif action == "tile_sorted" and s_id:
             choice = data.get("choice")
-            if s_id and choice:
+            if choice:
+                pres_t = presented_times.get(s_id)
+                derived_dwell = max(0.0, float(t_ms) - pres_t) if pres_t is not None else None
                 sorted_trials[s_id] = {
                     "choice": choice,
-                    "dwell_ms": data.get("dwell_ms"),
+                    "dwell_ms": round(derived_dwell, 2) if derived_dwell is not None else None,
                     "input_modality": data.get("input_modality")
                 }
 
