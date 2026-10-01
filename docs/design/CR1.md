@@ -1,67 +1,69 @@
-# Mini-Game Design Sheet: CR1 — Open Construction
+# Mini-Game Design Sheet: CR1 — Open Construction (The Artisan's Cord)
 **World:** The Broken Tool (`W6`)  
 **Target Parameter:** `creative_initiative`  
-**Behavioral Facet:** `divergent_problem_solving`  
+**Behavioral Facet:** `divergent_combination_under_constraint`  
+**Measurement Status:** `MISSING DESIGN DECISION — STOPPED`
 
 ---
 
 ## 1. Target Parameter & Behavioral Facet
-- **Parameter Key:** `creative_initiative`
-- **Facet:** `divergent_problem_solving`
-- **Definition Reference:** Bound to authoritative definition in `config/parameters.json` for `creative_initiative`.
+- **Target Parameter:** `creative_initiative`
+- **Behavioral Facet:** `divergent_combination_under_constraint`
+- **Authoritative Definition Reference:** Bound to `config/parameters.json` (`creative_initiative`).
 
-## 2. Nearest Researched Construct & Honest Match Note
-- **Nearest Construct:** Divergent Assembly & Multi-Path Problem Solving
-- **Honesty Note:** Evaluates generative assembly when multiple distinct structural configurations satisfy the objective.
+## 2. Nearest Established Research Construct & Honest Match Note
+- **Nearest Construct:** Divergent Thinking, Creative Problem Solving, & Heuristic Assembly.
+- **Honesty Match Note:** Evaluates the generation and combination of non-standard workshop items (hemp cord, brass chain, walnut clip, steel ring) to build a stable hanging rig when standard mounting wire is absent.
+- **Claim Boundary:** Combining materials on a 2D web canvas does not establish patent-level mechanical creativity or artistic genius.
 
-## 3. Task Description & Trial Structure
-- **Description:** Candidate must bridge a structural gap using an assortment of asymmetrical modular architectural fragments.
-- **Trial Structure:** 2 open-ended structural assembly trials.
+## 3. Research Citation(s)
+- Benedek, M., & Fink, A. (2019). *Toward a cognitive neuroscience of creative cognition: A review.* Current Opinion in Behavioral Sciences, 27, 116–122. https://doi.org/10.1016/j.cobeha.2018.08.005
+- Zhang, W., Sjoerds, Z., & Hommel, B. (2020). *Metacontrol of human creativity: The neurocognitive mechanisms of convergent and divergent thinking.* NeuroImage, 210, 116572. https://doi.org/10.1016/j.neuroimage.2019.116572
 
-## 4. Nuisance Demands & Sibling Differentiation
-- **Nuisance Demands:** Spatial 2D layout. Differentiated from CR2 (constraint shift) and CR3 (novel tool affordances).
+## 4. Mechanistic Rationale
+When routine tools are unavailable or broken, creative initiative involves identifying alternative affordances in existing materials and combining them into an effective functional substitute.
 
-## 5. Control / Decoy Conditions
-- **Controls:** Clear physical constraints (span width, load points) where first-try valid construction is fully credited.
+## 5. Exact Observable Behavior
+- Assembly combination selected from available workbench items.
+- Iterative attempts and reconfiguration after stability feedback (`assembly_tested`, `materials_combined`).
 
-## 6. Raw Events Logged
-- `block_selected`
-- `block_rotated`
-- `block_placed`
-- `test_load_applied`
-- `structure_stabilized`
+## 6. Candidate Raw Telemetry Requirements
+- `workbench_presented` (timestamp, available_tools: 4)
+- `tool_toggled` (timestamp, tool_id, is_active)
+- `stability_tested` (timestamp, rig_items, is_stable)
+- `assembly_finalized` (timestamp, final_rig)
 
-## 7. Extracted Behavioral Features
-### Feature: `solution_uniqueness_index`
-- **Formula:** dissimilarity(candidate_solution_graph, common_template_graph)
-- **Units:** index (0-1)
-- **Direction of Interpretation:** Higher index denotes novel yet functionally sound structural approach.
-- **Construct Distinction (Why not click count):** Topological graph dissimilarity.
+## 7. Candidate Feature(s), Formula, and Direction
+- **Feature 1:** `viable_alternative_synthesis`
+  - *Formula:* Binary/Categorical score on whether the combination satisfies tensile and balance constraints without standard wire.
+  - *Units:* Score (0.0 to 1.0)
+  - *Direction:* Higher indicates functional synthesis under constraint.
 
-### Feature: `attempt_chain_progression`
-- **Formula:** entropy_of_block_variety_across_attempts
-- **Units:** bits
-- **Direction of Interpretation:** Evaluates whether revisions explore new concepts rather than repetitive micro-nudges.
-- **Construct Distinction (Why not click count):** Information entropy across attempt sequence.
+## 8. Important Construct Boundary
+- **Creative Initiative $\neq$ Unusual Clicks or Number of Attempts:** Clicking every tool randomly or making 10 failed attempts is not creativity; achieving an elegant solution on the first try must NEVER be penalized.
 
+## 9. Nuisance Demands & Alternative Explanations
+- **Mechanical/Physics Intuition:** Prior experience with knots, cords, or workshop rigging.
+- **Trial-and-Error Guessing:** Selecting pairs until a green checkmark appears.
 
+## 10. Required Control / Decoy Conditions
+- Decoy combinations that look plausible but lack necessary tensile strength or fastening logic.
 
-## 8. Data Sufficiency (`min_observations`)
-- **Minimum Observations for `USABLE` Status:** `1`
-- **Expected Observations:** `2`
+## 11. Accessibility Implications
+- Textual descriptors of material physical properties; toggleable buttons with keyboard Enter.
 
-## 9. Time Ceiling (`ceiling_ms`) & Censoring
-- **Ceiling:** `35000 ms`
-- **Behavior on Ceiling:** Task gracefully concludes; logged with `stop_reason: "ceiling"`; observations are marked right-censored.
+## 12. Expected Relationship with SJT
+- **SJT $\leftrightarrow$ CR1 Convergence Hypothesis:** Modest positive correlation. SJT evaluates strategic improvisation; CR1 tests concrete artifact combination.
 
-## 10. Validity Rules (`INVALID` Criteria)
-- **Invalidation Condition:** Zero blocks placed or continuous random thrashing.
+## 13. Expected Relationship with Sibling Mini-Games (CR2, CR3)
+- **CR1 $\leftrightarrow$ CR2:** CR1 tests physical assembly; CR2 tests spatial constraint reframing.
+- **CR1 $\leftrightarrow$ CR3:** CR3 tests non-standard tool improvisation.
 
-## 11. Accessibility Alternative & Feature Exclusion
-- **Interaction Alternative:** Grid-based coordinate placement via keyboard cursor; structural validation audio/text cues.
+## 14. What the Task Cannot Establish
+- Cannot measure artistic inspiration or novel conceptual breakthrough.
 
-## 12. Insufficient Evidence Manifestation
-- **Insufficient Condition:** Less than 1 valid structure attempted. Result marked `INSUFFICIENT` (never `LOW`).
-
-## 13. Proposed Elements
-- **PROPOSED (needs owner approval):** All heuristic features and thresholds are uncalibrated (`null` thresholds in `config/feature_bands.json`) pending empirical normative volunteer data.
+## 15. Pre-Implementation Validity Check & Decision
+- **Opportunities:** Currently implemented as a single combination trial in `frontend/src/recruit_games/the_broken_tool.js`.
+- **Lacks Iterative Feedback Loop:** Lacks dynamic test feedback and hypothesis revision cycle.
+- **Status:** `MISSING DESIGN DECISION — STOPPED`.
+- **Blocker:** Requires owner design decision specifying multi-attempt stability feedback loop and scoring rules that do not penalize first-try success.
