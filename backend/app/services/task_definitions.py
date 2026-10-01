@@ -240,3 +240,189 @@ def reconstruct_c3_repair_state(events: list) -> Dict[str, Any]:
         "all_completed": completed_count == 3
     }
 
+def reconstruct_e1_sorting_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs E1 Rule Shift state strictly from primitive events:
+    - trial_presented (stimulus_id, trial_index)
+    - tile_sorted (stimulus_id, trial_index, choice, dwell_ms)
+    Evaluates accuracy against server task ground truth.
+    Tracks perseverative errors (post-shift adherence to pre-shift color rule).
+    """
+    defs = get_task_definitions().get("games", {}).get("E1", {})
+    trials = defs.get("trials", [])
+
+    sorted_trials = {}
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "E1":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        if action == "tile_sorted":
+            s_id = data.get("stimulus_id")
+            choice = data.get("choice")
+            if s_id and choice:
+                sorted_trials[s_id] = {
+                    "choice": choice,
+                    "dwell_ms": data.get("dwell_ms"),
+                    "input_modality": data.get("input_modality")
+                }
+
+    correct_count = 0
+    perseverative_count = 0
+    trial_results = []
+
+    for i, t in enumerate(trials):
+        s_id = t["stimulus_id"]
+        res = sorted_trials.get(s_id)
+        if not res:
+            continue
+        choice = res["choice"]
+        target = t["target_container"]
+        is_correct = (choice == target)
+        if is_correct:
+            correct_count += 1
+
+        is_perseverative = False
+        # Post-shift trials (index >= 3): check if error was consistent with pre-shift color rule
+        if i >= 3 and not is_correct:
+            color = t.get("tile_color")
+            color_target = "container_1" if color == "Gold" else "container_2"
+            if choice == color_target:
+                is_perseverative = True
+                perseverative_count += 1
+
+        trial_results.append({
+            "stimulus_id": s_id,
+            "trial_index": i,
+            "choice": choice,
+            "target": target,
+            "is_correct": is_correct,
+            "is_perseverative": is_perseverative
+        })
+
+    completed = len(trial_results)
+    return {
+        "trials_completed": completed,
+        "correct_count": correct_count,
+        "accuracy": round(correct_count / completed, 4) if completed > 0 else 0.0,
+        "perseverative_error_count": perseverative_count,
+        "trial_results": trial_results,
+        "all_trials_completed": completed == len(trials)
+    }
+
+def reconstruct_e2_recovery_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs E2 Setback Recovery state strictly from primitive events:
+    - sequence_presented
+    - action_selected
+    - sequence_completed
+    """
+    defs = get_task_definitions().get("games", {}).get("E2", {})
+    trials = defs.get("trials", [])
+
+    seq_actions = {}
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "E2":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        s_id = data.get("stimulus_id")
+        if action in ["action_selected", "sequence_completed"] and s_id:
+            action_id = data.get("action_id") or data.get("chosen_action")
+            if action_id:
+                seq_actions[s_id] = action_id
+
+    constructive_count = 0
+    results = {}
+    for t in trials:
+        s_id = t["stimulus_id"]
+        chosen = seq_actions.get(s_id)
+        target = t.get("target_action")
+        is_constructive = (chosen == target)
+        if is_constructive:
+            constructive_count += 1
+        results[s_id] = {
+            "chosen_action": chosen,
+            "target_action": target,
+            "is_constructive": is_constructive,
+            "has_disruption": t.get("has_disruption", False)
+        }
+
+    return {
+        "sequences": results,
+        "completed_count": len(seq_actions),
+        "constructive_count": constructive_count,
+        "all_completed": len(seq_actions) == len(trials)
+    }
+
+def reconstruct_e3_adaptation_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs E3 Changing Conditions state strictly from primitive events:
+    - condition_presented
+    - composition_action_attempted
+    - composition_confirmed
+    """
+    defs = get_task_definitions().get("games", {}).get("E3", {})
+    trials = defs.get("trials", [])
+
+    confirmed = {}
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "E3":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        s_id = data.get("stimulus_id")
+        if action == "composition_confirmed" and s_id:
+            chosen = data.get("chosen_action")
+            if chosen:
+                confirmed[s_id] = chosen
+
+    aligned_count = 0
+    results = {}
+    for t in trials:
+        s_id = t["stimulus_id"]
+        chosen = confirmed.get(s_id)
+        target = t.get("target_action")
+        is_aligned = (chosen == target)
+        if is_aligned:
+            aligned_count += 1
+        results[s_id] = {
+            "chosen_action": chosen,
+            "target_action": target,
+            "is_aligned": is_aligned,
+            "constraint_state": t.get("constraint_state")
+        }
+
+    return {
+        "conditions": results,
+        "completed_count": len(confirmed),
+        "aligned_count": aligned_count,
+        "all_completed": len(confirmed) == len(trials)
+    }
+
+
