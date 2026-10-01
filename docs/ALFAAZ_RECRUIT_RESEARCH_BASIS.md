@@ -1,9 +1,11 @@
 # Alfaaz Recruit: Research Basis, Construct Rationale, and Pre-Implementation Measurement Lock
 
-**Status:** Research-informed design and measurement rationale.  
+**Status:** Research audit complete; measurement implementation blocked pending design decisions.  
 **Current claim boundary:** This document does **not** claim that the exact Alfaaz Recruit games have been empirically validated. It documents the research basis for the behavioral domains, assessment method, task-design logic, and planned reliability/validity checks that should govern implementation.
 
 > **Core statement:** Alfaaz Recruit is a **research-informed, theoretically grounded assessment design**, not a validated psychometric instrument. The exact construct validity, reliability, discriminant validity, and criterion validity of the Alfaaz game battery remain empirical questions.
+
+> **Human-Data Boundary:** Pipeline sensitivity tests are implementation tests, determinism tests are software tests, synthetic profiles are pipeline tests, and **none is construct-validity evidence**. Construct validity, reliability, and criterion relevance can only be established using empirical human data gathered under authorized research protocols.
 
 ---
 
@@ -21,7 +23,7 @@ The exact Alfaaz games are original task designs. Therefore:
 - research on a construct is **not** validation of an Alfaaz game;
 - research on game-based assessment is **not** validation of the Alfaaz battery;
 - a plausible behavioral indicator is **not** automatically a psychological measure;
-- a passing software test is **not** evidence of construct validity.
+- a passing software test or synthetic profile test is **not** evidence of construct validity.
 
 The project should therefore distinguish four layers:
 
@@ -547,6 +549,61 @@ random error
 
 The design should attempt to increase the first component and reduce the latter three, especially nuisance variance.
 
+## 6.4 Qualitative Parameter Hypotheses (No Numerical Targets)
+
+> **Core Principle:** In accordance with measurement standards, **no numerical correlation targets or effect-size ranges are pre-specified**. Behavioral tasks frequently exhibit low-to-modest statistical correlation with declarative self-report or situational judgment measures due to method variance, differing task affordances, and distinct cognitive demands. All expected relationships documented below are **Alfaaz design hypotheses, not findings**. The true magnitude of association will be estimated empirically during future calibration studies.
+
+High correlation is **not** automatically desirable (it may indicate trivial task duplication or common method bias), and low correlation is **not** automatically failure (it may reflect distinct, complementary facets of a multifaceted construct). Later empirical analyses will use Generalizability Theory to separate person variance, task-specific variance, nuisance variance, and residual error.
+
+### 1. Empathy (The Frequency — W1)
+- **SJT ↔ Games (F1, F2, F3):** *Alfaaz design hypothesis, not a finding.* Positive association expected directionally. The SJT evaluates declarative interpersonal reasoning under moral/social trade-offs; F1–F3 evaluate reactive perceptual attunement and adaptive disambiguation under real-time audio tuning constraints.
+- **Game 1 ↔ Game 2 ↔ Game 3:**
+  - *Common behavioral content:* Attunement to interpersonal signals and state needs.
+  - *Deliberate mechanic differences:* F1 tests rapid latency on continuous slider; F2 tests cognitive disambiguation under incomplete information; F3 tests dynamic contextual recalibration across hall transitions.
+  - *Nuisance differences:* F1 loads on motor slider precision; F2 loads on reading comprehension; F3 loads on visual transition detection.
+
+### 2. Conscientiousness (The Archive — W2)
+- **SJT ↔ Games (A1, A2, A3):** *Alfaaz design hypothesis, not a finding.* Positive association expected directionally. The SJT assesses organizational responsibility and adherence to standards; A1–A3 assess concrete filing accuracy, exception quarantine under uncertainty, and typographical vigilance.
+- **Game 1 ↔ Game 2 ↔ Game 3:**
+  - *Common behavioral content:* Systematic diligence, verification under ambiguity, and error detection.
+  - *Deliberate mechanic differences:* A1 evaluates standard rule adherence across multi-attribute folios; A2 evaluates protocol selection for damaged/anomalous folios; A3 evaluates proofreading vigilance.
+  - *Nuisance differences:* A1 loads on multi-attribute tag parsing; A2 loads on ambiguity interpretation; A3 loads on visual typographical scanning.
+
+### 3. Collaborative Spirit (The Shared Canvas — W3)
+- **SJT ↔ Games (C1, C2, C3):** *Alfaaz design hypothesis, not a finding.* Positive association expected directionally. The SJT assesses collaborative conflict resolution and diplomacy; C1–C3 evaluate micro-level resource allocation, spatial role coordination, and bilateral balance repair.
+- **Game 1 ↔ Game 2 ↔ Game 3:**
+  - *Common behavioral content:* Mutual accommodation and coordinated goal pursuit.
+  - *Deliberate mechanic differences:* C1 assesses material resource sharing; C2 assesses spatial layout coordination; C3 assesses bilateral lighting balance.
+  - *Nuisance differences:* C1 loads on numerical calculation; C2 loads on visual symmetry perception; C3 loads on slider calibration.
+
+### 4. Emotional Agility (The Shifting Grid — W4)
+- **SJT ↔ Games (E1, E2, E3):** *Alfaaz design hypothesis, not a finding.* Positive association expected directionally. The SJT assesses adaptive composure during systemic ambiguity; E1–E3 evaluate behavioral flexibility following procedural rule shifts and interruptions.
+- **Game 1 ↔ Game 2 ↔ Game 3:**
+  - *Common behavioral content:* Behavioral flexibility and recovery after task changes.
+  - *Deliberate mechanic differences:* E1 tests sorting rule switching; E2 tests response to unplanned physical interruption; E3 tests balance under open-ended ambiguity.
+  - *Nuisance differences:* E1 loads on cognitive set-shifting; E2 loads on reading comprehension; E3 loads on aesthetic preference.
+
+### 5. Curiosity (The Hidden Gallery — W5)
+- **SJT ↔ Games (Q1, Q2, Q3):** *Alfaaz design hypothesis, not a finding.* Positive association expected directionally. The SJT assesses exploratory initiative in projects; Q1–Q3 evaluate voluntary exploration of optional cultural narratives and investigation of anomalies.
+- **Game 1 ↔ Game 2 ↔ Game 3:**
+  - *Common behavioral content:* Epistemic information seeking in the absence of external reward.
+  - *Deliberate mechanic differences:* Q1 tests voluntary narrative inspection; Q2 tests anomaly examination; Q3 tests conceptual synthesis.
+  - *Nuisance differences:* Q1 loads on reading speed; Q2 loads on visual inspection; Q3 loads on verbal retention.
+
+### 6. Creative Initiative (The Broken Tool — W6)
+- **SJT ↔ Games (CR1, CR2, CR3):** *Alfaaz design hypothesis, not a finding.* Positive association expected directionally. The SJT assesses creative procedural innovation; CR1–CR3 evaluate functional assembly under tool absence, constraint reframing, and novel tool affordance.
+- **Game 1 ↔ Game 2 ↔ Game 3:**
+  - *Common behavioral content:* Divergent problem-solving and alternative generation under constraints.
+  - *Deliberate mechanic differences:* CR1 evaluates physical mounting combination; CR2 evaluates spatial obstacle reframing; CR3 evaluates improvised tool substitution.
+  - *Nuisance differences:* CR1 loads on mechanical intuition; CR2 loads on verbal reasoning; CR3 loads on visual geometric pattern matching.
+
+### 7. Motivation (The Repetition — W7)
+- **SJT ↔ Games (M1, M2, M3):** *Alfaaz design hypothesis, not a finding.* Positive association expected directionally. The SJT assesses persistent commitment to volunteer causes; M1–M3 evaluate baseline diligence and discretionary persistence beyond stated minimums.
+- **Game 1 ↔ Game 2 ↔ Game 3:**
+  - *Common behavioral content:* Sustained engagement and autonomous self-regulation.
+  - *Deliberate mechanic differences:* M1 tests baseline obligation adherence; M2 tests voluntary extension beyond required minimum; M3 tests persistence under reduced external praise.
+  - *Nuisance differences:* M1 loads on motor latency; M2 loads on personal schedule constraints; M3 loads on session fatigue.
+
 ---
 
 # 7. Reliability/Validity Analysis Plan for Later Human Data
@@ -755,6 +812,30 @@ Measure voluntary persistence with an explicit stopping point and recognize appr
 | Criterion validity for volunteer outcomes | **Not established** |
 | Normative game thresholds | **Not established** |
 | Current status of game evidence | **Calibration-stage / research evidence only** |
+
+## 10.2 Citation and Construct Mapping Table
+
+**Audit Verification Summary:** Verified Citations: **17** | UNVERIFIED Citations: **0**
+
+| Nearest research domain / construct | Citation & DOI / URL | Classification | WHAT THE SOURCE ACTUALLY SUPPORTS | ALFAAZ DESIGN INFERENCE | REMAINS UNVALIDATED |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **SJT Methodology & Validity** | Christian, M. S., et al. (2010). *Personnel Psychology*, 63, 83–117. [10.1111/j.1744-6570.2009.01163.x](https://doi.org/10.1111/j.1744-6570.2009.01163.x) | `CONSTRUCT_GENERAL` | Meta-analysis demonstrating SJTs predict job performance and assess specific construct domains when properly matched. | Explicit construct mapping of the 7 Alfaaz SJT scenarios to targeted volunteer parameters. | The exact psychometric factor structure and criterion validity of the Alfaaz SJT items. |
+| **SJT Response Instructions** | McDaniel, M. A., et al. (2007). *Personnel Psychology*, 60, 63–91. [10.1111/j.1744-6570.2007.00065.x](https://doi.org/10.1111/j.1744-6570.2007.00065.x) | `CONSTRUCT_GENERAL` | Response instructions (behavioral vs knowledge) moderate construct saturation and criterion validity. | Standardizing behavioral trade-off instructions across all 7 SJT scenarios. | Empirical candidate cognitive response processes on Alfaaz SJT items. |
+| **Game-Based Selection Assessments** | Ramos-Villagrasa, P. J., et al. (2022). *Frontiers in Psychology*, 13, 952002. [10.3389/fpsyg.2022.952002](https://doi.org/10.3389/fpsyg.2022.952002) | `CONSTRUCT_GENERAL` | Systematic review showing game mechanics fundamentally alter what constructs are elicited. | Treating the 21 mini-games as experimental behavioral elicitations requiring strict validation. | Whether any Alfaaz game achieves acceptable construct validity in volunteer recruitment. |
+| **Game-Based Assessment Typology** | Landers, R. N., & Sanchez, D. R. (2022). *Int J Selection & Assessment*. [10.1111/ijsa.12376](https://doi.org/10.1111/ijsa.12376) | `CONSTRUCT_GENERAL` | Distinguishes game-based, gamified, and gamefully designed assessments and establishes psychometric rigor. | Designing minimalist task environments focusing on behavioral extraction without excessive game embellishment. | The construct independence and psychometric equivalence of the 7 game worlds. |
+| **Serious Game Operational Validation** | Wiernik, B. M., et al. (2022). *Int J Selection & Assessment*. [10.1111/ijsa.12378](https://doi.org/10.1111/ijsa.12378) | `PARADIGM_SPECIFIC` | Practical validation framework for serious game assessments in high-stakes occupational contexts. | Structuring the development lifecycle into research basis, design sheets, nuisance controls, and calibration. | Psychometric reliability and validity of the Alfaaz task battery. |
+| **Psychometric Standards** | AERA, APA, NCME. (2014). *Standards for Educational and Psychological Testing*. [AERA Standards](https://www.aera.net/Publications/Books/Standards-for-Educational-Psychological-Testing-2014-Edition) | `CONSTRUCT_GENERAL` | Validity is an argument supported by multiple evidentiary sources (content, response process, structure, relations). | Organizing the Alfaaz validation program across content representation, response processes, and pilot calibration. | The empirical validity argument for Alfaaz Recruit. |
+| **Perspective-Taking (Cognitive & Affective)** | Healey, M. L., & Grossman, M. (2018). *Frontiers in Neurology*, 9, 491. [10.3389/fneur.2018.00491](https://doi.org/10.3389/fneur.2018.00491) | `CONSTRUCT_GENERAL` | Cognitive perspective-taking (mentalizing) and affective perspective-taking are dissociable but share executive networks. | Differentiating social cue latency (F1) from cognitive disambiguation (F2) and context updating (F3). | Whether F1–F3 measure perspective-taking or merely slider motor precision and reading speed. |
+| **Conscientiousness in Work Performance** | Wilmot, M. P., & Ones, D. S. (2019). *PNAS*, 116, 23004–23010. [10.1073/pnas.1908430116](https://doi.org/10.1073/pnas.1908430116) | `CONSTRUCT_GENERAL` | Century of quantitative synthesis linking conscientiousness with performance, goal focus, and diligence. | Targeting orderliness, rule adherence, and follow-through in archival cataloging tasks. | Whether sorting 6 digital folios in A1 correlates with occupational conscientiousness. |
+| **Conscientiousness Narrow Facets** | Dudley, N. M., et al. (2006). *Journal of Applied Psychology*, 91, 40–57. [10.1037/0021-9010.91.1.40](https://doi.org/10.1037/0021-9010.91.1.40) | `CONSTRUCT_GENERAL` | Narrow conscientiousness facets (order, dutifulness, deliberation) show incremental criterion validity over broad trait. | Designing distinct mini-games for rule sorting (A1), exception handling (A2), and proofreading vigilance (A3). | Construct distinctiveness and criterion relationships of A1, A2, and A3. |
+| **Teamwork Behavioral Dimensions** | McEwan, D., et al. (2017). *PLOS ONE*, 12(1), e0169604. [10.1371/journal.pone.0169604](https://doi.org/10.1371/journal.pone.0169604) | `CONSTRUCT_GENERAL` | Meta-analysis demonstrating teamwork training improves teamwork behaviors across active, interactive dimensions. | Designing collaborative tasks targeting coordination and mutual support rather than pure unilateral altruism. | Whether tile sharing (C1), slot selection (C2), or lantern allocation (C3) reflects collaborative spirit. |
+| **Team Adaptation & Coordination** | Burke, C. S., et al. (2006). *Journal of Applied Psychology*, 91, 1189–1207. [10.1037/0021-9010.91.6.1189](https://doi.org/10.1037/0021-9010.91.6.1189) | `CONSTRUCT_GENERAL` | Conceptual model of team adaptation emphasizing mutual monitoring, backup behavior, and dynamic alignment. | Targeting behavioral backup and coordination repair (C3) and complementary layout positioning (C2). | Whether simulated web tasks elicit authentic adaptive teamwork. |
+| **Regulatory Flexibility** | Bonanno, G. A., & Burton, C. L. (2013). *Perspectives on Psychological Science*, 8, 591–612. [10.1177/1745691613504116](https://doi.org/10.1177/1745691613504116) | `CONSTRUCT_GENERAL` | Regulatory flexibility theory: coping efficacy requires context sensitivity, repertoire, and strategy modification. | Evaluating behavioral recovery and strategy switching when task conditions change (E1, E2, E3). | Whether sorting tiles under rule shifts (E1) or choosing calm responses (E2) captures regulatory flexibility. |
+| **Information-Seeking & Curiosity** | Gottlieb, J., et al. (2013). *Trends in Cognitive Sciences*, 17, 585–593. [10.1016/j.tics.2013.09.001](https://doi.org/10.1016/j.tics.2013.09.001) | `CONSTRUCT_GENERAL` | Information-seeking is an intrinsically motivated drive to reduce uncertainty and optimize learning progress. | Measuring voluntary exploration of unrequired cultural narrative chambers (Q1) and uncataloged seals (Q2). | Whether clicking optional chambers in Q1 reflects epistemic curiosity rather than compliance or pacing speed. |
+| **Psychology & Neuroscience of Curiosity** | Kidd, C., & Hayden, B. Y. (2015). *Neuron*, 88, 449–460. [10.1016/j.neuron.2015.10.004](https://doi.org/10.1016/j.neuron.2015.10.004) | `CONSTRUCT_GENERAL` | Curiosity represents a fundamental drive state aimed at acquiring information to resolve ambiguity. | Structuring optional exploration tasks where information gain is independent of extrinsic rewards. | Whether web courtyard exploration correlates with validated curiosity scales. |
+| **Creative Cognition Mechanisms** | Benedek, M., & Fink, A. (2019). *Curr Opin Behav Sci*, 27, 116–122. [10.1016/j.cobeha.2018.08.005](https://doi.org/10.1016/j.cobeha.2018.08.005) | `CONSTRUCT_GENERAL` | Creative problem solving involves cooperation between spontaneous divergent idea generation and executive control. | Designing tasks requiring functional assembly under tool absence (CR1, CR3) without penalizing first-try insight. | Whether selecting workshop items in CR1 or improvised tools in CR3 captures real-world creative initiative. |
+| **Metacontrol of Creativity** | Zhang, W., et al. (2020). *NeuroImage*, 210, 116572. [10.1016/j.neuroimage.2019.116572](https://doi.org/10.1016/j.neuroimage.2019.116572) | `PARADIGM_SPECIFIC` | Neurocognitive evidence that creativity balances persistence (convergent) and cognitive flexibility (divergent). | Analyzing attempt sequences and strategy revision under obstacle constraints (CR2). | Whether scenario-based reframing in CR2 captures creative metacontrol. |
+| **Goal Persistence & Disengagement** | Brandstätter, V., & Bernecker, K. (2022). *Annu Rev Psychol*, 73, 271–299. [10.1146/annurev-psych-020821-110710](https://doi.org/10.1146/annurev-psych-020821-110710) | `CONSTRUCT_GENERAL` | Adaptive self-regulation requires balancing goal persistence with timely, strategic disengagement. | Structuring M1 and M2 with an explicit required baseline and treating exit after the minimum as neutral. | Whether stamping extra optional courtesy sleeves in M2 captures voluntary organizational persistence. |
 
 ---
 
