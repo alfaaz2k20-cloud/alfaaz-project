@@ -2,6 +2,7 @@ import json
 from typing import List, Dict, Any, Optional, Tuple
 from sqlmodel import Session, select
 from app.models.recruit import DBTelemetryEvent, DBFeature, DBSession, DBDataQualityFlag
+from app.services.task_definitions import get_stimulus_ground_truth
 
 def extract_session_features(db: Session, session_id: str) -> List[DBFeature]:
     """
@@ -96,6 +97,8 @@ def extract_session_features(db: Session, session_id: str) -> List[DBFeature]:
 # --------------------------------------------------------------------------
 # A1: Classification
 # --------------------------------------------------------------------------
+# A1: Classification
+# --------------------------------------------------------------------------
 def _extract_A1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
     filed_events = [e for e in events if e.action in ["document_filed", "item_sorted"]]
     obs_count = len(filed_events)
@@ -105,7 +108,16 @@ def _extract_A1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
     total_dwell = 0.0
     for e in filed_events:
         data = json.loads(e.data_json) if e.data_json else {}
-        if data.get("is_correct"):
+        stim_id = data.get("stimulus_id") or data.get("doc_id")
+        choice = data.get("choice") or data.get("target_folder") or data.get("folder")
+        if stim_id and choice:
+            stim = get_stimulus_ground_truth("A1", stim_id)
+            if stim and stim.get("target_folder"):
+                if choice == stim.get("target_folder"):
+                    correct_count += 1
+            elif data.get("is_correct"):
+                correct_count += 1
+        elif data.get("is_correct"):
             correct_count += 1
         total_dwell += float(data.get("dwell_ms") or 2000.0)
 
@@ -145,12 +157,21 @@ def _extract_A2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
     correct = 0
     for e in decision_events:
         data = json.loads(e.data_json) if e.data_json else {}
-        if data.get("is_correct", True):
+        stim_id = data.get("stimulus_id")
+        action_id = data.get("action_id") or data.get("action") or data.get("chosen_action")
+        if stim_id and action_id:
+            stim = get_stimulus_ground_truth("A2", stim_id)
+            if stim and stim.get("expected_action"):
+                if action_id == stim.get("expected_action"):
+                    correct += 1
+            elif data.get("is_correct", False):
+                correct += 1
+        elif data.get("is_correct", True):
             correct += 1
 
     precision = (correct / obs_count) if obs_count > 0 else 1.0
 
-    # Strictly require minimum 3 observations; N=1 observation bypass removed
+    # Strictly require minimum 3 observations; N=1 and N=2 are INSUFFICIENT
     valid = obs_count >= 3
 
     return [
