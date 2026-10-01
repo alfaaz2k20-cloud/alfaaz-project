@@ -128,17 +128,29 @@ class DBFeature(SQLModel, table=True):
 
 class DBEvidence(SQLModel, table=True):
     __tablename__ = "evidence"
-    __table_args__ = (UniqueConstraint("session_id", "parameter", name="uq_session_parameter"),)
+    __table_args__ = (UniqueConstraint("session_id", "parameter", "version", name="uq_session_parameter_version"),)
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     session_id: str = Field(index=True)
     parameter: str = Field(index=True)
+    version: int = Field(default=1, index=True)
+    is_superseded: bool = Field(default=False, index=True)
+    superseded_at: Optional[datetime] = Field(default=None, sa_column=Column(DateTime(timezone=True)))
+    spec_version: str = Field(default="2026-10-v2")
+    sjt_version: str = Field(default="2026-09-rev")
+    scoring_version: str = Field(default="1.0-exact-thirds")
+    feature_version: str = Field(default="1.0")
+    config_hash: Optional[str] = None
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+    )
     sjt_raw: Optional[int] = None
     sjt_min: Optional[int] = None
     sjt_max: Optional[int] = None
     sjt_span: Optional[int] = None
     sjt_band: Optional[str] = None  # HIGH, MODERATE, LOW
-    game_status: str = Field(default="UNCALIBRATED") # USABLE, INSUFFICIENT, INVALID, UNCALIBRATED
-    game_band: Optional[str] = None # HIGH, MODERATE, LOW, UNCALIBRATED
+    game_status: str = Field(default="INSUFFICIENT") # USABLE, INSUFFICIENT, INVALID
+    game_band: Optional[str] = None # HIGH, MODERATE, LOW, UNCALIBRATED, or None
     consistency: str = Field(default="NOT_COMPUTED") # CONSISTENT, VARIED, INSUFFICIENT, NOT_COMPUTED
     relationship: str = Field(default="NOT_COMPUTED") # ALIGNED, PARTLY_ALIGNED, DIFFERENT, SJT_ONLY, INSUFFICIENT, NOT_COMPUTED
     confidence: str = Field(default="LIMITED") # LIMITED, MODERATE, SUBSTANTIAL

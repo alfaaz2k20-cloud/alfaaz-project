@@ -274,8 +274,8 @@ def submit_sjt(req: SJTSubmitRequest, request: Request, db: Session = Depends(ge
     # Score server-side
     try:
         scoring_results = score_sjt_responses(req.responses)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid SJT responses")
 
     # Save raw responses
     for s_id, opt_id in req.responses.items():
@@ -286,38 +286,11 @@ def submit_sjt(req: SJTSubmitRequest, request: Request, db: Session = Depends(ge
             t_ms=req.t_ms
         )
         db.add(resp)
+    db.commit()
 
-    # Save evidence records per parameter
-    for param_key, scores in scoring_results.items():
-        evidence = db.exec(
-            select(DBEvidence).where(
-                DBEvidence.session_id == req.session_id,
-                DBEvidence.parameter == param_key
-            )
-        ).first()
-
-        if not evidence:
-            evidence = DBEvidence(
-                session_id=req.session_id,
-                parameter=param_key,
-                sjt_raw=scores["raw"],
-                sjt_min=scores["min"],
-                sjt_max=scores["max"],
-                sjt_span=scores["span"],
-                sjt_band=scores["band"],
-                game_status="UNCALIBRATED",
-                game_band=None,
-                consistency="NOT_COMPUTED",
-                relationship="SJT_ONLY",
-                confidence="LIMITED"
-            )
-            db.add(evidence)
-        else:
-            evidence.sjt_raw = scores["raw"]
-            evidence.sjt_min = scores["min"]
-            evidence.sjt_max = scores["max"]
-            evidence.sjt_span = scores["span"]
-            evidence.sjt_band = scores["band"]
+    # Integrate evidence records per parameter (creates version 1)
+    from app.services.evidence_integrator import integrate_session_evidence
+    integrate_session_evidence(db, req.session_id, force_recompute=True)
 
     session_obj.status = "ACTIVE"
     session_obj.current_screen = "games"

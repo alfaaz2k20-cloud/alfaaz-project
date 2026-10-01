@@ -15,8 +15,10 @@ from typing import List, Tuple
 # Add backend to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
-from sqlmodel import Session, create_engine, SQLModel
-from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature
+from sqlmodel import Session, create_engine, SQLModel, select
+from app.models.recruit import (
+    DBSession, DBTelemetryEvent, DBFeature, DBEvidence, DBSJTResponse, DBDataQualityFlag
+)
 from app.services.sjt_engine import (
     verify_and_load_configs,
     get_public_sjt_payload,
@@ -193,7 +195,54 @@ def run_acceptance_checks() -> List[Tuple[int, str, str, str]]:
     # --------------------------------------------------------------------------
     # Check 11: Every branch of the evidence logic (relationship, consistency, confidence) incl. uncalibrated behavior
     # --------------------------------------------------------------------------
-    results.append((11, "Evidence categorical logic and uncalibrated handling", "NOT VERIFIED", "Pending Step R3"))
+    try:
+        temp_engine = create_engine("sqlite:///:memory:")
+        SQLModel.metadata.create_all(temp_engine)
+        with Session(temp_engine) as temp_db:
+            # 1. Uncalibrated branch: 2 usable mini-games
+            s_id = "s_chk11"
+            temp_db.add(DBSession(session_id=s_id, status="ACTIVE"))
+            for s_idx in range(1, 8):
+                temp_db.add(DBSJTResponse(session_id=s_id, scenario_id=f"S{s_idx}", option_id=f"S{s_idx}A"))
+            temp_db.add(DBFeature(session_id=s_id, mini_game="A1", feature_name="f1", value_raw=0.9, valid=True, flags_json="[]"))
+            temp_db.add(DBFeature(session_id=s_id, mini_game="A2", feature_name="f2", value_raw=0.8, valid=True, flags_json="[]"))
+            temp_db.commit()
+
+            evs = integrate_session_evidence(temp_db, s_id, force_recompute=True)
+            ev_c = next(e for e in evs if e.parameter == "conscientiousness")
+            b_uncal = (
+                ev_c.game_status == "USABLE"
+                and ev_c.game_band == "UNCALIBRATED"
+                and ev_c.consistency == "NOT_COMPUTED"
+                and ev_c.relationship == "NOT_COMPUTED"
+                and ev_c.confidence == "MODERATE"
+            )
+
+            # 2. Calibrated branch: test ALIGNED and SUBSTANTIAL
+            cal_cfg = {
+                "calibration_status": "CALIBRATED",
+                "bands": {
+                    "A1": {"LOW": 0.3, "HIGH": 0.7},
+                    "A2": {"LOW": 0.3, "HIGH": 0.7},
+                    "A3": {"LOW": 0.3, "HIGH": 0.7}
+                }
+            }
+            temp_db.add(DBFeature(session_id=s_id, mini_game="A3", feature_name="f3", value_raw=0.85, valid=True, flags_json="[]"))
+            temp_db.commit()
+            evs_cal = integrate_session_evidence(temp_db, s_id, force_recompute=True, feature_bands_override=cal_cfg)
+            ev_c_cal = next(e for e in evs_cal if e.parameter == "conscientiousness")
+            b_cal = (
+                ev_c_cal.game_band == "HIGH"
+                and ev_c_cal.consistency == "CONSISTENT"
+                and ev_c_cal.confidence == "SUBSTANTIAL"
+            )
+
+            if b_uncal and b_cal:
+                results.append((11, "Evidence categorical logic and uncalibrated handling", "PASS", "tests/test_gate3_r3_evidence_logic.py:35,178"))
+            else:
+                results.append((11, "Evidence categorical logic and uncalibrated handling", "FAIL", f"uncal:{b_uncal}, cal:{b_cal}"))
+    except Exception as e:
+        results.append((11, "Evidence categorical logic and uncalibrated handling", "FAIL", str(e)))
 
     # --------------------------------------------------------------------------
     # Check 12: Skipped/missing data never produces LOW
@@ -211,7 +260,48 @@ def run_acceptance_checks() -> List[Tuple[int, str, str, str]]:
     # --------------------------------------------------------------------------
     # Check 13: Recompute from raw events is deterministic and insert-only
     # --------------------------------------------------------------------------
-    results.append((13, "Deterministic insert-only recompute", "NOT VERIFIED", "Pending Step R3"))
+    try:
+        temp_engine = create_engine("sqlite:///:memory:")
+        SQLModel.metadata.create_all(temp_engine)
+        with Session(temp_engine) as temp_db:
+            s_id = "s_recompute_chk13"
+            temp_db.add(DBSession(session_id=s_id, status="ACTIVE"))
+            for s_idx in range(1, 8):
+                temp_db.add(DBSJTResponse(session_id=s_id, scenario_id=f"S{s_idx}", option_id=f"S{s_idx}A"))
+            temp_db.add(DBTelemetryEvent(
+                session_id=s_id, seq=1, segment_id=1, t_ms=100.0, screen="game", mini_game="A1",
+                action="document_filed", data_json=json.dumps({"is_correct": True, "dwell_ms": 1500.0})
+            ))
+            temp_db.commit()
+
+            # Run 1
+            f1 = extract_session_features(temp_db, s_id)
+            ev1 = integrate_session_evidence(temp_db, s_id, force_recompute=True)
+            v1_features = [(f.feature_name, f.value_raw) for f in f1]
+            v1_evidence = [(e.parameter, e.sjt_band, e.game_status, e.confidence) for e in ev1]
+            rows_after_run1 = temp_db.exec(select(DBEvidence).where(DBEvidence.session_id == s_id)).all()
+
+            # Run 2 (Recompute)
+            f2 = extract_session_features(temp_db, s_id)
+            ev2 = integrate_session_evidence(temp_db, s_id, force_recompute=True)
+            v2_features = [(f.feature_name, f.value_raw) for f in f2]
+            v2_evidence = [(e.parameter, e.sjt_band, e.game_status, e.confidence) for e in ev2]
+            rows_after_run2 = temp_db.exec(select(DBEvidence).where(DBEvidence.session_id == s_id)).all()
+
+            deterministic = (v1_features == v2_features and v1_evidence == v2_evidence)
+            insert_only = (
+                len(rows_after_run1) == 7
+                and len(rows_after_run2) == 14
+                and all(r.is_superseded for r in rows_after_run2 if r.version == 1)
+                and all(not r.is_superseded for r in rows_after_run2 if r.version == 2)
+            )
+
+            if deterministic and insert_only:
+                results.append((13, "Deterministic insert-only recompute", "PASS", "tests/test_gate3_r3_evidence_logic.py:230,314"))
+            else:
+                results.append((13, "Deterministic insert-only recompute", "FAIL", f"det:{deterministic}, ins:{insert_only}"))
+    except Exception as e:
+        results.append((13, "Deterministic insert-only recompute", "FAIL", str(e)))
 
     # --------------------------------------------------------------------------
     # Check 14: Scoring keys and feature configs absent from public API responses and from the built frontend bundle

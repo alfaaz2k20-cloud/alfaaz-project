@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 from app.db.session import engine, SessionLocal
 from app.models.recruit import DBSession, DBFeature, DBEvidence
 from app.services.feature_extractor import extract_session_features
+from app.services.evidence_integrator import integrate_session_evidence
 from sqlmodel import select
 
 def recompute_session(session_id: str):
@@ -19,7 +20,9 @@ def recompute_session(session_id: str):
             return False
 
         features = extract_session_features(db, session_id)
-        print(f"[RECOMPUTE] Session {session_id}: Extracted {len(features)} deterministic features.")
+        evidence = integrate_session_evidence(db, session_id, force_recompute=True)
+        ver = evidence[0].version if evidence else 1
+        print(f"[RECOMPUTE] Session {session_id}: Extracted {len(features)} features, derived {len(evidence)} evidence records (version {ver}).")
         return True
     finally:
         db.close()
@@ -31,6 +34,7 @@ def recompute_all():
         print(f"[RECOMPUTE] Found {len(sessions)} sessions in database.")
         for s in sessions:
             extract_session_features(db, s.session_id)
+            integrate_session_evidence(db, s.session_id, force_recompute=True)
         print(f"[RECOMPUTE] Recomputation complete for all {len(sessions)} sessions.")
     finally:
         db.close()
