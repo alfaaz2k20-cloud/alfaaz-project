@@ -2,12 +2,14 @@
    ALFAAZ RECRUIT — CANDIDATE EXPERIENCE & TELEMETRY CLIENT
    ========================================================================== */
 
+import consentCopy from '../../config/copy/consent.json';
+
 let state = {
   sessionId: null,
   configHash: null,
   worldSequence: [],
   seeds: {},
-  screen: 'consent', // consent, accessibility, warmup, sjt, games, complete, paused
+  screen: 'consent', // consent, identity, accessibility, warmup, sjt, games, complete, paused
   pausedPreviousScreen: null,
   sjtScenarios: [],
   currentSjtIndex: 0,
@@ -169,6 +171,9 @@ export function renderScreen() {
     case 'consent':
       renderConsent(app);
       break;
+    case 'identity':
+      renderIdentity(app);
+      break;
     case 'accessibility':
       renderAccessibility(app);
       break;
@@ -200,57 +205,58 @@ function renderConsent(app) {
       </div>
 
       <div class="space-y-4 text-sm text-[var(--text-primary)] leading-relaxed bg-[#faf8f5] p-5 border border-[var(--grid-border)]">
-        <p><strong>Estimated Total Time:</strong> ~20–25 minutes (SJT + brief exploratory micro-tasks).</p>
-        <p><strong>Voluntary Nature:</strong> You may pause, skip tasks, or conclude at any time without penalty. Missing or skipped sections are recorded neutrally as insufficient data, never as a low score.</p>
-        <p><strong>Simulated Partners:</strong> Some interactive tasks feature computer-controlled simulated characters. Their behavior is automated and scripted.</p>
-        <p><strong>Data & Research Notice:</strong> This is a calibration-stage research instrument for unpaid volunteer recruitment, not a validated selection test. All raw telemetry is recorded under a pseudonymous session identifier.</p>
+        ${consentCopy.candidate_notice.lines.map(line => `<p>${line}</p>`).join('')}
       </div>
 
-      <form id="startForm" class="space-y-4 pt-2">
-        <div>
-          <label class="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1">Full Name *</label>
-          <input type="text" id="fullName" required class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="Your name">
-        </div>
-        <div>
-          <label class="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1">Email Address *</label>
-          <input type="email" id="email" required class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="you@example.com">
-        </div>
+      <form id="consentForm" class="space-y-4 pt-2">
         <div class="flex items-center gap-2 pt-2">
-          <input type="checkbox" id="ageConfirm" required checked class="w-4 h-4 accent-[#bd6f5d]">
-          <label for="ageConfirm" class="text-xs text-[var(--text-primary)]">I confirm that I am 18 years of age or older.</label>
+          <input type="checkbox" id="ageConfirm" required class="w-4 h-4 accent-[#bd6f5d]">
+          <label for="ageConfirm" class="text-xs text-[var(--text-primary)]">${consentCopy.age_confirmation.label}</label>
         </div>
         <div class="flex items-center gap-2">
-          <input type="checkbox" id="consentAgree" required checked class="w-4 h-4 accent-[#bd6f5d]">
-          <label for="consentAgree" class="text-xs text-[var(--text-primary)]">I understand and agree to participate in this research session.</label>
+          <input type="checkbox" id="consentAgree" required class="w-4 h-4 accent-[#bd6f5d]">
+          <label for="consentAgree" class="text-xs text-[var(--text-primary)]">${consentCopy.research_participation.label}</label>
         </div>
 
         <div class="pt-4 flex justify-end">
-          <button type="submit" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
-            Begin Session &rarr;
+          <button type="submit" aria-disabled="true" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition opacity-40">
+            Continue &rarr;
           </button>
         </div>
       </form>
     </div>
   `;
 
-  document.getElementById('startForm')?.addEventListener('submit', async (e) => {
+  const ageConfirm = document.getElementById('ageConfirm');
+  const consentAgree = document.getElementById('consentAgree');
+  const consentSubmit = document.querySelector('#consentForm button[type="submit"]');
+  const updateConsentSubmitState = () => {
+    const ready = Boolean(ageConfirm?.checked && consentAgree?.checked);
+    consentSubmit?.setAttribute('aria-disabled', String(!ready));
+    consentSubmit?.classList.toggle('opacity-40', !ready);
+  };
+  ageConfirm?.addEventListener('change', updateConsentSubmitState);
+  consentAgree?.addEventListener('change', updateConsentSubmitState);
+  updateConsentSubmitState();
+
+  document.getElementById('consentForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('button[type="submit"]');
-    const origText = btn ? btn.innerHTML : 'Begin Session &rarr;';
+    if (btn?.getAttribute('aria-disabled') === 'true') return;
+    const origText = btn ? btn.innerHTML : 'Continue &rarr;';
     if (btn) {
-      btn.disabled = true;
+      btn.setAttribute('aria-disabled', 'true');
       btn.innerHTML = 'Connecting...';
     }
 
-    const fullName = document.getElementById('fullName').value.trim();
-    const email = document.getElementById('email').value.trim();
-
     try {
-      const resp = await apiFetch('/recruit/session/start', {
+      const ageConfirmed = ageConfirm.checked;
+      const researchParticipationConsent = consentAgree.checked;
+      const resp = await apiFetch('/recruit/consent', {
         method: 'POST',
         body: JSON.stringify({
-          full_name: fullName,
-          email: email,
+          choices: { research_telemetry: researchParticipationConsent },
+          confirmed_18_plus: ageConfirmed,
           device_class: window.innerWidth < 768 ? 'mobile' : 'desktop',
           input_modality: 'ontouchstart' in window ? 'touch' : 'mouse'
         })
@@ -268,19 +274,8 @@ function renderConsent(app) {
         state.worldSequence = data.world_sequence;
         state.seeds = data.seeds;
 
-        // Record Consent
-        await apiFetch('/recruit/consent', {
-          method: 'POST',
-          body: JSON.stringify({
-            session_id: state.sessionId,
-            consent_text_version: '2026-10-v2',
-            choices: { research_telemetry: true },
-            confirmed_18_plus: true
-          })
-        });
-
-        logEvent('consent', 'consent_accepted', { full_name: fullName });
-        state.screen = 'accessibility';
+        logEvent('consent', 'consent_accepted');
+        state.screen = 'identity';
         renderScreen();
       } else {
         throw new Error('Missing session ID');
@@ -288,6 +283,68 @@ function renderConsent(app) {
     } catch (err) {
       alert(`Unable to initialize session: ${err.message || 'Please check connection.'}`);
       console.error(err);
+      if (btn) {
+        updateConsentSubmitState();
+        btn.innerHTML = origText;
+      }
+    }
+  });
+}
+
+function renderIdentity(app) {
+  app.innerHTML = `
+    <div class="space-y-6">
+      <div class="border-b border-[var(--grid-border)] pb-4 text-center">
+        <span class="act-badge">Participant Details</span>
+        <h1 class="text-3xl font-serif text-[var(--text-primary)]">About You</h1>
+      </div>
+
+      <form id="identityForm" class="space-y-4 pt-2">
+        <div>
+          <label class="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1">Full Name *</label>
+          <input type="text" id="fullName" required class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="Your name">
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1">Email Address *</label>
+          <input type="email" id="email" required class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="you@example.com">
+        </div>
+        <div class="pt-4 flex justify-end">
+          <button type="submit" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition">
+            Begin Session &rarr;
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.getElementById('identityForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const origText = btn ? btn.innerHTML : 'Begin Session &rarr;';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = 'Connecting...';
+    }
+
+    try {
+      const resp = await apiFetch('/recruit/identity', {
+        method: 'POST',
+        body: JSON.stringify({
+          session_id: state.sessionId,
+          full_name: document.getElementById('fullName').value.trim(),
+          email: document.getElementById('email').value.trim()
+        })
+      });
+      if (!resp || !resp.ok) {
+        const errData = resp ? await resp.json().catch(() => ({})) : {};
+        throw new Error(errData.detail || (resp ? `Server returned ${resp.status}` : 'No response from server'));
+      }
+
+      logEvent('identity', 'identity_submitted');
+      state.screen = 'accessibility';
+      renderScreen();
+    } catch (err) {
+      alert(`Unable to continue: ${err.message || 'Please check connection.'}`);
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = origText;

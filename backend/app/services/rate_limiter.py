@@ -37,3 +37,21 @@ upload_limiter = SimpleRateLimiter(
 form_limiter = SimpleRateLimiter(
     max_requests=10, window_seconds=60, detail="Submission rate limit reached. Please wait a moment."
 )
+
+
+recruit_session_start_minute_limiter = SimpleRateLimiter(
+    max_requests=10,
+    window_seconds=60,
+    detail="Too many session-start requests. Please wait a moment.",
+)
+recruit_session_start_hour_limiter = SimpleRateLimiter(
+    max_requests=60,
+    window_seconds=3600,
+    detail="Too many session-start requests. Please try again later.",
+)
+
+
+def recruit_session_start_limiter(request: Request):
+    """Apply both approved per-IP limits to atomic consent/session creation."""
+    recruit_session_start_minute_limiter(request)
+    recruit_session_start_hour_limiter(request)

@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
 from app.db.session import get_db
+from app.core.config import RECRUIT_CONSENT_COPY
 from app.models.recruit import (
     DBApplicantIdentity, DBSession, DBConsentRecord, DBAccessibilityProfile,
     DBWarmupBaseline, DBTaskAssignment, DBSJTResponse, DBEvidence
@@ -16,6 +17,7 @@ from app.services.sjt_engine import (
     get_public_sjt_payload, score_sjt_responses, get_config_hash
 )
 from app.services.telemetry_engine import ingest_telemetry_batch
+from app.services.rate_limiter import recruit_session_start_limiter
 
 router = APIRouter(prefix="/recruit", tags=["Recruitment"])
 
@@ -40,18 +42,17 @@ LATIN_SQUARE_7 = [
     ["W4", "W3", "W5", "W2", "W6", "W1", "W7"]
 ]
 
-class StartSessionRequest(BaseModel):
+class IdentityRequest(BaseModel):
+    session_id: str
     full_name: str = Field(..., min_length=2, max_length=150)
     email: str = Field(..., min_length=5, max_length=150)
     phone_or_contact: Optional[str] = Field(None, max_length=50)
-    device_class: Optional[str] = "desktop"
-    input_modality: Optional[str] = "mouse"
 
 class ConsentRequest(BaseModel):
-    session_id: str
-    consent_text_version: str
-    choices: Dict[str, bool] = {}
+    choices: Dict[str, bool] = Field(default_factory=dict)
     confirmed_18_plus: bool = True
+    device_class: Optional[str] = "desktop"
+    input_modality: Optional[str] = "mouse"
 
 class AccessibilityRequest(BaseModel):
     session_id: str
@@ -77,8 +78,26 @@ class TelemetryBatchRequest(BaseModel):
 class CompleteSessionRequest(BaseModel):
     session_id: str
 
-@router.post("/session/start")
-def start_session(req: StartSessionRequest, db: Session = Depends(get_db)):
+def _has_affirmative_consent(db: Session, session_id: str) -> bool:
+    return db.exec(
+        select(DBConsentRecord).where(DBConsentRecord.session_id == session_id)
+    ).first() is not None
+
+
+def _require_consented_session(db: Session, session_id: str) -> DBSession:
+    session_obj = db.get(DBSession, session_id)
+    if not session_obj:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if not _has_affirmative_consent(db, session_id):
+        raise HTTPException(status_code=403, detail="Affirmative consent is required")
+    return session_obj
+
+
+@router.post("/consent", dependencies=[Depends(recruit_session_start_limiter)])
+def submit_consent(req: ConsentRequest, db: Session = Depends(get_db)):
+    if not req.confirmed_18_plus or not req.choices.get("research_telemetry"):
+        raise HTTPException(status_code=400, detail="Affirmative consent is required")
+
     session_id = str(uuid.uuid4())
     config_hash = get_config_hash()
 
@@ -101,20 +120,11 @@ def start_session(req: StartSessionRequest, db: Session = Depends(get_db)):
     ]
     seeds = {mg: random.randint(100000, 999999) for mg in all_mg_ids}
 
-    # Store identity separately
-    identity = DBApplicantIdentity(
-        session_id=session_id,
-        full_name=req.full_name,
-        email=req.email,
-        phone_or_contact=req.phone_or_contact
-    )
-    db.add(identity)
-
-    # Store session
+    # Consent, pseudonymous session, and task assignment are created together.
     session_obj = DBSession(
         session_id=session_id,
-        status="INIT",
-        current_screen="consent",
+        status="CONSENTED",
+        current_screen="identity",
         order_id=chosen_order_id,
         config_hash=config_hash,
         device_class=req.device_class,
@@ -131,7 +141,19 @@ def start_session(req: StartSessionRequest, db: Session = Depends(get_db)):
     )
     db.add(assignment)
 
-    db.commit()
+    consent = DBConsentRecord(
+        session_id=session_id,
+        consent_text_version=RECRUIT_CONSENT_COPY["version"],
+        choices_json=json.dumps(req.choices),
+        confirmed_18_plus=req.confirmed_18_plus
+    )
+    db.add(consent)
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
     return {
         "status": "SUCCESS",
@@ -141,30 +163,31 @@ def start_session(req: StartSessionRequest, db: Session = Depends(get_db)):
         "seeds": seeds
     }
 
-@router.post("/consent")
-def submit_consent(req: ConsentRequest, db: Session = Depends(get_db)):
-    session_obj = db.get(DBSession, req.session_id)
-    if not session_obj:
-        raise HTTPException(status_code=404, detail="Session not found")
+@router.post("/identity")
+def submit_identity(req: IdentityRequest, db: Session = Depends(get_db)):
+    session_obj = _require_consented_session(db, req.session_id)
+    if db.get(DBApplicantIdentity, req.session_id):
+        raise HTTPException(status_code=409, detail="Identity already submitted")
 
-    consent = DBConsentRecord(
+    identity = DBApplicantIdentity(
         session_id=req.session_id,
-        consent_text_version=req.consent_text_version,
-        choices_json=json.dumps(req.choices),
-        confirmed_18_plus=req.confirmed_18_plus
+        full_name=req.full_name,
+        email=req.email,
+        phone_or_contact=req.phone_or_contact
     )
-    db.add(consent)
-    session_obj.status = "CONSENTED"
+    db.add(identity)
     session_obj.current_screen = "accessibility"
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
     return {"status": "SUCCESS", "session_id": req.session_id}
 
 @router.post("/accessibility")
 def save_accessibility(req: AccessibilityRequest, db: Session = Depends(get_db)):
-    session_obj = db.get(DBSession, req.session_id)
-    if not session_obj:
-        raise HTTPException(status_code=404, detail="Session not found")
+    session_obj = _require_consented_session(db, req.session_id)
 
     profile = db.get(DBAccessibilityProfile, req.session_id)
     if not profile:
@@ -184,9 +207,7 @@ def save_accessibility(req: AccessibilityRequest, db: Session = Depends(get_db))
 
 @router.post("/warmup")
 def submit_warmup(req: WarmupRequest, db: Session = Depends(get_db)):
-    session_obj = db.get(DBSession, req.session_id)
-    if not session_obj:
-        raise HTTPException(status_code=404, detail="Session not found")
+    session_obj = _require_consented_session(db, req.session_id)
 
     baseline = DBWarmupBaseline(
         session_id=req.session_id,
@@ -210,9 +231,7 @@ def get_public_sjt():
 
 @router.post("/sjt/submit")
 def submit_sjt(req: SJTSubmitRequest, db: Session = Depends(get_db)):
-    session_obj = db.get(DBSession, req.session_id)
-    if not session_obj:
-        raise HTTPException(status_code=404, detail="Session not found")
+    session_obj = _require_consented_session(db, req.session_id)
 
     # Score server-side
     try:
@@ -274,6 +293,7 @@ def submit_sjt(req: SJTSubmitRequest, db: Session = Depends(get_db)):
 
 @router.post("/telemetry")
 def submit_telemetry(req: TelemetryBatchRequest, db: Session = Depends(get_db)):
+    _require_consented_session(db, req.session_id)
     try:
         result = ingest_telemetry_batch(db, req.session_id, req.events)
         return {"status": "SUCCESS", "result": result}
@@ -284,9 +304,7 @@ def submit_telemetry(req: TelemetryBatchRequest, db: Session = Depends(get_db)):
 
 @router.post("/complete")
 def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db)):
-    session_obj = db.get(DBSession, req.session_id)
-    if not session_obj:
-        raise HTTPException(status_code=404, detail="Session not found")
+    session_obj = _require_consented_session(db, req.session_id)
 
     session_obj.status = "COMPLETE"
     session_obj.current_screen = "complete"

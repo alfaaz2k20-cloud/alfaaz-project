@@ -1,5 +1,23 @@
 {
   "version": "placeholder-v1",
+  "interim": true,
+  "candidate_notice": {
+    "interim": true,
+    "lines": [
+      "<strong>Estimated Total Time:</strong> ~20–25 minutes (SJT + brief exploratory micro-tasks).",
+      "<strong>Voluntary Nature:</strong> You may pause, skip tasks, or conclude at any time without penalty. Missing or skipped sections are recorded neutrally as insufficient data, never as a low score.",
+      "<strong>Simulated Partners:</strong> Some interactive tasks feature computer-controlled simulated characters. Their behavior is automated and scripted.",
+      "<strong>Data & Research Notice:</strong> This is a calibration-stage research instrument for unpaid volunteer recruitment, not a validated selection test. All raw telemetry is recorded under a pseudonymous session identifier."
+    ]
+  },
+  "age_confirmation": {
+    "interim": true,
+    "label": "I confirm that I am 18 years of age or older."
+  },
+  "research_participation": {
+    "interim": true,
+    "label": "I understand and agree to participate in this research session."
+  },
   "notice_title": "__MISSING__",
   "notice_body": "__MISSING__",
   "volunteer_terms": "__MISSING__",
