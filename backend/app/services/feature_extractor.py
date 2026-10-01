@@ -178,7 +178,7 @@ def _extract_A3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
             feature_name="error_detection_sensitivity",
             value_raw=None,
             valid=False,
-            flags_json=json.dumps(["feature_not_implemented", "INSUFFICIENT_OBSERVATIONS"])
+            flags_json=json.dumps(["feature_not_implemented"])
         ),
         DBFeature(
             session_id=session_id,
@@ -186,7 +186,7 @@ def _extract_A3(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
             feature_name="false_alarm_rate",
             value_raw=None,
             valid=False,
-            flags_json=json.dumps(["feature_not_implemented", "INSUFFICIENT_OBSERVATIONS"])
+            flags_json=json.dumps(["feature_not_implemented"])
         )
     ]
 
@@ -201,7 +201,7 @@ def _quarantined_stub(session_id: str, mini_game: str, feature_name: str) -> Lis
             feature_name=feature_name,
             value_raw=None,
             valid=False,
-            flags_json=json.dumps(["feature_not_implemented", "INSUFFICIENT_OBSERVATIONS"])
+            flags_json=json.dumps(["feature_not_implemented"])
         )
     ]
 

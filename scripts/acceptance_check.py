@@ -245,6 +245,7 @@ def run_acceptance_checks() -> List[Tuple[int, str, str, str]]:
     # --------------------------------------------------------------------------
     try:
         with Session(engine) as db:
+            # A1 sensitivity: high accuracy vs low accuracy
             s_a1_high = str(uuid.uuid4())
             s_a1_low = str(uuid.uuid4())
             db.add_all([
@@ -255,48 +256,79 @@ def run_acceptance_checks() -> List[Tuple[int, str, str, str]]:
                 DBTelemetryEvent(session_id=s_a1_low, seq=1, segment_id=1, t_ms=100.0, screen="game", mini_game="A1", action="document_filed", data_json=json.dumps({"is_correct": False, "dwell_ms": 2000.0})),
                 DBTelemetryEvent(session_id=s_a1_low, seq=2, segment_id=1, t_ms=200.0, screen="game", mini_game="A1", action="document_filed", data_json=json.dumps({"is_correct": True, "dwell_ms": 2000.0})),
             ])
+            # A2 sensitivity: high precision vs low precision
+            s_a2_high = str(uuid.uuid4())
+            s_a2_low = str(uuid.uuid4())
+            db.add_all([
+                DBSession(session_id=s_a2_high, status="GAMES"),
+                DBSession(session_id=s_a2_low, status="GAMES"),
+                DBTelemetryEvent(session_id=s_a2_high, seq=1, segment_id=1, t_ms=100.0, screen="game", mini_game="A2", action="decision_logged", data_json=json.dumps({"is_correct": True})),
+                DBTelemetryEvent(session_id=s_a2_high, seq=2, segment_id=1, t_ms=200.0, screen="game", mini_game="A2", action="decision_logged", data_json=json.dumps({"is_correct": True})),
+                DBTelemetryEvent(session_id=s_a2_low, seq=1, segment_id=1, t_ms=100.0, screen="game", mini_game="A2", action="decision_logged", data_json=json.dumps({"is_correct": False})),
+                DBTelemetryEvent(session_id=s_a2_low, seq=2, segment_id=1, t_ms=200.0, screen="game", mini_game="A2", action="decision_logged", data_json=json.dumps({"is_correct": True})),
+            ])
             db.commit()
 
-            f_high = {f.feature_name: f.value_raw for f in extract_session_features(db, s_a1_high) if f.mini_game == "A1"}
-            f_low = {f.feature_name: f.value_raw for f in extract_session_features(db, s_a1_low) if f.mini_game == "A1"}
+            f_a1_h = {f.feature_name: f.value_raw for f in extract_session_features(db, s_a1_high) if f.mini_game == "A1"}
+            f_a1_l = {f.feature_name: f.value_raw for f in extract_session_features(db, s_a1_low) if f.mini_game == "A1"}
+            f_a2_h = {f.feature_name: f.value_raw for f in extract_session_features(db, s_a2_high) if f.mini_game == "A2"}
+            f_a2_l = {f.feature_name: f.value_raw for f in extract_session_features(db, s_a2_low) if f.mini_game == "A2"}
 
-            if f_high["classification_rule_adherence_rate"] > f_low["classification_rule_adherence_rate"]:
-                results.append((21, "Feature sensitivity: A1/A2 respond in expected direction", "PASS", "tests/test_gate6_synthetic_profiles.py:test_a1_sensitivity_and_noise_invariance"))
+            a1_sens = f_a1_h["classification_rule_adherence_rate"] > f_a1_l["classification_rule_adherence_rate"]
+            a2_sens = f_a2_h["exception_flagging_precision"] > f_a2_l["exception_flagging_precision"]
+
+            if a1_sens and a2_sens:
+                results.append((21, "Feature sensitivity: A1 & A2 respond in expected direction", "PASS", "tests/test_gate6_synthetic_profiles.py:74,127"))
             else:
-                results.append((21, "Feature sensitivity: A1/A2 respond in expected direction", "FAIL", f"Expected high > low, got {f_high} vs {f_low}"))
+                results.append((21, "Feature sensitivity: A1 & A2 respond in expected direction", "FAIL", f"A1 sens={a1_sens}, A2 sens={a2_sens}"))
     except Exception as e:
-        results.append((21, "Feature sensitivity: A1/A2 respond in expected direction", "FAIL", str(e)))
+        results.append((21, "Feature sensitivity: A1 & A2 respond in expected direction", "FAIL", str(e)))
 
     # --------------------------------------------------------------------------
     # Check 22: Feature noise invariance (unquarantined extractors A1, A2)
     # --------------------------------------------------------------------------
     try:
         with Session(engine) as db:
-            s_clean = str(uuid.uuid4())
-            s_noisy = str(uuid.uuid4())
+            # A1 noise invariance
+            s_a1_clean = str(uuid.uuid4())
+            s_a1_noisy = str(uuid.uuid4())
             db.add_all([
-                DBSession(session_id=s_clean, status="GAMES"),
-                DBSession(session_id=s_noisy, status="GAMES"),
-                # Clean stream
-                DBTelemetryEvent(session_id=s_clean, seq=1, segment_id=1, t_ms=100.0, screen="game", mini_game="A2", action="decision_logged", data_json=json.dumps({"is_correct": True})),
-                DBTelemetryEvent(session_id=s_clean, seq=2, segment_id=1, t_ms=200.0, screen="game", mini_game="A2", action="decision_logged", data_json=json.dumps({"is_correct": True})),
-                # Noisy stream: identical decisions + irrelevant mouse/scroll events
-                DBTelemetryEvent(session_id=s_noisy, seq=1, segment_id=1, t_ms=50.0, screen="game", mini_game="A2", action="mouse_moved", data_json=json.dumps({"x": 10})),
-                DBTelemetryEvent(session_id=s_noisy, seq=2, segment_id=1, t_ms=100.0, screen="game", mini_game="A2", action="decision_logged", data_json=json.dumps({"is_correct": True})),
-                DBTelemetryEvent(session_id=s_noisy, seq=3, segment_id=1, t_ms=150.0, screen="game", mini_game="A2", action="scroll_event"),
-                DBTelemetryEvent(session_id=s_noisy, seq=4, segment_id=1, t_ms=200.0, screen="game", mini_game="A2", action="decision_logged", data_json=json.dumps({"is_correct": True})),
+                DBSession(session_id=s_a1_clean, status="GAMES"),
+                DBSession(session_id=s_a1_noisy, status="GAMES"),
+                DBTelemetryEvent(session_id=s_a1_clean, seq=1, segment_id=1, t_ms=100.0, screen="game", mini_game="A1", action="document_filed", data_json=json.dumps({"is_correct": True, "dwell_ms": 2000.0})),
+                # Noisy stream
+                DBTelemetryEvent(session_id=s_a1_noisy, seq=1, segment_id=1, t_ms=50.0, screen="game", mini_game="A1", action="mouse_moved", data_json=json.dumps({"x": 10})),
+                DBTelemetryEvent(session_id=s_a1_noisy, seq=2, segment_id=1, t_ms=100.0, screen="game", mini_game="A1", action="document_filed", data_json=json.dumps({"is_correct": True, "dwell_ms": 2000.0})),
+                DBTelemetryEvent(session_id=s_a1_noisy, seq=3, segment_id=1, t_ms=150.0, screen="game", mini_game="A1", action="scroll_event"),
+            ])
+            # A2 noise invariance
+            s_a2_clean = str(uuid.uuid4())
+            s_a2_noisy = str(uuid.uuid4())
+            db.add_all([
+                DBSession(session_id=s_a2_clean, status="GAMES"),
+                DBSession(session_id=s_a2_noisy, status="GAMES"),
+                DBTelemetryEvent(session_id=s_a2_clean, seq=1, segment_id=1, t_ms=100.0, screen="game", mini_game="A2", action="decision_logged", data_json=json.dumps({"is_correct": True})),
+                # Noisy stream
+                DBTelemetryEvent(session_id=s_a2_noisy, seq=1, segment_id=1, t_ms=50.0, screen="game", mini_game="A2", action="mouse_moved", data_json=json.dumps({"x": 10})),
+                DBTelemetryEvent(session_id=s_a2_noisy, seq=2, segment_id=1, t_ms=100.0, screen="game", mini_game="A2", action="decision_logged", data_json=json.dumps({"is_correct": True})),
+                DBTelemetryEvent(session_id=s_a2_noisy, seq=3, segment_id=1, t_ms=150.0, screen="game", mini_game="A2", action="scroll_event"),
             ])
             db.commit()
 
-            f_clean = {f.feature_name: f.value_raw for f in extract_session_features(db, s_clean) if f.mini_game == "A2"}
-            f_noisy = {f.feature_name: f.value_raw for f in extract_session_features(db, s_noisy) if f.mini_game == "A2"}
+            f_a1_c = {f.feature_name: f.value_raw for f in extract_session_features(db, s_a1_clean) if f.mini_game == "A1"}
+            f_a1_n = {f.feature_name: f.value_raw for f in extract_session_features(db, s_a1_noisy) if f.mini_game == "A1"}
+            f_a2_c = {f.feature_name: f.value_raw for f in extract_session_features(db, s_a2_clean) if f.mini_game == "A2"}
+            f_a2_n = {f.feature_name: f.value_raw for f in extract_session_features(db, s_a2_noisy) if f.mini_game == "A2"}
 
-            if f_clean["exception_flagging_precision"] == f_noisy["exception_flagging_precision"]:
-                results.append((22, "Feature noise invariance: A1/A2 invariant to irrelevant events", "PASS", "tests/test_gate6_synthetic_profiles.py:test_a2_sensitivity_and_noise_invariance"))
+            a1_inv = f_a1_c["classification_rule_adherence_rate"] == f_a1_n["classification_rule_adherence_rate"]
+            a2_inv = f_a2_c["exception_flagging_precision"] == f_a2_n["exception_flagging_precision"]
+
+            if a1_inv and a2_inv:
+                results.append((22, "Feature noise invariance: A1 & A2 invariant to irrelevant events", "PASS", "tests/test_gate6_synthetic_profiles.py:74,127"))
             else:
-                results.append((22, "Feature noise invariance: A1/A2 invariant to irrelevant events", "FAIL", f"Values differ under noise: {f_clean} vs {f_noisy}"))
+                results.append((22, "Feature noise invariance: A1 & A2 invariant to irrelevant events", "FAIL", f"A1 inv={a1_inv}, A2 inv={a2_inv}"))
     except Exception as e:
-        results.append((22, "Feature noise invariance: A1/A2 invariant to irrelevant events", "FAIL", str(e)))
+        results.append((22, "Feature noise invariance: A1 & A2 invariant to irrelevant events", "FAIL", str(e)))
 
     return results
 
