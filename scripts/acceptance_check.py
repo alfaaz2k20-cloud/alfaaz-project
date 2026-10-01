@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 from sqlmodel import Session, create_engine, SQLModel, select
 from app.models.recruit import (
-    DBSession, DBTelemetryEvent, DBFeature, DBEvidence, DBSJTResponse, DBDataQualityFlag
+    DBSession, DBTelemetryEvent, DBFeature, DBEvidence, DBSJTResponse, DBDataQualityFlag, DBTaskAssignment
 )
 from app.services.sjt_engine import (
     verify_and_load_configs,
@@ -112,7 +112,34 @@ def run_acceptance_checks() -> List[Tuple[int, str, str, str]]:
     # --------------------------------------------------------------------------
     # Check 6: World order assignment balanced across 14 simulated sessions per row
     # --------------------------------------------------------------------------
-    results.append((6, "World order counterbalancing (14-row Latin design)", "NOT VERIFIED", "Pending Step R4"))
+    try:
+        from app.services.world_order import verify_latin_square_balance, assign_world_order
+        is_balanced, balance_msg = verify_latin_square_balance()
+        if not is_balanced:
+            results.append((6, "World order counterbalancing (14-row Latin design)", "FAIL", balance_msg))
+        else:
+            sim_engine = create_engine("sqlite:///:memory:")
+            SQLModel.metadata.create_all(sim_engine)
+            with Session(sim_engine) as sim_db:
+                row_counts = {i: 0 for i in range(14)}
+                for _ in range(140):
+                    sim_sid = str(uuid.uuid4())
+                    order_id, seq, seeds = assign_world_order(sim_db, sim_sid)
+                    row_counts[order_id] += 1
+                    sim_db.add(DBTaskAssignment(
+                        session_id=sim_sid,
+                        world_order_id=order_id,
+                        world_sequence_json=json.dumps(seq),
+                        seeds_json=json.dumps(seeds)
+                    ))
+                    sim_db.commit()
+
+            if all(cnt == 10 for cnt in row_counts.values()):
+                results.append((6, "World order counterbalancing (14-row Latin design)", "PASS", "backend/app/services/world_order.py:40 (140 sessions -> exactly 10/row)"))
+            else:
+                results.append((6, "World order counterbalancing (14-row Latin design)", "FAIL", f"Imbalanced allocation across 140 sessions: {row_counts}"))
+    except Exception as e:
+        results.append((6, "World order counterbalancing (14-row Latin design)", "FAIL", str(e)))
 
     # --------------------------------------------------------------------------
     # Check 7: Nothing stored before consent; identity rejected without consent; consent and session atomic

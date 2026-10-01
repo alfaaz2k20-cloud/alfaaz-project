@@ -1,6 +1,5 @@
 import uuid
 import json
-import random
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -26,26 +25,16 @@ from app.services.rate_limiter import (
 
 router = APIRouter(prefix="/recruit", tags=["Recruitment"])
 
-# Williams-type balanced Latin square for 7 worlds (14 balanced sequences)
-# Worlds: W1 (The Frequency), W2 (The Archive), W3 (The Shared Canvas),
-#         W4 (The Shifting Grid), W5 (The Hidden Gallery), W6 (The Broken Tool), W7 (The Repetition)
-LATIN_SQUARE_7 = [
-    ["W1", "W2", "W7", "W3", "W6", "W4", "W5"],
-    ["W2", "W3", "W1", "W4", "W7", "W5", "W6"],
-    ["W3", "W4", "W2", "W5", "W1", "W6", "W7"],
-    ["W4", "W5", "W3", "W6", "W2", "W7", "W1"],
-    ["W5", "W6", "W4", "W7", "W3", "W1", "W2"],
-    ["W6", "W7", "W5", "W1", "W4", "W2", "W3"],
-    ["W7", "W1", "W6", "W2", "W5", "W3", "W4"],
-    # Reverse rows for full first-order balance
-    ["W5", "W4", "W6", "W3", "W7", "W2", "W1"],
-    ["W6", "W5", "W7", "W4", "W1", "W3", "W2"],
-    ["W7", "W6", "W1", "W5", "W2", "W4", "W3"],
-    ["W1", "W7", "W2", "W6", "W3", "W5", "W4"],
-    ["W2", "W1", "W3", "W7", "W4", "W6", "W5"],
-    ["W3", "W2", "W4", "W1", "W5", "W7", "W6"],
-    ["W4", "W3", "W5", "W2", "W6", "W1", "W7"]
-]
+from app.services.world_order import (
+    LATIN_SQUARE_14,
+    assign_world_order,
+    get_world_order_distribution,
+    verify_latin_square_balance,
+    assignment_lock
+)
+
+# Maintain alias for backward compatibility
+LATIN_SQUARE_7 = LATIN_SQUARE_14
 
 class IdentityRequest(BaseModel):
     session_id: str
@@ -106,59 +95,44 @@ def submit_consent(req: ConsentRequest, db: Session = Depends(get_db)):
     session_id = str(uuid.uuid4())
     config_hash = get_config_hash()
 
-    # Determine least-used Latin square order ID
-    order_counts = {i: 0 for i in range(len(LATIN_SQUARE_7))}
-    assignments = db.exec(select(DBTaskAssignment.world_order_id)).all()
-    for o_id in assignments:
-        if o_id in order_counts:
-            order_counts[o_id] += 1
+    # Protect assignment with transaction/locking per Addendum 1 Section 7
+    with assignment_lock:
+        chosen_order_id, world_sequence, seeds = assign_world_order(db, session_id)
 
-    min_count = min(order_counts.values())
-    least_used_orders = [o_id for o_id, count in order_counts.items() if count == min_count]
-    chosen_order_id = random.choice(least_used_orders)
-    world_sequence = LATIN_SQUARE_7[chosen_order_id]
+        # Consent, pseudonymous session, and task assignment are created together.
+        session_obj = DBSession(
+            session_id=session_id,
+            status="CONSENTED",
+            current_screen="identity",
+            order_id=chosen_order_id,
+            config_hash=config_hash,
+            device_class=req.device_class,
+            input_modality=req.input_modality
+        )
+        db.add(session_obj)
 
-    # Generate cryptographically secure per-minigame random seeds
-    all_mg_ids = [
-        "F1", "F2", "F3", "A1", "A2", "A3", "C1", "C2", "C3",
-        "E1", "E2", "E3", "Q1", "Q2", "Q3", "CR1", "CR2", "CR3", "M1", "M2", "M3"
-    ]
-    seeds = {mg: random.randint(100000, 999999) for mg in all_mg_ids}
+        # Store assignment
+        assignment = DBTaskAssignment(
+            session_id=session_id,
+            world_order_id=chosen_order_id,
+            world_sequence_json=json.dumps(world_sequence),
+            seeds_json=json.dumps(seeds)
+        )
+        db.add(assignment)
 
-    # Consent, pseudonymous session, and task assignment are created together.
-    session_obj = DBSession(
-        session_id=session_id,
-        status="CONSENTED",
-        current_screen="identity",
-        order_id=chosen_order_id,
-        config_hash=config_hash,
-        device_class=req.device_class,
-        input_modality=req.input_modality
-    )
-    db.add(session_obj)
+        consent = DBConsentRecord(
+            session_id=session_id,
+            consent_text_version=RECRUIT_CONSENT_COPY["version"],
+            choices_json=json.dumps(req.choices),
+            confirmed_18_plus=req.confirmed_18_plus
+        )
+        db.add(consent)
 
-    # Store assignment
-    assignment = DBTaskAssignment(
-        session_id=session_id,
-        world_order_id=chosen_order_id,
-        world_sequence_json=json.dumps(world_sequence),
-        seeds_json=json.dumps(seeds)
-    )
-    db.add(assignment)
-
-    consent = DBConsentRecord(
-        session_id=session_id,
-        consent_text_version=RECRUIT_CONSENT_COPY["version"],
-        choices_json=json.dumps(req.choices),
-        confirmed_18_plus=req.confirmed_18_plus
-    )
-    db.add(consent)
-
-    try:
-        db.commit()
-    except Exception:
-        db.rollback()
-        raise
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
 
     return {
         "status": "SUCCESS",
