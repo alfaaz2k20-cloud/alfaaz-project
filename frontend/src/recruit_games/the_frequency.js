@@ -1,6 +1,8 @@
 /* ==========================================================================
    ALFAAZ RECRUIT — WORLD 1: THE SOUNDSCAPE (تعدد)
    Mini-games: F1 (Tuning the Hall), F2 (The Gathering Voices), F3 (The Echo of the Room)
+   Adheres to Design Freeze v1 + Addendum v1.1.
+   Emits raw behavioral telemetry only (no client-authored scores or correctness).
    ========================================================================== */
 
 import { renderTutorialCard } from './index.js';
@@ -22,42 +24,95 @@ export function runTheFrequency(context, renderHeader) {
 }
 
 // --------------------------------------------------------------------------
-// F1: Tuning the Hall
+// F1: Tuning the Hall (6 trials: Cues x task demand)
+// Conditions: accommodate, maintain_objective, clarify
 // --------------------------------------------------------------------------
 function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
+  let currentTrial = 0;
   let sliderVal = 50;
-  let cueOnsetTime = performance.now();
-  let firstAdjustmentTime = null;
+  let selectedAction = 'accommodate';
+  let lastInputModality = 'mouse';
   let animationFrameId = null;
 
+  const trials = [
+    {
+      stimulus_id: 'F1_T1',
+      title: 'Acoustic Note: Reverberant Strain',
+      cue_text: '"The sound in the front row has a sharp treble edge and heavy wall reflection."',
+      default_action: 'accommodate'
+    },
+    {
+      stimulus_id: 'F1_T2',
+      title: 'Acoustic Note: Effortless Resonance',
+      cue_text: '"Acoustics in the center hall are clear; resonance is balanced and effortless."',
+      default_action: 'maintain_objective'
+    },
+    {
+      stimulus_id: 'F1_T3',
+      title: 'Acoustic Note: Quiet Passage',
+      cue_text: '"The speaker is reciting a whisper passage; verse intelligibility is dipping."',
+      default_action: 'accommodate'
+    },
+    {
+      stimulus_id: 'F1_T4',
+      title: 'Acoustic Note: Ambiguous Silence',
+      cue_text: '"A sudden pause in the audio stream — could be dramatic silence or a channel fault."',
+      default_action: 'clarify'
+    },
+    {
+      stimulus_id: 'F1_T5',
+      title: 'Acoustic Note: Balanced Choral',
+      cue_text: '"Choral recitation is balanced and rhythm is completely stable throughout the room."',
+      default_action: 'maintain_objective'
+    },
+    {
+      stimulus_id: 'F1_T6',
+      title: 'Acoustic Note: Projected Forte',
+      cue_text: '"Vocal projection is peaking sharply on dramatic verse accents in the hall."',
+      default_action: 'accommodate'
+    }
+  ];
+
   function render() {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader('Part 1: Tuning the Hall', 'Calibrating the soundscape for the poetry recital.')}
+          ${renderHeader('Part 1: Tuning the Hall', 'Calibrating the soundscape for the poetry recital across changing acoustic moments.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>`,
-            goal: 'Dial the audio frequency into the comfortable, warm zone.',
+            goal: 'Observe each acoustic feedback note and adjust your approach accordingly across 6 trials.',
             steps: [
               'Review the acoustic feedback note from the setup team.',
-              'Drag the golden slider to soften high frequencies.',
-              'Observe the waveform until the green balance zone appears.'
+              'Choose your response approach: Accommodate, Maintain Baseline, or Clarify.',
+              'Adjust the acoustic slider if needed, then confirm your setting.'
             ]
           })}
         </div>
       `;
       document.getElementById('startActivityBtn')?.addEventListener('click', () => {
         inTutorial = false;
-        cueOnsetTime = performance.now();
+        currentTrial = 0;
+        sliderVal = 50;
+        selectedAction = 'accommodate';
         render();
       });
       return;
     }
 
+    const t = trials[currentTrial];
+
     app.innerHTML = `
       <div class="animate-fadeIn">
-        ${renderHeader('Part 1: Tuning the Hall', 'Adjust the acoustic slider until the voice feels warm and balanced.')}
+        <div class="flex justify-between items-center mb-2">
+          ${renderHeader('Part 1: Tuning the Hall', 'Adjust the acoustic profile to support the recital.')}
+          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Trial ${currentTrial + 1} of 6</span>
+        </div>
 
         <!-- Acoustic Dialogue Note -->
         <div class="p-4 bg-amber-50/80 border border-[var(--accent-gold)]/40 rounded-sm mb-6 flex items-center gap-3 shadow-xs">
@@ -65,8 +120,27 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
           </div>
           <div>
-            <div class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Hall Acoustic Observation</div>
-            <div id="partnerSpeech" class="text-xs text-[var(--text-primary)] font-medium mt-0.5">"The sound in the front row has a sharp treble edge. Let us soften it slightly."</div>
+            <div class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-semibold">${t.title}</div>
+            <div id="partnerSpeech" class="text-xs text-[var(--text-primary)] font-medium mt-0.5">${t.cue_text}</div>
+          </div>
+        </div>
+
+        <!-- Action Approach Selection -->
+        <div class="mb-5">
+          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-medium">Select Operational Response:</div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button type="button" class="f1-action-btn p-3 text-left border rounded-xs transition ${selectedAction === 'accommodate' ? 'border-[var(--accent-gold)] bg-amber-50/50' : 'border-[var(--grid-border)] bg-white'}" data-action="accommodate">
+              <div class="text-xs font-semibold text-[var(--text-primary)]">Accommodate</div>
+              <div class="text-[11px] text-[var(--text-secondary)] mt-0.5">Adapt acoustic filter to assist the speaker</div>
+            </button>
+            <button type="button" class="f1-action-btn p-3 text-left border rounded-xs transition ${selectedAction === 'maintain_objective' ? 'border-[var(--accent-gold)] bg-amber-50/50' : 'border-[var(--grid-border)] bg-white'}" data-action="maintain_objective">
+              <div class="text-xs font-semibold text-[var(--text-primary)]">Maintain Objective</div>
+              <div class="text-[11px] text-[var(--text-secondary)] mt-0.5">Keep baseline acoustic balance undisturbed</div>
+            </button>
+            <button type="button" class="f1-action-btn p-3 text-left border rounded-xs transition ${selectedAction === 'clarify' ? 'border-[var(--accent-gold)] bg-amber-50/50' : 'border-[var(--grid-border)] bg-white'}" data-action="clarify">
+              <div class="text-xs font-semibold text-[var(--text-primary)]">Clarify Channel</div>
+              <div class="text-[11px] text-[var(--text-secondary)] mt-0.5">Verify audio signal before adjusting</div>
+            </button>
           </div>
         </div>
 
@@ -80,17 +154,13 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
               <span class="font-mono text-sm font-semibold text-[var(--accent-gold)] bg-white px-3 py-1 border border-[var(--grid-border)]" id="sliderValDisplay">${sliderVal}</span>
               <span class="flex items-center gap-1">Bright (100) <span class="w-2 h-2 rounded-full bg-orange-500 inline-block"></span></span>
             </div>
-            <input type="range" id="freqSlider" min="0" max="100" value="${sliderVal}" class="w-full accent-[#bd6f5d] cursor-pointer h-2 bg-stone-200 rounded-lg">
-          </div>
-
-          <div id="toneFeedback" class="text-xs text-[var(--text-secondary)] mt-4 font-medium">
-            Slide toward the left to soften the sound frequency.
+            <input type="range" id="freqSlider" min="0" max="100" step="5" value="${sliderVal}" class="w-full accent-[#bd6f5d] cursor-pointer h-2 bg-stone-200 rounded-lg">
           </div>
         </div>
 
         <div class="flex justify-end">
           <button id="lockFreqBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm flex items-center gap-2">
-            Lock Acoustic Setting &rarr;
+            ${currentTrial < 5 ? 'Confirm Setting &rarr;' : 'Finish Acoustic Calibration &rarr;'}
           </button>
         </div>
       </div>
@@ -100,14 +170,12 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
     const ctx = canvas?.getContext('2d');
     const slider = document.getElementById('freqSlider');
     const valDisplay = document.getElementById('sliderValDisplay');
-    const feedback = document.getElementById('toneFeedback');
 
     let waveOffset = 0;
     function drawWave() {
       if (!ctx || !canvas) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Grid background
       ctx.strokeStyle = '#f0eeea';
       ctx.lineWidth = 1;
       for (let x = 0; x < canvas.width; x += 30) {
@@ -119,7 +187,7 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
       ctx.beginPath();
 
       const freq = 0.015 + (sliderVal / 100) * 0.05;
-      const amp = 14 + (Math.abs(sliderVal - 35) / 50) * 16;
+      const amp = 14 + (Math.abs(sliderVal - 50) / 50) * 16;
 
       for (let x = 0; x < canvas.width; x++) {
         const y = canvas.height / 2 + Math.sin(x * freq + waveOffset) * amp;
@@ -132,33 +200,65 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
     }
     drawWave();
 
+    // Action button handlers
+    app.querySelectorAll('.f1-action-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        lastInputModality = 'mouse';
+        selectedAction = btn.getAttribute('data-action');
+        app.querySelectorAll('.f1-action-btn').forEach(b => {
+          b.classList.remove('border-[var(--accent-gold)]', 'bg-amber-50/50');
+          b.classList.add('border-[var(--grid-border)]', 'bg-white');
+        });
+        btn.classList.add('border-[var(--accent-gold)]', 'bg-amber-50/50');
+        btn.classList.remove('border-[var(--grid-border)]', 'bg-white');
+      });
+    });
+
     slider?.addEventListener('input', (e) => {
-      sliderVal = parseInt(e.target.value);
+      lastInputModality = e.pointerType || 'mouse';
+      sliderVal = parseInt(e.target.value, 10);
       if (valDisplay) valDisplay.textContent = sliderVal;
-      if (!firstAdjustmentTime) firstAdjustmentTime = performance.now();
-      if (feedback) {
-        if (Math.abs(sliderVal - 35) <= 10) {
-          feedback.innerHTML = '<span class="text-emerald-700 font-semibold flex items-center justify-center gap-1">&#10003; Acoustic balance reached — warm and pleasant tone.</span>';
-        } else if (sliderVal > 35) {
-          feedback.textContent = 'Tone remains slightly sharp on highs.';
-        } else {
-          feedback.textContent = 'Tone is currently subdued.';
-        }
+      logEvent('slider_input', {
+        trial_index: currentTrial,
+        stimulus_id: t.stimulus_id,
+        slider_position_raw: sliderVal,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
+      });
+    });
+
+    slider?.addEventListener('keydown', (e) => {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+        lastInputModality = 'keyboard';
       }
-      logEvent('slider_input', { value: sliderVal });
     });
 
     document.getElementById('lockFreqBtn')?.addEventListener('click', () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      const latency = firstAdjustmentTime ? (firstAdjustmentTime - cueOnsetTime) : 1800.0;
-      const accuracy = Math.max(0, 1 - Math.abs(sliderVal - 35) / 50.0);
-      logEvent('tuning_locked', { final_value: sliderVal, latency_ms: latency, accuracy });
-      onComplete({
-        mini_game: 'F1',
-        observations_count: 1,
-        latency_ms: latency,
-        accuracy: accuracy
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+
+      logEvent('trial_submit', {
+        trial_index: currentTrial,
+        stimulus_id: t.stimulus_id,
+        action_id: selectedAction,
+        slider_position_raw: sliderVal,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
       });
+
+      if (currentTrial < 5) {
+        currentTrial++;
+        sliderVal = 50;
+        selectedAction = trials[currentTrial].default_action;
+        render();
+      } else {
+        onComplete({
+          mini_game: 'F1',
+          observations_count: 6
+        });
+      }
     });
   }
 
@@ -166,30 +266,58 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
 }
 
 // --------------------------------------------------------------------------
-// F2: The Gathering Voices
+// F2: The Gathering Voices (4 trials: Incomplete information)
+// Action choices: act, clarify, maintain
+// Controls: clear, ambiguous, misleading
 // --------------------------------------------------------------------------
 function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
-  let selectedOption = null;
+  let currentTrial = 0;
+  let selectedAction = null;
+  let lastInputModality = 'mouse';
 
-  const options = [
+  const trials = [
     {
-      id: 'F2_ASK',
-      title: 'Clarify with Kindness',
-      desc: 'Ask: "Would you like the recital microphone to sound warmer or softer?"',
-      detail: 'Checks the exact preference before making audio changes.'
+      stimulus_id: 'F2_T1',
+      speaker_role: 'Stage Director',
+      cue_text: '"The reciting poet gestures clearly toward the side monitor speaker, explicitly requesting vocal support."',
+      condition_label: 'Direct Request'
     },
     {
-      id: 'F2_TEST',
-      title: 'Gentle Test Adjustment',
-      desc: 'Lower the bass slightly and ask if that feels more balanced.',
-      detail: 'Tries a modest change to see if it immediately solves the issue.'
+      stimulus_id: 'F2_T2',
+      speaker_role: 'Rehearsal Coordinator',
+      cue_text: '"The speaker pauses mid-line with an uncertain expression; their tone is hesitant but no instruction is given."',
+      condition_label: 'Ambiguous Signal'
     },
     {
-      id: 'F2_HOLD',
-      title: 'Consult the Hall',
-      desc: 'Keep current level and invite the listeners to give live feedback.',
-      detail: 'Gathers input directly from audience members.'
+      stimulus_id: 'F2_T3',
+      speaker_role: 'Sound Technician',
+      cue_text: '"The performer delivers an impassioned verse with intense strain in their voice, as part of the theatrical performance."',
+      condition_label: 'Expressive Intensity'
+    },
+    {
+      stimulus_id: 'F2_T4',
+      speaker_role: 'Guest Accompanist',
+      cue_text: '"The accompanying percussionist has subtly altered tempo and is watching the reciter intently to re-establish synchrony."',
+      condition_label: 'Subtle Drift'
+    }
+  ];
+
+  const choices = [
+    {
+      id: 'act',
+      title: 'Act Directly',
+      desc: 'Take immediate operational action to adapt sound levels and support the speaker.'
+    },
+    {
+      id: 'clarify',
+      title: 'Clarify Intent',
+      desc: 'Seek confirmation or verify the partner’s preference before making changes.'
+    },
+    {
+      id: 'maintain',
+      title: 'Maintain Course',
+      desc: 'Preserve the ongoing acoustic cadence without premature intervention.'
     }
   ];
 
@@ -197,78 +325,113 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader('Part 2: The Gathering Voices', 'Coordinating acoustic clarity with your event colleagues.')}
+          ${renderHeader('Part 2: The Gathering Voices', 'Coordinating acoustic clarity with your event colleagues across 4 communication situations.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>`,
-            goal: 'Choose how to address ambiguous acoustic feedback.',
+            goal: 'Evaluate the communication cue in each trial and select whether to act, clarify, or maintain course.',
             steps: [
-              'Read the setup volunteer’s impression of the audio balance.',
-              'Review the three constructive communication choices.',
-              'Select the dialogue approach you would take.'
+              'Read the operational feedback and partner state description.',
+              'Assess whether information is clear, ambiguous, or misleading.',
+              'Choose your response: Act, Clarify, or Maintain.'
             ]
           })}
         </div>
       `;
       document.getElementById('startActivityBtn')?.addEventListener('click', () => {
         inTutorial = false;
+        currentTrial = 0;
+        selectedAction = null;
         render();
       });
       return;
     }
 
+    const t = trials[currentTrial];
+
     app.innerHTML = `
       <div class="animate-fadeIn">
-        ${renderHeader('Part 2: The Gathering Voices', 'A team member shares an impression. Choose your approach.')}
+        <div class="flex justify-between items-center mb-2">
+          ${renderHeader('Part 2: The Gathering Voices', 'Evaluate the communication situation and choose your course of action.')}
+          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Trial ${currentTrial + 1} of 4</span>
+        </div>
 
         <div class="p-4 bg-amber-50/80 border border-[var(--accent-gold)]/40 rounded-sm mb-6 flex items-center gap-3">
           <div class="w-9 h-9 rounded-full bg-[var(--accent-gold)] text-white flex items-center justify-center font-serif text-sm font-semibold shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
           </div>
           <div>
-            <div class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Stage Volunteer</div>
-            <div class="text-xs text-[var(--text-primary)] font-medium mt-0.5">"Something feels a bit off with the spoken audio in the center aisle, though I cannot pinpoint it."</div>
+            <div class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-semibold">${t.speaker_role}</div>
+            <div class="text-xs text-[var(--text-primary)] font-medium mt-0.5">${t.cue_text}</div>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          ${options.map(opt => `
-            <div class="f2-card p-4 bg-white border border-[var(--grid-border)] cursor-pointer hover:border-[var(--accent-gold)] hover:shadow-sm transition space-y-2" data-opt="${opt.id}">
+          ${choices.map(c => `
+            <div class="f2-card p-4 bg-white border ${selectedAction === c.id ? 'border-[var(--accent-gold)] bg-amber-50/40 shadow-sm' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition space-y-2 rounded-xs" data-action="${c.id}" tabindex="0" role="button">
               <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-[var(--accent-gold)]"></span>
-                ${opt.title}
+                <span class="w-2 h-2 rounded-full ${selectedAction === c.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
+                ${c.title}
               </div>
-              <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${opt.desc}</div>
-              <div class="text-[10px] text-[var(--accent-gold)] pt-2 border-t border-[var(--grid-border)] font-medium">${opt.detail}</div>
+              <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${c.desc}</div>
             </div>
           `).join('')}
         </div>
 
         <div class="flex justify-end">
-          <button id="f2ConfirmBtn" disabled class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm">
-            Confirm Communication &rarr;
+          <button id="f2ConfirmBtn" ${selectedAction ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm">
+            ${currentTrial < 3 ? 'Confirm Communication &rarr;' : 'Finish Coordination &rarr;'}
           </button>
         </div>
       </div>
     `;
 
     const confirmBtn = document.getElementById('f2ConfirmBtn');
+
     app.querySelectorAll('.f2-card').forEach(card => {
-      card.addEventListener('click', () => {
-        app.querySelectorAll('.f2-card').forEach(c => c.classList.remove('border-[var(--accent-gold)]', 'bg-amber-50/40', 'shadow-sm'));
+      const selectCard = (modality) => {
+        lastInputModality = modality;
+        selectedAction = card.getAttribute('data-action');
+        app.querySelectorAll('.f2-card').forEach(c => {
+          c.classList.remove('border-[var(--accent-gold)]', 'bg-amber-50/40', 'shadow-sm');
+          c.classList.add('border-[var(--grid-border)]');
+          c.querySelector('span.rounded-full')?.classList.remove('bg-[var(--accent-gold)]');
+          c.querySelector('span.rounded-full')?.classList.add('bg-stone-300');
+        });
         card.classList.add('border-[var(--accent-gold)]', 'bg-amber-50/40', 'shadow-sm');
-        selectedOption = card.getAttribute('data-opt');
+        card.classList.remove('border-[var(--grid-border)]');
+        card.querySelector('span.rounded-full')?.classList.add('bg-[var(--accent-gold)]');
+        card.querySelector('span.rounded-full')?.classList.remove('bg-stone-300');
         if (confirmBtn) confirmBtn.disabled = false;
-        logEvent('dialogue_option_selected', { option: selectedOption });
+      };
+
+      card.addEventListener('click', () => selectCard('mouse'));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          selectCard('keyboard');
+        }
       });
     });
 
     confirmBtn?.addEventListener('click', () => {
-      logEvent('ambiguity_resolved', { choice: selectedOption });
-      onComplete({
-        mini_game: 'F2',
-        observations_count: 1,
-        selected_option: selectedOption
+      logEvent('trial_submit', {
+        trial_index: currentTrial,
+        stimulus_id: t.stimulus_id,
+        action_id: selectedAction,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
       });
+
+      if (currentTrial < 3) {
+        currentTrial++;
+        selectedAction = null;
+        render();
+      } else {
+        onComplete({
+          mini_game: 'F2',
+          observations_count: 4
+        });
+      }
     });
   }
 
@@ -276,67 +439,105 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
 }
 
 // --------------------------------------------------------------------------
-// F3: The Echo of the Room
+// F3: The Echo of the Room (3 context transitions)
+// Objective constant across transitions. Acoustic environment updates. Transition events logged.
 // --------------------------------------------------------------------------
 function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
+  let currentTransition = 0;
   let hallSlider = 50;
+  let lastInputModality = 'mouse';
+
+  const transitions = [
+    {
+      stimulus_id: 'F3_T1',
+      venue_name: 'Stone Hall',
+      acoustic_shift: 'The recitation enters the vaulted stone hall. Stone surfaces generate pronounced high-frequency reverberation.',
+      objective_note: 'Constant Objective: Keep recited poetry crisp, clear, and unblurred by the environment.'
+    },
+    {
+      stimulus_id: 'F3_T2',
+      venue_name: 'Carpeted Courtyard',
+      acoustic_shift: 'The performance moves to the carpeted inner courtyard. Heavy tapestries and floor coverings deaden natural decay.',
+      objective_note: 'Constant Objective: Keep recited poetry crisp, clear, and unblurred by the environment.'
+    },
+    {
+      stimulus_id: 'F3_T3',
+      venue_name: 'Open Colonnade',
+      acoustic_shift: 'The performance concludes in the open colonnade. Exterior breeze and open air introduce low-frequency ambient drift.',
+      objective_note: 'Constant Objective: Keep recited poetry crisp, clear, and unblurred by the environment.'
+    }
+  ];
 
   function render() {
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader('Part 3: The Echo of the Room', 'Adjusting natural reverberation for spoken poetry.')}
+          ${renderHeader('Part 3: The Echo of the Room', 'Adapting acoustics across 3 distinct venue transitions while keeping verse clarity constant.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>`,
-            goal: 'Adapt natural hall acoustics to ensure every recited verse carries clearly.',
+            goal: 'Maintain the constant objective of vocal clarity as the performance moves through 3 successive environments.',
             steps: [
-              'Notice the new venue acoustic condition notice.',
-              'Adjust the reverberation dial toward crisp vocal clarity.',
-              'Lock in the setting when the acoustic check shows green.'
+              'Notice the acoustic transition notice for the new venue space.',
+              'Remember the objective: maintain crisp, intelligible verse.',
+              'Adjust the acoustic balance slider for the new space and save.'
             ]
           })}
         </div>
       `;
       document.getElementById('startActivityBtn')?.addEventListener('click', () => {
         inTutorial = false;
+        currentTransition = 0;
+        hallSlider = 50;
+        logTransitionPresented();
         render();
       });
       return;
     }
 
+    const tr = transitions[currentTransition];
+
     app.innerHTML = `
       <div class="animate-fadeIn">
-        ${renderHeader('Part 3: The Echo of the Room', 'The performance moved into the stone courtyard. Set the echo balance.')}
+        <div class="flex justify-between items-center mb-2">
+          ${renderHeader('Part 3: The Echo of the Room', 'Adapt natural acoustics as the performance transitions into a new space.')}
+          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Transition ${currentTransition + 1} of 3</span>
+        </div>
 
+        <!-- Constant Objective Banner -->
+        <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-sm mb-4 text-xs font-serif text-[var(--text-primary)] flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block"></span>
+            <strong>Constant Objective:</strong> Maintain spoken verse clarity and intelligible presence.
+          </span>
+          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">Venue: ${tr.venue_name}</span>
+        </div>
+
+        <!-- Venue Transition Notice -->
         <div class="p-4 bg-amber-50/80 border border-[var(--accent-gold)]/40 rounded-sm mb-6 flex items-center gap-3">
           <div class="w-9 h-9 rounded-full bg-[var(--accent-gold)] text-white flex items-center justify-center font-serif text-sm font-semibold shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
           </div>
           <div>
-            <div class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Courtyard Acoustic Note</div>
-            <div class="text-xs text-[var(--text-primary)] font-medium mt-0.5">"The arched stone walls create reverberation. Bring the echo down to roughly 25%."</div>
+            <div class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-semibold">${tr.venue_name} Acoustic Shift</div>
+            <div class="text-xs text-[var(--text-primary)] font-medium mt-0.5">${tr.acoustic_shift}</div>
           </div>
         </div>
 
         <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center shadow-inner">
           <div class="w-full max-w-md mx-auto">
             <div class="flex justify-between items-center text-xs text-[var(--text-secondary)] mb-2">
-              <span class="font-medium text-stone-700">Direct Clarity (0%)</span>
+              <span class="font-medium text-stone-700">Crisp Direct (0%)</span>
               <span class="font-mono text-sm font-semibold text-[var(--accent-gold)] bg-white px-3 py-1 border border-[var(--grid-border)]" id="hallValDisplay">${hallSlider}%</span>
-              <span class="font-medium text-stone-700">Full Echo (100%)</span>
+              <span class="font-medium text-stone-700">Open Ambient (100%)</span>
             </div>
-            <input type="range" id="hallSlider" min="0" max="100" value="${hallSlider}" class="w-full accent-[#bd6f5d] cursor-pointer h-2 bg-stone-200 rounded-lg">
-          </div>
-
-          <div id="hallFeedback" class="text-xs text-[var(--text-secondary)] mt-4 font-medium">
-            Adjust the slider until vocal clarity is aligned.
+            <input type="range" id="hallSlider" min="0" max="100" step="5" value="${hallSlider}" class="w-full accent-[#bd6f5d] cursor-pointer h-2 bg-stone-200 rounded-lg">
           </div>
         </div>
 
         <div class="flex justify-end">
           <button id="f3LockBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm">
-            Save Courtyard Setting &rarr;
+            ${currentTransition < 2 ? 'Save Transition Setting &rarr;' : 'Finalize Acoustic Adaptation &rarr;'}
           </button>
         </div>
       </div>
@@ -344,32 +545,59 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
 
     const slider = document.getElementById('hallSlider');
     const valDisplay = document.getElementById('hallValDisplay');
-    const feedback = document.getElementById('hallFeedback');
 
     slider?.addEventListener('input', (e) => {
-      hallSlider = parseInt(e.target.value);
+      lastInputModality = e.pointerType || 'mouse';
+      hallSlider = parseInt(e.target.value, 10);
       if (valDisplay) valDisplay.textContent = `${hallSlider}%`;
-      if (feedback) {
-        if (Math.abs(hallSlider - 25) <= 8) {
-          feedback.innerHTML = '<span class="text-emerald-700 font-semibold">&#10003; Clear spoken poetry acoustics achieved.</span>';
-        } else {
-          feedback.textContent = `Echo level at ${hallSlider}%.`;
-        }
+      logEvent('slider_input', {
+        trial_index: currentTransition,
+        stimulus_id: tr.stimulus_id,
+        slider_position_raw: hallSlider,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
+      });
+    });
+
+    slider?.addEventListener('keydown', (e) => {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+        lastInputModality = 'keyboard';
       }
-      logEvent('hall_slider_input', { value: hallSlider });
     });
 
     document.getElementById('f3LockBtn')?.addEventListener('click', () => {
-      const accuracy = Math.max(0, 1 - Math.abs(hallSlider - 25) / 50.0);
-      logEvent('hall_tuning_locked', { final_value: hallSlider, accuracy });
-      onComplete({
-        mini_game: 'F3',
-        observations_count: 1,
-        accuracy: accuracy
+      logEvent('trial_submit', {
+        trial_index: currentTransition,
+        stimulus_id: tr.stimulus_id,
+        action_id: 'update_acoustic_balance',
+        slider_position_raw: hallSlider,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
       });
+
+      if (currentTransition < 2) {
+        currentTransition++;
+        hallSlider = 50;
+        logTransitionPresented();
+        render();
+      } else {
+        onComplete({
+          mini_game: 'F3',
+          observations_count: 3
+        });
+      }
+    });
+  }
+
+  function logTransitionPresented() {
+    const tr = transitions[currentTransition];
+    logEvent('transition_presented', {
+      trial_index: currentTransition,
+      stimulus_id: tr.stimulus_id,
+      venue: tr.venue_name,
+      task_def_version: '1.0'
     });
   }
 
   render();
 }
-
