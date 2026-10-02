@@ -1,6 +1,6 @@
 /* ==========================================================================
    ALFAAZ RECRUIT — WORLD 7: THE REPETITION (تکرار)
-   Mini-games: M1 (The Wax Seal), M2 (The Courtesy Sleeves), M3 (The Evening Threshold)
+   Mini-games: M1 (The Wax Seal), M2 (The Courtesy Sleeves), M3 (The Repetition Register)
    Adheres to Design Freeze v1 + Addendum v1.1.
    Emits primitive behavioral telemetry only.
    Stopping at mandatory minimum is neutral; continuation is non-evaluative behavioral information.
@@ -145,8 +145,8 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
 }
 
 // --------------------------------------------------------------------------
-// M2: Voluntary Continuation
-// 2 mandatory units. Explicit finish-or-continue choice after minimum.
+// M2: The Courtesy Sleeves (Optional Continuation)
+// 3 mandatory units. Explicit finish-or-continue choice after minimum.
 // Up to 3 optional units. Stopping at minimum is neutral.
 // Continuation is behavioral information, not a motivation score.
 // --------------------------------------------------------------------------
@@ -471,7 +471,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
         <div class="text-xs text-[var(--text-secondary)] font-medium mb-4 flex items-center justify-between">
           <div class="flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full ${hasMetMinimum ? 'bg-emerald-600' : 'bg-[var(--accent-gold)]'} inline-block"></span>
-            <span>Ledger Row ${currentIdx + 1} of ${allUnits.length} ${hasMetMinimum ? '(Voluntary Continuation)' : '(Required Minimum)'}</span>
+            <span>Ledger Row ${currentIdx + 1} of ${allUnits.length} ${hasMetMinimum ? '(Optional Continuation)' : '(Required Minimum)'}</span>
           </div>
           <span class="text-[10px] font-mono uppercase tracking-wider ${hasMetMinimum ? 'text-emerald-800 bg-emerald-50 border-emerald-200' : 'text-amber-800 bg-amber-50 border-amber-200'} px-2 py-0.5 border rounded-xs">
             ${hasMetMinimum ? 'Optional Beyond Minimum' : 'Required Minimum (3)'}

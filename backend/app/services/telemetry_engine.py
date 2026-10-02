@@ -92,8 +92,8 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
             db.commit()
 
     FORBIDDEN_CLIENT_FIELDS = {
-        "condition_id", "correctness", "is_correct", "target_state", "target_category",
-        "target_container", "is_context_appropriate", "perseverative_choice",
+        "condition_id", "correct", "correctness", "is_correct", "target", "target_state", "target_category",
+        "target_container", "rule", "is_context_appropriate", "perseverative_choice",
         "perseverative_error", "switch_cost_latency_ms", "insight_applied_correctly",
         "spontaneous_application", "rule_adherence_score", "exploration_efficiency",
         "creative_breakthrough_flag", "deficit_detected",

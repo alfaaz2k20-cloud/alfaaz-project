@@ -435,7 +435,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           </div>
 
           <div class="mb-6 space-y-3">
-            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Select Adaptive Spatial Reframing</div>
+            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Select Adaptive Constraint Shift</div>
             ${ep.post_strategies.map(s => {
               const isSelected = revisedStrategy === s.id;
               return `

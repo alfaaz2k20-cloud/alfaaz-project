@@ -13,7 +13,7 @@ from app.services.sjt_engine import (
     verify_and_load_configs, get_public_sjt_payload, score_sjt_responses, get_config_hash
 )
 from app.services.telemetry_engine import ingest_telemetry_batch, calculate_active_duration_ms
-from app.models.recruit import DBSession, DBTelemetryEvent, DBApplicantIdentity
+from app.models.recruit import DBSession, DBTelemetryEvent, DBApplicantIdentity, DBDataQualityFlag
 from sqlmodel import Session, create_engine, SQLModel, select
 
 class TestGate2SJTAndTelemetry(unittest.TestCase):
@@ -164,6 +164,100 @@ class TestGate2SJTAndTelemetry(unittest.TestCase):
 
         dur = calculate_active_duration_ms([ev1, ev2, ev3, ev4])
         self.assertEqual(dur, 4000.0)
+
+    def test_forbidden_client_fields_stripped_and_flagged(self):
+        """Forbidden client fields are strictly stripped and flagged diagnostically."""
+        with Session(self.engine) as db:
+            session_id = str(uuid.uuid4())
+            db.add(DBSession(session_id=session_id, status="ACTIVE"))
+            db.commit()
+
+            hostile_event = {
+                "seq": 1,
+                "segment_id": 1,
+                "t_ms": 1000.0,
+                "screen": "game",
+                "mini_game": "E1",
+                "action": "tile_sorted",
+                "task_def_version": "1.0",
+                "data": {
+                    "stimulus_id": "E1_T1",
+                    "choice": "container_1",
+                    "condition_id": "rule_shift_color",
+                    "correct": True,
+                    "is_correct": True,
+                    "target": "color_blue",
+                    "rule": "COLOR",
+                    "perseverative_choice": False,
+                    "is_context_appropriate": True
+                }
+            }
+            res = ingest_telemetry_batch(db, session_id, [hostile_event])
+            self.assertEqual(res["ingested_count"], 1)
+
+            # Diagnostic flag must be recorded
+            flag = db.exec(
+                select(DBDataQualityFlag).where(
+                    DBDataQualityFlag.session_id == session_id,
+                    DBDataQualityFlag.flag == "forbidden_client_field_detected"
+                )
+            ).first()
+            self.assertIsNotNone(flag)
+            for fld in ["condition_id", "correct", "is_correct", "target", "rule", "perseverative_choice", "is_context_appropriate"]:
+                self.assertIn(fld, flag.detail)
+
+            # Event stored in DB must NOT have any forbidden fields
+            stored = db.exec(select(DBTelemetryEvent).where(DBTelemetryEvent.session_id == session_id, DBTelemetryEvent.seq == 1)).first()
+            d = json.loads(stored.data_json)
+            for fld in ["condition_id", "correct", "is_correct", "target", "rule", "perseverative_choice", "is_context_appropriate"]:
+                self.assertNotIn(fld, d)
+            self.assertIn("choice", d)
+            self.assertIn("stimulus_id", d)
+
+    def test_task_def_version_validation(self):
+        """Missing or mismatched task_def_version records appropriate diagnostic flags."""
+        with Session(self.engine) as db:
+            session_id = str(uuid.uuid4())
+            db.add(DBSession(session_id=session_id, status="ACTIVE"))
+            db.commit()
+
+            batch = [
+                {"seq": 1, "segment_id": 1, "t_ms": 1000.0, "screen": "game", "mini_game": "F1", "action": "slider_input", "data": {"stimulus_id": "F1_T1"}},
+                {"seq": 2, "segment_id": 1, "t_ms": 2000.0, "screen": "game", "mini_game": "F1", "action": "slider_input", "task_def_version": "2.0", "data": {"stimulus_id": "F1_T2"}}
+            ]
+            ingest_telemetry_batch(db, session_id, batch)
+
+            flags = db.exec(select(DBDataQualityFlag).where(DBDataQualityFlag.session_id == session_id)).all()
+            flag_names = {fl.flag for fl in flags}
+            self.assertIn("missing_task_def_version", flag_names)
+            self.assertIn("invalid_task_def_version", flag_names)
+
+    def test_pointer_stream_events_dropped_without_seq_gap_or_accounting(self):
+        """Continuous pointer events are discarded before sequence and quota accounting."""
+        with Session(self.engine) as db:
+            session_id = str(uuid.uuid4())
+            db.add(DBSession(session_id=session_id, status="ACTIVE"))
+            db.commit()
+
+            batch = [
+                {"seq": 1, "segment_id": 1, "t_ms": 100.0, "screen": "game", "mini_game": "F1", "action": "trial_presented", "task_def_version": "1.0", "data": {"stimulus_id": "F1_T1"}},
+                {"seq": 9991, "segment_id": 1, "t_ms": 150.0, "screen": "game", "mini_game": "F1", "action": "pointermove", "task_def_version": "1.0", "data": {"x": 10, "y": 20}},
+                {"seq": 9992, "segment_id": 1, "t_ms": 160.0, "screen": "game", "mini_game": "F1", "action": "mousemove", "task_def_version": "1.0", "data": {"x": 12, "y": 22}},
+                {"seq": 9993, "segment_id": 1, "t_ms": 170.0, "screen": "game", "mini_game": "F1", "action": "touchmove", "task_def_version": "1.0", "data": {"x": 14, "y": 24}},
+                {"seq": 9994, "segment_id": 1, "t_ms": 180.0, "screen": "game", "mini_game": "F1", "action": "continuous_drag", "task_def_version": "1.0", "data": {"x": 16, "y": 26}},
+                {"seq": 2, "segment_id": 1, "t_ms": 200.0, "screen": "game", "mini_game": "F1", "action": "slider_input", "task_def_version": "1.0", "data": {"stimulus_id": "F1_T1", "slider_position_raw": 50}}
+            ]
+            res = ingest_telemetry_batch(db, session_id, batch)
+            self.assertEqual(res["ingested_count"], 2)
+
+            events = db.exec(select(DBTelemetryEvent).where(DBTelemetryEvent.session_id == session_id)).all()
+            self.assertEqual(len(events), 2)
+            self.assertEqual([e.seq for e in events], [1, 2])
+
+            flags = db.exec(select(DBDataQualityFlag).where(DBDataQualityFlag.session_id == session_id)).all()
+            flag_names = {fl.flag for fl in flags}
+            self.assertNotIn("seq_gap", flag_names)
+            self.assertNotIn("seq_conflict", flag_names)
 
 if __name__ == "__main__":
     unittest.main()

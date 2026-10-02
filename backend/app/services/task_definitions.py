@@ -750,7 +750,7 @@ def reconstruct_cr1_construction_state(events: list) -> Dict[str, Any]:
 
 def reconstruct_cr2_reframing_state(events: list) -> Dict[str, Any]:
     """
-    Reconstructs CR2 Spatial Reframing state strictly from primitive events:
+    Reconstructs CR2 Constraint Shift state strictly from primitive events:
     - episode_presented (episode_id, trial_index, initial_context)
     - initial_strategy_selected (episode_id, trial_index, strategy_id)
     - constraint_shifted (episode_id, trial_index, constraint_change)
@@ -1013,7 +1013,7 @@ def reconstruct_m1_diligence_state(events: list) -> Dict[str, Any]:
 
 def reconstruct_m2_continuation_state(events: list) -> Dict[str, Any]:
     """
-    Reconstructs M2 Voluntary Continuation state strictly from primitive events:
+    Reconstructs M2 Optional Continuation state strictly from primitive events:
     - unit_presented (stimulus_id, unit_index, is_mandatory)
     - unit_action_performed (stimulus_id, unit_index, action_type)
     - unit_completed (stimulus_id, unit_index, is_mandatory)
@@ -1021,7 +1021,7 @@ def reconstruct_m2_continuation_state(events: list) -> Dict[str, Any]:
     - continuation_choice_selected (choice: 'continue' | 'conclude', optional_index)
 
     Invariants:
-    - 2 mandatory units.
+    - 3 mandatory units.
     - Explicit finish-or-continue choice after minimum.
     - Up to 3 optional units.
     - Stopping at minimum is neutral.
