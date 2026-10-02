@@ -181,7 +181,6 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
           trial_index: currentDocIdx,
           stimulus_id: doc.id,
           choice: folder,
-          dwell_ms: Math.round(dwell),
           input_modality: lastInputModality,
           task_def_version: '1.0'
         });

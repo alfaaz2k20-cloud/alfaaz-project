@@ -102,6 +102,39 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
         "dwell_ms", "response_latency_ms", "context_retrieved"
     }
 
+    ALLOWED_EVENT_DATA_FIELDS = {
+        # Identifiers & trial index
+        "trial_index", "trial_num", "unit_index", "mandatoryIdx", "optional_index",
+        "stimulus_id", "artifact_id", "episode_id", "stage_id", "slot_id",
+        "cue_id", "clue_id", "fault_id", "context_id", "step", "part_id",
+        "tool_id", "final_tool_id", "resource_id", "scenario_id", "selected_option_id", "option_id",
+        "event_id",
+
+        # Actions & choices
+        "action_id", "choice", "choice_id", "chosen_action", "chosen_slot",
+        "execution_action_id", "repair_action_id", "initial_strategy_id",
+        "revised_strategy_id", "strategy_id", "action_method", "final_method",
+        "action_type", "raw_selection", "attribution_choice", "btn",
+
+        # Parts & state descriptors
+        "parts", "final_parts", "selected_parts", "flagged_state",
+        "tile_color", "tile_shape", "slider_position_raw",
+        "baseline_context", "initial_context", "shifted_context",
+        "ambiguity_type", "uncertainty_level", "constraint", "constraint_state",
+        "constraint_change", "disruption_type", "has_disruption", "target_motif",
+
+        # Structural counts & progress
+        "delta", "expected_value", "outcome_feedback",
+        "mandatory_completed_count", "total_units_completed", "is_mandatory",
+        "mini_game", "observations_count",
+
+        # Interaction / environment / baseline primitives
+        "input_modality", "task_def_version", "status", "reason", "message", "detail",
+        "reading_dwell_baseline_ms", "tap_latency_baseline_ms", "pointer_type", "viewport_class",
+        "avgLatency", "readingDwell", "venue", "x", "y", "oversized", "size_bytes",
+        "timestamp_ms", "client_timestamp_ms", "accessibility_state"
+    }
+
     new_events = []
     ignored_count = 0
 
@@ -135,38 +168,12 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
         state_data = ev.get("state")
         data_payload = ev.get("data")
 
-        # 5. Sanitize forbidden client-authored derived and psychological fields
-        forbidden_found = []
-        if isinstance(data_payload, dict):
-            sanitized_data = dict(data_payload)
-            for k in list(sanitized_data.keys()):
-                if k in FORBIDDEN_CLIENT_FIELDS:
-                    forbidden_found.append(k)
-                    del sanitized_data[k]
-            data_payload = sanitized_data
+        # 5. Individual Event Size Limit (4 KB combined data + state)
+        raw_state_str = json.dumps(state_data) if state_data is not None else None
+        raw_data_str = json.dumps(data_payload) if data_payload is not None else None
+        combined_size = (len(raw_state_str.encode('utf-8')) if raw_state_str else 0) + \
+                        (len(raw_data_str.encode('utf-8')) if raw_data_str else 0)
 
-        if isinstance(state_data, dict):
-            sanitized_state = dict(state_data)
-            for k in list(sanitized_state.keys()):
-                if k in FORBIDDEN_CLIENT_FIELDS:
-                    forbidden_found.append(k)
-                    del sanitized_state[k]
-            state_data = sanitized_state
-
-        if forbidden_found:
-            db.add(DBDataQualityFlag(
-                session_id=session_id,
-                scope="telemetry",
-                flag="forbidden_client_field_detected",
-                detail=f"Event seq {seq} contained forbidden client fields: {', '.join(sorted(forbidden_found))}; stripped"
-            ))
-
-        state_json_str = json.dumps(state_data) if state_data is not None else None
-        data_json_str = json.dumps(data_payload) if data_payload is not None else None
-
-        # 6. Individual Event Size Limit (4 KB combined data + state)
-        combined_size = (len(state_json_str.encode('utf-8')) if state_json_str else 0) + \
-                        (len(data_json_str.encode('utf-8')) if data_json_str else 0)
         if combined_size > 4096:
             db.add(DBDataQualityFlag(
                 session_id=session_id,
@@ -176,6 +183,61 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
             ))
             state_json_str = json.dumps({"oversized": True, "size_bytes": combined_size})
             data_json_str = json.dumps({"oversized": True, "size_bytes": combined_size})
+        else:
+            # 6. Sanitize forbidden client-authored derived and psychological fields
+            forbidden_found = []
+            if isinstance(data_payload, dict):
+                sanitized_data = dict(data_payload)
+                for k in list(sanitized_data.keys()):
+                    if k in FORBIDDEN_CLIENT_FIELDS:
+                        forbidden_found.append(k)
+                        del sanitized_data[k]
+                data_payload = sanitized_data
+
+            if isinstance(state_data, dict):
+                sanitized_state = dict(state_data)
+                for k in list(sanitized_state.keys()):
+                    if k in FORBIDDEN_CLIENT_FIELDS:
+                        forbidden_found.append(k)
+                        del sanitized_state[k]
+                state_data = sanitized_state
+
+            if forbidden_found:
+                db.add(DBDataQualityFlag(
+                    session_id=session_id,
+                    scope="telemetry",
+                    flag="forbidden_client_field_detected",
+                    detail=f"Event seq {seq} contained forbidden client fields: {', '.join(sorted(set(forbidden_found)))}; stripped"
+                ))
+
+            # 6b. Strip unknown fields not in ALLOWED_EVENT_DATA_FIELDS
+            unknown_found = []
+            if isinstance(data_payload, dict):
+                sanitized_data = dict(data_payload)
+                for k in list(sanitized_data.keys()):
+                    if k not in ALLOWED_EVENT_DATA_FIELDS:
+                        unknown_found.append(k)
+                        del sanitized_data[k]
+                data_payload = sanitized_data
+
+            if isinstance(state_data, dict):
+                sanitized_state = dict(state_data)
+                for k in list(sanitized_state.keys()):
+                    if k not in ALLOWED_EVENT_DATA_FIELDS:
+                        unknown_found.append(k)
+                        del sanitized_state[k]
+                state_data = sanitized_state
+
+            if unknown_found:
+                db.add(DBDataQualityFlag(
+                    session_id=session_id,
+                    scope="telemetry",
+                    flag="unknown_client_field_detected",
+                    detail=f"Event seq {seq} contained unknown client fields: {', '.join(sorted(set(unknown_found)))}; stripped"
+                ))
+
+            state_json_str = json.dumps(state_data) if state_data is not None else None
+            data_json_str = json.dumps(data_payload) if data_payload is not None else None
 
         # 7. Sequence Duplicate / Conflict Check
         if seq in existing_map:
@@ -216,7 +278,7 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
             trial=ev.get("trial"),
             action=action,
             input_type=ev.get("input_type"),
-            task_def_version=task_def_version or "1.0",
+            task_def_version=task_def_version,
             state_json=state_json_str,
             data_json=data_json_str
         )

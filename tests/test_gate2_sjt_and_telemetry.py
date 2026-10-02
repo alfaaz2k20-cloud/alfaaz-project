@@ -232,6 +232,53 @@ class TestGate2SJTAndTelemetry(unittest.TestCase):
             self.assertIn("missing_task_def_version", flag_names)
             self.assertIn("invalid_task_def_version", flag_names)
 
+            ev1 = db.exec(select(DBTelemetryEvent).where(DBTelemetryEvent.session_id == session_id, DBTelemetryEvent.seq == 1)).first()
+            self.assertIsNone(ev1.task_def_version)
+            ev2 = db.exec(select(DBTelemetryEvent).where(DBTelemetryEvent.session_id == session_id, DBTelemetryEvent.seq == 2)).first()
+            self.assertEqual(ev2.task_def_version, "2.0")
+
+    def test_unknown_client_fields_stripped_and_flagged(self):
+        """Unknown client fields not in ALLOWED_EVENT_DATA_FIELDS are stripped and flagged."""
+        with Session(self.engine) as db:
+            session_id = str(uuid.uuid4())
+            db.add(DBSession(session_id=session_id, status="ACTIVE"))
+            db.commit()
+
+            unrecognized_event = {
+                "seq": 1,
+                "segment_id": 1,
+                "t_ms": 1000.0,
+                "screen": "game",
+                "mini_game": "F1",
+                "action": "slider_input",
+                "task_def_version": "1.0",
+                "data": {
+                    "stimulus_id": "F1_T1",
+                    "slider_position_raw": 50,
+                    "malicious_injection": "drop_tables",
+                    "random_unsupported_key": 123
+                }
+            }
+            res = ingest_telemetry_batch(db, session_id, [unrecognized_event])
+            self.assertEqual(res["ingested_count"], 1)
+
+            flag = db.exec(
+                select(DBDataQualityFlag).where(
+                    DBDataQualityFlag.session_id == session_id,
+                    DBDataQualityFlag.flag == "unknown_client_field_detected"
+                )
+            ).first()
+            self.assertIsNotNone(flag)
+            self.assertIn("malicious_injection", flag.detail)
+            self.assertIn("random_unsupported_key", flag.detail)
+
+            stored = db.exec(select(DBTelemetryEvent).where(DBTelemetryEvent.session_id == session_id, DBTelemetryEvent.seq == 1)).first()
+            d = json.loads(stored.data_json)
+            self.assertNotIn("malicious_injection", d)
+            self.assertNotIn("random_unsupported_key", d)
+            self.assertIn("stimulus_id", d)
+            self.assertIn("slider_position_raw", d)
+
     def test_pointer_stream_events_dropped_without_seq_gap_or_accounting(self):
         """Continuous pointer events are discarded before sequence and quota accounting."""
         with Session(self.engine) as db:

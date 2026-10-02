@@ -109,7 +109,7 @@ class DBTelemetryEvent(SQLModel, table=True):
     trial: Optional[int] = None
     action: str
     input_type: Optional[str] = None
-    task_def_version: Optional[str] = Field(default="1.0")
+    task_def_version: Optional[str] = Field(default=None)
     state_json: Optional[str] = None
     data_json: Optional[str] = None
 

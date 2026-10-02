@@ -214,17 +214,46 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
       });
     });
 
+    let lastSliderLogTime = 0;
+    let sliderThrottleTimer = null;
+
+    const emitSliderEvent = (val, modality) => {
+      logEvent('slider_input', {
+        trial_index: currentTrial,
+        stimulus_id: t.stimulus_id,
+        slider_position_raw: val,
+        input_modality: modality,
+        task_def_version: '1.0'
+      });
+      lastSliderLogTime = Date.now();
+    };
+
     slider?.addEventListener('input', (e) => {
       lastInputModality = e.pointerType || 'mouse';
       sliderVal = parseInt(e.target.value, 10);
       if (valDisplay) valDisplay.textContent = sliderVal;
-      logEvent('slider_input', {
-        trial_index: currentTrial,
-        stimulus_id: t.stimulus_id,
-        slider_position_raw: sliderVal,
-        input_modality: lastInputModality,
-        task_def_version: '1.0'
-      });
+
+      const now = Date.now();
+      if (now - lastSliderLogTime >= 100) {
+        if (sliderThrottleTimer) {
+          clearTimeout(sliderThrottleTimer);
+          sliderThrottleTimer = null;
+        }
+        emitSliderEvent(sliderVal, lastInputModality);
+      } else if (!sliderThrottleTimer) {
+        sliderThrottleTimer = setTimeout(() => {
+          emitSliderEvent(sliderVal, lastInputModality);
+          sliderThrottleTimer = null;
+        }, 100 - (now - lastSliderLogTime));
+      }
+    });
+
+    slider?.addEventListener('change', () => {
+      if (sliderThrottleTimer) {
+        clearTimeout(sliderThrottleTimer);
+        sliderThrottleTimer = null;
+      }
+      emitSliderEvent(sliderVal, lastInputModality);
     });
 
     slider?.addEventListener('keydown', (e) => {
@@ -234,6 +263,10 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
     });
 
     document.getElementById('lockFreqBtn')?.addEventListener('click', () => {
+      if (sliderThrottleTimer) {
+        clearTimeout(sliderThrottleTimer);
+        sliderThrottleTimer = null;
+      }
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
