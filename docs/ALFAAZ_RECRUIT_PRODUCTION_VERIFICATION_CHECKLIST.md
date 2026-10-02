@@ -59,7 +59,7 @@ The following 6 architectural components depend on live infrastructure character
   2. Execute concurrent curl script simulating 20 simultaneous candidate starts:
      ```bash
      for i in {1..20}; do
-       curl -s -X POST https://<render-backend-url>/api/recruit/session/start \
+       curl -s -X POST https://alfaaz-project.onrender.com/recruit/session/start \
          -H "Content-Type: application/json" \
          -d "{\"email\":\"tester$i@example.com\",\"full_name\":\"Test $i\"}" &
      done
@@ -79,7 +79,7 @@ The following 6 architectural components depend on live infrastructure character
   1. Send a request with a spoofed leftmost `X-Forwarded-For` header:
      ```bash
      curl -i -H "X-Forwarded-For: 1.2.3.4, 198.51.100.25" \
-       https://<render-backend-url>/api/recruit/warmup/baseline \
+       https://alfaaz-project.onrender.com/recruit/warmup \
        -X POST -H "Content-Type: application/json" -d "{...}"
      ```
   2. Inspect backend logs or rate limiter keys.
@@ -106,7 +106,7 @@ The following 6 architectural components depend on live infrastructure character
 - **Verification Procedure:**
   1. Start an assessment session and complete World 1.
   2. Trigger a manual deploy or restart on Render dashboard.
-  3. Wait for service to become healthy (`/healthz`).
+  3. Wait for service to become healthy (`/ping` or `/healthz`).
   4. Resume candidate session on the frontend; complete World 2 and SJT.
   5. **Pass Criteria:** Frontend seamlessly flushes telemetry; backend ingests events into existing session with continuous sequence ordering; zero data loss.
 
@@ -117,17 +117,17 @@ The following 6 architectural components depend on live infrastructure character
 - **Verification Procedure:**
   1. Send pre-flight request with unauthorized origin:
      ```bash
-     curl -i -X OPTIONS https://<render-backend-url>/api/recruit/sjt/public \
+     curl -i -X OPTIONS https://alfaaz-project.onrender.com/recruit/sjt/public \
        -H "Origin: https://malicious-site.com" \
        -H "Access-Control-Request-Method: GET"
      ```
   2. Send pre-flight with authorized Vercel production frontend origin:
      ```bash
-     curl -i -X OPTIONS https://<render-backend-url>/api/recruit/sjt/public \
-       -H "Origin: https://alfaaz-project.vercel.app" \
+     curl -i -X OPTIONS https://alfaaz-project.onrender.com/recruit/sjt/public \
+       -H "Origin: https://alfaazcollective.vercel.app" \
        -H "Access-Control-Request-Method: GET"
      ```
-  3. **Pass Criteria:** Unauthorized origin receives no `Access-Control-Allow-Origin` or HTTP 403; authorized origin receives `Access-Control-Allow-Origin: https://alfaaz-project.vercel.app` and `Access-Control-Allow-Credentials: false`.
+  3. **Pass Criteria:** Unauthorized origin receives no `Access-Control-Allow-Origin` or HTTP 403; authorized origin receives `Access-Control-Allow-Origin: https://alfaazcollective.vercel.app` and `Access-Control-Allow-Credentials: false`.
 
 ---
 
@@ -135,7 +135,7 @@ The following 6 architectural components depend on live infrastructure character
 - **Risk:** High-frequency event flushes from multiple simultaneous candidates could saturate FastAPI worker threads.
 - **Verification Procedure:**
   1. Run a load simulation simulating 10 concurrent candidates submitting 50-event telemetry batches every 5 seconds.
-  2. Monitor response times on `/api/recruit/telemetry`.
+  2. Monitor response times on `/recruit/telemetry`.
   3. **Pass Criteria:** Average response latency $< 150\text{ms}$; 99th percentile $< 400\text{ms}$; 0 dropped events; 0 unhandled 500 errors.
 
 ---
