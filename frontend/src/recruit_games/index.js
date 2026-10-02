@@ -11,13 +11,13 @@ import { runTheBrokenTool } from './the_broken_tool.js';
 import { runTheRepetition } from './the_repetition.js';
 
 const WORLD_METADATA = {
-  'W1': { name: 'The Soundscape', name_ur: 'تعدد', subtitle: 'Acoustics & Dialogue' },
-  'W2': { name: 'The Living Archive', name_ur: 'دستاویز', subtitle: 'Manuscripts & Preservation' },
+  'W1': { name: 'The Frequency', name_ur: 'تعدد', subtitle: 'Acoustics & Dialogue' },
+  'W2': { name: 'The Archive', name_ur: 'دستاویز', subtitle: 'Manuscripts & Preservation' },
   'W3': { name: 'The Shared Canvas', name_ur: 'مشترکہ نقش', subtitle: 'Artisan Workshop' },
-  'W4': { name: 'The Shifting Patterns', name_ur: 'متغیر گرڈ', subtitle: 'Mosaic & Rhythm' },
-  'W5': { name: 'The Hidden Courtyard', name_ur: 'نہاں خانہ', subtitle: 'Exhibition Discovery' },
-  'W6': { name: 'The Workshop Bench', name_ur: 'شکستہ آلہ', subtitle: 'Material Assembly' },
-  'W7': { name: 'The Final Gathering', name_ur: 'تکرار', subtitle: 'Readiness & Ceremony' }
+  'W4': { name: 'The Shifting Grid', name_ur: 'متغیر گرڈ', subtitle: 'Mosaic & Rhythm' },
+  'W5': { name: 'The Hidden Gallery', name_ur: 'نہاں خانہ', subtitle: 'Exhibition Discovery' },
+  'W6': { name: 'The Broken Tool', name_ur: 'شکستہ آلہ', subtitle: 'Material Assembly' },
+  'W7': { name: 'The Repetition', name_ur: 'تکرار', subtitle: 'Readiness & Ceremony' }
 };
 
 export function renderTutorialCard({ icon, goal, steps, onStart }) {
