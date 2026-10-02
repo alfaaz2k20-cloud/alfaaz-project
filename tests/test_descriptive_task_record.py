@@ -109,24 +109,24 @@ class TestDescriptiveTaskRecord(unittest.TestCase):
             events.append(DBTelemetryEvent(session_id=self.session_id, seq=seq, segment_id=1, t_ms=float(seq*100), screen="game", mini_game="F3", action="trial_submit", task_def_version="1.0", data_json=json.dumps({"stimulus_id": f"F3_T{i}", "action_id": "update"})))
             seq += 1
 
-        # W2: A1 (5 folios), A2 (3 exceptions), A3 (5 records)
-        for i in range(1, 6):
-            events.append(DBTelemetryEvent(session_id=self.session_id, seq=seq, segment_id=1, t_ms=float(seq*100), screen="game", mini_game="A1", action="document_filed", task_def_version="1.0", data_json=json.dumps({"stimulus_id": f"DOC_0{i}", "choice": "19th_century"})))
+        # W2: A1 (12 folios), A2 (3 exceptions), A3 (8 records)
+        for i in range(1, 13):
+            events.append(DBTelemetryEvent(session_id=self.session_id, seq=seq, segment_id=1, t_ms=float(seq*100), screen="game", mini_game="A1", action="document_filed", task_def_version="1.0", data_json=json.dumps({"stimulus_id": f"DOC_{i:02d}", "choice": "19th_century"})))
             seq += 1
         for i in range(1, 4):
-            events.append(DBTelemetryEvent(session_id=self.session_id, seq=seq, segment_id=1, t_ms=float(seq*100), screen="game", mini_game="A2", action="decision_logged", task_def_version="1.0", data_json=json.dumps({"stimulus_id": f"EXC_0{i}", "action_id": "flag_exception"})))
+            events.append(DBTelemetryEvent(session_id=self.session_id, seq=seq, segment_id=1, t_ms=float(seq*100), screen="game", mini_game="A2", action="decision_logged", task_def_version="1.0", data_json=json.dumps({"stimulus_id": f"EXC_{i:02d}", "action_id": "flag_exception"})))
             seq += 1
-        for i in range(1, 6):
-            events.append(DBTelemetryEvent(session_id=self.session_id, seq=seq, segment_id=1, t_ms=float(seq*100), screen="game", mini_game="A3", action="record_inspected", task_def_version="1.0", data_json=json.dumps({"stimulus_id": f"REC_0{i}"})))
+        for i in range(1, 9):
+            events.append(DBTelemetryEvent(session_id=self.session_id, seq=seq, segment_id=1, t_ms=float(seq*100), screen="game", mini_game="A3", action="record_inspected", task_def_version="1.0", data_json=json.dumps({"stimulus_id": f"REC_{i:02d}"})))
             seq += 1
-        for i in [1, 3, 5]:
-            events.append(DBTelemetryEvent(session_id=self.session_id, seq=seq, segment_id=1, t_ms=float(seq*100), screen="game", mini_game="A3", action="discrepancy_toggled", task_def_version="1.0", data_json=json.dumps({"stimulus_id": f"REC_0{i}", "flagged_state": True})))
+        for i in [1, 3, 5, 7]:
+            events.append(DBTelemetryEvent(session_id=self.session_id, seq=seq, segment_id=1, t_ms=float(seq*100), screen="game", mini_game="A3", action="discrepancy_toggled", task_def_version="1.0", data_json=json.dumps({"stimulus_id": f"REC_{i:02d}", "flagged_state": True})))
             seq += 1
         events.append(DBTelemetryEvent(session_id=self.session_id, seq=seq, segment_id=1, t_ms=float(seq*100), screen="game", mini_game="A3", action="verification_finalized", task_def_version="1.0"))
         seq += 1
 
-        # W3: C1 (3 rounds), C2 (3 rounds), C3 (3 breakdowns)
-        for i in range(1, 4):
+        # W3: C1 (4 rounds), C2 (3 rounds), C3 (3 breakdowns)
+        for i in range(1, 5):
             events.append(DBTelemetryEvent(session_id=self.session_id, seq=seq, segment_id=1, t_ms=float(seq*100), screen="game", mini_game="C1", action="allocation_confirmed", task_def_version="1.0", data_json=json.dumps({"stimulus_id": f"C1_R{i}", "allocated_amount": 2})))
             seq += 1
         for i in range(1, 4):
@@ -203,7 +203,7 @@ class TestDescriptiveTaskRecord(unittest.TestCase):
             self.assertEqual(r["status"], "DERIVED", f"Game {r['game_id']} should be DERIVED")
 
         # Check neutral tag on no-good/bad games
-        neutral_ids = {"Q1", "Q2", "Q3", "CR1", "CR2", "CR3", "M2", "M3"}
+        neutral_ids = {"C1", "F2", "E2", "M1", "Q1", "Q2", "Q3", "CR1", "CR2", "CR3", "M2", "M3"}
         for r in records:
             if r["game_id"] in neutral_ids:
                 self.assertTrue(r["is_neutral_record"], f"{r['game_id']} should be marked neutral")
@@ -217,10 +217,10 @@ class TestDescriptiveTaskRecord(unittest.TestCase):
         self.assertEqual(f1["display_text"], "completed 6 of 6 cue attunement trials")
 
         a1 = next(r for r in records if r["game_id"] == "A1")
-        self.assertEqual(a1["display_text"], "completed 5 of 5 classification items")
+        self.assertEqual(a1["display_text"], "completed 12 of 12 classification items")
 
         a3 = next(r for r in records if r["game_id"] == "A3")
-        self.assertEqual(a3["display_text"], "inspected 5 of 5 records; flagged 3 discrepancies")
+        self.assertEqual(a3["display_text"], "inspected 8 of 8 records; flagged 4 discrepancies")
 
         c3 = next(r for r in records if r["game_id"] == "C3")
         self.assertEqual(c3["display_text"], "identified and executed repair in 3 of 3 collaboration breakdowns")

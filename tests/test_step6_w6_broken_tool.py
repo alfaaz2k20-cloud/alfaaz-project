@@ -51,7 +51,7 @@ class TestStep6W6BrokenTool(unittest.TestCase):
         self.assertEqual(stages[0]["valid_solution_count"], 3)
         self.assertEqual(stages[1]["stage_id"], "CR1_S2")
         self.assertEqual(stages[1]["constraint"], "tension_wire_unanchored")
-        self.assertEqual(stages[1]["valid_solution_count"], 2)
+        self.assertEqual(stages[1]["valid_solution_count"], 3)
 
         # CR2: 3 spatial reframing episodes
         self.assertIn("CR2", games)

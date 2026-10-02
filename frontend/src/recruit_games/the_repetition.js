@@ -159,7 +159,8 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
 
   const mandatoryUnits = [
     { stimulus_id: 'M2_M1', label: 'Primary Guest Folio — Artisan Guild', is_mandatory: true },
-    { stimulus_id: 'M2_M2', label: 'Primary Guest Folio — Regional Patrons', is_mandatory: true }
+    { stimulus_id: 'M2_M2', label: 'Primary Guest Folio — Regional Patrons', is_mandatory: true },
+    { stimulus_id: 'M2_M3', label: 'Primary Guest Folio — Visiting Calligraphers', is_mandatory: true }
   ];
 
   const optionalUnits = [
@@ -175,9 +176,9 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           ${renderHeader('Part 2: The Courtesy Sleeves', 'Preparing required and optional courtesy sleeves for visiting artisans.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`,
-            goal: 'Prepare the 2 required sleeves, then decide whether to finish or prepare extra sleeves.',
+            goal: 'Prepare the 3 required sleeves, then decide whether to finish or prepare extra sleeves.',
             steps: [
-              'Complete the 2 required courtesy sleeves.',
+              'Complete the 3 required courtesy sleeves.',
               'After completing the required sleeves, you will be given an explicit choice.',
               'You may conclude the activity immediately, or prepare up to 3 optional sleeves.',
               'Stopping at the minimum is completely neutral.'
@@ -200,12 +201,12 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
       const u = mandatoryUnits[mandatoryIdx];
       app.innerHTML = `
         <div class="animate-fadeIn">
-          ${renderHeader('Part 2: The Courtesy Sleeves', 'Mandatory phase: 2 required sleeves. Required for activity completion.')}
+          ${renderHeader('Part 2: The Courtesy Sleeves', `Mandatory phase: ${mandatoryUnits.length} required sleeves. Required for activity completion.`)}
 
           <div class="text-xs text-[var(--text-secondary)] font-medium mb-4 flex items-center justify-between">
             <div class="flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-[var(--accent-gold)] inline-block"></span>
-              <span>Required Sleeve ${mandatoryIdx + 1} of 2</span>
+              <span>Required Sleeve ${mandatoryIdx + 1} of ${mandatoryUnits.length}</span>
             </div>
             <span class="text-[10px] font-mono uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 border border-amber-200 rounded-xs">Required Minimum</span>
           </div>
@@ -261,7 +262,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
     } else if (phase === 'choice') {
       app.innerHTML = `
         <div class="animate-fadeIn">
-          ${renderHeader('Part 2: The Courtesy Sleeves', 'Required minimum completed (2 of 2). You may conclude or prepare additional sleeves.')}
+          ${renderHeader('Part 2: The Courtesy Sleeves', `Required minimum completed (${mandatoryUnits.length} of ${mandatoryUnits.length}). You may conclude or prepare additional sleeves.`)}
 
           <div class="p-6 bg-white border border-[var(--grid-border)] mb-6 shadow-xs rounded-xs text-center">
             <div class="w-10 h-10 mx-auto rounded-full bg-emerald-50 border border-emerald-300 flex items-center justify-center text-emerald-700 text-lg mb-2">
@@ -269,7 +270,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
             </div>
             <div class="text-sm font-serif font-semibold text-[var(--text-primary)] mb-1">Required Minimum Satisfied</div>
             <p class="text-xs text-[var(--text-secondary)] max-w-md mx-auto leading-relaxed mb-6">
-              You have completed the required minimum of 2 courtesy sleeves. You may conclude this activity now and advance, or optionally prepare up to ${optionalUnits.length - optionalIdx} additional sleeves.
+              You have completed the required minimum of ${mandatoryUnits.length} courtesy sleeves. You may conclude this activity now and advance, or optionally prepare up to ${optionalUnits.length - optionalIdx} additional sleeves.
               <br><span class="italic text-stone-500 font-serif">Stopping at the minimum is completely neutral.</span>
             </p>
 

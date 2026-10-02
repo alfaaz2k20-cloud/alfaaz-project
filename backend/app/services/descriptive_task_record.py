@@ -24,16 +24,16 @@ from app.services.task_definitions import (
 # Canonical 21 games metadata
 LOCKED_GAMES = [
     {"game_id": "F1", "world_id": "W1", "world_name": "The Frequency", "game_name": "Cue Detection", "is_neutral": False},
-    {"game_id": "F2", "world_id": "W1", "world_name": "The Frequency", "game_name": "Ambiguous Cue", "is_neutral": False},
+    {"game_id": "F2", "world_id": "W1", "world_name": "The Frequency", "game_name": "Ambiguous Cue", "is_neutral": True},
     {"game_id": "F3", "world_id": "W1", "world_name": "The Frequency", "game_name": "Context Change", "is_neutral": False},
     {"game_id": "A1", "world_id": "W2", "world_name": "The Archive", "game_name": "Classification", "is_neutral": False},
     {"game_id": "A2", "world_id": "W2", "world_name": "The Archive", "game_name": "Exception Handling", "is_neutral": False},
     {"game_id": "A3", "world_id": "W2", "world_name": "The Archive", "game_name": "Quality Control", "is_neutral": False},
-    {"game_id": "C1", "world_id": "W3", "world_name": "The Shared Canvas", "game_name": "Resource Cooperation", "is_neutral": False},
+    {"game_id": "C1", "world_id": "W3", "world_name": "The Shared Canvas", "game_name": "Resource Cooperation", "is_neutral": True},
     {"game_id": "C2", "world_id": "W3", "world_name": "The Shared Canvas", "game_name": "Coordination", "is_neutral": False},
     {"game_id": "C3", "world_id": "W3", "world_name": "The Shared Canvas", "game_name": "Collaboration Repair", "is_neutral": False},
     {"game_id": "E1", "world_id": "W4", "world_name": "The Shifting Grid", "game_name": "Rule Shift", "is_neutral": False},
-    {"game_id": "E2", "world_id": "W4", "world_name": "The Shifting Grid", "game_name": "Setback Recovery", "is_neutral": False},
+    {"game_id": "E2", "world_id": "W4", "world_name": "The Shifting Grid", "game_name": "Setback Recovery", "is_neutral": True},
     {"game_id": "E3", "world_id": "W4", "world_name": "The Shifting Grid", "game_name": "Changing Conditions", "is_neutral": False},
     {"game_id": "Q1", "world_id": "W5", "world_name": "The Hidden Gallery", "game_name": "Optional Discovery", "is_neutral": True},
     {"game_id": "Q2", "world_id": "W5", "world_name": "The Hidden Gallery", "game_name": "Mystery Exploration", "is_neutral": True},
@@ -41,7 +41,7 @@ LOCKED_GAMES = [
     {"game_id": "CR1", "world_id": "W6", "world_name": "The Broken Tool", "game_name": "Open Construction", "is_neutral": True},
     {"game_id": "CR2", "world_id": "W6", "world_name": "The Broken Tool", "game_name": "Constraint Shift", "is_neutral": True},
     {"game_id": "CR3", "world_id": "W6", "world_name": "The Broken Tool", "game_name": "Unspecified Tool Use", "is_neutral": True},
-    {"game_id": "M1", "world_id": "W7", "world_name": "The Repetition", "game_name": "Minimum Completed", "is_neutral": False},
+    {"game_id": "M1", "world_id": "W7", "world_name": "The Repetition", "game_name": "Minimum Completed", "is_neutral": True},
     {"game_id": "M2", "world_id": "W7", "world_name": "The Repetition", "game_name": "Optional Continuation", "is_neutral": True},
     {"game_id": "M3", "world_id": "W7", "world_name": "The Repetition", "game_name": "Persistence Under Reduced Feedback", "is_neutral": True}
 ]
@@ -145,17 +145,17 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
         elif gid == "F2":
             submits = [e for e in evs if e.action in ["trial_submit", "inquiry_selected"]]
             opp_count = len(submits)
-            desc_text = f"completed {opp_count} of 4 ambiguous cue inquiry trials"
+            desc_text = f"completed {opp_count} of 4 ambiguous cue inquiry trials; {NEUTRAL_TAG}"
 
         elif gid == "F3":
-            submits = [e for e in evs if e.action in ["trial_submit", "adaptation_selected"]]
+            submits = [e for e in evs if e.action in ["transition_completed", "trial_submit", "adaptation_selected", "updated_response_selected"]]
             opp_count = len(submits)
-            desc_text = f"completed {opp_count} of 3 dynamic context transitions"
+            desc_text = f"completed {opp_count} of 3 contextual interpretation transitions"
 
         elif gid == "A1":
             fileds = [e for e in evs if e.action in ["document_filed", "item_sorted"]]
             opp_count = len(fileds)
-            desc_text = f"completed {opp_count} of 5 classification items"
+            desc_text = f"completed {opp_count} of 12 classification items"
 
         elif gid == "A2":
             # Strict A2 Gate: N<3 -> INSUFFICIENT
@@ -170,12 +170,12 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
         elif gid == "A3":
             res = reconstruct_a3_inspection_state(evs)
             opp_count = res.get("inspected_count", 0)
-            desc_text = f"inspected {res.get('inspected_count', 0)} of 5 records; flagged {res.get('flagged_count', 0)} discrepancies"
+            desc_text = f"inspected {res.get('inspected_count', 0)} of 8 records; flagged {res.get('flagged_count', 0)} discrepancies"
 
         elif gid == "C1":
             res = reconstruct_c1_allocation_state(evs)
             opp_count = len(res.get("rounds", {}))
-            desc_text = f"completed {opp_count} of 3 resource allocation rounds"
+            desc_text = f"completed {opp_count} of 4 resource allocation rounds; {NEUTRAL_TAG}"
 
         elif gid == "C2":
             confirms = [e for e in evs if e.action == "placement_confirmed"]
@@ -195,7 +195,7 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
         elif gid == "E2":
             res = reconstruct_e2_recovery_state(evs)
             opp_count = res.get("total_sequences_completed", 0)
-            desc_text = f"completed {opp_count} of 4 sequences across 3 disruptions and 1 control"
+            desc_text = f"completed {opp_count} of 4 sequences across 3 disruptions and 1 control; {NEUTRAL_TAG}"
 
         elif gid == "E3":
             res = reconstruct_e3_adaptation_state(evs)
@@ -235,7 +235,7 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
         elif gid == "M1":
             res = reconstruct_m1_diligence_state(evs)
             opp_count = res.get("units_completed", 0)
-            desc_text = f"completed {opp_count} of 3 required verification units"
+            desc_text = f"completed {opp_count} of 3 required verification units; {NEUTRAL_TAG}"
 
         elif gid == "M2":
             res = reconstruct_m2_continuation_state(evs)

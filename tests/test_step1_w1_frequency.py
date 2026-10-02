@@ -60,8 +60,8 @@ class TestStep1W1Frequency(unittest.TestCase):
         # F3: 3 transitions, dynamic_context_updating
         self.assertIn("F3", games)
         f3 = games["F3"]
-        self.assertEqual(f3.get("total_trials"), 3)
-        f3_trials = f3.get("trials", [])
+        self.assertEqual(f3.get("total_transitions", f3.get("total_trials")), 3)
+        f3_trials = f3.get("transitions", f3.get("trials", []))
         self.assertEqual(len(f3_trials), 3)
 
     def test_f1_raw_telemetry_ingestion(self):

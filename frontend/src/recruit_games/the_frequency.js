@@ -442,30 +442,72 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
 // F3: The Echo of the Room (3 context transitions)
 // Objective constant across transitions. Acoustic environment updates. Transition events logged.
 // --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
+// F3: The Echo of the Room (3 context transitions)
+// Mechanic: Baseline response -> New context changes interpretation of SAME cue -> Updated response
+// --------------------------------------------------------------------------
 function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
   let currentTransition = 0;
-  let hallSlider = 50;
+  let phase = 'baseline'; // 'baseline' -> 'shifted'
+  let selectedBaselineChoice = null;
+  let selectedUpdatedChoice = null;
   let lastInputModality = 'mouse';
 
   const transitions = [
     {
       stimulus_id: 'F3_T1',
-      venue_name: 'Stone Hall',
-      acoustic_shift: 'The recitation enters the vaulted stone hall. Stone surfaces generate pronounced high-frequency reverberation.',
-      objective_note: 'Constant Objective: Keep recited poetry crisp, clear, and unblurred by the environment.'
+      cue_id: 'cue_expressive_crescendo',
+      title: 'Transition 1: Vocal Projection Crescendo',
+      cue_text: '"The reciting poet initiates an impassioned vocal crescendo on a climactic verse."',
+      baseline_context: 'Dry Rehearsal Studio — Acoustic decay is rapid and unamplified.',
+      baseline_options: [
+        { id: 'support_volume', label: 'Support Volume', desc: 'Apply gain to sustain acoustic projection in dry room.' },
+        { id: 'dampen_level', label: 'Dampen Level', desc: 'Reduce level immediately before the peak.' },
+        { id: 'neutral_hold', label: 'Neutral Hold', desc: 'Keep baseline settings without adjustment.' }
+      ],
+      shifted_context: 'Vaulted Stone Chamber — High-reverberation stone walls amplify natural decay; boosting gain causes muddy reverberation clash.',
+      shifted_options: [
+        { id: 'attenuate_reverb', label: 'Attenuate Reverb', desc: 'Dampen decay tails so reflective walls do not blur verse clarity.' },
+        { id: 'support_volume', label: 'Support Volume', desc: 'Maintain dry-studio gain boost (causes severe echo clash).' },
+        { id: 'neutral_hold', label: 'Neutral Hold', desc: 'Ignore acoustic environment shift.' }
+      ]
     },
     {
       stimulus_id: 'F3_T2',
-      venue_name: 'Carpeted Courtyard',
-      acoustic_shift: 'The performance moves to the carpeted inner courtyard. Heavy tapestries and floor coverings deaden natural decay.',
-      objective_note: 'Constant Objective: Keep recited poetry crisp, clear, and unblurred by the environment.'
+      cue_id: 'cue_sotto_voce_pause',
+      title: 'Transition 2: Sotto-Voce Whisper',
+      cue_text: '"The performer drops into a delicate, hushed whisper between stanza strophes."',
+      baseline_context: 'Quiet Intimate Salon — Close audience seating; natural whisper is completely audible.',
+      baseline_options: [
+        { id: 'preserve_natural_intimacy', label: 'Preserve Natural Intimacy', desc: 'Keep sound transparent without artificial amplification.' },
+        { id: 'boost_high_gain', label: 'High Gain Boost', desc: 'Force whisper volume to loud recital level.' },
+        { id: 'cut_channel', label: 'Mute Channel', desc: 'Treat volume dip as dead air.' }
+      ],
+      shifted_context: 'Bustling Courtyard Entrance — Distant street traffic and fountain murmur mask delicate acoustic signals.',
+      shifted_options: [
+        { id: 'boost_intelligibility', label: 'Boost Intelligibility', desc: 'Lift vocal presence so outdoor murmur does not drown out verse.' },
+        { id: 'preserve_natural_intimacy', label: 'Preserve Natural Intimacy', desc: 'Leave unboosted (whisper is completely obscured).' },
+        { id: 'cut_channel', label: 'Mute Channel', desc: 'Treat dip as audio fault.' }
+      ]
     },
     {
       stimulus_id: 'F3_T3',
-      venue_name: 'Open Colonnade',
-      acoustic_shift: 'The performance concludes in the open colonnade. Exterior breeze and open air introduce low-frequency ambient drift.',
-      objective_note: 'Constant Objective: Keep recited poetry crisp, clear, and unblurred by the environment.'
+      cue_id: 'cue_rhythmic_syncopation',
+      title: 'Transition 3: Syncopated Metric Pause',
+      cue_text: '"The performer introduces an abrupt, syncopated metric pause before the final couplet."',
+      baseline_context: 'Continuous Solo Recitation — Solitary speaker; steady driving tempo is expected.',
+      baseline_options: [
+        { id: 'sustain_cadence', label: 'Sustain Cadence', desc: 'Maintain driving tempo support across the pause.' },
+        { id: 'halt_accompaniment', label: 'Halt Accompaniment', desc: 'Stop abruptly on sudden pause.' },
+        { id: 'force_metronome', label: 'Force Accelerated Tempo', desc: 'Push recitation forward past pause.' }
+      ],
+      shifted_context: 'Call-and-Response Ensemble — Vocal chorus enters in the pause to provide reciprocal answering refrain.',
+      shifted_options: [
+        { id: 'open_reciprocal_space', label: 'Open Reciprocal Space', desc: 'Yield direct tempo drive to let the chorus answer breathe.' },
+        { id: 'sustain_cadence', label: 'Sustain Cadence', desc: 'Drive straight through the chorus reply without pausing.' },
+        { id: 'force_metronome', label: 'Force Accelerated Tempo', desc: 'Rush ensemble timing.' }
+      ]
     }
   ];
 
@@ -473,14 +515,14 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader('Part 3: The Echo of the Room', 'Adapting acoustics across 3 distinct venue transitions while keeping verse clarity constant.')}
+          ${renderHeader('Part 3: The Echo of the Room', 'Reinterpreting performance cues across 3 venue transitions as environmental context changes.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>`,
-            goal: 'Maintain the constant objective of vocal clarity as the performance moves through 3 successive environments.',
+            goal: 'Observe how the exact same performance cue requires an updated response when the venue context changes.',
             steps: [
-              'Notice the acoustic transition notice for the new venue space.',
-              'Remember the objective: maintain crisp, intelligible verse.',
-              'Adjust the acoustic balance slider for the new space and save.'
+              'Review the performer cue in the baseline context and select your initial response.',
+              'Observe the context transition: the setting changes, altering the cue\'s meaning.',
+              'Select your updated response to maintain objective across all 3 transitions.'
             ]
           })}
         </div>
@@ -488,7 +530,9 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
       document.getElementById('startActivityBtn')?.addEventListener('click', () => {
         inTutorial = false;
         currentTransition = 0;
-        hallSlider = 50;
+        phase = 'baseline';
+        selectedBaselineChoice = null;
+        selectedUpdatedChoice = null;
         logTransitionPresented();
         render();
       });
@@ -497,96 +541,171 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
 
     const tr = transitions[currentTransition];
 
-    app.innerHTML = `
-      <div class="animate-fadeIn">
-        <div class="flex justify-between items-center mb-2">
-          ${renderHeader('Part 3: The Echo of the Room', 'Adapt natural acoustics as the performance transitions into a new space.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Transition ${currentTransition + 1} of 3</span>
-        </div>
-
-        <!-- Constant Objective Banner -->
-        <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-sm mb-4 text-xs font-serif text-[var(--text-primary)] flex items-center justify-between">
-          <span class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block"></span>
-            <strong>Constant Objective:</strong> Maintain spoken verse clarity and intelligible presence.
-          </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">Venue: ${tr.venue_name}</span>
-        </div>
-
-        <!-- Venue Transition Notice -->
-        <div class="p-4 bg-amber-50/80 border border-[var(--accent-gold)]/40 rounded-sm mb-6 flex items-center gap-3">
-          <div class="w-9 h-9 rounded-full bg-[var(--accent-gold)] text-white flex items-center justify-center font-serif text-sm font-semibold shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+    if (phase === 'baseline') {
+      app.innerHTML = `
+        <div class="animate-fadeIn">
+          <div class="flex justify-between items-center mb-2">
+            ${renderHeader('Part 3: The Echo of the Room', 'Initial baseline context: determine your response to the performer\'s cue.')}
+            <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Transition ${currentTransition + 1} of 3 (Stage 1)</span>
           </div>
-          <div>
-            <div class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-semibold">${tr.venue_name} Acoustic Shift</div>
-            <div class="text-xs text-[var(--text-primary)] font-medium mt-0.5">${tr.acoustic_shift}</div>
-          </div>
-        </div>
 
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center shadow-inner">
-          <div class="w-full max-w-md mx-auto">
-            <div class="flex justify-between items-center text-xs text-[var(--text-secondary)] mb-2">
-              <span class="font-medium text-stone-700">Crisp Direct (0%)</span>
-              <span class="font-mono text-sm font-semibold text-[var(--accent-gold)] bg-white px-3 py-1 border border-[var(--grid-border)]" id="hallValDisplay">${hallSlider}%</span>
-              <span class="font-medium text-stone-700">Open Ambient (100%)</span>
+          <!-- Performer Cue -->
+          <div class="p-5 bg-stone-50 border border-[var(--grid-border)] rounded-sm mb-4">
+            <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--accent-gold)] font-semibold">Performer Cue</span>
+            <div class="text-sm font-serif text-[var(--text-primary)] font-medium mt-1">${tr.cue_text}</div>
+          </div>
+
+          <!-- Baseline Setting -->
+          <div class="p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-sm mb-6 flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full bg-[var(--accent-gold)] text-white flex items-center justify-center font-serif text-xs font-semibold shrink-0">1</div>
+            <div>
+              <div class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Baseline Context</div>
+              <div class="text-xs text-[var(--text-primary)] mt-0.5">${tr.baseline_context}</div>
             </div>
-            <input type="range" id="hallSlider" min="0" max="100" step="5" value="${hallSlider}" class="w-full accent-[#bd6f5d] cursor-pointer h-2 bg-stone-200 rounded-lg">
+          </div>
+
+          <!-- Baseline Options -->
+          <div class="space-y-3 mb-6">
+            ${tr.baseline_options.map(opt => `
+              <div class="f3-opt p-4 bg-white border ${selectedBaselineChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/40 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition rounded-xs" data-choice="${opt.id}" tabindex="0" role="button">
+                <div class="text-xs font-semibold text-[var(--text-primary)]">${opt.label}</div>
+                <div class="text-[11px] text-[var(--text-secondary)] mt-1">${opt.desc}</div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="flex justify-end">
+            <button id="f3BaselineBtn" ${selectedBaselineChoice ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
+              Confirm Baseline & Proceed to Context Shift &rarr;
+            </button>
           </div>
         </div>
+      `;
 
-        <div class="flex justify-end">
-          <button id="f3LockBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm">
-            ${currentTransition < 2 ? 'Save Transition Setting &rarr;' : 'Finalize Acoustic Adaptation &rarr;'}
-          </button>
-        </div>
-      </div>
-    `;
-
-    const slider = document.getElementById('hallSlider');
-    const valDisplay = document.getElementById('hallValDisplay');
-
-    slider?.addEventListener('input', (e) => {
-      lastInputModality = e.pointerType || 'mouse';
-      hallSlider = parseInt(e.target.value, 10);
-      if (valDisplay) valDisplay.textContent = `${hallSlider}%`;
-      logEvent('slider_input', {
-        trial_index: currentTransition,
-        stimulus_id: tr.stimulus_id,
-        slider_position_raw: hallSlider,
-        input_modality: lastInputModality,
-        task_def_version: '1.0'
-      });
-    });
-
-    slider?.addEventListener('keydown', (e) => {
-      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-        lastInputModality = 'keyboard';
-      }
-    });
-
-    document.getElementById('f3LockBtn')?.addEventListener('click', () => {
-      logEvent('trial_submit', {
-        trial_index: currentTransition,
-        stimulus_id: tr.stimulus_id,
-        action_id: 'update_acoustic_balance',
-        slider_position_raw: hallSlider,
-        input_modality: lastInputModality,
-        task_def_version: '1.0'
-      });
-
-      if (currentTransition < 2) {
-        currentTransition++;
-        hallSlider = 50;
-        logTransitionPresented();
-        render();
-      } else {
-        onComplete({
-          mini_game: 'F3',
-          observations_count: 3
+      app.querySelectorAll('.f3-opt').forEach(opt => {
+        const select = (modality) => {
+          lastInputModality = modality;
+          selectedBaselineChoice = opt.getAttribute('data-choice');
+          render();
+        };
+        opt.addEventListener('click', () => select('mouse'));
+        opt.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            select('keyboard');
+          }
         });
-      }
-    });
+      });
+
+      document.getElementById('f3BaselineBtn')?.addEventListener('click', () => {
+        logEvent('baseline_response_selected', {
+          trial_index: currentTransition,
+          stimulus_id: tr.stimulus_id,
+          cue_id: tr.cue_id,
+          choice_id: selectedBaselineChoice,
+          input_modality: lastInputModality,
+          task_def_version: '1.0'
+        });
+
+        phase = 'shifted';
+        logEvent('context_shifted', {
+          trial_index: currentTransition,
+          stimulus_id: tr.stimulus_id,
+          cue_id: tr.cue_id,
+          shifted_context: tr.shifted_context,
+          task_def_version: '1.0'
+        });
+        render();
+      });
+
+    } else {
+      // phase === 'shifted'
+      app.innerHTML = `
+        <div class="animate-fadeIn">
+          <div class="flex justify-between items-center mb-2">
+            ${renderHeader('Part 3: The Echo of the Room', 'The context has shifted: re-evaluate the same cue under new acoustic conditions.')}
+            <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Transition ${currentTransition + 1} of 3 (Stage 2)</span>
+          </div>
+
+          <!-- Performer Cue (Unchanged) -->
+          <div class="p-4 bg-stone-50 border border-[var(--grid-border)] rounded-sm mb-3">
+            <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--accent-gold)] font-semibold">Same Performer Cue</span>
+            <div class="text-xs font-serif text-[var(--text-primary)] font-medium mt-0.5">${tr.cue_text}</div>
+          </div>
+
+          <!-- Shifted Context Notice -->
+          <div class="p-4 bg-amber-100/70 border border-[#bd6f5d]/50 rounded-sm mb-6 flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full bg-[#bd6f5d] text-white flex items-center justify-center font-serif text-xs font-semibold shrink-0">2</div>
+            <div>
+              <div class="text-[10px] uppercase tracking-wider text-[#bd6f5d] font-semibold">New Context Shift</div>
+              <div class="text-xs text-[var(--text-primary)] font-medium mt-0.5">${tr.shifted_context}</div>
+            </div>
+          </div>
+
+          <!-- Shifted Options -->
+          <div class="space-y-3 mb-6">
+            ${tr.shifted_options.map(opt => `
+              <div class="f3-updated-opt p-4 bg-white border ${selectedUpdatedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/40 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition rounded-xs" data-choice="${opt.id}" tabindex="0" role="button">
+                <div class="text-xs font-semibold text-[var(--text-primary)]">${opt.label}</div>
+                <div class="text-[11px] text-[var(--text-secondary)] mt-1">${opt.desc}</div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="flex justify-end">
+            <button id="f3UpdatedBtn" ${selectedUpdatedChoice ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
+              ${currentTransition < 2 ? 'Save Updated Setting & Next Transition &rarr;' : 'Finalize Context Updating &rarr;'}
+            </button>
+          </div>
+        </div>
+      `;
+
+      app.querySelectorAll('.f3-updated-opt').forEach(opt => {
+        const select = (modality) => {
+          lastInputModality = modality;
+          selectedUpdatedChoice = opt.getAttribute('data-choice');
+          render();
+        };
+        opt.addEventListener('click', () => select('mouse'));
+        opt.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            select('keyboard');
+          }
+        });
+      });
+
+      document.getElementById('f3UpdatedBtn')?.addEventListener('click', () => {
+        logEvent('updated_response_selected', {
+          trial_index: currentTransition,
+          stimulus_id: tr.stimulus_id,
+          cue_id: tr.cue_id,
+          choice_id: selectedUpdatedChoice,
+          input_modality: lastInputModality,
+          task_def_version: '1.0'
+        });
+
+        logEvent('transition_completed', {
+          trial_index: currentTransition,
+          stimulus_id: tr.stimulus_id,
+          task_def_version: '1.0'
+        });
+
+        if (currentTransition < 2) {
+          currentTransition++;
+          phase = 'baseline';
+          selectedBaselineChoice = null;
+          selectedUpdatedChoice = null;
+          logTransitionPresented();
+          render();
+        } else {
+          onComplete({
+            mini_game: 'F3',
+            observations_count: 3
+          });
+        }
+      });
+    }
   }
 
   function logTransitionPresented() {
@@ -594,7 +713,8 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
     logEvent('transition_presented', {
       trial_index: currentTransition,
       stimulus_id: tr.stimulus_id,
-      venue: tr.venue_name,
+      cue_id: tr.cue_id,
+      baseline_context: tr.baseline_context,
       task_def_version: '1.0'
     });
   }

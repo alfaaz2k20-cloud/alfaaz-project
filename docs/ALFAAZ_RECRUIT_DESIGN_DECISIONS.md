@@ -473,3 +473,22 @@ Telemetry across all mini-games records user interaction characteristics without
   - `reduced_motion`
   - `extended_time`
 - **Strict Non-Penalty Principle:** Candidate-facing notice guarantees: *"Accessibility settings never lower any measurement."* Latency/dwell metrics collected under `extended_time` or stepper interactions under `keyboard_navigation` must never be evaluated against unadjusted normative speed baselines.
+
+---
+
+## 13. Owner-Approved Reconciled Amendments (Release Hardening)
+
+The following authoritative owner amendments reconcile the design freeze and define canonical target counts for Alfaaz Recruit:
+
+1. **A1 (Classification): 12 items**
+   - Expanded from earlier 8/10 items to exactly 12 items (`DOC_01` through `DOC_12`).
+   - Maintains balanced distribution across genres with unambiguous ground-truth rules (`rules.py` / `task_definitions.json`).
+
+2. **A3 (Quality Control): 8 records**
+   - Expanded from earlier 6 items to exactly 8 catalog ledger records (`REC_01` through `REC_08`).
+   - Server reconstructs inspection thoroughness and discrepancy flagging from primitive event streams (`record_inspected`, `discrepancy_toggled`).
+
+3. **C1 (Resource Cooperation): 4 allocation rounds**
+   - Expanded from earlier 3 rounds to exactly 4 distinct inventory rounds (`C1_R1` through `C1_R4`).
+   - Crucially incorporates `C1_R4` (Self-Station Ceramic Shortage): candidate station has deficit (3 tiles, quota 6) while partner has surplus (7 tiles, quota 4).
+   - In `C1_R4`, retaining resources is the task-defined appropriate behavior, ensuring cooperation is not conflated with indiscriminate self-depriving over-allocation.

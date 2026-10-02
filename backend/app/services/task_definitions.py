@@ -35,11 +35,75 @@ def get_stimulus_ground_truth(game_id: str, stimulus_id: str, version: str = "1.
     if not g_def:
         return None
 
-    trials = g_def.get("trials", [])
+    trials = (
+        g_def.get("trials", [])
+        + g_def.get("transitions", [])
+        + g_def.get("stages", [])
+        + g_def.get("episodes", [])
+        + g_def.get("decisions", [])
+        + g_def.get("mandatory_trials", [])
+        + g_def.get("optional_trials", [])
+    )
     for t in trials:
-        if t.get("stimulus_id") == stimulus_id:
+        if (
+            t.get("stimulus_id") == stimulus_id
+            or t.get("stage_id") == stimulus_id
+            or t.get("episode_id") == stimulus_id
+            or t.get("decision_id") == stimulus_id
+        ):
             return t
     return None
+
+def reconstruct_f3_context_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs F3 contextual interpretation updating state strictly from primitive events:
+    - transition_presented (stimulus_id, trial_index)
+    - baseline_response_selected (stimulus_id, choice_id)
+    - context_shifted (stimulus_id, new_context_id)
+    - updated_response_selected (stimulus_id, choice_id)
+    - transition_completed (stimulus_id)
+    """
+    transitions = {}
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "F3":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        s_id = data.get("stimulus_id") or f"F3_T{data.get('trial_index', 0) + 1}"
+        if not s_id:
+            continue
+
+        if s_id not in transitions:
+            transitions[s_id] = {
+                "baseline_response": None,
+                "context_shifted": False,
+                "updated_response": None,
+                "completed": False
+            }
+
+        if action == "baseline_response_selected":
+            transitions[s_id]["baseline_response"] = data.get("choice_id") or data.get("action_id")
+        elif action == "context_shifted":
+            transitions[s_id]["context_shifted"] = True
+        elif action in ["updated_response_selected", "trial_submit", "adaptation_selected"]:
+            transitions[s_id]["updated_response"] = data.get("choice_id") or data.get("action_id")
+        elif action == "transition_completed":
+            transitions[s_id]["completed"] = True
+
+    completed_count = sum(1 for t in transitions.values() if t.get("completed") or (t.get("baseline_response") and t.get("updated_response")))
+    return {
+        "transitions": transitions,
+        "completed_count": completed_count,
+        "all_completed": completed_count >= 3
+    }
 
 def reconstruct_a3_inspection_state(events: list) -> Dict[str, Any]:
     """
@@ -95,7 +159,7 @@ def reconstruct_a3_inspection_state(events: list) -> Dict[str, Any]:
         elif has_error and not is_flagged:
             fn += 1
 
-    total = len(trials) if trials else 5
+    total = len(trials) if trials else 8
     accuracy = (tp + tn) / total if total > 0 else 0.0
 
     return {
@@ -122,14 +186,15 @@ def reconstruct_c1_allocation_state(events: list) -> Dict[str, Any]:
     round_baselines = {
         "C1_R1": {"user_initial": 8, "partner_initial": 2, "trial_index": 0},
         "C1_R2": {"user_initial": 5, "partner_initial": 5, "trial_index": 1},
-        "C1_R3": {"user_initial": 5, "partner_initial": 8, "trial_index": 2}
+        "C1_R3": {"user_initial": 5, "partner_initial": 8, "trial_index": 2},
+        "C1_R4": {"user_initial": 3, "partner_initial": 7, "trial_index": 3}
     }
     
     # State tracking per stimulus_id
-    transfers = {"C1_R1": 0, "C1_R2": 0, "C1_R3": 0}
-    confirmed = {"C1_R1": False, "C1_R2": False, "C1_R3": False}
+    transfers = {"C1_R1": 0, "C1_R2": 0, "C1_R3": 0, "C1_R4": 0}
+    confirmed = {"C1_R1": False, "C1_R2": False, "C1_R3": False, "C1_R4": False}
 
-    idx_to_stim = {0: "C1_R1", 1: "C1_R2", 2: "C1_R3"}
+    idx_to_stim = {0: "C1_R1", 1: "C1_R2", 2: "C1_R3", 3: "C1_R4"}
 
     for ev in events:
         mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
@@ -963,7 +1028,7 @@ def reconstruct_m2_continuation_state(events: list) -> Dict[str, Any]:
     - Continuation is behavioral observation, not a high motivation score.
     """
     defs = get_task_definitions().get("games", {}).get("M2", {})
-    mandatory_target = defs.get("mandatory_units", 2)
+    mandatory_target = defs.get("mandatory_units", 3)
     max_optional = defs.get("max_optional_units", 3)
 
     mandatory_completed = set()

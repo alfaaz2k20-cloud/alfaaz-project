@@ -32,16 +32,16 @@ class TestStep2W2Archive(unittest.TestCase):
         self.db.close()
 
     def test_w2_task_definitions_golden_fixture(self):
-        """Verify task definitions for A1 (5 items), A2 (3 exceptions), A3 (5 QC records)."""
+        """Verify task definitions for A1 (12 items), A2 (3 exceptions), A3 (8 QC records)."""
         defs = get_task_definitions()
         games = defs.get("games", {})
 
-        # A1: 5 items
+        # A1: 12 items
         self.assertIn("A1", games)
         a1 = games["A1"]
-        self.assertEqual(a1.get("total_trials"), 5)
-        self.assertEqual(len(a1.get("trials", [])), 5)
-        expected_a1_stims = ["DOC_01", "DOC_02", "DOC_03", "DOC_04", "DOC_05"]
+        self.assertEqual(a1.get("total_trials"), 12)
+        self.assertEqual(len(a1.get("trials", [])), 12)
+        expected_a1_stims = [f"DOC_{i:02d}" for i in range(1, 13)]
         self.assertEqual([t["stimulus_id"] for t in a1["trials"]], expected_a1_stims)
 
         # A2: 3 trials
@@ -53,15 +53,15 @@ class TestStep2W2Archive(unittest.TestCase):
         self.assertEqual(a2["trials"][1]["condition_type"], "clean_control")
         self.assertEqual(a2["trials"][2]["condition_type"], "true_exception")
 
-        # A3: 5 records (3 error, 2 clean control)
+        # A3: 8 records (4 error, 4 clean control)
         self.assertIn("A3", games)
         a3 = games["A3"]
-        self.assertEqual(a3.get("total_trials"), 5)
-        self.assertEqual(len(a3.get("trials", [])), 5)
+        self.assertEqual(a3.get("total_trials"), 8)
+        self.assertEqual(len(a3.get("trials", [])), 8)
         err_counts = sum(1 for t in a3["trials"] if t.get("has_error"))
         clean_counts = sum(1 for t in a3["trials"] if not t.get("has_error"))
-        self.assertEqual(err_counts, 3)
-        self.assertEqual(clean_counts, 2)
+        self.assertEqual(err_counts, 4)
+        self.assertEqual(clean_counts, 4)
 
     def test_a1_server_ground_truth_scoring_without_client_correctness(self):
         """A1 raw telemetry has choice + stimulus_id; server evaluates correctness strictly via ground truth."""
@@ -202,8 +202,8 @@ class TestStep2W2Archive(unittest.TestCase):
         # 1. Ingest primitive events: 5 inspected records, 3 toggled discrepancies, verification finalized
         primitive_events = []
         seq = 10
-        # Candidate inspects all 5 records
-        for i in range(1, 6):
+        # Candidate inspects all 8 records
+        for i in range(1, 9):
             primitive_events.append({
                 "seq": seq,
                 "screen": "game",
@@ -215,8 +215,8 @@ class TestStep2W2Archive(unittest.TestCase):
             })
             seq += 1
 
-        # Candidate flags discrepancy on REC_01, REC_03, REC_05 (true error records in task definitions)
-        for i in [1, 3, 5]:
+        # Candidate flags discrepancy on REC_01, REC_03, REC_05, REC_07 (true error records in task definitions)
+        for i in [1, 3, 5, 7]:
             primitive_events.append({
                 "seq": seq,
                 "screen": "game",
@@ -250,10 +250,10 @@ class TestStep2W2Archive(unittest.TestCase):
         ).all()
         reconstruction = reconstruct_a3_inspection_state(stored_events)
 
-        self.assertEqual(reconstruction["inspected_count"], 5)
-        self.assertEqual(reconstruction["flagged_count"], 3)
-        self.assertEqual(reconstruction["flagged_records"], ["REC_01", "REC_03", "REC_05"])
-        self.assertEqual(reconstruction["detection_accuracy"], 1.0) # 3 true errors caught + 2 clean controls untouched = 5/5
+        self.assertEqual(reconstruction["inspected_count"], 8)
+        self.assertEqual(reconstruction["flagged_count"], 4)
+        self.assertEqual(reconstruction["flagged_records"], ["REC_01", "REC_03", "REC_05", "REC_07"])
+        self.assertEqual(reconstruction["detection_accuracy"], 1.0) # 4 true errors caught + 4 clean controls untouched = 8/8
         self.assertTrue(reconstruction["verification_finalized"])
 
         # 3. Test that client attempting to author summary fields is stripped and flagged
@@ -264,9 +264,9 @@ class TestStep2W2Archive(unittest.TestCase):
             "action": "verification_finalized",
             "task_def_version": "1.0",
             "data": {
-                "inspected_count": 5,
-                "flagged_count": 3,
-                "flagged_records": ["REC_01", "REC_03", "REC_05"],
+                "inspected_count": 8,
+                "flagged_count": 4,
+                "flagged_records": ["REC_01", "REC_03", "REC_05", "REC_07"],
                 "action_id": "approve_ledger"
             },
             "t_ms": 26000.0

@@ -50,9 +50,9 @@ class TestStep7W7Repetition(unittest.TestCase):
         # M2: Voluntary Continuation
         self.assertIn("M2", games)
         m2 = games["M2"]
-        self.assertEqual(m2.get("mandatory_units"), 2)
+        self.assertEqual(m2.get("mandatory_units"), 3)
         self.assertEqual(m2.get("max_optional_units"), 3)
-        self.assertEqual(len(m2.get("mandatory_trials", [])), 2)
+        self.assertEqual(len(m2.get("mandatory_trials", [])), 3)
         self.assertEqual(len(m2.get("optional_trials", [])), 3)
 
         # M3: Persistence Under Reduced Feedback
@@ -97,7 +97,7 @@ class TestStep7W7Repetition(unittest.TestCase):
         self.assertEqual(recon["completed_unit_ids"], ["M1_U1", "M1_U2", "M1_U3"])
 
     def test_m2_continuation_stopped_at_minimum(self):
-        """M2 candidate completes 2 mandatory units and explicitly concludes; stopping at minimum is neutral."""
+        """M2 candidate completes 3 mandatory units and explicitly concludes; stopping at minimum is neutral."""
         events = [
             # Mandatory Unit 1
             {"seq": 10, "screen": "game", "mini_game": "M2", "action": "unit_presented", "task_def_version": "1.0", "t_ms": 10000.0, "data": {"stimulus_id": "M2_M1", "unit_index": 0, "is_mandatory": True}},
@@ -109,9 +109,53 @@ class TestStep7W7Repetition(unittest.TestCase):
             {"seq": 14, "screen": "game", "mini_game": "M2", "action": "unit_action_performed", "task_def_version": "1.0", "t_ms": 14000.0, "data": {"stimulus_id": "M2_M2", "unit_index": 1, "action_type": "assemble_sleeve", "input_modality": "mouse"}},
             {"seq": 15, "screen": "game", "mini_game": "M2", "action": "unit_completed", "task_def_version": "1.0", "t_ms": 15000.0, "data": {"stimulus_id": "M2_M2", "unit_index": 1, "is_mandatory": True}},
 
+            # Mandatory Unit 3
+            {"seq": 151, "screen": "game", "mini_game": "M2", "action": "unit_presented", "task_def_version": "1.0", "t_ms": 15100.0, "data": {"stimulus_id": "M2_M3", "unit_index": 2, "is_mandatory": True}},
+            {"seq": 152, "screen": "game", "mini_game": "M2", "action": "unit_action_performed", "task_def_version": "1.0", "t_ms": 15200.0, "data": {"stimulus_id": "M2_M3", "unit_index": 2, "action_type": "assemble_sleeve", "input_modality": "mouse"}},
+            {"seq": 153, "screen": "game", "mini_game": "M2", "action": "unit_completed", "task_def_version": "1.0", "t_ms": 15300.0, "data": {"stimulus_id": "M2_M3", "unit_index": 2, "is_mandatory": True}},
+
             # Choice presented -> Conclude Selected (Neutral Stop)
-            {"seq": 16, "screen": "game", "mini_game": "M2", "action": "choice_presented", "task_def_version": "1.0", "t_ms": 16000.0, "data": {"trial_index": 2, "mandatory_completed_count": 2}},
+            {"seq": 16, "screen": "game", "mini_game": "M2", "action": "choice_presented", "task_def_version": "1.0", "t_ms": 16000.0, "data": {"trial_index": 3, "mandatory_completed_count": 3}},
             {"seq": 17, "screen": "game", "mini_game": "M2", "action": "continuation_choice_selected", "task_def_version": "1.0", "t_ms": 17000.0, "data": {"choice": "conclude", "optional_index": 0, "input_modality": "mouse"}}
+        ]
+
+        result = ingest_telemetry_batch(self.db, self.session_id, events)
+        self.assertEqual(result["ingested_count"], 11)
+
+        stored = self.db.exec(
+            select(DBTelemetryEvent).where(
+                DBTelemetryEvent.session_id == self.session_id,
+                DBTelemetryEvent.mini_game == "M2"
+            )
+        ).all()
+        recon = reconstruct_m2_continuation_state(stored)
+
+        self.assertEqual(recon["mandatory_completed_count"], 3)
+        self.assertTrue(recon["mandatory_satisfied"])
+        self.assertEqual(recon["optional_completed_count"], 0)
+        self.assertTrue(recon["stopped_at_minimum"])
+        self.assertEqual(recon["final_choice"], "conclude")
+
+    def test_m2_continuation_voluntary_extra_sleeves(self):
+        """M2 candidate chooses to continue and prepares voluntary sleeves."""
+        events = [
+            # Mandatory Units 1, 2, 3
+            {"seq": 20, "screen": "game", "mini_game": "M2", "action": "unit_completed", "task_def_version": "1.0", "t_ms": 20000.0, "data": {"stimulus_id": "M2_M1", "unit_index": 0, "is_mandatory": True}},
+            {"seq": 21, "screen": "game", "mini_game": "M2", "action": "unit_completed", "task_def_version": "1.0", "t_ms": 21000.0, "data": {"stimulus_id": "M2_M2", "unit_index": 1, "is_mandatory": True}},
+            {"seq": 211, "screen": "game", "mini_game": "M2", "action": "unit_completed", "task_def_version": "1.0", "t_ms": 21500.0, "data": {"stimulus_id": "M2_M3", "unit_index": 2, "is_mandatory": True}},
+
+            # Choice 1: Continue
+            {"seq": 22, "screen": "game", "mini_game": "M2", "action": "continuation_choice_selected", "task_def_version": "1.0", "t_ms": 22000.0, "data": {"choice": "continue", "optional_index": 0, "input_modality": "mouse"}},
+            # Optional Unit 1
+            {"seq": 23, "screen": "game", "mini_game": "M2", "action": "unit_completed", "task_def_version": "1.0", "t_ms": 23000.0, "data": {"stimulus_id": "M2_O1", "unit_index": 3, "is_mandatory": False}},
+
+            # Choice 2: Continue
+            {"seq": 24, "screen": "game", "mini_game": "M2", "action": "continuation_choice_selected", "task_def_version": "1.0", "t_ms": 24000.0, "data": {"choice": "continue", "optional_index": 1, "input_modality": "mouse"}},
+            # Optional Unit 2
+            {"seq": 25, "screen": "game", "mini_game": "M2", "action": "unit_completed", "task_def_version": "1.0", "t_ms": 25000.0, "data": {"stimulus_id": "M2_O2", "unit_index": 4, "is_mandatory": False}},
+
+            # Choice 3: Conclude
+            {"seq": 26, "screen": "game", "mini_game": "M2", "action": "continuation_choice_selected", "task_def_version": "1.0", "t_ms": 26000.0, "data": {"choice": "conclude", "optional_index": 2, "input_modality": "mouse"}}
         ]
 
         result = ingest_telemetry_batch(self.db, self.session_id, events)
@@ -125,47 +169,9 @@ class TestStep7W7Repetition(unittest.TestCase):
         ).all()
         recon = reconstruct_m2_continuation_state(stored)
 
-        self.assertEqual(recon["mandatory_completed_count"], 2)
-        self.assertTrue(recon["mandatory_satisfied"])
-        self.assertEqual(recon["optional_completed_count"], 0)
-        self.assertTrue(recon["stopped_at_minimum"])
-        self.assertEqual(recon["final_choice"], "conclude")
-
-    def test_m2_continuation_voluntary_extra_sleeves(self):
-        """M2 candidate chooses to continue and prepares voluntary sleeves."""
-        events = [
-            # Mandatory Units 1 & 2
-            {"seq": 20, "screen": "game", "mini_game": "M2", "action": "unit_completed", "task_def_version": "1.0", "t_ms": 20000.0, "data": {"stimulus_id": "M2_M1", "unit_index": 0, "is_mandatory": True}},
-            {"seq": 21, "screen": "game", "mini_game": "M2", "action": "unit_completed", "task_def_version": "1.0", "t_ms": 21000.0, "data": {"stimulus_id": "M2_M2", "unit_index": 1, "is_mandatory": True}},
-
-            # Choice 1: Continue
-            {"seq": 22, "screen": "game", "mini_game": "M2", "action": "continuation_choice_selected", "task_def_version": "1.0", "t_ms": 22000.0, "data": {"choice": "continue", "optional_index": 0, "input_modality": "mouse"}},
-            # Optional Unit 1
-            {"seq": 23, "screen": "game", "mini_game": "M2", "action": "unit_completed", "task_def_version": "1.0", "t_ms": 23000.0, "data": {"stimulus_id": "M2_O1", "unit_index": 2, "is_mandatory": False}},
-
-            # Choice 2: Continue
-            {"seq": 24, "screen": "game", "mini_game": "M2", "action": "continuation_choice_selected", "task_def_version": "1.0", "t_ms": 24000.0, "data": {"choice": "continue", "optional_index": 1, "input_modality": "mouse"}},
-            # Optional Unit 2
-            {"seq": 25, "screen": "game", "mini_game": "M2", "action": "unit_completed", "task_def_version": "1.0", "t_ms": 25000.0, "data": {"stimulus_id": "M2_O2", "unit_index": 3, "is_mandatory": False}},
-
-            # Choice 3: Conclude
-            {"seq": 26, "screen": "game", "mini_game": "M2", "action": "continuation_choice_selected", "task_def_version": "1.0", "t_ms": 26000.0, "data": {"choice": "conclude", "optional_index": 2, "input_modality": "mouse"}}
-        ]
-
-        result = ingest_telemetry_batch(self.db, self.session_id, events)
-        self.assertEqual(result["ingested_count"], 7)
-
-        stored = self.db.exec(
-            select(DBTelemetryEvent).where(
-                DBTelemetryEvent.session_id == self.session_id,
-                DBTelemetryEvent.mini_game == "M2"
-            )
-        ).all()
-        recon = reconstruct_m2_continuation_state(stored)
-
-        self.assertEqual(recon["mandatory_completed_count"], 2)
+        self.assertEqual(recon["mandatory_completed_count"], 3)
         self.assertEqual(recon["optional_completed_count"], 2)
-        self.assertEqual(recon["total_units_completed"], 4)
+        self.assertEqual(recon["total_units_completed"], 5)
         self.assertFalse(recon["stopped_at_minimum"])
         self.assertEqual(recon["final_choice"], "conclude")
 

@@ -39,16 +39,17 @@ class TestStep3W3SharedCanvas(unittest.TestCase):
         defs = get_task_definitions()
         games = defs.get("games", {})
 
-        # C1: 3 rounds (deficit, balanced, surplus control)
+        # C1: 4 rounds (deficit, balanced, surplus control, self shortage retaining)
         self.assertIn("C1", games)
         c1 = games["C1"]
-        self.assertEqual(c1.get("total_trials"), 3)
-        self.assertEqual(len(c1.get("trials", [])), 3)
+        self.assertEqual(c1.get("total_trials"), 4)
+        self.assertEqual(len(c1.get("trials", [])), 4)
         c1_stims = [t["stimulus_id"] for t in c1["trials"]]
-        self.assertEqual(c1_stims, ["C1_R1", "C1_R2", "C1_R3"])
+        self.assertEqual(c1_stims, ["C1_R1", "C1_R2", "C1_R3", "C1_R4"])
         self.assertEqual(c1["trials"][0]["condition_type"], "share_needed")
         self.assertEqual(c1["trials"][1]["condition_type"], "equal_distribution")
-        self.assertEqual(c1["trials"][2]["condition_type"], "sharing_unnecessary")
+        self.assertEqual(c1["trials"][2]["condition_type"], "no_need_control")
+        self.assertEqual(c1["trials"][3]["condition_type"], "retain_needed")
 
         # C2: 3 rounds (distinct partner states, spatial placements)
         self.assertIn("C2", games)
@@ -90,11 +91,15 @@ class TestStep3W3SharedCanvas(unittest.TestCase):
             {"seq": 8, "screen": "game", "mini_game": "C1", "action": "round_presented", "task_def_version": "1.0", "t_ms": 7500.0, "data": {"trial_index": 2, "stimulus_id": "C1_R3"}},
             {"seq": 9, "screen": "game", "mini_game": "C1", "action": "resource_transferred", "task_def_version": "1.0", "t_ms": 8000.0, "data": {"trial_index": 2, "stimulus_id": "C1_R3", "delta": 1, "action_type": "transfer_to_partner", "input_modality": "mouse"}},
             {"seq": 10, "screen": "game", "mini_game": "C1", "action": "resource_transferred", "task_def_version": "1.0", "t_ms": 8500.0, "data": {"trial_index": 2, "stimulus_id": "C1_R3", "delta": -1, "action_type": "return_to_user", "input_modality": "mouse"}},
-            {"seq": 11, "screen": "game", "mini_game": "C1", "action": "allocation_confirmed", "task_def_version": "1.0", "t_ms": 9500.0, "data": {"trial_index": 2, "stimulus_id": "C1_R3", "input_modality": "mouse"}}
+            {"seq": 11, "screen": "game", "mini_game": "C1", "action": "allocation_confirmed", "task_def_version": "1.0", "t_ms": 9500.0, "data": {"trial_index": 2, "stimulus_id": "C1_R3", "input_modality": "mouse"}},
+
+            # Round 4: Self-Station Shortage (User: 3, Partner: 7) -> Transfer 0 (Retaining condition)
+            {"seq": 12, "screen": "game", "mini_game": "C1", "action": "round_presented", "task_def_version": "1.0", "t_ms": 10500.0, "data": {"trial_index": 3, "stimulus_id": "C1_R4"}},
+            {"seq": 13, "screen": "game", "mini_game": "C1", "action": "allocation_confirmed", "task_def_version": "1.0", "t_ms": 11500.0, "data": {"trial_index": 3, "stimulus_id": "C1_R4", "input_modality": "mouse"}}
         ]
 
         result = ingest_telemetry_batch(self.db, self.session_id, events)
-        self.assertEqual(result["ingested_count"], 11)
+        self.assertEqual(result["ingested_count"], 13)
 
         # Confirm no forbidden fields triggered
         flags = self.db.exec(
@@ -131,6 +136,12 @@ class TestStep3W3SharedCanvas(unittest.TestCase):
         self.assertEqual(recon["rounds"]["C1_R3"]["remaining_count"], 5)
         self.assertEqual(recon["rounds"]["C1_R3"]["partner_final_count"], 8)
         self.assertTrue(recon["rounds"]["C1_R3"]["is_confirmed"])
+
+        # Round 4 reconstruction: 0 transferred, 3 remaining, 7 partner final
+        self.assertEqual(recon["rounds"]["C1_R4"]["transferred_count"], 0)
+        self.assertEqual(recon["rounds"]["C1_R4"]["remaining_count"], 3)
+        self.assertEqual(recon["rounds"]["C1_R4"]["partner_final_count"], 7)
+        self.assertTrue(recon["rounds"]["C1_R4"]["is_confirmed"])
 
         self.assertTrue(recon["all_rounds_confirmed"])
 
