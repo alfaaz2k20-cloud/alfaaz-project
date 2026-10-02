@@ -895,6 +895,194 @@ def reconstruct_cr3_affordance_state(events: list) -> Dict[str, Any]:
         "all_completed": completed_count == len(trials)
     }
 
+def reconstruct_m1_diligence_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs M1 Baseline Diligence state strictly from primitive events:
+    - unit_presented (stimulus_id, unit_index, is_mandatory)
+    - unit_action_performed (stimulus_id, unit_index, action_type)
+    - unit_completed (stimulus_id, unit_index)
+
+    Invariants:
+    - Exactly 3 mandatory units.
+    - Minimum is clearly stated.
+    - Completion of mandatory units satisfies requirement (baseline diligence);
+      completion alone is not "high motivation".
+    """
+    defs = get_task_definitions().get("games", {}).get("M1", {})
+    trials = defs.get("trials", [])
+    mandatory_units = defs.get("mandatory_units", 3)
+
+    completed_units = set()
+    action_counts = {}
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "M1":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        s_id = data.get("stimulus_id") or data.get("inv_id")
+        if not s_id:
+            continue
+
+        if action in ("unit_action_performed", "envelope_stamped"):
+            action_counts[s_id] = action_counts.get(s_id, 0) + 1
+        if action in ("unit_completed", "envelope_stamped"):
+            completed_units.add(s_id)
+
+    completed_count = len(completed_units)
+    return {
+        "completed_count": completed_count,
+        "mandatory_units_target": mandatory_units,
+        "mandatory_satisfied": completed_count >= mandatory_units,
+        "completed_unit_ids": sorted(list(completed_units)),
+        "all_completed": completed_count >= len(trials)
+    }
+
+def reconstruct_m2_continuation_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs M2 Voluntary Continuation state strictly from primitive events:
+    - unit_presented (stimulus_id, unit_index, is_mandatory)
+    - unit_action_performed (stimulus_id, unit_index, action_type)
+    - unit_completed (stimulus_id, unit_index, is_mandatory)
+    - choice_presented (trial_index, mandatory_completed_count)
+    - continuation_choice_selected (choice: 'continue' | 'conclude', optional_index)
+
+    Invariants:
+    - 2 mandatory units.
+    - Explicit finish-or-continue choice after minimum.
+    - Up to 3 optional units.
+    - Stopping at minimum is neutral.
+    - Continuation is behavioral observation, not a high motivation score.
+    """
+    defs = get_task_definitions().get("games", {}).get("M2", {})
+    mandatory_target = defs.get("mandatory_units", 2)
+    max_optional = defs.get("max_optional_units", 3)
+
+    mandatory_completed = set()
+    optional_completed = set()
+    continuation_choices = []
+    final_choice = None
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "M2":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        s_id = data.get("stimulus_id")
+
+        if action == "unit_completed" and s_id:
+            is_mand = data.get("is_mandatory", True)
+            if is_mand:
+                mandatory_completed.add(s_id)
+            else:
+                optional_completed.add(s_id)
+        elif action in ("continuation_choice_selected", "optional_stamping_done"):
+            choice = data.get("choice") or ("conclude" if action == "optional_stamping_done" else None)
+            if choice:
+                continuation_choices.append(choice)
+                final_choice = choice
+        elif action == "optional_envelope_stamped":
+            opt_cnt = data.get("count", 1)
+            for i in range(1, opt_cnt + 1):
+                optional_completed.add(f"M2_O{i}")
+
+    mand_count = len(mandatory_completed)
+    opt_count = len(optional_completed)
+    return {
+        "mandatory_completed_count": mand_count,
+        "mandatory_target": mandatory_target,
+        "mandatory_satisfied": mand_count >= mandatory_target,
+        "optional_completed_count": opt_count,
+        "max_optional_units": max_optional,
+        "total_units_completed": mand_count + opt_count,
+        "continuation_choices": continuation_choices,
+        "stopped_at_minimum": mand_count >= mandatory_target and opt_count == 0,
+        "final_choice": final_choice
+    }
+
+def reconstruct_m3_persistence_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs M3 Persistence Under Reduced Feedback state strictly from primitive events:
+    - trial_presented (stimulus_id, unit_index, is_mandatory)
+    - unit_action_performed (stimulus_id, unit_index, action_type)
+    - unit_completed (stimulus_id, unit_index)
+    - conclude_selected (stimulus_id, unit_index, total_completed)
+
+    Invariants:
+    - Honest repetitive task.
+    - Feedback becomes less salient (minimal/fade-out).
+    - Explicit stop option available without deception.
+    - Stopping at minimum is neutral.
+    - Maximum observed continuation is right-censored at 6 units (3 mandatory + 3 voluntary).
+    - No artificial submission experience or deception.
+    """
+    defs = get_task_definitions().get("games", {}).get("M3", {})
+    mandatory_target = defs.get("mandatory_units", 3)
+    max_units = mandatory_target + defs.get("max_voluntary_units", 3)
+
+    mandatory_completed = set()
+    voluntary_completed = set()
+    concluded = False
+    stop_unit_index = None
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "M3":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        s_id = data.get("stimulus_id")
+
+        if action == "unit_completed" and s_id:
+            u_idx = data.get("unit_index", 0)
+            if u_idx < mandatory_target:
+                mandatory_completed.add(s_id)
+            else:
+                voluntary_completed.add(s_id)
+        elif action in ("conclude_selected", "gallery_readiness_complete"):
+            concluded = True
+            stop_unit_index = data.get("unit_index")
+
+    mand_count = len(mandatory_completed)
+    vol_count = len(voluntary_completed)
+    total_count = mand_count + vol_count
+
+    return {
+        "mandatory_completed_count": mand_count,
+        "mandatory_target": mandatory_target,
+        "mandatory_satisfied": mand_count >= mandatory_target,
+        "voluntary_completed_count": vol_count,
+        "total_units_completed": total_count,
+        "right_censored": total_count >= max_units,
+        "stopped_at_minimum": mand_count >= mandatory_target and vol_count == 0,
+        "concluded": concluded,
+        "stop_unit_index": stop_unit_index
+    }
+
+
 
 
 

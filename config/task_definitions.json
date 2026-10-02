@@ -385,7 +385,12 @@
       "parameter_id": "motivation",
       "facet": "baseline_diligence",
       "mandatory_units": 3,
-      "optional_units": 0
+      "optional_units": 0,
+      "trials": [
+        { "stimulus_id": "M1_U1", "unit_index": 0, "title": "Invitation Folio 1" },
+        { "stimulus_id": "M1_U2", "unit_index": 1, "title": "Invitation Folio 2" },
+        { "stimulus_id": "M1_U3", "unit_index": 2, "title": "Invitation Folio 3" }
+      ]
     },
     "M2": {
       "game_id": "M2",
@@ -393,7 +398,16 @@
       "parameter_id": "motivation",
       "facet": "voluntary_continuation",
       "mandatory_units": 2,
-      "max_optional_units": 3
+      "max_optional_units": 3,
+      "mandatory_trials": [
+        { "stimulus_id": "M2_M1", "unit_index": 0, "title": "Mandatory Courtesy Sleeve 1" },
+        { "stimulus_id": "M2_M2", "unit_index": 1, "title": "Mandatory Courtesy Sleeve 2" }
+      ],
+      "optional_trials": [
+        { "stimulus_id": "M2_O1", "optional_index": 0, "title": "Voluntary Courtesy Sleeve 1" },
+        { "stimulus_id": "M2_O2", "optional_index": 1, "title": "Voluntary Courtesy Sleeve 2" },
+        { "stimulus_id": "M2_O3", "optional_index": 2, "title": "Voluntary Courtesy Sleeve 3" }
+      ]
     },
     "M3": {
       "game_id": "M3",
@@ -401,8 +415,17 @@
       "parameter_id": "motivation",
       "facet": "persistence_under_reduced_feedback",
       "mandatory_units": 3,
+      "max_voluntary_units": 3,
       "feedback_saliency": "minimal",
-      "explicit_permission_to_stop": true
+      "explicit_permission_to_stop": true,
+      "trials": [
+        { "stimulus_id": "M3_U1", "unit_index": 0, "is_mandatory": true, "title": "Gallery Register Verification 1" },
+        { "stimulus_id": "M3_U2", "unit_index": 1, "is_mandatory": true, "title": "Gallery Register Verification 2" },
+        { "stimulus_id": "M3_U3", "unit_index": 2, "is_mandatory": true, "title": "Gallery Register Verification 3" },
+        { "stimulus_id": "M3_U4", "unit_index": 3, "is_mandatory": false, "title": "Voluntary Register Verification 4" },
+        { "stimulus_id": "M3_U5", "unit_index": 4, "is_mandatory": false, "title": "Voluntary Register Verification 5" },
+        { "stimulus_id": "M3_U6", "unit_index": 5, "is_mandatory": false, "title": "Voluntary Register Verification 6" }
+      ]
     }
   }
 }
