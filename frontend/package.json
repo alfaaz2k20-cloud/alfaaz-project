@@ -12,8 +12,8 @@
     "vite": "^5.0.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "node scripts/check-recruit-build-config.mjs && vite build",
+    "dev": "node scripts/generate-recruit-tailwind.mjs && vite",
+    "build": "node scripts/check-recruit-build-config.mjs && node scripts/generate-recruit-tailwind.mjs && vite build",
     "preview": "vite preview"
   }
 }

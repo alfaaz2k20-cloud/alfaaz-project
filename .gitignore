@@ -7,6 +7,7 @@ backend/.venv/
 .env
 .env.*
 backend/.env
+recovery-codes.txt
 
 # Python cache
 __pycache__/

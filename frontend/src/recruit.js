@@ -3,6 +3,7 @@
    ========================================================================== */
 
 import consentCopy from '../../config/copy/consent.json';
+import './recruit-utilities.css';
 
 let state = {
   sessionId: null,
@@ -27,8 +28,10 @@ let state = {
 
 const STATE_STORAGE_KEY = 'alfaaz_recruit_state';
 const UNSENT_STORAGE_KEY = 'alfaaz_recruit_unsent';
+let localStateSaveScheduled = false;
 
-function saveLocalState() {
+function persistLocalState() {
+  localStateSaveScheduled = false;
   try {
     const toSave = {
       sessionId: state.sessionId,
@@ -45,12 +48,30 @@ function saveLocalState() {
       segmentId: state.segmentId,
       seq: state.seq,
       isPaused: state.isPaused,
-      activeMiniGameInProgress: state.activeMiniGameInProgress || false
+      activeMiniGameInProgress: state.activeMiniGameInProgress || false,
+      telemetryTerminal: state.telemetryTerminal
     };
     sessionStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(toSave));
     sessionStorage.setItem(UNSENT_STORAGE_KEY, JSON.stringify(state.telemetryQueue));
   } catch (e) {
     console.warn('[Persistence] Error saving sessionStorage:', e);
+  }
+}
+
+function saveLocalState({ immediate = false } = {}) {
+  if (immediate) {
+    persistLocalState();
+    return;
+  }
+
+  if (localStateSaveScheduled) return;
+  localStateSaveScheduled = true;
+  const persistWhenIdle = () => persistLocalState();
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(persistWhenIdle, { timeout: 500 });
+  } else {
+    window.setTimeout(persistWhenIdle, 100);
   }
 }
 
@@ -82,6 +103,7 @@ function restoreLocalState() {
         state.accessibilityModes = saved.accessibilityModes || [];
         state.seq = saved.seq || 1;
         state.isPaused = saved.isPaused || false;
+        state.telemetryTerminal = saved.telemetryTerminal || false;
 
         // Reload handling per Section 5.4:
         // - recover last server sequence; continue at last acknowledged sequence + 1
@@ -107,7 +129,7 @@ function restoreLocalState() {
           state.activeMiniGameInProgress = false;
         }
 
-        saveLocalState();
+        saveLocalState({ immediate: true });
         return true;
       }
     }
@@ -118,10 +140,6 @@ function restoreLocalState() {
 }
 
 async function apiFetch(endpoint, options = {}) {
-  if (window.globalApiFetch) {
-    const res = await window.globalApiFetch(endpoint, options);
-    return res;
-  }
   const apiBase = window.ALFAAZ_API_URL || 'https://alfaaz-project.onrender.com';
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
   return fetch(`${apiBase}${endpoint}`, {
@@ -174,16 +192,12 @@ function logEvent(screen, action, data = {}, stateSnapshot = {}, inputType = 'mo
 }
 
 let isFlushing = false;
+let telemetryBatchSize = 50;
 async function flushTelemetry() {
-  if (isFlushing || !state.sessionId || state.telemetryQueue.length === 0 || state.telemetryTerminal) return;
+  if (isFlushing || !state.sessionId || state.telemetryQueue.length === 0) return false;
+  if (state.telemetryTerminal) return true;
   isFlushing = true;
-  const batch = [...state.telemetryQueue];
-
-  // Maximum batch size: 100 events
-  const sending = batch.slice(0, 100);
-  const remaining = batch.slice(100);
-  state.telemetryQueue = remaining;
-  saveLocalState();
+  const sending = state.telemetryQueue.slice(0, telemetryBatchSize);
 
   try {
     const resp = await apiFetch('/recruit/telemetry', {
@@ -199,38 +213,45 @@ async function flushTelemetry() {
       if (errJson.detail && (errJson.detail.detail === 'events_cap_reached' || errJson.detail.status === 'DATA_LIMITED')) {
         console.warn('[Telemetry] Terminal event cap reached (50,000). Halting future telemetry flushes.');
         state.telemetryTerminal = true;
-        state.telemetryQueue = [...sending, ...remaining];
-        saveLocalState();
-        isFlushing = false;
-        return;
+        saveLocalState({ immediate: true });
+        return true;
       }
     }
 
     if (resp && resp.status === 413) {
       console.warn('[Telemetry] Batch rejected with HTTP 413 (oversize).');
       if (sending.length > 1) {
-        const half = Math.ceil(sending.length / 2);
-        state.telemetryQueue = [...sending.slice(0, half), ...sending.slice(half), ...remaining];
+        telemetryBatchSize = Math.max(1, Math.floor(sending.length / 2));
       } else {
-        console.error('[Telemetry] Single event exceeds body limit. Discarding oversized payload.');
+        console.error('[Telemetry] A single telemetry event exceeds the body limit. It remains queued for recovery.');
       }
-      saveLocalState();
-      isFlushing = false;
-      return;
+      saveLocalState({ immediate: true });
+      return false;
     }
 
     if (!resp || !resp.ok) {
       throw new Error(resp ? `HTTP ${resp.status}` : 'No response');
     }
 
+    state.telemetryQueue.splice(0, sending.length);
     saveLocalState();
+    return true;
   } catch (err) {
-    console.warn('[Telemetry] Flush failed, re-queuing:', err);
-    state.telemetryQueue = [...sending, ...state.telemetryQueue];
-    saveLocalState();
+    console.warn('[Telemetry] Flush failed; telemetry remains queued:', err);
+    saveLocalState({ immediate: true });
+    return false;
   } finally {
     isFlushing = false;
   }
+}
+
+async function flushAllTelemetry() {
+  while (!state.telemetryTerminal && state.telemetryQueue.length > 0) {
+    const queuedBeforeFlush = state.telemetryQueue.length;
+    const sent = await flushTelemetry();
+    if (!sent || state.telemetryQueue.length >= queuedBeforeFlush) return false;
+  }
+  return true;
 }
 
 // Flush approximately every 2.5 seconds (configured interval: 2500ms)
@@ -240,26 +261,19 @@ setInterval(() => {
   }
 }, 2500);
 
-// Flush on unload & pagehide
-window.addEventListener('beforeunload', () => {
-  if (state.sessionId && state.telemetryQueue.length > 0) {
-    const apiBase = window.ALFAAZ_API_URL || '';
-    const payload = JSON.stringify({
-      session_id: state.sessionId,
-      events: state.telemetryQueue.slice(0, 100)
-    });
-    navigator.sendBeacon(`${apiBase}/recruit/telemetry`, payload);
-  }
-});
-
+// pagehide covers normal navigation and mobile backgrounding without duplicate beacons.
 window.addEventListener('pagehide', () => {
+  saveLocalState({ immediate: true });
   if (state.sessionId && state.telemetryQueue.length > 0) {
     const apiBase = window.ALFAAZ_API_URL || '';
     const payload = JSON.stringify({
       session_id: state.sessionId,
-      events: state.telemetryQueue.slice(0, 100)
+      events: state.telemetryQueue.slice(0, telemetryBatchSize)
     });
-    navigator.sendBeacon(`${apiBase}/recruit/telemetry`, payload);
+    navigator.sendBeacon(
+      `${apiBase}/recruit/telemetry`,
+      new Blob([payload], { type: 'application/json' })
+    );
   }
 });
 
@@ -445,7 +459,7 @@ function renderConsent(app) {
 
         state.screen = 'identity';
         logEvent('consent', 'consent_accepted');
-        saveLocalState();
+        saveLocalState({ immediate: true });
         renderScreen();
       } else {
         throw new Error('Missing session ID');
@@ -512,7 +526,7 @@ function renderIdentity(app) {
 
       state.screen = 'accessibility';
       logEvent('identity', 'identity_submitted');
-      saveLocalState();
+      saveLocalState({ immediate: true });
       renderScreen();
     } catch (err) {
       alert(`Unable to continue: ${err.message || 'Please check connection.'}`);
@@ -597,7 +611,7 @@ function renderAccessibility(app) {
 
     state.screen = 'warmup';
     logEvent('accessibility', 'preferences_saved', { modes });
-    saveLocalState();
+    saveLocalState({ immediate: true });
     renderScreen();
   });
 }
@@ -682,7 +696,7 @@ function renderWarmup(app) {
           state.sjtScenarios = sjtData.scenarios || [];
           state.currentSjtIndex = 0;
           state.screen = 'sjt';
-          saveLocalState();
+          saveLocalState({ immediate: true });
           renderScreen();
         } catch (err) {
           console.warn('Failed to load SJT payload:', err);
@@ -839,7 +853,7 @@ async function submitSjtAndProceed() {
     state.currentWorldIndex = 0;
     state.currentMiniGameIndex = 0;
     logEvent('sjt', 'sjt_complete', { response_count: Object.keys(state.sjtResponses).length });
-    saveLocalState();
+    saveLocalState({ immediate: true });
     renderScreen();
   } catch (err) {
     console.warn('SJT submit error:', err);
@@ -876,7 +890,7 @@ function renderGames(app, progressBarFill) {
   }
 
   state.activeMiniGameInProgress = true;
-  saveLocalState();
+  saveLocalState({ immediate: true });
 
   const segmentProgress = document.getElementById('segmentProgress');
   if (segmentProgress) segmentProgress.textContent = `World ${state.currentWorldIndex + 1}/7`;
@@ -906,7 +920,7 @@ function renderGames(app, progressBarFill) {
         state.currentMiniGameIndex = 0;
         state.currentWorldIndex++;
       }
-      saveLocalState();
+      saveLocalState({ immediate: true });
       renderGames(app, progressBarFill);
     }
   });
@@ -925,9 +939,28 @@ function getMiniGameId(worldCode, mgIndex) {
   return (mapping[worldCode] && mapping[worldCode][mgIndex]) || 'MG';
 }
 
+let isFinishingAssessment = false;
+
+function renderFinalizationRetry(app, message) {
+  if (!app) return;
+  app.innerHTML = `
+    <div class="space-y-6 text-center py-16 animate-fadeIn">
+      <div class="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto text-xl font-serif">!</div>
+      <h2 class="text-2xl font-serif text-[var(--text-primary)]">Connection Notice</h2>
+      <p class="text-xs text-[var(--text-secondary)] max-w-md mx-auto leading-relaxed">${message}</p>
+      <div class="pt-2">
+        <button id="retryFinalizationBtn" class="min-h-[44px] px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs">Retry Finalization &rarr;</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('retryFinalizationBtn')?.addEventListener('click', finishAssessment);
+}
+
 async function finishAssessment() {
+  if (isFinishingAssessment) return;
+  isFinishingAssessment = true;
   state.activeMiniGameInProgress = false;
-  saveLocalState();
+  saveLocalState({ immediate: true });
 
   const app = document.getElementById('recruitApp');
   if (app) {
@@ -940,21 +973,32 @@ async function finishAssessment() {
     `;
   }
 
-  // Strictly await final telemetry acknowledgement before POST /recruit/complete
-  await flushTelemetry();
+  // Completion is only valid after every remaining telemetry batch is acknowledged.
+  const telemetryFlushed = await flushAllTelemetry();
+  if (!telemetryFlushed) {
+    renderFinalizationRetry(app, 'Your activity record is safely stored on this device, but the connection did not confirm every final event. Please retry before completing the session.');
+    isFinishingAssessment = false;
+    return;
+  }
 
   try {
-    await apiFetch('/recruit/complete', {
+    const response = await apiFetch('/recruit/complete', {
       method: 'POST',
       body: JSON.stringify({ session_id: state.sessionId })
     });
+    if (!response || !response.ok) {
+      throw new Error(response ? `Server returned HTTP ${response.status}` : 'No response from server');
+    }
+
+    state.screen = 'complete';
+    saveLocalState({ immediate: true });
+    renderScreen();
   } catch (err) {
     console.warn('Session complete submission error:', err);
+    renderFinalizationRetry(app, 'The final session confirmation was not received. Your completed activity remains saved; please retry the final confirmation.');
+  } finally {
+    isFinishingAssessment = false;
   }
-
-  state.screen = 'complete';
-  saveLocalState();
-  renderScreen();
 }
 
 // 6. Paused Modal

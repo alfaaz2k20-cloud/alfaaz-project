@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'alfaaz-pwa-v1';
+const CACHE_VERSION = 'alfaaz-pwa-v2';
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -30,7 +30,8 @@ const PRECACHE_URLS = [
 ];
 
 const STATIC_DESTINATIONS = new Set(['font', 'image', 'manifest', 'script', 'style', 'worker']);
-const THIRD_PARTY_STATIC_HOSTS = new Set(['cdn.tailwindcss.com', 'unpkg.com']);
+const NETWORK_FIRST_DESTINATIONS = new Set(['script', 'style', 'worker']);
+const THIRD_PARTY_STATIC_HOSTS = new Set(['unpkg.com']);
 
 function isSameOrigin(url) {
   return url.origin === self.location.origin;
@@ -92,6 +93,20 @@ async function networkFirstNavigation(request) {
   }
 }
 
+async function networkFirstStatic(request) {
+  const cache = await caches.open(RUNTIME_CACHE);
+
+  try {
+    const response = await fetch(request);
+    if (response.ok || response.type === 'opaque') {
+      await cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    return await cache.match(request) || new Response('', { status: 504, statusText: 'Offline' });
+  }
+}
+
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(RUNTIME_CACHE);
   const cached = await cache.match(request);
@@ -117,6 +132,12 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(networkFirstNavigation(request));
+    return;
+  }
+
+  // Candidate and admin code must update on the first visit after a deploy.
+  if (isSameOrigin(url) && NETWORK_FIRST_DESTINATIONS.has(request.destination)) {
+    event.respondWith(networkFirstStatic(request));
     return;
   }
 

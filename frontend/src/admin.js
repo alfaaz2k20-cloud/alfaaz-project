@@ -417,7 +417,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const evidenceStatus = s.evidence_status || (tasksCount >= 21 && s.has_sjt ? 'Evidence Collected' : 'In Progress');
           const evidenceBadgeClass = evidenceStatus === 'Evidence Collected' ? 'badge-approved' : 'badge-pending';
           const sessionStatus = s.status || 'ACTIVE';
-          const sessionStatusClass = sessionStatus === 'COMPLETED' ? 'badge-approved' : (sessionStatus === 'CONSENTED' ? 'badge-pending' : 'badge-open');
+          const isSessionComplete = ['COMPLETE', 'COMPLETED'].includes(sessionStatus);
+          const sessionStatusClass = isSessionComplete ? 'badge-approved' : (sessionStatus === 'CONSENTED' ? 'badge-pending' : 'badge-open');
 
           card.innerHTML = `
             <div style="flex:1;">
@@ -453,6 +454,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
+    async function fetchCandidateDossier(sessionId) {
+      let response = null;
+
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          response = await window.globalApiFetch(`/recruit/research/session/${sessionId}`);
+          if (!response || response.ok || response.status < 500) return response;
+        } catch (error) {
+          if (attempt === 2) throw error;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1200 * (attempt + 1)));
+      }
+
+      return response;
+    }
+
     window.viewCandidateDossier = async function(sessionId) {
       document.getElementById('modalTitle').textContent = 'Candidate Evidence Dossier';
       const body = document.getElementById('modalBody');
@@ -466,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('regModal').classList.add('open');
 
       try {
-        const res = await window.globalApiFetch(`/recruit/research/session/${sessionId}`);
+        const res = await fetchCandidateDossier(sessionId);
         if (!res) {
           body.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--accent-red);">Session expired or network error. Please refresh and try again.</div>';
           return;
@@ -485,6 +503,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const feats = data.features || [];
         const flags = data.data_quality_flags || [];
         const taskRecords = data.task_records || [];
+        const comparisons = data.measurement_comparisons || {};
+        const psychometric = data.psychometric_status || {};
         const taskStatement = data.task_records_statement || 'Descriptive task counts; not a score, not norm-referenced, and not a basis for automated decisions.';
 
         const candidateName = window.escapeHtml(applicant.full_name || 'Candidate');
@@ -493,7 +513,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const consentDateStr = consent.timestamp ? new Date(consent.timestamp).toLocaleString() : (meta.created_at ? new Date(meta.created_at).toLocaleString() : '—');
         const dpdpVersion = window.escapeHtml(consent.consent_text_version || '1.0');
         const durationMin = meta.duration_minutes !== null && meta.duration_minutes !== undefined ? `${meta.duration_minutes} min` : 'In progress';
-        const totalEvents = meta.telemetry_summary?.total_events || 'Recorded';
+        const totalEvents = meta.telemetry_summary?.total_events ?? 'Unavailable';
+        const sessionComplete = ['COMPLETE', 'COMPLETED'].includes(meta.status);
 
         document.getElementById('modalTitle').textContent = `${candidateName} — Assessment Evidence Dossier`;
 
@@ -506,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div><strong>Email:</strong> ${candidateEmail}</div>
               <div><strong>Contact / Phone:</strong> ${candidatePhone}</div>
               <div><strong>Session ID:</strong> <span style="font-family:monospace; font-size:11px;">${sessionId}</span></div>
-              <div><strong>Session Status:</strong> <span class="badge ${meta.status === 'COMPLETED' ? 'badge-approved' : 'badge-pending'}" style="font-size:9px;">${meta.status || 'ACTIVE'}</span></div>
+              <div><strong>Session Status:</strong> <span class="badge ${sessionComplete ? 'badge-approved' : 'badge-pending'}" style="font-size:9px;">${window.escapeHtml(meta.status || 'ACTIVE')}</span></div>
               <div><strong>Duration:</strong> ${durationMin}</div>
               <div><strong>Consent Recorded:</strong> ${consentDateStr}</div>
               <div><strong>DPDP Notice Version:</strong> <span style="font-family:monospace; font-size:11px;">v${dpdpVersion}</span></div>
@@ -678,8 +699,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; font-size:12px; margin-bottom:0.75rem;">
               <div><strong>Total Duration:</strong> ${durationMin}</div>
               <div><strong>Raw Events Logged:</strong> ${totalEvents}</div>
-              <div><strong>Throttling Rate:</strong> Normal (100ms slider limit active)</div>
-              <div><strong>Integrity Status:</strong> Clean / Zero Critical Conflicts</div>
+              <div><strong>Throttling:</strong> Not reported by this dossier endpoint</div>
+              <div><strong>Data quality flags:</strong> ${flags.length} recorded</div>
             </div>
             ${flags.length > 0 ? `
               <div style="margin-top:0.75rem; padding:0.75rem; background:#fff3e0; border:1px solid #ffe0b2; font-size:11px;">
@@ -688,7 +709,73 @@ document.addEventListener('DOMContentLoaded', () => {
                   ${flags.map(fl => `<li><span style="font-family:monospace;">${fl.scope}:</span> ${fl.flag} (${fl.detail || 'Standard observation'})</li>`).join('')}
                 </ul>
               </div>
-            ` : '<div style="font-size:11px; color:#2e7d32; font-weight:500;">✓ No data quality flags triggered. Zero telemetry loss detected.</div>'}
+            ` : '<div style="font-size:11px; color:var(--text-secondary);">No data-quality flags are recorded. This does not independently verify telemetry completeness.</div>'}
+          </div>
+        `;
+
+        // 7. Game-level measurement status and empirical calibration indicators
+        const comparisonsByGame = new Map();
+        Object.entries(comparisons).forEach(([parameter, comparison]) => {
+          (comparison.mini_games || []).forEach(game => comparisonsByGame.set(game.mini_game, { parameter, game }));
+        });
+        const gameMeasurementRows = taskRecords.map(record => {
+          const entry = comparisonsByGame.get(record.game_id);
+          const measure = entry?.game;
+          const gameFeatures = measure?.features || [];
+          const value = measure?.feature_status === 'QUARANTINED'
+            ? 'Withheld while extractor is quarantined'
+            : gameFeatures.length
+            ? gameFeatures.map(feature => `${window.escapeHtml(feature.name)}: ${window.escapeHtml(formatRaw(feature.value))}`).join('<br>')
+            : 'No feature derived';
+          const reliability = psychometric.reliability === 'ESTIMATED' ? 'See study estimate' : 'Not estimated';
+          const validity = psychometric.validity === 'ESTIMATED' ? 'See study estimate' : 'Not estimated';
+          return `<tr style="border-bottom:1px solid var(--grid-border); font-size:11px;">
+            <td style="padding:0.5rem;">${window.escapeHtml(record.world_name || record.world_id)}</td>
+            <td style="padding:0.5rem; font-family:monospace;">${window.escapeHtml(record.game_id)}</td>
+            <td style="padding:0.5rem;">${window.escapeHtml(entry?.parameter || '—')}</td>
+            <td style="padding:0.5rem;">${window.escapeHtml(measure?.feature_status || 'NOT_DERIVED')}</td>
+            <td style="padding:0.5rem;">${value}</td>
+            <td style="padding:0.5rem;">${reliability}</td>
+            <td style="padding:0.5rem;">${validity}</td>
+          </tr>`;
+        }).join('');
+        const constructRows = Object.entries(comparisons).map(([parameter, comparison]) => {
+          const within = comparison.within_construct_pairwise_deltas || [];
+          const withinText = within.length
+            ? within.map(delta => `${window.escapeHtml(delta.left_game)}–${window.escapeHtml(delta.right_game)}: ${delta.delta_bands} band(s)`).join('<br>')
+            : 'Not available until calibrated game bands exist';
+          const withinTolerance = comparison.within_construct_delta_tolerance_bands == null
+            ? 'Not set while uncalibrated'
+            : `${comparison.within_construct_delta_tolerance_bands} band(s)`;
+          const sjtDelta = comparison.sjt_game_delta_bands == null ? 'Not available until both methods are calibrated' : `${comparison.sjt_game_delta_bands} band(s)`;
+          return `<tr style="border-bottom:1px solid var(--grid-border); font-size:11px;">
+            <td style="padding:0.5rem;">${window.escapeHtml(parameter.replace(/_/g, ' '))}</td>
+            <td style="padding:0.5rem;">${withinText}</td>
+            <td style="padding:0.5rem;">${withinTolerance}</td>
+            <td style="padding:0.5rem;">${window.escapeHtml(comparison.sjt_band || '—')} / ${window.escapeHtml(comparison.game_band || '—')}</td>
+            <td style="padding:0.5rem;">${sjtDelta}</td>
+            <td style="padding:0.5rem;">${window.escapeHtml(comparison.sjt_game_delta_tolerance == null ? 'Not set' : comparison.sjt_game_delta_tolerance)}</td>
+          </tr>`;
+        }).join('');
+        const section7Html = `
+          <div style="margin-bottom:1.5rem;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.5rem;">7. Game Measurement & Calibration</div>
+            <div style="font-size:11px; background:#fff3e0; border-left:3px solid #bd6f5d; padding:0.75rem 1rem; margin-bottom:1rem; line-height:1.5;">
+              Reliability and validity are study-level estimates, not candidate-level scores. Current calibration: <strong>${window.escapeHtml(psychometric.calibration_status || 'UNKNOWN')}</strong>; regression: <strong>${window.escapeHtml(psychometric.regression || 'NOT_RUN')}</strong>. A single combined score is deliberately unavailable until its measurement model and thresholds are empirically calibrated.
+            </div>
+            <div style="overflow-x:auto; border:1px solid var(--grid-border); background:#fff; margin-bottom:1rem;">
+              <table style="width:100%; border-collapse:collapse; text-align:left; min-width:760px;">
+                <thead><tr style="background:#f0eeea; font-size:10px; text-transform:uppercase; color:var(--text-secondary);"><th style="padding:0.5rem;">World</th><th style="padding:0.5rem;">Game</th><th style="padding:0.5rem;">Intended construct</th><th style="padding:0.5rem;">Extractor state</th><th style="padding:0.5rem;">Observed feature(s)</th><th style="padding:0.5rem;">Reliability</th><th style="padding:0.5rem;">Validity</th></tr></thead>
+                <tbody>${gameMeasurementRows || '<tr><td colspan="7" style="padding:1rem;">Game catalog unavailable.</td></tr>'}</tbody>
+              </table>
+            </div>
+            <div style="overflow-x:auto; border:1px solid var(--grid-border); background:#fff;">
+              <table style="width:100%; border-collapse:collapse; text-align:left; min-width:760px;">
+                <thead><tr style="background:#f0eeea; font-size:10px; text-transform:uppercase; color:var(--text-secondary);"><th style="padding:0.5rem;">Construct</th><th style="padding:0.5rem;">Game-to-game delta</th><th style="padding:0.5rem;">Acceptable delta</th><th style="padding:0.5rem;">SJT / game bands</th><th style="padding:0.5rem;">SJT-to-game delta</th><th style="padding:0.5rem;">Acceptable delta</th></tr></thead>
+                <tbody>${constructRows || '<tr><td colspan="6" style="padding:1rem;">Construct comparisons unavailable.</td></tr>'}</tbody>
+              </table>
+            </div>
+            <div style="font-size:10px; color:var(--text-secondary); margin-top:0.5rem;">Delta is a descriptive band distance, not a validity statistic. Thresholds must be prespecified and empirically justified; cross-method tolerance is currently unset. ${window.escapeHtml(psychometric.reliability_note || '')} ${window.escapeHtml(psychometric.validity_note || '')}</div>
           </div>
         `;
 
@@ -699,6 +786,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${section4Html}
           ${section5Html}
           ${section6Html}
+          ${section7Html}
         `;
       } catch (err) {
         console.error('Candidate dossier load error:', err);

@@ -13,7 +13,14 @@ from app.models.recruit import (
     DBConsentRecord, DBTelemetryEvent
 )
 from app.services.feature_extractor import extract_session_features
-from app.services.evidence_integrator import integrate_session_evidence
+from app.services.evidence_integrator import (
+    PARAM_MINIGAMES,
+    classify_minigame_band,
+    evaluate_minigame_status,
+    integrate_session_evidence,
+    load_feature_bands_config,
+    load_integration_config
+)
 from app.services.descriptive_task_record import get_session_task_records, DOSSIER_STATEMENT
 
 router = APIRouter(prefix="/recruit/research", tags=["Recruiter Research View"])
@@ -148,6 +155,9 @@ def get_session_research_view(
     features = db.exec(
         select(DBFeature).where(DBFeature.session_id == session_id)
     ).all()
+    features_by_game: Dict[str, List[DBFeature]] = {}
+    for feature in features:
+        features_by_game.setdefault(feature.mini_game, []).append(feature)
     events_count = db.exec(select(func.count(DBTelemetryEvent.id)).where(DBTelemetryEvent.session_id == session_id)).one()
 
     evidence_dict = {}
@@ -168,10 +178,87 @@ def get_session_research_view(
             "observed_behavior": ev.observed_behavior_summary
         }
 
+    feature_bands_cfg = load_feature_bands_config()
+    integration_cfg = load_integration_config()
+    calibration_status = feature_bands_cfg.get("calibration_status", "UNCALIBRATED")
+    within_game_tolerance = integration_cfg.get("consistency_max_band_range", 1)
+    def parse_feature_flags(feature: DBFeature) -> List[str]:
+        try:
+            parsed = json.loads(feature.flags_json or "[]")
+        except (TypeError, json.JSONDecodeError):
+            return ["invalid_feature_flags_json"]
+        return parsed if isinstance(parsed, list) else ["invalid_feature_flags_json"]
+
+    measurement_comparisons = {}
+    for parameter, game_ids in PARAM_MINIGAMES.items():
+        game_measures = []
+        calibrated_bands = []
+        for game_id in game_ids:
+            game_features = features_by_game.get(game_id, [])
+            game_status = evaluate_minigame_status(game_id, game_features, flags)
+            calibrated_band = None
+            if calibration_status == "CALIBRATED" and game_status == "USABLE" and game_features:
+                calibrated_band = classify_minigame_band(
+                    game_id,
+                    game_features[0].value_raw,
+                    feature_bands_cfg.get("bands", {}).get(game_id)
+                )
+            if calibrated_band in ("LOW", "MODERATE", "HIGH"):
+                calibrated_bands.append((game_id, calibrated_band))
+
+            game_measures.append({
+                "mini_game": game_id,
+                "status": game_status,
+                "feature_status": "NOT_DERIVED" if not game_features else (
+                    "QUARANTINED" if any("feature_not_implemented" in parse_feature_flags(f) for f in game_features) else (
+                        "VALID" if all(f.valid for f in game_features) else "FLAGGED"
+                    )
+                ),
+                "features": [
+                    {
+                        "name": f.feature_name,
+                        "value": None if "feature_not_implemented" in parse_feature_flags(f) else f.value_raw,
+                        "valid": f.valid,
+                        "flags": parse_feature_flags(f)
+                    }
+                    for f in game_features
+                ],
+                "calibrated_band": calibrated_band
+            })
+
+        pairwise_deltas = []
+        for left_index, (left_game, left_band) in enumerate(calibrated_bands):
+            for right_game, right_band in calibrated_bands[left_index + 1:]:
+                band_order = {"LOW": 0, "MODERATE": 1, "HIGH": 2}
+                pairwise_deltas.append({
+                    "left_game": left_game,
+                    "right_game": right_game,
+                    "delta_bands": abs(band_order[left_band] - band_order[right_band])
+                })
+
+        evidence = evidence_dict.get(parameter, {})
+        sjt_band = evidence.get("sjt_band")
+        game_band = evidence.get("game_band")
+        band_order = {"LOW": 0, "MODERATE": 1, "HIGH": 2}
+        sjt_game_delta = None
+        if calibration_status == "CALIBRATED" and sjt_band in band_order and game_band in band_order:
+            sjt_game_delta = abs(band_order[sjt_band] - band_order[game_band])
+
+        measurement_comparisons[parameter] = {
+            "mini_games": game_measures,
+            "within_construct_pairwise_deltas": pairwise_deltas,
+            "within_construct_delta_tolerance_bands": within_game_tolerance if calibration_status == "CALIBRATED" else None,
+            "sjt_band": sjt_band,
+            "game_band": game_band,
+            "sjt_game_delta_bands": sjt_game_delta,
+            "sjt_game_relationship": evidence.get("relationship", "NOT_COMPUTED"),
+            "sjt_game_delta_tolerance": None
+        }
+
     formatted_features = []
     for f in features:
         meta = FEATURE_LABELS.get(f.feature_name, (f.mini_game, f.feature_name.replace('_', ' ').title(), "Interactive Task"))
-        flags_list = json.loads(f.flags_json) if f.flags_json else []
+        flags_list = parse_feature_flags(f)
         is_quarantined = "feature_not_implemented" in flags_list
         formatted_features.append({
             "mini_game": f.mini_game,
@@ -222,6 +309,19 @@ def get_session_research_view(
             }
         },
         "evidence_by_parameter": evidence_dict,
+        "measurement_comparisons": measurement_comparisons,
+        "psychometric_status": {
+            "calibration_status": calibration_status,
+            "reliability": "NOT_ESTIMATED",
+            "validity": "NOT_ESTIMATED",
+            "regression": "NOT_RUN",
+            "reliability_method": None,
+            "validity_method": None,
+            "reliability_note": "Requires a task-appropriate empirical study; inter-rater reliability also requires independent human ratings.",
+            "validity_note": "Criterion validity and regression require linked outcome data and a reviewed study design.",
+            "single_score_status": "NOT_AVAILABLE_UNCALIBRATED",
+            "single_score": None
+        },
         "features": formatted_features,
         "task_records": get_session_task_records(db, session_id),
         "task_records_statement": DOSSIER_STATEMENT,
