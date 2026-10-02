@@ -476,19 +476,23 @@ Telemetry across all mini-games records user interaction characteristics without
 
 ---
 
-## 13. Owner-Approved Reconciled Amendments (Release Hardening)
+## 13. Owner-Approved Reconciled Amendments (Authoritative Frozen Counts Restored)
 
-The following authoritative owner amendments reconcile the design freeze and define canonical target counts for Alfaaz Recruit:
+The owner has explicitly **REVOKED** the previously proposed amendments (A1=12, A3=8, C1=4). The authoritative frozen design counts are restored and locked as follows:
 
-1. **A1 (Classification): 12 items**
-   - Expanded from earlier 8/10 items to exactly 12 items (`DOC_01` through `DOC_12`).
-   - Maintains balanced distribution across genres with unambiguous ground-truth rules (`rules.py` / `task_definitions.json`).
+1. **A1 (Classification): Exactly 5 items**
+   - Restored to exactly 5 frozen items (`DOC_01` through `DOC_05`).
+   - Evaluates rule adherence across standard manuscript folio classification rules without inflation.
 
-2. **A3 (Quality Control): 8 records**
-   - Expanded from earlier 6 items to exactly 8 catalog ledger records (`REC_01` through `REC_08`).
-   - Server reconstructs inspection thoroughness and discrepancy flagging from primitive event streams (`record_inspected`, `discrepancy_toggled`).
+2. **A2 (Exception Handling): At least 3 genuine exception opportunities**
+   - Must present $\ge 3$ genuine exception opportunities. Clean controls do **not** count toward the validity gate ($N \ge 3$).
+   - Strict gate: $N < 3$ genuine exception decisions yields `INSUFFICIENT_OBSERVATIONS`.
 
-3. **C1 (Resource Cooperation): 4 allocation rounds**
-   - Expanded from earlier 3 rounds to exactly 4 distinct inventory rounds (`C1_R1` through `C1_R4`).
-   - Crucially incorporates `C1_R4` (Self-Station Ceramic Shortage): candidate station has deficit (3 tiles, quota 6) while partner has surplus (7 tiles, quota 4).
-   - In `C1_R4`, retaining resources is the task-defined appropriate behavior, ensuring cooperation is not conflated with indiscriminate self-depriving over-allocation.
+3. **A3 (Quality Control): Exactly 5 records**
+   - Restored to exactly 5 exhibition catalog ledger records (`REC_01` through `REC_05`).
+   - Server reconstructs inspection thoroughness and discrepancy flagging strictly from primitive event streams (`record_inspected`, `discrepancy_toggled`).
+
+4. **C1 (Resource Cooperation): Exactly 3 rounds**
+   - Restored to exactly 3 inventory rounds (`C1_R1`, `C1_R2`, `C1_R3`).
+   - **Crucial Invariant:** At least one round (`C1_R3`) makes retaining resources the task-defined appropriate behavior (candidate station has quota deficit while simulated partner has surplus), ensuring cooperation is not conflated with indiscriminate self-depriving over-allocation.
+
