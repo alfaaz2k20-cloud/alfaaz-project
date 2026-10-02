@@ -100,20 +100,20 @@ Before starting the assessment, test each accessibility toggle:
   - Adapt composition under altered grid constraints across 3 conditions.
 
 #### World 5: The Hidden Gallery (Construct: Curiosity)
-- [ ] **Q1: Optional Discovery (3 episodes):**
-  - Choose whether to view optional archival background materials before deciding.
-  - Verify 3 episodes complete.
-- [ ] **Q2: Mystery Exploration (3 artifacts):**
-  - Inspect artifact clues under varying uncertainty levels before final conclusion.
-  - Verify 3 artifacts complete.
+- [ ] **Q1: Optional Discovery (4 decisions, 4 optional resources):**
+  - Choose whether to view optional archival background materials (2 high-value, 2 low-value controls) before deciding.
+  - Verify 4 decisions complete.
+- [ ] **Q2: Mystery Exploration (4 artifacts):**
+  - Inspect artifact clues (including low-control relic) under varying uncertainty levels before final conclusion.
+  - Verify 4 artifacts complete.
 - [ ] **Q3: Information Integration (3 decisions):**
   - Synthesize cross-referenced narrative fragments into an integrated decision.
   - Verify 3 decisions complete.
 
 #### World 6: The Broken Tool (Construct: Creative Initiative)
-- [ ] **CR1: Open Construction (3 stages):**
-  - Construct an assembly using provided parts and test mechanical fit.
-  - Verify 3 stages complete.
+- [ ] **CR1: Open Construction (2 stages):**
+  - Construct an assembly using provided parts and test mechanical fit across 2 stages (3 valid solution paths each).
+  - Verify 2 stages complete.
 - [ ] **CR2: Constraint Shift (3 stages):**
   - Assemble under changing physical constraints across 3 stages.
 - [ ] **CR3: Improvisation / Tool Breakage (3 repairs):**
@@ -121,15 +121,15 @@ Before starting the assessment, test each accessibility toggle:
   - Verify 3 repairs complete.
 
 #### World 7: The Repetition (Construct: Motivation)
-- [ ] **M1: Mandatory Baseline (6 units):**
-  - Execute 6 cataloging units with continuous feedback.
-- [ ] **M2: Extended Continuation (4 mandatory + optional up to 8):**
-  - Complete 4 baseline units. Notice choice prompt offering continuation.
-  - Test choosing to continue or conclude.
-- [ ] **M3: Honest Continuation & Reduced Reward (3 mandatory + optional up to 6):**
+- [ ] **M1: Mandatory Baseline (3 mandatory units, 0 optional):**
+  - Execute 3 cataloging units with continuous feedback.
+- [ ] **M2: Extended Continuation (3 mandatory + optional up to 3):**
+  - Complete 3 baseline units. Notice explicit raw finish/continue choice prompt.
+  - Test choosing to continue or conclude (capped at 3 optional units).
+- [ ] **M3: Honest Continuation & Reduced Reward (3 mandatory + voluntary up to 3):**
   - Complete 3 baseline units.
   - **Honest Disclosure Check:** Verify UI explicitly informs candidate that the mandatory minimum is complete, they may stop, and feedback saliency may decrease as part of the normal task design (not an error state).
-  - Verify candidate can stop at any point or continue up to maximum units.
+  - Verify candidate can stop on any voluntary unit or continue up to 3 voluntary units (capped at 6 total).
 
 ---
 
