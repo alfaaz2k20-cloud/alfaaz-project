@@ -1,6 +1,8 @@
 /* ==========================================================================
-   ALFAAZ RECRUIT — WORLD 6: THE WORKSHOP BENCH (شکستہ آلہ)
+   ALFAAZ RECRUIT — WORLD 6: THE BROKEN TOOL (شکستہ آلہ)
    Mini-games: CR1 (The Artisan's Cord), CR2 (The Central Pillar), CR3 (The Printed Motif)
+   Adheres to Design Freeze v1 + Addendum v1.1.
+   Emits primitive behavioral telemetry only.
    ========================================================================== */
 
 import { renderTutorialCard } from './index.js';
@@ -22,98 +24,223 @@ export function runTheBrokenTool(context, renderHeader) {
 }
 
 // --------------------------------------------------------------------------
-// CR1: The Artisan's Cord
+// CR1: Open Construction (2 construction stages)
+// Multiple objectively valid solutions; first-try success is neutral.
+// No failure-count creativity scoring.
 // --------------------------------------------------------------------------
 function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
-  let selectedItems = ['Twisted Hemp Cord', 'Steel Hanging Ring'];
+  let currentStageIdx = 0;
+  let selectedParts = [];
+  let testFeedback = null;
+  let lastInputModality = 'mouse';
 
-  const availableTools = [
-    { id: 'T_HEMP', name: 'Twisted Hemp Cord', icon: '&#129526;' },
-    { id: 'T_BRASS', name: 'Brass Chain Link', icon: '&#128279;' },
-    { id: 'T_CLIP', name: 'Carved Walnut Clip', icon: '&#128206;' },
-    { id: 'T_RING', name: 'Steel Hanging Ring', icon: '&#9711;' }
+  const stages = [
+    {
+      stage_id: 'CR1_S1',
+      title: 'Stage 1: The Weaving Shuttle Rig',
+      constraint: 'missing_crossbar_shuttle',
+      scenario: 'A traditional walnut loom shuttle crossbar has fractured. Construct a functional substitute using available studio materials.',
+      materials: [
+        { id: 'M_SPLIT_BAMBOO', name: 'Split Bamboo Rib', icon: '&#127883;', role: 'Flexible rigid bar' },
+        { id: 'M_BRASS_ROD', name: 'Slotted Brass Tension Rod', icon: '&#128296;', role: 'Rigid direct mount' },
+        { id: 'M_CARVED_PINE', name: 'Carved Pine Dowel', icon: '&#129685;', role: 'Lightweight dowel' },
+        { id: 'M_WAXED_CORD', name: 'Waxed Linen Binder Cord', icon: '&#129526;', role: 'Tensile binding wrap' },
+        { id: 'M_CERAMIC_WEIGHT', name: 'Glazed Counterbalance Weight', icon: '&#9711;', role: 'Pendular stabilizing mass' }
+      ],
+      valid_combinations: [
+        ['M_SPLIT_BAMBOO', 'M_WAXED_CORD'],
+        ['M_BRASS_ROD'],
+        ['M_CARVED_PINE', 'M_CERAMIC_WEIGHT']
+      ]
+    },
+    {
+      stage_id: 'CR1_S2',
+      title: 'Stage 2: The Warp Tension Anchor',
+      constraint: 'tension_wire_unanchored',
+      scenario: 'The lateral warp tension wire lacks an anchor point on the frame edge. Assemble a secure tensioning rig.',
+      materials: [
+        { id: 'M_LEATHER_STRAP', name: 'Oil-Tanned Leather Cinch Strap', icon: '&#129526;', role: 'High-friction cinch' },
+        { id: 'M_NOTCHED_PEG', name: 'Hardwood Notched Anchor Peg', icon: '&#129685;', role: 'Wedge anchor' },
+        { id: 'M_COPPER_WIRE', name: 'Annealed Copper Binding Wire', icon: '&#9874;', role: 'Pliable wrapped fastener' },
+        { id: 'M_STONE_COUNTER', name: 'Basalt Counterweight Stone', icon: '&#11044;', role: 'Static gravity balance' }
+      ],
+      valid_combinations: [
+        ['M_LEATHER_STRAP', 'M_NOTCHED_PEG'],
+        ['M_COPPER_WIRE'],
+        ['M_LEATHER_STRAP', 'M_STONE_COUNTER']
+      ]
+    }
   ];
 
   function render() {
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader("Part 1: The Artisan's Cord", 'Assembling a custom mount for hanging an exhibition frame.')}
+          ${renderHeader("Part 1: The Artisan's Assembly", 'Constructing mechanical studio fixtures under physical material constraints.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`,
-            goal: 'Select at least 2 workbench items to assemble a durable frame mount.',
+            goal: 'Select and test functional materials to overcome missing hardware across 2 stages.',
             steps: [
-              'Examine the workshop table supplies (cord, chain, clip, ring).',
-              'Click to combine at least 2 materials into your mounting rig.',
-              'Click Test Mount Stability to verify the assembly.'
+              'Examine the structural constraint and available workbench materials.',
+              'Toggle parts to assemble your custom solution (multiple valid designs exist).',
+              'Optionally test the assembly to observe mechanical balance.',
+              'Confirm your completed assembly to advance.'
             ]
           })}
         </div>
       `;
       document.getElementById('startActivityBtn')?.addEventListener('click', () => {
         inTutorial = false;
+        currentStageIdx = 0;
+        selectedParts = [];
+        testFeedback = null;
+        logStagePresented();
         render();
       });
       return;
     }
 
+    const st = stages[currentStageIdx];
+
     app.innerHTML = `
       <div class="animate-fadeIn">
-        ${renderHeader("Part 1: The Artisan's Cord", 'Standard wire is unavailable. Pick at least 2 items to build a stable mount.')}
+        ${renderHeader(`Part 1: The Artisan's Assembly (${currentStageIdx + 1}/2)`, st.title)}
 
-        <!-- Interactive Workbench Preview -->
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center shadow-xs">
-          <div class="w-full h-36 bg-white border border-[var(--grid-border)] flex flex-col items-center justify-center p-4 relative mb-4 rounded-xs shadow-inner">
-            <div class="w-28 h-20 bg-amber-50 border-2 border-[var(--accent-gold)] flex items-center justify-center text-[10px] uppercase font-bold text-[var(--accent-gold)] shadow-xs">
-              Art Frame
-            </div>
-            <div class="text-xs text-[var(--text-secondary)] mt-2 font-medium">
-              Rig Configuration: ${selectedItems.length > 0 ? `<strong class="text-emerald-800 font-semibold">${selectedItems.join(' + ')}</strong>` : 'No workshop materials connected.'}
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            ${availableTools.map(t => `
-              <button class="tool-btn p-3 bg-white border ${selectedItems.includes(t.name) ? 'border-[var(--accent-gold)] bg-amber-50/50 font-semibold shadow-xs' : 'border-[var(--grid-border)]'} text-xs hover:border-[var(--accent-gold)] transition text-center rounded-xs" data-name="${t.name}">
-                <div class="text-2xl mb-1.5">${t.icon}</div>
-                <div class="text-[11px] text-[var(--text-primary)]">${t.name}</div>
-              </button>
-            `).join('')}
-          </div>
+        <!-- Constraint Card -->
+        <div class="p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs">
+          <div class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider mb-1 font-semibold">Atelier Hardware Constraint</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed font-serif">${st.scenario}</div>
         </div>
 
-        <div class="flex justify-between items-center">
-          <span class="text-xs text-[var(--text-secondary)] font-medium">${selectedItems.length} materials selected</span>
-          <button id="testMountBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm">
-            Test Mount Stability &rarr;
+        <!-- Workbench Selection -->
+        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 rounded-xs">
+          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-3">Available Workbench Components</div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+            ${st.materials.map(m => {
+              const isSelected = selectedParts.includes(m.id);
+              return `
+                <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex flex-col justify-between" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+                  <div>
+                    <div class="text-xl mb-1 text-stone-700">${m.icon}</div>
+                    <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
+                    <div class="text-[10px] text-[var(--text-secondary)]">${m.role}</div>
+                  </div>
+                  <div class="mt-2 text-right">
+                    <span class="text-[10px] font-mono font-semibold ${isSelected ? 'text-[var(--accent-gold)]' : 'text-stone-300'}">${isSelected ? '&#10003; EQUIPPED' : '+ ADD'}</span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Assembly Status -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-3 border-t border-stone-200">
+            <div class="text-xs text-[var(--text-secondary)]">
+              Current Configuration: <strong class="text-[var(--text-primary)]">${selectedParts.length > 0 ? selectedParts.map(id => st.materials.find(m => m.id === id)?.name).join(' + ') : 'None selected'}</strong>
+            </div>
+            <button type="button" id="testAssemblyBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-4 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 transition rounded-xs">
+              Test Stability
+            </button>
+          </div>
+
+          ${testFeedback ? `
+            <div class="mt-3 p-3 bg-white border ${testFeedback.valid ? 'border-emerald-600/40 text-emerald-900' : 'border-amber-600/40 text-amber-900'} text-xs rounded-xs leading-relaxed animate-fadeIn">
+              <span class="font-mono text-[10px] uppercase font-semibold block mb-0.5">${testFeedback.valid ? 'Rig Alignment Confirmed' : 'Rig Observation Note'}</span>
+              ${testFeedback.message}
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="flex justify-end">
+          <button type="button" id="confirmStageBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
+            ${currentStageIdx < stages.length - 1 ? 'Confirm Assembly & Next Stage &rarr;' : 'Finish Part 1 &rarr;'}
           </button>
         </div>
       </div>
     `;
 
-    app.querySelectorAll('.tool-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const name = btn.getAttribute('data-name');
-        if (selectedItems.includes(name)) {
-          if (selectedItems.length > 1) {
-            selectedItems = selectedItems.filter(i => i !== name);
-          }
+    app.querySelectorAll('.part-card').forEach(card => {
+      const toggle = (modality) => {
+        lastInputModality = modality;
+        const pId = card.getAttribute('data-id');
+        if (selectedParts.includes(pId)) {
+          selectedParts = selectedParts.filter(id => id !== pId);
         } else {
-          selectedItems.push(name);
+          selectedParts.push(pId);
         }
-        logEvent('material_toggled', { material: name, current_selection: selectedItems });
+        testFeedback = null;
+        logEvent('part_toggled', {
+          stage_id: st.stage_id,
+          trial_index: currentStageIdx,
+          part_id: pId,
+          selected_parts: [...selectedParts],
+          input_modality: lastInputModality,
+          task_def_version: '1.0'
+        });
         render();
+      };
+
+      card.addEventListener('click', () => toggle('mouse'));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle('keyboard');
+        }
       });
     });
 
-    document.getElementById('testMountBtn')?.addEventListener('click', () => {
-      logEvent('mount_built', { materials: selectedItems });
-      onComplete({
-        mini_game: 'CR1',
-        observations_count: 1,
-        materials_used: selectedItems.length
+    document.getElementById('testAssemblyBtn')?.addEventListener('click', () => {
+      lastInputModality = 'mouse';
+      const curSet = new Set(selectedParts);
+      const isFunctional = st.valid_combinations.some(combo => combo.every(id => curSet.has(id)));
+      testFeedback = {
+        valid: isFunctional,
+        message: isFunctional
+          ? 'Physical tension test successful: load distribution is balanced and functional.'
+          : 'Physical test indicates unanchored lateral play or incomplete tension linkage.'
+      };
+      logEvent('assembly_tested', {
+        stage_id: st.stage_id,
+        trial_index: currentStageIdx,
+        parts: [...selectedParts],
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
       });
+      render();
+    });
+
+    document.getElementById('confirmStageBtn')?.addEventListener('click', () => {
+      logEvent('stage_completed', {
+        stage_id: st.stage_id,
+        trial_index: currentStageIdx,
+        final_parts: [...selectedParts],
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
+      });
+
+      if (currentStageIdx < stages.length - 1) {
+        currentStageIdx++;
+        selectedParts = [];
+        testFeedback = null;
+        logStagePresented();
+        render();
+      } else {
+        onComplete({
+          mini_game: 'CR1',
+          observations_count: 2
+        });
+      }
+    });
+  }
+
+  function logStagePresented() {
+    const st = stages[currentStageIdx];
+    logEvent('stage_presented', {
+      stage_id: st.stage_id,
+      trial_index: currentStageIdx,
+      constraint: st.constraint,
+      task_def_version: '1.0'
     });
   }
 
@@ -121,79 +248,265 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
 }
 
 // --------------------------------------------------------------------------
-// CR2: The Central Pillar
+// CR2: Constraint Shift (3 episodes)
+// Spatial reframing under architectural constraint changes.
+// Captures strategy before and after the shift; measures strategy revision.
 // --------------------------------------------------------------------------
 function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
-  let chosenLayout = 'S_360';
+  let currentEpisode = 0;
+  let phase = 'pre_shift'; // 'pre_shift' -> 'post_shift'
+  let initialStrategy = null;
+  let revisedStrategy = null;
+  let lastInputModality = 'mouse';
 
-  const solutions = [
-    { id: 'S_360', title: '360° Wrap Display', desc: 'Hang miniature framed poetry on all four faces of the stone pillar for a 360° walking gallery.' },
-    { id: 'S_SHADOW', title: 'Ambient Light Backdrop', desc: 'Position warm ground lamps toward the pillar to cast atmospheric silhouettes for surrounding work.' },
-    { id: 'S_SEAT', title: 'Literary Reading Nook', desc: 'Arrange low wooden seating and poetry anthologies around the pillar base for quiet reflection.' }
+  const episodes = [
+    {
+      episode_id: 'CR2_E1',
+      title: 'Episode 1: The Central Pillar Chamber',
+      pre_context: 'Initial gallery setup: plan visitor flow through the grand hall.',
+      pre_strategies: [
+        { id: 'S_CENTRAL_AVENUE', label: 'Direct Central Promenade', desc: 'Single wide central walkway down the axis.' },
+        { id: 'S_PERIMETER_LOOP', label: 'Outer Wall Perimeter Loop', desc: 'Continuous clockwise loop along outer walls.' },
+        { id: 'S_ALCOVE_ISLANDS', label: 'Discrete Island Clusters', desc: 'Scattered standalone display pods.' }
+      ],
+      constraint_change: 'central_pillar_blocks_corridor',
+      shift_description: 'Architectural constraint: A massive four-sided carved stone pillar unexpectedly blocks direct transit down the central axis.',
+      post_strategies: [
+        { id: 'split_flow', label: 'Bifurcated Twin Corridor (Diverge flow into dual harmonious paths around pillar)', note: 'Aligned Reframing' },
+        { id: 'linear_flow', label: 'Single Forced Bypass (Compress all visitors down the narrow left aisle)', note: 'Linear Compression' },
+        { id: 'stop_gap', label: 'Central Waiting Cordon (Halt progression for scheduled batch entry)', note: 'Static Delay' }
+      ]
+    },
+    {
+      episode_id: 'CR2_E2',
+      title: 'Episode 2: West Cloister Evacuation Clearance',
+      pre_context: 'Initial layout: arrange modular exhibits across the wide western cloister corridor.',
+      pre_strategies: [
+        { id: 'S_WALL_PANORAMA', label: 'Continuous Wall Panorama', desc: 'Continuous hanging series along the west wall.' },
+        { id: 'S_TRANSVERSE_SCREENS', label: 'Transverse Privacy Partitions', desc: 'Folding screens perpendicular to the corridor.' },
+        { id: 'S_PAIRED_PLINTHS', label: 'Center Floor Display Pedestals', desc: 'Double row of waist-high sculpture plinths.' }
+      ],
+      constraint_change: 'emergency_exit_clearance_widened',
+      shift_description: 'Municipal safety decree: A 3-meter wide clearway must be preserved along the western wall for rapid egress.',
+      post_strategies: [
+        { id: 'perimeter_flow', label: 'Perimeter Clearance (Recede all displays to inner column line, maintaining open exitway)', note: 'Aligned Reframing' },
+        { id: 'central_cluster', label: 'Dense Central Plinth Island (Compress all plinths tightly in the center)', note: 'Central Density' },
+        { id: 'diagonal_crossing', label: 'Diagonal Zigzag Pathway (Weave visitors between emergency doors)', note: 'Unanchored Path' }
+      ]
+    },
+    {
+      episode_id: 'CR2_E3',
+      title: 'Episode 3: North Transept Arch Clearance',
+      pre_context: 'Initial design: display vertical banners and illuminated manuscripts in the north transept.',
+      pre_strategies: [
+        { id: 'S_TALL_STELAE', label: 'Towering Timber Stelae', desc: 'Four-meter vertical calligraphy totems.' },
+        { id: 'S_HORIZONTAL_VITRINES', label: 'Horizontal Table Vitrines', desc: 'Low vitrines at waist height.' },
+        { id: 'S_CEILING_SUSPENSION', label: 'Suspended Silk Drapery', desc: 'Overhead flowing banners hung from rafters.' }
+      ],
+      constraint_change: 'low_ceiling_arch_support',
+      shift_description: 'Structural inspection: Ancient low-hanging timber bracing arches restrict overhead vertical clearance to 2.2 meters.',
+      post_strategies: [
+        { id: 'linear_flow', label: 'Low-Profile Horizontal Progression (Ground-level vitrine displays preserving archway headroom)', note: 'Aligned Reframing' },
+        { id: 'canopy_tent', label: 'Overhead Fabric Canopy (Drape fabric beneath the timber bracing)', note: 'Overhead Clutter' },
+        { id: 'staggered_alcoves', label: 'Dispersed Floor Alcoves (Place stelae horizontally against walls)', note: 'Irregular Clutter' }
+      ]
+    }
   ];
 
   function render() {
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader('Part 2: The Central Pillar', 'Transforming a central architectural column into an exhibition feature.')}
+          ${renderHeader('Part 2: The Spatial Pivot', 'Reframing spatial layouts when unexpected architectural constraints arise.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`,
-            goal: 'Select a creative layout concept to incorporate the center hall column into the event.',
+            goal: 'Establish an initial spatial strategy, then constructively reframe your approach when structural conditions shift.',
             steps: [
-              'Review the 3 space curation ideas.',
-              'Choose the concept that creates the most welcoming guest experience.',
-              'Confirm your design.'
+              'Review the gallery space and select an initial visitor flow concept.',
+              'Observe the unexpected architectural constraint change introduced.',
+              'Revise your layout strategy to creatively adapt to the new constraint.',
+              'Confirm your revised plan across all 3 episodes.'
             ]
           })}
         </div>
       `;
       document.getElementById('startActivityBtn')?.addEventListener('click', () => {
         inTutorial = false;
+        currentEpisode = 0;
+        phase = 'pre_shift';
+        initialStrategy = null;
+        revisedStrategy = null;
+        logEpisodePresented();
         render();
       });
       return;
     }
 
-    app.innerHTML = `
-      <div class="animate-fadeIn">
-        ${renderHeader('Part 2: The Central Pillar', 'A wide stone column sits in the hall center. Choose how to make it part of the exhibition.')}
+    const ep = episodes[currentEpisode];
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          ${solutions.map(s => `
-            <div class="cr2-card p-5 bg-white border ${chosenLayout === s.id ? 'border-[var(--accent-gold)] bg-amber-50/40 font-semibold shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition space-y-2.5 text-center shadow-xs rounded-xs" data-id="${s.id}">
-              <div class="w-10 h-10 mx-auto rounded-full bg-amber-50 border border-[var(--accent-gold)]/40 flex items-center justify-center text-[var(--accent-gold)] font-serif text-lg">
-                &#10038;
-              </div>
-              <div class="text-xs font-semibold text-[var(--text-primary)]">${s.title}</div>
-              <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${s.desc}</div>
-            </div>
-          `).join('')}
+    if (phase === 'pre_shift') {
+      app.innerHTML = `
+        <div class="animate-fadeIn">
+          ${renderHeader(`Part 2: The Spatial Pivot (${currentEpisode + 1}/3)`, ep.title)}
+
+          <div class="p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs">
+            <div class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider mb-1 font-semibold">Initial Spatial Context</div>
+            <div class="text-xs text-[var(--text-primary)] leading-relaxed font-serif">${ep.pre_context}</div>
+          </div>
+
+          <div class="mb-6 space-y-3">
+            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Select Initial Curation Concept</div>
+            ${ep.pre_strategies.map(s => {
+              const isSelected = initialStrategy === s.id;
+              return `
+                <div class="pre-strat-card p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
+                  <div>
+                    <div class="font-medium text-[var(--text-primary)]">${s.label}</div>
+                    <div class="text-[11px] text-[var(--text-secondary)] mt-0.5">${s.desc}</div>
+                  </div>
+                  <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '&#10003;' : ''}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <div class="flex justify-end">
+            <button type="button" id="confirmPreShiftBtn" ${initialStrategy ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
+              Establish Strategy & Proceed &rarr;
+            </button>
+          </div>
         </div>
+      `;
 
-        <div class="flex justify-end">
-          <button id="cr2ConfirmBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm">
-            Confirm Space Concept &rarr;
-          </button>
-        </div>
-      </div>
-    `;
+      app.querySelectorAll('.pre-strat-card').forEach(card => {
+        const select = (modality) => {
+          lastInputModality = modality;
+          initialStrategy = card.getAttribute('data-id');
+          render();
+        };
+        card.addEventListener('click', () => select('mouse'));
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            select('keyboard');
+          }
+        });
+      });
 
-    app.querySelectorAll('.cr2-card').forEach(card => {
-      card.addEventListener('click', () => {
-        chosenLayout = card.getAttribute('data-id');
+      document.getElementById('confirmPreShiftBtn')?.addEventListener('click', () => {
+        logEvent('initial_strategy_selected', {
+          episode_id: ep.episode_id,
+          trial_index: currentEpisode,
+          strategy_id: initialStrategy,
+          input_modality: lastInputModality,
+          task_def_version: '1.0'
+        });
+
+        // Trigger constraint shift
+        logEvent('constraint_shifted', {
+          episode_id: ep.episode_id,
+          trial_index: currentEpisode,
+          constraint_change: ep.constraint_change,
+          task_def_version: '1.0'
+        });
+
+        phase = 'post_shift';
+        revisedStrategy = initialStrategy; // defaults to prior unless revised
         render();
       });
-    });
 
-    document.getElementById('cr2ConfirmBtn')?.addEventListener('click', () => {
-      logEvent('pillar_solution_selected', { solution: chosenLayout });
-      onComplete({
-        mini_game: 'CR2',
-        observations_count: 1,
-        solution: chosenLayout
+    } else {
+      // post_shift
+      app.innerHTML = `
+        <div class="animate-fadeIn">
+          ${renderHeader(`Part 2: The Spatial Pivot (${currentEpisode + 1}/3)`, ep.title)}
+
+          <!-- Constraint Shift Notification Banner -->
+          <div class="p-4 bg-amber-50 border border-amber-300/80 mb-5 rounded-xs animate-fadeIn">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse"></span>
+              <span class="text-[10px] font-mono uppercase tracking-wider text-amber-900 font-bold">Structural Condition Change Detected</span>
+            </div>
+            <div class="text-xs text-amber-950 leading-relaxed font-serif">${ep.shift_description}</div>
+            <div class="mt-2 text-[11px] text-amber-800">
+              Prior Strategy: <strong>${ep.pre_strategies.find(s => s.id === initialStrategy)?.label || initialStrategy}</strong>
+            </div>
+          </div>
+
+          <div class="mb-6 space-y-3">
+            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Select Adaptive Spatial Reframing</div>
+            ${ep.post_strategies.map(s => {
+              const isSelected = revisedStrategy === s.id;
+              return `
+                <div class="post-strat-card p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
+                  <div>
+                    <div class="font-medium text-[var(--text-primary)]">${s.label}</div>
+                    <div class="text-[10px] font-mono text-[var(--text-secondary)] mt-0.5">${s.note}</div>
+                  </div>
+                  <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '&#10003;' : ''}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <div class="flex justify-end">
+            <button type="button" id="confirmPostShiftBtn" ${revisedStrategy ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
+              ${currentEpisode < episodes.length - 1 ? 'Confirm Reframing & Next Episode &rarr;' : 'Finish Part 2 &rarr;'}
+            </button>
+          </div>
+        </div>
+      `;
+
+      app.querySelectorAll('.post-strat-card').forEach(card => {
+        const select = (modality) => {
+          lastInputModality = modality;
+          revisedStrategy = card.getAttribute('data-id');
+          render();
+        };
+        card.addEventListener('click', () => select('mouse'));
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            select('keyboard');
+          }
+        });
       });
+
+      document.getElementById('confirmPostShiftBtn')?.addEventListener('click', () => {
+        logEvent('strategy_revised', {
+          episode_id: ep.episode_id,
+          trial_index: currentEpisode,
+          initial_strategy_id: initialStrategy,
+          revised_strategy_id: revisedStrategy,
+          input_modality: lastInputModality,
+          task_def_version: '1.0'
+        });
+
+        if (currentEpisode < episodes.length - 1) {
+          currentEpisode++;
+          phase = 'pre_shift';
+          initialStrategy = null;
+          revisedStrategy = null;
+          logEpisodePresented();
+          render();
+        } else {
+          onComplete({
+            mini_game: 'CR2',
+            observations_count: 3
+          });
+        }
+      });
+    }
+  }
+
+  function logEpisodePresented() {
+    const ep = episodes[currentEpisode];
+    logEvent('episode_presented', {
+      episode_id: ep.episode_id,
+      trial_index: currentEpisode,
+      initial_context: ep.pre_context,
+      task_def_version: '1.0'
     });
   }
 
@@ -201,83 +514,306 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 }
 
 // --------------------------------------------------------------------------
-// CR3: The Printed Motif
+// CR3: Unspecified Tool Use (3 trials)
+// Affordance synthesis, tool selection, action sequence, mechanical feedback,
+// and strategy change based on craft outcomes.
 // --------------------------------------------------------------------------
 function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
-  let chosenPoster = 'P_MINIMAL';
+  let currentTrial = 0;
+  let selectedTool = null;
+  let selectedMethod = null;
+  let feedbackText = null;
+  let hasObservedFeedback = false;
+  let lastInputModality = 'mouse';
 
-  const styles = [
-    { id: 'P_MINIMAL', title: 'Serene Minimalist', desc: 'Spacious parchment backdrop highlighting a single handwritten verse in classical calligraphy.' },
-    { id: 'P_CLASSIC', title: 'Heritage Floral Border', desc: 'Hand-drawn Chinar leaf border framing event details with warmth and historical resonance.' },
-    { id: 'P_MODERN', title: 'Warm Terracotta Split', desc: 'Earthy terracotta wash on one half, structured typography on the other for high readability.' }
+  const trials = [
+    {
+      stimulus_id: 'CR3_T1',
+      title: 'Trial 1: The Pristine Paper Crease',
+      target_motif: 'burnished_crease',
+      objective: 'Form a sharp, permanent crease on heavy cotton-rag paper without splitting surface fibers or tearing the sheet.',
+      tools: [
+        { id: 'bone_folder', name: 'Polished Bone Folder', icon: '&#129685;', affordance: 'Smooth rounded contour; distributes friction safely' },
+        { id: 'metal_stylus', name: 'Steel Scribe Stylus', icon: '&#128296;', affordance: 'Hard needle point; concentrates extreme line pressure' },
+        { id: 'bamboo_wedge', name: 'Beveled Bamboo Scraper', icon: '&#127883;', affordance: 'Broad beveled wooden plane; gentle planar pressure' }
+      ],
+      methods: [
+        { id: 'firm_edge_pass', name: 'Firm Edge Pass', desc: 'Slide rounded edge along ruler with continuous diagonal pressure.' },
+        { id: 'flat_face_rub', name: 'Flat Face Rub', desc: 'Distribute wide surface friction across fold line.' },
+        { id: 'sharp_point_drag', name: 'Sharp Point Drag', desc: 'Draw tip directly across surface to score the fiber line.' }
+      ],
+      feedback_map: {
+        'bone_folder:firm_edge_pass': { success: true, text: 'Clean, crisp burnished crease formed with zero surface abrasion.' },
+        'bamboo_wedge:flat_face_rub': { success: true, text: 'Smooth, even flattened fold achieved without marring surface grain.' },
+        'metal_stylus:sharp_point_drag': { success: false, text: 'Paper fibers sliced; sharp point cut through the paper fold.' },
+        'metal_stylus:firm_edge_pass': { success: false, text: 'Metal edge left dark metallic friction scuffs across the parchment.' },
+        'bone_folder:flat_face_rub': { success: true, text: 'Gentle, even crease formed; fibers compressed smoothly.' },
+        'bamboo_wedge:firm_edge_pass': { success: true, text: 'Uniform clean fold line established with natural wood contour.' },
+        'bone_folder:sharp_point_drag': { success: false, text: 'Uneven dragging motion; point dented paper surface.' },
+        'bamboo_wedge:sharp_point_drag': { success: false, text: 'Wood corner snagged on rough paper grain.' },
+        'metal_stylus:flat_face_rub': { success: false, text: 'Insufficient surface area; uneven pressure indentation.' }
+      }
+    },
+    {
+      stimulus_id: 'CR3_T2',
+      title: 'Trial 2: Mulberry Parchment Stipple',
+      target_motif: 'fine_stipple',
+      objective: 'Produce a delicate, even constellation of dispersed pigment micro-droplets on fibrous mulberry paper.',
+      tools: [
+        { id: 'horsehair_brush', name: 'Stiff Horsehair Brush', icon: '&#128396;', affordance: 'Resilient coarse bristles; springs back under tension' },
+        { id: 'sponge_block', name: 'Natural Porous Sea Sponge', icon: '&#9711;', affordance: 'Irregular cellular cavities; holds and dabs damp pigment' },
+        { id: 'linen_swab', name: 'Wound Linen Swab', icon: '&#129526;', affordance: 'Dense rolled fabric tip; absorbs liquid rapidly' }
+      ],
+      methods: [
+        { id: 'textured_flick', name: 'Textured Bristle Flick', desc: 'Pull loaded bristles back with thumb to release fine mist.' },
+        { id: 'mottled_dab', name: 'Mottled Perpendicular Dab', desc: 'Light stamp of textured surface directly on paper.' },
+        { id: 'drag_stroke', name: 'Continuous Fluid Drag', desc: 'Draw applicator steadily across page in sweeping stroke.' }
+      ],
+      feedback_map: {
+        'horsehair_brush:textured_flick': { success: true, text: 'Fine, even constellation of organic micro-droplets dispersed across parchment.' },
+        'sponge_block:mottled_dab': { success: true, text: 'Rich textured tonal stipple with soft, organic cellular grain.' },
+        'linen_swab:drag_stroke': { success: false, text: 'Produced a single continuous solid streak; zero stipple effect.' },
+        'linen_swab:textured_flick': { success: false, text: 'Fabric has no elastic bristle snap; pigment remained bound in swab.' },
+        'sponge_block:drag_stroke': { success: false, text: 'Smeared broad irregular smudge across paper.' },
+        'horsehair_brush:drag_stroke': { success: false, text: 'Solid brushstroke line created; no dispersed speckling.' },
+        'horsehair_brush:mottled_dab': { success: true, text: 'Bristle tips formed delicate speckled texture upon contact.' },
+        'sponge_block:textured_flick': { success: false, text: 'Sponge cannot be flicked; dropped heavy inconsistent blot.' },
+        'linen_swab:mottled_dab': { success: false, text: 'Dense blot soaked through fiber without texture.' }
+      }
+    },
+    {
+      stimulus_id: 'CR3_T3',
+      title: 'Trial 3: Specular Gold Leaf Seal',
+      target_motif: 'gold_leaf_seal',
+      objective: 'Burnish delicate gold leaf onto a seal impression to achieve mirror-like specular reflectivity without flaking.',
+      tools: [
+        { id: 'agate_stone', name: 'Dog-Tooth Agate Burnisher', icon: '&#11044;', affordance: 'Micro-crystalline smooth gemstone; zero surface drag' },
+        { id: 'polished_wood', name: 'Dense Boxwood Block', icon: '&#129685;', affordance: 'Planar ultra-dense fruitwood; uniform planar pressure' },
+        { id: 'copper_burnisher', name: 'Curved Copper Spoon', icon: '&#129348;', affordance: 'Pliable polished metal bowl; warm specular glide' }
+      ],
+      methods: [
+        { id: 'friction_free_rub', name: 'Micro-Circular Polishing Rub', desc: 'Small gliding circular motions with light steady contact.' },
+        { id: 'planar_press', name: 'Direct Clamping Press', desc: 'Perpendicular downward pressure without lateral motion.' },
+        { id: 'chisel_scrape', name: 'Angled Edge Scrape', desc: 'Shearing drag across surface with acute blade angle.' }
+      ],
+      feedback_map: {
+        'agate_stone:friction_free_rub': { success: true, text: 'Flawless mirror-like specular gold luster achieved with zero abrasion.' },
+        'polished_wood:planar_press': { success: true, text: 'Uniformly bonded gold leaf with balanced satin foundation.' },
+        'copper_burnisher:friction_free_rub': { success: true, text: 'Deep warm metallic sheen burnished smoothly over seal.' },
+        'agate_stone:planar_press': { success: true, text: 'Firm adhesion established; solid reflective gilding.' },
+        'polished_wood:friction_free_rub': { success: true, text: 'Subtle warm satin luster across gold leaf.' },
+        'copper_burnisher:planar_press': { success: true, text: 'Stable flat bond achieved under spoon bowl.' },
+        'agate_stone:chisel_scrape': { success: false, text: 'Hard edge scratched through delicate gold foil.' },
+        'polished_wood:chisel_scrape': { success: false, text: 'Wood corner tore gold leaf away from size.' },
+        'copper_burnisher:chisel_scrape': { success: false, text: 'Metal rim gouged underlying paper impression.' }
+      }
+    }
   ];
 
   function render() {
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader('Part 3: The Printed Motif', 'Selecting visual invitation aesthetics for the exhibition announcement.')}
+          ${renderHeader('Part 3: The Improvised Tool', 'Investigating material affordances and adapting craft technique from mechanical feedback.')}
           ${renderTutorialCard({
-            icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`,
-            goal: 'Choose the visual card aesthetic that best reflects the collective’s creative tone.',
+            icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>`,
+            goal: 'Select a tool and action method, observe the craft outcome feedback, and adapt your approach across 3 trials.',
             steps: [
-              'Compare the 3 visual layout previews.',
-              'Select the invitation style you find most fitting.',
-              'Click Finish to conclude the workshop session.'
+              'Examine the craft goal and available implements.',
+              'Pair a tool with an action method and apply it.',
+              'Observe physical feedback on the material.',
+              'Refine your choice and confirm your final craft technique.'
             ]
           })}
         </div>
       `;
       document.getElementById('startActivityBtn')?.addEventListener('click', () => {
         inTutorial = false;
+        currentTrial = 0;
+        selectedTool = null;
+        selectedMethod = null;
+        feedbackText = null;
+        hasObservedFeedback = false;
+        logTrialPresented();
         render();
       });
       return;
     }
 
+    const tr = trials[currentTrial];
+
     app.innerHTML = `
       <div class="animate-fadeIn">
-        ${renderHeader('Part 3: The Printed Motif', 'Choose which visual style best communicates the spirit of the upcoming gathering.')}
+        ${renderHeader(`Part 3: The Improvised Tool (${currentTrial + 1}/3)`, tr.title)}
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          ${styles.map(st => `
-            <div class="cr3-card p-5 bg-white border ${chosenPoster === st.id ? 'border-[var(--accent-gold)] bg-amber-50/40 font-semibold shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition space-y-2.5 text-center shadow-xs rounded-xs" data-id="${st.id}">
-              <div class="w-full h-24 bg-[#faf8f5] border border-[var(--grid-border)] flex flex-col items-center justify-center font-serif text-xs text-[var(--accent-gold)] mb-2 rounded-xs">
-                <span class="text-xs uppercase font-medium tracking-wider">[Card Style]</span>
-                <span class="text-[11px] text-[var(--text-secondary)] italic mt-1">${st.title}</span>
-              </div>
-              <div class="text-xs font-semibold text-[var(--text-primary)]">${st.title}</div>
-              <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${st.desc}</div>
-            </div>
-          `).join('')}
+        <!-- Craft Objective Card -->
+        <div class="p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs">
+          <div class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider mb-1 font-semibold">Craft Objective</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed font-serif">${tr.objective}</div>
         </div>
 
+        <!-- Tool Selection -->
+        <div class="mb-5">
+          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-2.5">1. Select Implement</div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            ${tr.tools.map(t => {
+              const isSelected = selectedTool === t.id;
+              return `
+                <div class="cr3-tool-card p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
+                  <div class="flex items-center gap-2 mb-1.5">
+                    <span class="text-lg">${t.icon}</span>
+                    <span class="font-medium text-[var(--text-primary)]">${t.name}</span>
+                  </div>
+                  <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${t.affordance}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Method Selection -->
+        <div class="mb-5">
+          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-2.5">2. Choose Action Method</div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            ${tr.methods.map(m => {
+              const isSelected = selectedMethod === m.id;
+              return `
+                <div class="cr3-method-card p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+                  <div class="font-medium text-[var(--text-primary)] mb-1">${m.name}</div>
+                  <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${m.desc}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Apply & Observe Feedback -->
+        <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 rounded-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="text-xs text-[var(--text-secondary)]">
+            Active Pairing: <strong class="text-[var(--text-primary)]">${selectedTool ? tr.tools.find(t => t.id === selectedTool)?.name : 'None'} + ${selectedMethod ? tr.methods.find(m => m.id === selectedMethod)?.name : 'None'}</strong>
+          </div>
+          <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 transition rounded-xs">
+            Apply Technique
+          </button>
+        </div>
+
+        ${feedbackText ? `
+          <div class="p-4 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-emerald-950' : 'border-amber-600/40 text-amber-950'} mb-5 rounded-xs text-xs leading-relaxed animate-fadeIn">
+            <div class="font-mono text-[10px] uppercase font-semibold mb-1 ${feedbackText.success ? 'text-emerald-800' : 'text-amber-800'}">Material Outcome Observation</div>
+            <div>${feedbackText.text}</div>
+          </div>
+        ` : ''}
+
         <div class="flex justify-end">
-          <button id="cr3FinishBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm">
-            Confirm Style Choice &rarr;
+          <button type="button" id="confirmTrialBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
+            ${currentTrial < trials.length - 1 ? 'Confirm Technique & Next Trial &rarr;' : 'Finish World 6 &rarr;'}
           </button>
         </div>
       </div>
     `;
 
-    app.querySelectorAll('.cr3-card').forEach(card => {
-      card.addEventListener('click', () => {
-        chosenPoster = card.getAttribute('data-id');
+    app.querySelectorAll('.cr3-tool-card').forEach(card => {
+      const select = (modality) => {
+        lastInputModality = modality;
+        selectedTool = card.getAttribute('data-id');
+        logEvent('tool_selected', {
+          stimulus_id: tr.stimulus_id,
+          trial_index: currentTrial,
+          tool_id: selectedTool,
+          input_modality: lastInputModality,
+          task_def_version: '1.0'
+        });
         render();
+      };
+      card.addEventListener('click', () => select('mouse'));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          select('keyboard');
+        }
       });
     });
 
-    document.getElementById('cr3FinishBtn')?.addEventListener('click', () => {
-      logEvent('poster_style_selected', { style: chosenPoster });
-      onComplete({
-        mini_game: 'CR3',
-        observations_count: 1,
-        style: chosenPoster
+    app.querySelectorAll('.cr3-method-card').forEach(card => {
+      const select = (modality) => {
+        lastInputModality = modality;
+        selectedMethod = card.getAttribute('data-id');
+        render();
+      };
+      card.addEventListener('click', () => select('mouse'));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          select('keyboard');
+        }
       });
+    });
+
+    document.getElementById('applyTechniqueBtn')?.addEventListener('click', () => {
+      lastInputModality = 'mouse';
+      const key = `${selectedTool}:${selectedMethod}`;
+      const outcome = tr.feedback_map[key] || { success: false, text: 'No noticeable craft adaptation observed.' };
+      feedbackText = outcome;
+      hasObservedFeedback = true;
+
+      logEvent('action_applied', {
+        stimulus_id: tr.stimulus_id,
+        trial_index: currentTrial,
+        tool_id: selectedTool,
+        action_method: selectedMethod,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
+      });
+
+      logEvent('feedback_observed', {
+        stimulus_id: tr.stimulus_id,
+        trial_index: currentTrial,
+        tool_id: selectedTool,
+        action_method: selectedMethod,
+        outcome_feedback: outcome.text,
+        task_def_version: '1.0'
+      });
+
+      render();
+    });
+
+    document.getElementById('confirmTrialBtn')?.addEventListener('click', () => {
+      logEvent('strategy_adapted', {
+        stimulus_id: tr.stimulus_id,
+        trial_index: currentTrial,
+        final_tool_id: selectedTool,
+        final_method: selectedMethod,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
+      });
+
+      if (currentTrial < trials.length - 1) {
+        currentTrial++;
+        selectedTool = null;
+        selectedMethod = null;
+        feedbackText = null;
+        hasObservedFeedback = false;
+        logTrialPresented();
+        render();
+      } else {
+        onComplete({
+          mini_game: 'CR3',
+          observations_count: 3
+        });
+      }
+    });
+  }
+
+  function logTrialPresented() {
+    const tr = trials[currentTrial];
+    logEvent('trial_presented', {
+      stimulus_id: tr.stimulus_id,
+      trial_index: currentTrial,
+      target_motif: tr.target_motif,
+      task_def_version: '1.0'
     });
   }
 
   render();
 }
-

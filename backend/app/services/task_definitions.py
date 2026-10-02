@@ -597,5 +597,304 @@ def reconstruct_q3_integration_state(events: list) -> Dict[str, Any]:
         "all_completed": completed_count == len(trials)
     }
 
+def reconstruct_cr1_construction_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs CR1 Open Construction state strictly from primitive events:
+    - stage_presented (stage_id, trial_index)
+    - part_toggled (stage_id, trial_index, part_id, selected_parts)
+    - assembly_tested (stage_id, trial_index, parts)
+    - stage_completed (stage_id, trial_index, solution_id, final_parts)
+
+    Ground truth valid solutions:
+    CR1_S1 (missing_crossbar_shuttle):
+      Valid solutions require at least 1 rigid crossbar element and 1 stabilizing element:
+      - {"M_SPLIT_BAMBOO", "M_WAXED_CORD"} (Bamboo + cord)
+      - {"M_BRASS_ROD"} (Slotted brass rod direct mount)
+      - {"M_CARVED_PINE", "M_CERAMIC_WEIGHT"} (Pine dowel + counterbalance weight)
+    CR1_S2 (tension_wire_unanchored):
+      - {"M_LEATHER_STRAP", "M_NOTCHED_PEG"} (Leather cinch + notched peg)
+      - {"M_COPPER_WIRE"} (Annealed copper binding wire wrapped anchor)
+      - {"M_LEATHER_STRAP", "M_STONE_COUNTER"} (Leather strap + basalt counterweight)
+
+    Invariants:
+    - First-try success is neutral (no bonus or penalty).
+    - No failure-count creativity scoring.
+    """
+    defs = get_task_definitions().get("games", {}).get("CR1", {})
+    stages = defs.get("stages", [])
+
+    valid_solutions = {
+        "CR1_S1": [
+            {"M_SPLIT_BAMBOO", "M_WAXED_CORD"},
+            {"M_BRASS_ROD"},
+            {"M_CARVED_PINE", "M_CERAMIC_WEIGHT"}
+        ],
+        "CR1_S2": [
+            {"M_LEATHER_STRAP", "M_NOTCHED_PEG"},
+            {"M_COPPER_WIRE"},
+            {"M_LEATHER_STRAP", "M_STONE_COUNTER"}
+        ]
+    }
+
+    stage_tests = {}
+    stage_completions = {}
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "CR1":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        s_id = data.get("stage_id") or data.get("stimulus_id")
+        if not s_id:
+            continue
+
+        if s_id not in stage_tests:
+            stage_tests[s_id] = []
+
+        if action == "assembly_tested":
+            parts = set(data.get("parts", []))
+            stage_tests[s_id].append(sorted(list(parts)))
+        elif action == "stage_completed":
+            final_parts = set(data.get("final_parts", data.get("parts", [])))
+            val_options = valid_solutions.get(s_id, [])
+            is_valid = any(opt == final_parts or opt.issubset(final_parts) for opt in val_options)
+            stage_completions[s_id] = {
+                "final_parts": sorted(list(final_parts)),
+                "is_valid": is_valid,
+                "test_count_prior_to_completion": len(stage_tests.get(s_id, []))
+            }
+
+    completed_count = len(stage_completions)
+    valid_count = sum(1 for s in stage_completions.values() if s["is_valid"])
+
+    return {
+        "stages": stage_completions,
+        "completed_count": completed_count,
+        "valid_solution_count": valid_count,
+        "test_events_by_stage": stage_tests,
+        "all_completed": completed_count == len(stages)
+    }
+
+def reconstruct_cr2_reframing_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs CR2 Spatial Reframing state strictly from primitive events:
+    - episode_presented (episode_id, trial_index, initial_context)
+    - initial_strategy_selected (episode_id, trial_index, strategy_id)
+    - constraint_shifted (episode_id, trial_index, constraint_change)
+    - strategy_revised (episode_id, trial_index, revised_strategy_id)
+
+    Evaluates:
+    - Pre-shift strategy captured
+    - Post-shift strategy captured
+    - Whether strategy was revised (pre != post)
+    - Whether revised strategy aligns with target architectural reframing
+    """
+    defs = get_task_definitions().get("games", {}).get("CR2", {})
+    episodes = defs.get("episodes", [])
+
+    target_reframings = {
+        "CR2_E1": "split_flow",
+        "CR2_E2": "perimeter_flow",
+        "CR2_E3": "linear_flow"
+    }
+
+    initial_strategies = {}
+    constraint_shifts = set()
+    revised_strategies = {}
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "CR2":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        ep_id = data.get("episode_id") or data.get("stimulus_id")
+        if not ep_id:
+            continue
+
+        if action == "initial_strategy_selected":
+            strat = data.get("strategy_id") or data.get("initial_strategy_id")
+            if strat:
+                initial_strategies[ep_id] = strat
+        elif action == "constraint_shifted":
+            constraint_shifts.add(ep_id)
+        elif action == "strategy_revised":
+            revised = data.get("revised_strategy_id") or data.get("strategy_id")
+            if revised:
+                revised_strategies[ep_id] = revised
+
+    episode_results = {}
+    revised_count = 0
+    aligned_count = 0
+
+    for ep in episodes:
+        e_id = ep["episode_id"]
+        pre = initial_strategies.get(e_id)
+        post = revised_strategies.get(e_id)
+        if not post:
+            continue
+
+        target = target_reframings.get(e_id)
+        was_revised = (pre is not None and pre != post)
+        is_aligned = (post == target)
+
+        if was_revised:
+            revised_count += 1
+        if is_aligned:
+            aligned_count += 1
+
+        episode_results[e_id] = {
+            "initial_strategy": pre,
+            "constraint_shifted": e_id in constraint_shifts,
+            "revised_strategy": post,
+            "was_revised": was_revised,
+            "target_reframing": target,
+            "is_aligned": is_aligned
+        }
+
+    completed_count = len(episode_results)
+    return {
+        "episodes": episode_results,
+        "completed_count": completed_count,
+        "strategy_revised_count": revised_count,
+        "target_aligned_count": aligned_count,
+        "all_completed": completed_count == len(episodes)
+    }
+
+def reconstruct_cr3_affordance_state(events: list) -> Dict[str, Any]:
+    """
+    Reconstructs CR3 Affordance Synthesis state strictly from primitive events:
+    - trial_presented (stimulus_id, trial_index, target_motif)
+    - tool_selected (stimulus_id, trial_index, tool_id)
+    - action_applied (stimulus_id, trial_index, tool_id, action_method)
+    - feedback_observed (stimulus_id, trial_index, tool_id, action_method, outcome_feedback)
+    - strategy_adapted (stimulus_id, trial_index, final_tool_id, final_method)
+
+    Ground truth target affordance pairings:
+    CR3_T1 (burnished_crease): ["bone_folder", "bamboo_wedge"] with ["firm_edge_pass", "flat_face_rub"]
+    CR3_T2 (fine_stipple): ["horsehair_brush", "sponge_block"] with ["textured_flick", "mottled_dab"]
+    CR3_T3 (gold_leaf_seal): ["agate_stone", "polished_wood", "copper_burnisher"] with ["friction_free_rub", "planar_press"]
+
+    Invariants:
+    - Multiple legitimate affordances per trial.
+    - Captures tool selection, action sequence, feedback observation, and subsequent strategy change.
+    - Brute force click counting is not rewarded.
+    """
+    defs = get_task_definitions().get("games", {}).get("CR3", {})
+    trials = defs.get("trials", [])
+
+    target_affordances = {
+        "CR3_T1": {
+            "valid_tools": {"bone_folder", "bamboo_wedge"},
+            "valid_methods": {"firm_edge_pass", "flat_face_rub"}
+        },
+        "CR3_T2": {
+            "valid_tools": {"horsehair_brush", "sponge_block"},
+            "valid_methods": {"textured_flick", "mottled_dab"}
+        },
+        "CR3_T3": {
+            "valid_tools": {"agate_stone", "polished_wood", "copper_burnisher"},
+            "valid_methods": {"friction_free_rub", "planar_press"}
+        }
+    }
+
+    tool_selections = {}
+    actions_by_trial = {}
+    feedback_by_trial = {}
+    final_adaptations = {}
+
+    for ev in events:
+        mg = getattr(ev, "mini_game", None) or (ev.get("mini_game") if isinstance(ev, dict) else None)
+        if mg != "CR3":
+            continue
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            data = json.loads(data_json)
+        elif isinstance(ev, dict):
+            data = ev.get("data", {})
+        else:
+            data = {}
+
+        action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
+        s_id = data.get("stimulus_id")
+        if not s_id:
+            continue
+
+        if s_id not in actions_by_trial:
+            actions_by_trial[s_id] = []
+            feedback_by_trial[s_id] = []
+
+        if action == "tool_selected":
+            tool_id = data.get("tool_id")
+            if tool_id:
+                tool_selections[s_id] = tool_id
+        elif action == "action_applied":
+            actions_by_trial[s_id].append({
+                "tool_id": data.get("tool_id"),
+                "method": data.get("action_method")
+            })
+        elif action == "feedback_observed":
+            feedback_by_trial[s_id].append(data.get("outcome_feedback"))
+        elif action == "strategy_adapted":
+            final_adaptations[s_id] = {
+                "final_tool_id": data.get("final_tool_id"),
+                "final_method": data.get("final_method")
+            }
+
+    trial_results = {}
+    aligned_count = 0
+
+    for t in trials:
+        s_id = t["stimulus_id"]
+        adapt = final_adaptations.get(s_id)
+        if not adapt:
+            continue
+
+        targets = target_affordances.get(s_id, {})
+        valid_tools = targets.get("valid_tools", set())
+        valid_methods = targets.get("valid_methods", set())
+
+        is_tool_aligned = adapt["final_tool_id"] in valid_tools
+        is_method_aligned = adapt["final_method"] in valid_methods
+        is_fully_aligned = is_tool_aligned and is_method_aligned
+
+        if is_fully_aligned:
+            aligned_count += 1
+
+        trial_results[s_id] = {
+            "initial_tool": tool_selections.get(s_id),
+            "action_count": len(actions_by_trial.get(s_id, [])),
+            "feedback_observed_count": len(feedback_by_trial.get(s_id, [])),
+            "final_tool_id": adapt["final_tool_id"],
+            "final_method": adapt["final_method"],
+            "is_tool_aligned": is_tool_aligned,
+            "is_method_aligned": is_method_aligned,
+            "is_fully_aligned": is_fully_aligned
+        }
+
+    completed_count = len(trial_results)
+    return {
+        "trials": trial_results,
+        "completed_count": completed_count,
+        "aligned_count": aligned_count,
+        "all_completed": completed_count == len(trials)
+    }
+
+
 
 
