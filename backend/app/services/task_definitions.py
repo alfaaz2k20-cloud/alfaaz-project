@@ -574,12 +574,15 @@ def reconstruct_q3_integration_state(events: list) -> Dict[str, Any]:
 
         if action == "context_requested" and s_id:
             context_requested.add(s_id)
-        elif action == "decision_integrated" and s_id:
+        elif action in ("decision_submitted", "decision_integrated") and s_id:
             choice = data.get("choice")
+            has_retrieved_context = (s_id in context_requested)
+            is_target_aligned = (choice == ground_truth_targets.get(s_id))
             decisions[s_id] = {
                 "choice": choice,
-                "context_retrieved": data.get("context_retrieved", s_id in context_requested),
-                "is_aligned": choice == ground_truth_targets.get(s_id)
+                "context_retrieved": has_retrieved_context,
+                "is_aligned": is_target_aligned,
+                "integrated": has_retrieved_context and is_target_aligned
             }
 
     completed_count = len(decisions)

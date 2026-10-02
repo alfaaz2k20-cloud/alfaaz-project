@@ -165,21 +165,21 @@ class TestStep5W5HiddenGallery(unittest.TestCase):
         self.assertEqual(recon["attributions"]["Q2_T3"], "attr_standard_tax_slip")
 
     def test_q3_knowledge_integration_three_episodes(self):
-        """Q3 distinguishes voluntary context retrieval from downstream decision integration."""
+        """Q3 distinguishes voluntary context retrieval from downstream decision integration without client summaries."""
         events = [
             # Episode 1: Context requested, decision correctly integrated
             {"seq": 40, "screen": "game", "mini_game": "Q3", "action": "episode_presented", "task_def_version": "1.0", "t_ms": 60000.0, "data": {"trial_index": 0, "stimulus_id": "Q3_E1", "ambiguity_type": "unattributed_artisan_folio"}},
             {"seq": 41, "screen": "game", "mini_game": "Q3", "action": "context_requested", "task_def_version": "1.0", "t_ms": 63000.0, "data": {"trial_index": 0, "stimulus_id": "Q3_E1", "context_id": "provenance_context_1", "input_modality": "mouse"}},
-            {"seq": 42, "screen": "game", "mini_game": "Q3", "action": "decision_integrated", "task_def_version": "1.0", "t_ms": 66000.0, "data": {"trial_index": 0, "stimulus_id": "Q3_E1", "context_retrieved": True, "choice": "choice_sadiq_rainawari", "input_modality": "mouse"}},
+            {"seq": 42, "screen": "game", "mini_game": "Q3", "action": "decision_submitted", "task_def_version": "1.0", "t_ms": 66000.0, "data": {"trial_index": 0, "stimulus_id": "Q3_E1", "choice": "choice_sadiq_rainawari", "input_modality": "mouse"}},
 
             # Episode 2: Context requested, decision correctly integrated
             {"seq": 43, "screen": "game", "mini_game": "Q3", "action": "episode_presented", "task_def_version": "1.0", "t_ms": 68000.0, "data": {"trial_index": 1, "stimulus_id": "Q3_E2", "ambiguity_type": "mismatched_period_provenance"}},
             {"seq": 44, "screen": "game", "mini_game": "Q3", "action": "context_requested", "task_def_version": "1.0", "t_ms": 71000.0, "data": {"trial_index": 1, "stimulus_id": "Q3_E2", "context_id": "provenance_context_2", "input_modality": "mouse"}},
-            {"seq": 45, "screen": "game", "mini_game": "Q3", "action": "decision_integrated", "task_def_version": "1.0", "t_ms": 74000.0, "data": {"trial_index": 1, "stimulus_id": "Q3_E2", "context_retrieved": True, "choice": "choice_post_flood_cedar", "input_modality": "mouse"}},
+            {"seq": 45, "screen": "game", "mini_game": "Q3", "action": "decision_submitted", "task_def_version": "1.0", "t_ms": 74000.0, "data": {"trial_index": 1, "stimulus_id": "Q3_E2", "choice": "choice_post_flood_cedar", "input_modality": "mouse"}},
 
             # Episode 3: Context NOT requested (voluntary bypass), decision made
             {"seq": 46, "screen": "game", "mini_game": "Q3", "action": "episode_presented", "task_def_version": "1.0", "t_ms": 76000.0, "data": {"trial_index": 2, "stimulus_id": "Q3_E3", "ambiguity_type": "regional_dialect_verse_origin"}},
-            {"seq": 47, "screen": "game", "mini_game": "Q3", "action": "decision_integrated", "task_def_version": "1.0", "t_ms": 79000.0, "data": {"trial_index": 2, "stimulus_id": "Q3_E3", "context_retrieved": False, "choice": "choice_southern_vakh_shrine", "input_modality": "keyboard"}}
+            {"seq": 47, "screen": "game", "mini_game": "Q3", "action": "decision_submitted", "task_def_version": "1.0", "t_ms": 79000.0, "data": {"trial_index": 2, "stimulus_id": "Q3_E3", "choice": "choice_southern_vakh_shrine", "input_modality": "keyboard"}}
         ]
 
         result = ingest_telemetry_batch(self.db, self.session_id, events)
@@ -200,7 +200,9 @@ class TestStep5W5HiddenGallery(unittest.TestCase):
         # All 3 choices aligned with ground truth
         self.assertEqual(recon["integrated_correctly_count"], 3)
         self.assertTrue(recon["episodes"]["Q3_E1"]["context_retrieved"])
+        self.assertTrue(recon["episodes"]["Q3_E1"]["integrated"])
         self.assertFalse(recon["episodes"]["Q3_E3"]["context_retrieved"])
+        self.assertFalse(recon["episodes"]["Q3_E3"]["integrated"])
 
     def test_w5_extractors_quarantined(self):
         """Q1, Q2, Q3 extractors remain strictly quarantined under feature_not_implemented."""
@@ -261,5 +263,42 @@ class TestStep5W5HiddenGallery(unittest.TestCase):
         run2 = [(f.feature_name, f.value_raw, f.valid, f.flags_json) for f in extract_session_features(self.db, self.session_id)]
         self.assertEqual(run1, run2)
 
+    def test_q3_client_supplied_context_retrieved_is_stripped_and_derived_server_side(self):
+        """Client attempt to pass context_retrieved is stripped as forbidden, server reconstructs it."""
+        evs = [
+            {"seq": 500, "screen": "game", "mini_game": "Q3", "action": "episode_presented", "task_def_version": "1.0", "t_ms": 1000.0, "data": {"stimulus_id": "Q3_E1"}},
+            {"seq": 501, "screen": "game", "mini_game": "Q3", "action": "context_requested", "task_def_version": "1.0", "t_ms": 2000.0, "data": {"stimulus_id": "Q3_E1", "context_id": "provenance_context_1"}},
+            # Client maliciously or erroneously supplies context_retrieved=False when it was requested
+            {"seq": 502, "screen": "game", "mini_game": "Q3", "action": "decision_submitted", "task_def_version": "1.0", "t_ms": 3000.0, "data": {"stimulus_id": "Q3_E1", "choice": "choice_sadiq_rainawari", "context_retrieved": False}}
+        ]
+        ingest_telemetry_batch(self.db, self.session_id, evs)
+
+        flags = self.db.exec(
+            select(DBDataQualityFlag).where(
+                DBDataQualityFlag.session_id == self.session_id,
+                DBDataQualityFlag.flag == "forbidden_client_field_detected"
+            )
+        ).all()
+        self.assertTrue(len(flags) >= 1)
+        self.assertIn("context_retrieved", flags[0].detail)
+
+        stored = self.db.exec(
+            select(DBTelemetryEvent).where(
+                DBTelemetryEvent.session_id == self.session_id,
+                DBTelemetryEvent.mini_game == "Q3"
+            )
+        ).all()
+        # Verify stripped from stored data_json
+        for ev in stored:
+            if ev.action == "decision_submitted":
+                payload = json.loads(ev.data_json)
+                self.assertNotIn("context_retrieved", payload)
+
+        recon = reconstruct_q3_integration_state(stored)
+        # Server reconstructs truth from context_requested, ignoring false client claim
+        self.assertTrue(recon["episodes"]["Q3_E1"]["context_retrieved"])
+        self.assertTrue(recon["episodes"]["Q3_E1"]["integrated"])
+
 if __name__ == "__main__":
     unittest.main()
+

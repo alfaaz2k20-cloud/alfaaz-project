@@ -687,10 +687,9 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
     });
 
     document.getElementById('confirmQ3Btn')?.addEventListener('click', () => {
-      logEvent('decision_integrated', {
+      logEvent('decision_submitted', {
         trial_index: currentEpisode,
         stimulus_id: ep.stimulus_id,
-        context_retrieved: contextRetrieved,
         choice: selectedIntegrationChoice,
         input_modality: lastInputModality,
         task_def_version: '1.0'
