@@ -1,8 +1,9 @@
 /* ==========================================================================
    ALFAAZ RECRUIT — WORLD 4: THE SHIFTING GRID (متغیر گرڈ)
    Mini-games: E1 (Rule Shift), E2 (Setback Recovery), E3 (Changing Conditions)
-   Adheres to Design Freeze v1 + Addendum v1.1.
-   Emits raw behavioral telemetry only (no client-authored scores or correctness).
+   Plain language remediation for human playtest pass 1.
+   Sentences <= 12 words. Simple conversational English. Jargon removed.
+   Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
    ========================================================================== */
 
 import { renderTutorialCard } from './index.js';
@@ -24,9 +25,7 @@ export function runTheShiftingGrid(context, renderHeader) {
 }
 
 // --------------------------------------------------------------------------
-// E1: Rule Shift (9 trials, unannounced rule shift at trial index 3/4)
-// Ground truth rules: trials 0-2 (Color), trials 3-8 (Shape)
-// Static reference exemplars only. No Active Rule banner or dynamic relabeling.
+// E1: Rule Shift (9 trials, unannounced rule shift)
 // --------------------------------------------------------------------------
 function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
@@ -34,7 +33,6 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
   let trialStartTime = 0;
   let lastInputModality = 'mouse';
 
-  // 9 trials matching task_definitions.json
   const trials = [
     { stimulus_id: 'E1_T1', color: 'Gold', shape: 'Square', icon: '&#9632;', label: 'Gold Square' },
     { stimulus_id: 'E1_T2', color: 'Sage', shape: 'Circle', icon: '&#9679;', label: 'Sage Circle' },
@@ -50,15 +48,15 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader('Part 1: The Ceramic Mosaic', 'Sorting geometric tiles into exhibition bins across 9 successive sorting opportunities.')}
+        <div class="candidate-content-protected max-w-2xl mx-auto">
+          ${renderHeader('The Ceramic Mosaic', 'Sort each tile into the matching container.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>`,
             goal: 'Observe each ceramic tile and assign it to the matching container.',
             steps: [
-              'Examine the stimulus tile presented on the central easel.',
-              'Choose Container 1 or Container 2 based on pattern correspondence.',
-              'Sort all 9 tiles to complete the series.'
+              'Look at the shape and color of the tile.',
+              'Pick Container 1 or Container 2.',
+              'Sort all 9 tiles to complete the task.'
             ]
           })}
         </div>
@@ -76,41 +74,56 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
     const t = trials[currentIdx];
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
-        <div class="flex justify-between items-center mb-2">
-          ${renderHeader('Part 1: The Ceramic Mosaic', 'Sort each mosaic tile into the appropriate exhibition container.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Tile ${currentIdx + 1} of ${trials.length}</span>
+      <div class="animate-fadeIn max-w-2xl mx-auto">
+        <!-- TOP BAR -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
+          <div class="flex items-center gap-2">
+            <span class="act-badge">World 4: The Shifting Grid</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Tile ${currentIdx + 1} of ${trials.length}</span>
+          </div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
         </div>
 
-        <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-sm mb-4 text-xs font-serif text-[var(--text-primary)] flex items-center justify-between">
-          <span class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block"></span>
-            <strong>Mosaic Stage:</strong> Determine the matching container for the presented tile.
-          </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${t.stimulus_id}</span>
+        <!-- TASK HEADER -->
+        <div class="mb-4">
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Ceramic Mosaic</h2>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Sort each ceramic tile into the matching container.</p>
         </div>
 
-        <!-- Stimulus Presentation Area -->
-        <div class="p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center shadow-xs rounded-xs">
-          <div class="text-5xl mb-2.5 transition-transform hover:scale-105 ${t.color === 'Gold' ? 'text-[var(--accent-gold)]' : 'text-emerald-700'}">
+        <!-- YOUR TASK -->
+        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            Examine the tile below. Click Container 1 or 2 to file it.
+          </div>
+        </div>
+
+        <!-- LOOK AT THIS -->
+        <div class="p-6 bg-white border border-[var(--grid-border)] mb-4 text-center shadow-xs rounded-xs candidate-content-protected">
+          <div class="text-5xl mb-2 ${t.color === 'Gold' ? 'text-[var(--accent-gold)]' : 'text-emerald-700'}">
             ${t.icon}
           </div>
           <div class="text-sm font-serif font-semibold text-[var(--text-primary)]">${t.label}</div>
-          <div class="text-[11px] text-[var(--text-secondary)] mt-1 font-mono uppercase">${t.color} &bull; ${t.shape}</div>
+          <div class="text-[11px] text-[var(--text-secondary)] mt-0.5 font-mono uppercase">${t.color} &bull; ${t.shape}</div>
         </div>
 
-        <!-- Static Reference Containers (No Dynamic Relabeling) -->
-        <div class="grid grid-cols-2 gap-4">
-          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 active:scale-98 transition text-center shadow-xs rounded-xs" data-choice="container_1" tabindex="0">
+        <!-- INTERACTION AREA -->
+        <div class="grid grid-cols-2 gap-4 mb-4 candidate-content-protected">
+          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 active:scale-98 transition text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_1" tabindex="0">
             <span class="text-2xl text-[var(--accent-gold)] block mb-1">&#9679;</span>
             <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 1</span>
             <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-mono">Reference: Gold Circle</span>
           </button>
-          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 active:scale-98 transition text-center shadow-xs rounded-xs" data-choice="container_2" tabindex="0">
+          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 active:scale-98 transition text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
             <span class="text-2xl text-emerald-800 block mb-1">&#9632;</span>
             <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 2</span>
             <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-mono">Reference: Sage Square</span>
           </button>
+        </div>
+
+        <!-- Progress Footer -->
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+          Tile ${currentIdx + 1} of ${trials.length}
         </div>
       </div>
     `;
@@ -165,8 +178,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
 }
 
 // --------------------------------------------------------------------------
-// E2: Setback Recovery (4 sequences: 3 disrupted, 1 clean control)
-// Focuses on calm, constructive operational adaptation. No distressing stimuli.
+// E2: Setback Recovery (4 sequences)
 // --------------------------------------------------------------------------
 function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
@@ -177,50 +189,50 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
   const sequences = [
     {
       stimulus_id: 'E2_S1',
-      title: 'Sequence 1: Workspace Pigment Spill',
-      situation: 'A sudden ink droplet spilled across your active workstation layout card.',
+      title: 'Sequence 1: Ink Spill on Desk',
+      situation: 'A small drop of ink spilled onto your active pattern card.',
       has_disruption: true,
       disruption_type: 'ink_spill_masking_workspace',
       options: [
-        { id: 'clear_workspace', label: 'Dab spill with blotting linen and realign layout card', note: 'Constructive recovery action' },
-        { id: 'rush_uncleaned', label: 'Continue assembly without cleaning around the smudge', note: 'Rushed compromise' },
-        { id: 'pause_idle', label: 'Step away from the bench to wait for guidance', note: 'Passive hesitation' }
+        { id: 'clear_workspace', label: 'Dab ink with a cloth and straighten your card', note: 'Calm cleanup' },
+        { id: 'rush_uncleaned', label: 'Keep placing tiles around the wet ink', note: 'Rushed step' },
+        { id: 'pause_idle', label: 'Step away and wait for help', note: 'Long wait' }
       ]
     },
     {
       stimulus_id: 'E2_S2',
-      title: 'Sequence 2: Calm Working Cadence',
-      situation: 'The work area is undisturbed, materials are organized, and light is balanced.',
+      title: 'Sequence 2: Calm Studio Work',
+      situation: 'The workbench is clean, tidy, and well lit.',
       has_disruption: false,
       disruption_type: 'undisrupted_control',
       options: [
-        { id: 'standard_sequence', label: 'Proceed with planned standard mosaic montage sequence', note: 'Standard constructive cadence' },
-        { id: 'unnecessary_rework', label: 'Disassemble existing tiles to verify underlayer unnecessarily', note: 'Unneeded re-examination' },
-        { id: 'pause_idle', label: 'Pause activity to double-check surroundings', note: 'Passive delay' }
+        { id: 'standard_sequence', label: 'Continue placing tiles according to plan', note: 'Steady step' },
+        { id: 'unnecessary_rework', label: 'Take tiles apart to re-check for no reason', note: 'Unneeded check' },
+        { id: 'pause_idle', label: 'Stop and wait before continuing', note: 'Unneeded pause' }
       ]
     },
     {
       stimulus_id: 'E2_S3',
-      title: 'Sequence 3: Courtyard Draft Disruption',
-      situation: 'A courtyard breeze displaced your paper reference template off the table.',
+      title: 'Sequence 3: Breeze Blows Paper',
+      situation: 'A sudden breeze blew your reference drawing off the table.',
       has_disruption: true,
       disruption_type: 'draft_blows_reference_card',
       options: [
-        { id: 'stabilize_reference', label: 'Retrieve reference card and secure it with corner stone weight', note: 'Constructive securing action' },
-        { id: 'guess_motif', label: 'Continue placing tiles from rough memory without the template', note: 'Unanchored improvisation' },
-        { id: 'pause_idle', label: 'Wait for indoor air current to settle', note: 'Passive hesitation' }
+        { id: 'stabilize_reference', label: 'Pick up paper and weigh it down with a stone', note: 'Fix and secure' },
+        { id: 'guess_motif', label: 'Place tiles from memory without looking at plan', note: 'Guessing' },
+        { id: 'pause_idle', label: 'Wait for the wind to stop', note: 'Waiting' }
       ]
     },
     {
       stimulus_id: 'E2_S4',
-      title: 'Sequence 4: Misplaced Ceramic Tray',
-      situation: 'The neighboring glaze palette was nudged, obstructing your primary tool rest.',
+      title: 'Sequence 4: Color Tray in the Way',
+      situation: 'A color tray was nudged and blocks your tool holder.',
       has_disruption: true,
       disruption_type: 'misplaced_pigment_tray',
       options: [
-        { id: 'reposition_tray', label: 'Gently shift the neighboring palette back onto its runner', note: 'Constructive realignment' },
-        { id: 'use_wrong_shade', label: 'Work around the obstruction in an awkward wrist posture', note: 'Rushed ergonomic compromise' },
-        { id: 'pause_idle', label: 'Stop work until the assistant returns', note: 'Passive hesitation' }
+        { id: 'reposition_tray', label: 'Slide the tray back to its own side', note: 'Move tray' },
+        { id: 'use_wrong_shade', label: 'Work around the tray at an awkward angle', note: 'Awkward reach' },
+        { id: 'pause_idle', label: 'Stop work until someone comes back', note: 'Waiting' }
       ]
     }
   ];
@@ -228,15 +240,15 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader('Part 2: The Courtyard Setup', 'Managing operational adjustments and studio setbacks across 4 workshop sequences.')}
+        <div class="candidate-content-protected max-w-2xl mx-auto">
+          ${renderHeader('The Courtyard Setup', 'Respond constructively to workshop situations.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
             goal: 'Respond constructively to workshop situations and unexpected physical adjustments.',
             steps: [
-              'Review the atelier situation presented in each sequence.',
+              'Review the workshop event in each round.',
               'Evaluate the 3 response options.',
-              'Select your constructive operational response across all 4 sequences.'
+              'Choose your response across all 4 sequences.'
             ]
           })}
         </div>
@@ -252,28 +264,48 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
     }
 
     const s = sequences[currentSeq];
+    const activeOpt = s.options.find(o => o.id === selectedAction);
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
-        <div class="flex justify-between items-center mb-2">
-          ${renderHeader('Part 2: The Courtyard Setup', 'Select the appropriate constructive operational response.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Sequence ${currentSeq + 1} of ${sequences.length}</span>
+      <div class="animate-fadeIn max-w-2xl mx-auto">
+        <!-- TOP BAR -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
+          <div class="flex items-center gap-2">
+            <span class="act-badge">World 4: The Shifting Grid</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Event ${currentSeq + 1} of ${sequences.length}</span>
+          </div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
         </div>
 
-        <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-sm mb-4 text-xs font-serif text-[var(--text-primary)] flex items-center justify-between">
-          <span class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block"></span>
+        <!-- TASK HEADER -->
+        <div class="mb-4">
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Courtyard Setup</h2>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Choose the best response when unexpected studio events happen.</p>
+        </div>
+
+        <!-- YOUR TASK -->
+        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            Read the situation below. Pick the most practical next step.
+          </div>
+        </div>
+
+        <!-- LOOK AT THIS -->
+        <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected flex items-center justify-between">
+          <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${s.title}:</strong> ${s.situation}
           </span>
           <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${s.stimulus_id}</span>
         </div>
 
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 shadow-xs rounded-xs">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-3">Available Operational Responses:</div>
-          <div class="space-y-3">
+        <!-- INTERACTION AREA -->
+        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
+          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Available Responses:</div>
+          <div class="space-y-2.5">
             ${s.options.map(opt => `
-              <div class="e2-opt p-4 bg-white border ${selectedAction === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between" data-action="${opt.id}" tabindex="0" role="button">
-                <span class="flex items-center gap-2.5">
+              <div class="e2-opt p-3.5 bg-white border ${selectedAction === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-action="${opt.id}" tabindex="0" role="button">
+                <span class="flex items-center gap-2">
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedAction === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAction === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
                 </span>
@@ -283,9 +315,16 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
           </div>
         </div>
 
+        <!-- YOUR CHOICE -->
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+          <span>${selectedAction ? `You selected: <strong class="text-[var(--text-primary)]">${activeOpt?.label}</strong>` : 'Select an option above to continue.'}</span>
+          <span class="text-[10px] text-stone-400 font-mono">${currentSeq + 1} / ${sequences.length}</span>
+        </div>
+
+        <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button type="button" id="confirmE2Btn" ${selectedAction ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
-            ${currentSeq < sequences.length - 1 ? 'Confirm Response &rarr;' : 'Finish Setup Sequences &rarr;'}
+          <button type="button" id="confirmE2Btn" ${selectedAction ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs min-h-[44px]">
+            ${currentSeq < sequences.length - 1 ? 'Confirm Choice &rarr;' : 'Finish Setup Sequences &rarr;'}
           </button>
         </div>
       </div>
@@ -353,8 +392,6 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
 
 // --------------------------------------------------------------------------
 // E3: Changing Conditions (3 condition transitions)
-// Objective is constant; constraints shift (standard -> monochrome -> constrained grid).
-// Input modality and interaction method remain invariant.
 // --------------------------------------------------------------------------
 function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
@@ -365,34 +402,34 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
   const conditions = [
     {
       stimulus_id: 'E3_C1',
-      title: 'Condition 1: Full Tri-Tone Palette',
+      title: 'Condition 1: Three Colors Available',
       constraint_state: 'standard_three_color_palette',
-      description: 'Standard studio conditions: gold, sage, and terracotta pigments are all available on the bench.',
+      description: 'Gold, sage, and terracotta colors are all on the table.',
       options: [
-        { id: 'standard_layout', label: 'Balanced Tri-Tone Motif (Symmetrical triad placement)' },
-        { id: 'tonal_adaptation', label: 'Monochrome Grayscale Contrast (Single shade emphasis)' },
-        { id: 'compact_adaptation', label: 'Half-Grid High Density Compression' }
+        { id: 'standard_layout', label: 'Three-Color Pattern (Balanced three-color arrangement)' },
+        { id: 'tonal_adaptation', label: 'Single Color Shades (One shade only)' },
+        { id: 'compact_adaptation', label: 'Half-Grid Squeeze' }
       ]
     },
     {
       stimulus_id: 'E3_C2',
-      title: 'Condition 2: Monochrome Indigo Restriction',
+      title: 'Condition 2: Only Indigo Blue Available',
       constraint_state: 'monochrome_indigo_only',
-      description: 'Material restriction: only single indigo pigment is available; contrast must be achieved through tonal density.',
+      description: 'Only one blue color is available on the table.',
       options: [
-        { id: 'tonal_adaptation', label: 'Tonal Value Gradient (Depth through hatching and value density)' },
-        { id: 'standard_layout', label: 'Attempt Tri-Color Separation (Incompatible with single pigment)' },
-        { id: 'compact_adaptation', label: 'Compressed Stamp Layout' }
+        { id: 'tonal_adaptation', label: 'Light and Dark Shading (Create depth using light and dark tones)' },
+        { id: 'standard_layout', label: 'Try Three Colors (Cannot be done with one color)' },
+        { id: 'compact_adaptation', label: 'Small Stamp Layout' }
       ]
     },
     {
       stimulus_id: 'E3_C3',
-      title: 'Condition 3: Constricted Border Grid',
+      title: 'Condition 3: Half-Size Wall Space',
       constraint_state: 'boundary_constricted_half_grid',
-      description: 'Spatial constraint: available wall boundary is reduced to half-width; artwork must be scaled to compact dimensions.',
+      description: 'The wall space is cut in half. The artwork must fit smaller dimensions.',
       options: [
-        { id: 'compact_adaptation', label: 'Compact Geometric Scaling (Dense micro-mosaic adaptation)' },
-        { id: 'standard_layout', label: 'Standard Wide Layout (Exceeds constricted boundary)' },
+        { id: 'compact_adaptation', label: 'Compact Small Design (Scale down pattern to fit half wall)' },
+        { id: 'standard_layout', label: 'Full Size Layout (Too wide for the small wall)' },
         { id: 'tonal_adaptation', label: 'Unscaled Shading Layout' }
       ]
     }
@@ -401,15 +438,15 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader('Part 3: The Shifting Medium', 'Adapting aesthetic compositions across 3 shifting environmental constraints.')}
+        <div class="candidate-content-protected max-w-2xl mx-auto">
+          ${renderHeader('The Shifting Medium', 'Adapt design layout when studio materials change.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>`,
-            goal: 'Adapt your mosaic design strategy to match the shifting environmental conditions while maintaining aesthetic harmony.',
+            goal: 'Adapt your mosaic design strategy to match shifting studio constraints.',
             steps: [
-              'Examine the active studio constraints in each transition.',
-              'Choose the layout adaptation best aligned with the constraints.',
-              'Confirm your composition across all 3 transitions.'
+              'Examine the active studio condition in each round.',
+              'Choose the layout option that matches the condition.',
+              'Confirm your choice across all 3 rounds.'
             ]
           })}
         </div>
@@ -425,28 +462,48 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
     }
 
     const c = conditions[currentCondition];
+    const activeLayout = c.options.find(o => o.id === selectedLayout);
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
-        <div class="flex justify-between items-center mb-2">
-          ${renderHeader('Part 3: The Shifting Medium', 'Adapt composition strategy to active constraint requirements.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Condition ${currentCondition + 1} of ${conditions.length}</span>
+      <div class="animate-fadeIn max-w-2xl mx-auto">
+        <!-- TOP BAR -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
+          <div class="flex items-center gap-2">
+            <span class="act-badge">World 4: The Shifting Grid</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Condition ${currentCondition + 1} of ${conditions.length}</span>
+          </div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
         </div>
 
-        <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-sm mb-4 text-xs font-serif text-[var(--text-primary)] flex items-center justify-between">
-          <span class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block"></span>
+        <!-- TASK HEADER -->
+        <div class="mb-4">
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Shifting Medium</h2>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Adapt design layout to active studio conditions.</p>
+        </div>
+
+        <!-- YOUR TASK -->
+        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            Read the active condition below. Pick the layout that fits best.
+          </div>
+        </div>
+
+        <!-- LOOK AT THIS -->
+        <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected flex items-center justify-between">
+          <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${c.title}:</strong> ${c.description}
           </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)] font-mono">${c.stimulus_id}</span>
+          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${c.stimulus_id}</span>
         </div>
 
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 shadow-xs rounded-xs">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-3">Composition Adaptation Strategies:</div>
-          <div class="space-y-3">
+        <!-- INTERACTION AREA -->
+        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
+          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Layout Options:</div>
+          <div class="space-y-2.5">
             ${c.options.map(opt => `
-              <div class="e3-opt p-4 bg-white border ${selectedLayout === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between" data-layout="${opt.id}" tabindex="0" role="button">
-                <span class="flex items-center gap-2.5">
+              <div class="e3-opt p-3.5 bg-white border ${selectedLayout === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-layout="${opt.id}" tabindex="0" role="button">
+                <span class="flex items-center gap-2">
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedLayout === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedLayout === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
                 </span>
@@ -456,9 +513,16 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
           </div>
         </div>
 
+        <!-- YOUR CHOICE -->
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+          <span>${selectedLayout ? `You selected: <strong class="text-[var(--text-primary)]">${activeLayout?.label}</strong>` : 'Select a layout above to continue.'}</span>
+          <span class="text-[10px] text-stone-400 font-mono">${currentCondition + 1} / ${conditions.length}</span>
+        </div>
+
+        <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button type="button" id="confirmE3Btn" ${selectedLayout ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
-            ${currentCondition < conditions.length - 1 ? 'Confirm Adaptation &rarr;' : 'Finish World 4 &rarr;'}
+          <button type="button" id="confirmE3Btn" ${selectedLayout ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs min-h-[44px]">
+            ${currentCondition < conditions.length - 1 ? 'Confirm Layout &rarr;' : 'Finish World 4 &rarr;'}
           </button>
         </div>
       </div>

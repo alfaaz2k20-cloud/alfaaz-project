@@ -1,8 +1,10 @@
 /* ==========================================================================
    ALFAAZ RECRUIT — WORLD 6: THE BROKEN TOOL (شکستہ آلہ)
-   Mini-games: CR1 (The Artisan's Cord), CR2 (The Central Pillar), CR3 (The Printed Motif)
+   Mini-games: CR1 (The Artisan's Assembly), CR2 (The Spatial Pivot), CR3 (The Improvised Tool)
    Adheres to Design Freeze v1 + Addendum v1.1.
    Emits primitive behavioral telemetry only.
+   Remediated for plain English (<= 12 words per sentence), mobile-first layout,
+   and scoped candidate content protection.
    ========================================================================== */
 
 import { renderTutorialCard } from './index.js';
@@ -40,13 +42,13 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
       stage_id: 'CR1_S1',
       title: 'Stage 1: The Weaving Shuttle Rig',
       constraint: 'missing_crossbar_shuttle',
-      scenario: 'A traditional walnut loom shuttle crossbar has fractured. Construct a functional substitute using available studio materials.',
+      scenario: 'A walnut loom shuttle crossbar has cracked. Build a working replacement with studio parts.',
       materials: [
-        { id: 'M_SPLIT_BAMBOO', name: 'Split Bamboo Rib', icon: '&#127883;', role: 'Flexible rigid bar' },
-        { id: 'M_BRASS_ROD', name: 'Slotted Brass Tension Rod', icon: '&#128296;', role: 'Rigid direct mount' },
-        { id: 'M_CARVED_PINE', name: 'Carved Pine Dowel', icon: '&#129685;', role: 'Lightweight dowel' },
-        { id: 'M_WAXED_CORD', name: 'Waxed Linen Binder Cord', icon: '&#129526;', role: 'Tensile binding wrap' },
-        { id: 'M_CERAMIC_WEIGHT', name: 'Glazed Counterbalance Weight', icon: '&#9711;', role: 'Pendular stabilizing mass' }
+        { id: 'M_SPLIT_BAMBOO', name: 'Split Bamboo Rib', icon: '&#127883;', role: 'Flexible wooden bar' },
+        { id: 'M_BRASS_ROD', name: 'Slotted Brass Rod', icon: '&#128296;', role: 'Stiff metal bar' },
+        { id: 'M_CARVED_PINE', name: 'Carved Pine Peg', icon: '&#129685;', role: 'Lightweight wooden pin' },
+        { id: 'M_WAXED_CORD', name: 'Waxed Linen Cord', icon: '&#129526;', role: 'Strong binding string' },
+        { id: 'M_CERAMIC_WEIGHT', name: 'Ceramic Weight', icon: '&#9711;', role: 'Small balancing weight' }
       ],
       valid_combinations: [
         ['M_SPLIT_BAMBOO', 'M_WAXED_CORD'],
@@ -58,12 +60,12 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
       stage_id: 'CR1_S2',
       title: 'Stage 2: The Warp Tension Anchor',
       constraint: 'tension_wire_unanchored',
-      scenario: 'The lateral warp tension wire lacks an anchor point on the frame edge. Assemble a secure tensioning rig.',
+      scenario: 'The side tension cord needs an anchor point. Assemble a secure tie-down rig.',
       materials: [
-        { id: 'M_LEATHER_STRAP', name: 'Oil-Tanned Leather Cinch Strap', icon: '&#129526;', role: 'High-friction cinch' },
-        { id: 'M_NOTCHED_PEG', name: 'Hardwood Notched Anchor Peg', icon: '&#129685;', role: 'Wedge anchor' },
-        { id: 'M_COPPER_WIRE', name: 'Annealed Copper Binding Wire', icon: '&#9874;', role: 'Pliable wrapped fastener' },
-        { id: 'M_STONE_COUNTER', name: 'Basalt Counterweight Stone', icon: '&#11044;', role: 'Static gravity balance' }
+        { id: 'M_LEATHER_STRAP', name: 'Leather Cinch Strap', icon: '&#129526;', role: 'Firm gripping strap' },
+        { id: 'M_NOTCHED_PEG', name: 'Hardwood Anchor Peg', icon: '&#129685;', role: 'Notched wooden wedge' },
+        { id: 'M_COPPER_WIRE', name: 'Flexible Copper Wire', icon: '&#9874;', role: 'Bendable wrapping wire' },
+        { id: 'M_STONE_COUNTER', name: 'Counterweight Stone', icon: '&#11044;', role: 'Heavy balance stone' }
       ],
       valid_combinations: [
         ['M_LEATHER_STRAP', 'M_NOTCHED_PEG'],
@@ -76,16 +78,19 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader("Part 1: The Artisan's Assembly", 'Constructing mechanical studio fixtures under physical material constraints.')}
+        <div class="candidate-content-protected">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="act-badge">World 6: The Broken Tool</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3</span>
+          </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`,
-            goal: 'Select and test functional materials to overcome missing hardware across 2 stages.',
+            goal: 'Select studio materials to build a working fixture across 2 stages.',
             steps: [
-              'Examine the structural constraint and available workbench materials.',
-              'Toggle parts to assemble your custom solution (multiple valid designs exist).',
-              'Optionally test the assembly to observe mechanical balance.',
-              'Confirm your completed assembly to advance.'
+              'Read the hardware challenge and available workbench items.',
+              'Click parts to add or remove them from your setup.',
+              'You may test your setup to check mechanical balance.',
+              'Click confirm to advance to the next stage.'
             ]
           })}
         </div>
@@ -105,57 +110,88 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
 
     app.innerHTML = `
       <div class="animate-fadeIn">
-        ${renderHeader(`Part 1: The Artisan's Assembly (${currentStageIdx + 1}/2)`, st.title)}
-
-        <!-- Constraint Card -->
-        <div class="p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs">
-          <div class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider mb-1 font-semibold">Atelier Hardware Constraint</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed font-serif">${st.scenario}</div>
+        <!-- TOP BAR -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="act-badge">World 6: The Broken Tool</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Stage ${currentStageIdx + 1} of ${stages.length}</span>
+          </div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
         </div>
 
-        <!-- Workbench Selection -->
-        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 rounded-xs">
-          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-3">Available Workbench Components</div>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+        <!-- TASK HEADER -->
+        <div class="mb-4">
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Artisan's Assembly</h2>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Build a working workshop fixture from available parts.</p>
+        </div>
+
+        <!-- YOUR TASK -->
+        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            Review the broken part below. Select one or more workbench items to fix it. Multiple valid combinations exist.
+          </div>
+        </div>
+
+        <!-- LOOK AT THIS: Constraint Card -->
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider font-semibold">Atelier Hardware Need</span>
+            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${st.stage_id}</span>
+          </div>
+          <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${st.title}</div>
+          <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${st.scenario}</div>
+        </div>
+
+        <!-- INTERACTION AREA: Workbench Selection -->
+        <div class="p-4 sm:p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs candidate-content-protected">
+          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-3">Available Workbench Components (Click to Equip)</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 mb-4">
             ${st.materials.map(m => {
               const isSelected = selectedParts.includes(m.id);
               return `
-                <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex flex-col justify-between" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+                <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex flex-col justify-between min-h-[72px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
                   <div>
-                    <div class="text-xl mb-1 text-stone-700">${m.icon}</div>
+                    <div class="text-lg mb-1 text-stone-700">${m.icon}</div>
                     <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
                     <div class="text-[10px] text-[var(--text-secondary)]">${m.role}</div>
                   </div>
                   <div class="mt-2 text-right">
-                    <span class="text-[10px] font-mono font-semibold ${isSelected ? 'text-[var(--accent-gold)]' : 'text-stone-300'}">${isSelected ? '&#10003; EQUIPPED' : '+ ADD'}</span>
+                    <span class="text-[10px] font-mono font-semibold ${isSelected ? 'text-[var(--accent-gold)]' : 'text-stone-400'}">${isSelected ? '&#10003; EQUIPPED' : '+ ADD'}</span>
                   </div>
                 </div>
               `;
             }).join('')}
           </div>
 
-          <!-- Assembly Status -->
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-3 border-t border-stone-200">
+          <!-- Assembly Status & Test Button -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-stone-200">
             <div class="text-xs text-[var(--text-secondary)]">
-              Current Configuration: <strong class="text-[var(--text-primary)]">${selectedParts.length > 0 ? selectedParts.map(id => st.materials.find(m => m.id === id)?.name).join(' + ') : 'None selected'}</strong>
+              Equipped: <strong class="text-[var(--text-primary)]">${selectedParts.length > 0 ? selectedParts.map(id => st.materials.find(m => m.id === id)?.name).join(' + ') : 'None selected'}</strong>
             </div>
-            <button type="button" id="testAssemblyBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-4 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 transition rounded-xs">
-              Test Stability
+            <button type="button" id="testAssemblyBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-4 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 transition rounded-xs min-h-[44px]">
+              Test Assembly
             </button>
           </div>
 
           ${testFeedback ? `
             <div class="mt-3 p-3 bg-white border ${testFeedback.valid ? 'border-emerald-600/40 text-emerald-900' : 'border-amber-600/40 text-amber-900'} text-xs rounded-xs leading-relaxed animate-fadeIn">
-              <span class="font-mono text-[10px] uppercase font-semibold block mb-0.5">${testFeedback.valid ? 'Rig Alignment Confirmed' : 'Rig Observation Note'}</span>
+              <span class="font-mono text-[10px] uppercase font-semibold block mb-0.5">${testFeedback.valid ? 'Assembly Test: Passed' : 'Assembly Test: Note'}</span>
               ${testFeedback.message}
             </div>
           ` : ''}
         </div>
 
-        <div class="flex justify-end">
-          <button type="button" id="confirmStageBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
+        <!-- PRIMARY ACTION BUTTON -->
+        <div class="flex justify-end mb-4">
+          <button type="button" id="confirmStageBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
             ${currentStageIdx < stages.length - 1 ? 'Confirm Assembly & Next Stage &rarr;' : 'Finish Part 1 &rarr;'}
           </button>
+        </div>
+
+        <!-- Progress Footer -->
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+          Stage ${currentStageIdx + 1} of ${stages.length}
         </div>
       </div>
     `;
@@ -197,8 +233,8 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
       testFeedback = {
         valid: isFunctional,
         message: isFunctional
-          ? 'Physical tension test successful: load distribution is balanced and functional.'
-          : 'Physical test indicates unanchored lateral play or incomplete tension linkage.'
+          ? 'Tension test passed. The loom parts balance smoothly.'
+          : 'Test note: The parts wobble or do not connect tightly.'
       };
       logEvent('assembly_tested', {
         stage_id: st.stage_id,
@@ -264,52 +300,52 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
     {
       episode_id: 'CR2_E1',
       title: 'Episode 1: The Central Pillar Chamber',
-      pre_context: 'Initial gallery setup: plan visitor flow through the grand hall.',
+      pre_context: 'Plan visitor walking paths through the grand exhibition hall.',
       pre_strategies: [
-        { id: 'S_CENTRAL_AVENUE', label: 'Direct Central Promenade', desc: 'Single wide central walkway down the axis.' },
-        { id: 'S_PERIMETER_LOOP', label: 'Outer Wall Perimeter Loop', desc: 'Continuous clockwise loop along outer walls.' },
-        { id: 'S_ALCOVE_ISLANDS', label: 'Discrete Island Clusters', desc: 'Scattered standalone display pods.' }
+        { id: 'S_CENTRAL_AVENUE', label: 'Central Promenade', desc: 'Single straight walkway down the center.' },
+        { id: 'S_PERIMETER_LOOP', label: 'Outer Wall Loop', desc: 'Continuous gentle loop along outer walls.' },
+        { id: 'S_ALCOVE_ISLANDS', label: 'Display Islands', desc: 'Separate display clusters across the floor.' }
       ],
       constraint_change: 'central_pillar_blocks_corridor',
-      shift_description: 'Architectural constraint: A massive four-sided carved stone pillar unexpectedly blocks direct transit down the central axis.',
+      shift_description: 'Notice: A large carved stone pillar blocks the direct central pathway.',
       post_strategies: [
-        { id: 'split_flow', label: 'Bifurcated Twin Corridor (Diverge flow into dual harmonious paths around pillar)', note: 'Aligned Reframing' },
-        { id: 'linear_flow', label: 'Single Forced Bypass (Compress all visitors down the narrow left aisle)', note: 'Linear Compression' },
-        { id: 'stop_gap', label: 'Central Waiting Cordon (Halt progression for scheduled batch entry)', note: 'Static Delay' }
+        { id: 'split_flow', label: 'Twin Walking Corridors (Split visitors smoothly around both sides of the pillar)', note: 'Adapted Flow' },
+        { id: 'linear_flow', label: 'Single Left Path (Route all visitors down the left aisle)', note: 'Linear Channel' },
+        { id: 'stop_gap', label: 'Central Waiting Area (Pause visitors and let small groups enter in turns)', note: 'Batch Entry' }
       ]
     },
     {
       episode_id: 'CR2_E2',
-      title: 'Episode 2: West Cloister Evacuation Clearance',
-      pre_context: 'Initial layout: arrange modular exhibits across the wide western cloister corridor.',
+      title: 'Episode 2: West Gallery Safety Clearance',
+      pre_context: 'Arrange display stands across the wide western gallery corridor.',
       pre_strategies: [
-        { id: 'S_WALL_PANORAMA', label: 'Continuous Wall Panorama', desc: 'Continuous hanging series along the west wall.' },
-        { id: 'S_TRANSVERSE_SCREENS', label: 'Transverse Privacy Partitions', desc: 'Folding screens perpendicular to the corridor.' },
-        { id: 'S_PAIRED_PLINTHS', label: 'Center Floor Display Pedestals', desc: 'Double row of waist-high sculpture plinths.' }
+        { id: 'S_WALL_PANORAMA', label: 'Wall Art Series', desc: 'Continuous artwork hung along the west wall.' },
+        { id: 'S_TRANSVERSE_SCREENS', label: 'Crosswise Screens', desc: 'Folding screens set across the corridor.' },
+        { id: 'S_PAIRED_PLINTHS', label: 'Center Display Stands', desc: 'Two rows of waist-high display stands.' }
       ],
       constraint_change: 'emergency_exit_clearance_widened',
-      shift_description: 'Municipal safety decree: A 3-meter wide clearway must be preserved along the western wall for rapid egress.',
+      shift_description: 'Safety rule: Keep a 3-meter wide open walkway along the west wall.',
       post_strategies: [
-        { id: 'perimeter_flow', label: 'Perimeter Clearance (Recede all displays to inner column line, maintaining open exitway)', note: 'Aligned Reframing' },
-        { id: 'central_cluster', label: 'Dense Central Plinth Island (Compress all plinths tightly in the center)', note: 'Central Density' },
-        { id: 'diagonal_crossing', label: 'Diagonal Zigzag Pathway (Weave visitors between emergency doors)', note: 'Unanchored Path' }
+        { id: 'perimeter_flow', label: 'Clear Wall Pathway (Move displays inward to leave the west wall open)', note: 'Adapted Flow' },
+        { id: 'central_cluster', label: 'Center Grouping (Gather all stands tightly in the room center)', note: 'Center Group' },
+        { id: 'diagonal_crossing', label: 'Diagonal Zigzag (Weave walking paths between the doorways)', note: 'Zigzag Path' }
       ]
     },
     {
       episode_id: 'CR2_E3',
-      title: 'Episode 3: North Transept Arch Clearance',
-      pre_context: 'Initial design: display vertical banners and illuminated manuscripts in the north transept.',
+      title: 'Episode 3: North Archway Clearance',
+      pre_context: 'Display vertical banners and artwork in the north wing.',
       pre_strategies: [
-        { id: 'S_TALL_STELAE', label: 'Towering Timber Stelae', desc: 'Four-meter vertical calligraphy totems.' },
-        { id: 'S_HORIZONTAL_VITRINES', label: 'Horizontal Table Vitrines', desc: 'Low vitrines at waist height.' },
-        { id: 'S_CEILING_SUSPENSION', label: 'Suspended Silk Drapery', desc: 'Overhead flowing banners hung from rafters.' }
+        { id: 'S_TALL_STELAE', label: 'Tall Wooden Posts', desc: 'Four-meter tall vertical banner posts.' },
+        { id: 'S_HORIZONTAL_VITRINES', label: 'Low Table Vitrines', desc: 'Flat glass vitrines at waist height.' },
+        { id: 'S_CEILING_SUSPENSION', label: 'Ceiling Silk Banners', desc: 'Flowing fabric banners hung from rafters.' }
       ],
       constraint_change: 'low_ceiling_arch_support',
-      shift_description: 'Structural inspection: Ancient low-hanging timber bracing arches restrict overhead vertical clearance to 2.2 meters.',
+      shift_description: 'Structural inspection: Low wooden ceiling beams limit overhead room to 2.2 meters.',
       post_strategies: [
-        { id: 'linear_flow', label: 'Low-Profile Horizontal Progression (Ground-level vitrine displays preserving archway headroom)', note: 'Aligned Reframing' },
-        { id: 'canopy_tent', label: 'Overhead Fabric Canopy (Drape fabric beneath the timber bracing)', note: 'Overhead Clutter' },
-        { id: 'staggered_alcoves', label: 'Dispersed Floor Alcoves (Place stelae horizontally against walls)', note: 'Irregular Clutter' }
+        { id: 'linear_flow', label: 'Low Table Vitrines (Use waist-high displays to preserve headroom)', note: 'Adapted Flow' },
+        { id: 'canopy_tent', label: 'Hanging Fabric Canopy (Drape thin cloth below the beams)', note: 'Low Drapery' },
+        { id: 'staggered_alcoves', label: 'Wall Post Leaning (Lean tall banner boards against walls)', note: 'Wall Lean' }
       ]
     }
   ];
@@ -317,16 +353,19 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader('Part 2: The Spatial Pivot', 'Reframing spatial layouts when unexpected architectural constraints arise.')}
+        <div class="candidate-content-protected">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="act-badge">World 6: The Broken Tool</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3</span>
+          </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`,
-            goal: 'Establish an initial spatial strategy, then constructively reframe your approach when structural conditions shift.',
+            goal: 'Pick a layout strategy, then adapt your plan when a space condition changes.',
             steps: [
-              'Review the gallery space and select an initial visitor flow concept.',
-              'Observe the unexpected architectural constraint change introduced.',
-              'Revise your layout strategy to creatively adapt to the new constraint.',
-              'Confirm your revised plan across all 3 episodes.'
+              'Review the gallery space and pick an initial floor plan.',
+              'A structural change will appear in the room.',
+              'Choose how to adapt your plan to the new condition.',
+              'Confirm your choice across 3 episodes.'
             ]
           })}
         </div>
@@ -348,33 +387,66 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
     if (phase === 'pre_shift') {
       app.innerHTML = `
         <div class="animate-fadeIn">
-          ${renderHeader(`Part 2: The Spatial Pivot (${currentEpisode + 1}/3)`, ep.title)}
-
-          <div class="p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs">
-            <div class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider mb-1 font-semibold">Initial Spatial Context</div>
-            <div class="text-xs text-[var(--text-primary)] leading-relaxed font-serif">${ep.pre_context}</div>
+          <!-- TOP BAR -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="act-badge">World 6: The Broken Tool</span>
+              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Episode ${currentEpisode + 1} of ${episodes.length}</span>
+            </div>
+            <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
           </div>
 
-          <div class="mb-6 space-y-3">
-            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Select Initial Curation Concept</div>
+          <!-- TASK HEADER -->
+          <div class="mb-4">
+            <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Spatial Pivot</h2>
+            <p class="text-xs text-[var(--text-secondary)] mt-0.5">Adapt room layouts when conditions shift.</p>
+          </div>
+
+          <!-- YOUR TASK -->
+          <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+            <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+              Read the room context below. Choose an initial layout concept for the gallery space.
+            </div>
+          </div>
+
+          <!-- LOOK AT THIS: Context Card -->
+          <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider font-semibold">Gallery Layout Setting</span>
+              <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${ep.episode_id}</span>
+            </div>
+            <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${ep.title}</div>
+            <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${ep.pre_context}</div>
+          </div>
+
+          <!-- INTERACTION AREA: Initial Strategy Selection -->
+          <div class="mb-5 space-y-2.5 candidate-content-protected">
+            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Select Initial Curation Concept:</div>
             ${ep.pre_strategies.map(s => {
               const isSelected = initialStrategy === s.id;
               return `
-                <div class="pre-strat-card p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
+                <div class="pre-strat-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
                   <div>
                     <div class="font-medium text-[var(--text-primary)]">${s.label}</div>
                     <div class="text-[11px] text-[var(--text-secondary)] mt-0.5">${s.desc}</div>
                   </div>
-                  <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '&#10003;' : ''}</span>
+                  <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '&#10003;' : ''}</span>
                 </div>
               `;
             }).join('')}
           </div>
 
-          <div class="flex justify-end">
-            <button type="button" id="confirmPreShiftBtn" ${initialStrategy ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
-              Establish Strategy & Proceed &rarr;
+          <!-- PRIMARY ACTION BUTTON -->
+          <div class="flex justify-end mb-4">
+            <button type="button" id="confirmPreShiftBtn" ${initialStrategy ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+              Set Plan & Proceed &rarr;
             </button>
+          </div>
+
+          <!-- Progress Footer -->
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+            Episode ${currentEpisode + 1} of ${episodes.length} · Step 1
           </div>
         </div>
       `;
@@ -420,40 +492,60 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
       // post_shift
       app.innerHTML = `
         <div class="animate-fadeIn">
-          ${renderHeader(`Part 2: The Spatial Pivot (${currentEpisode + 1}/3)`, ep.title)}
+          <!-- TOP BAR -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="act-badge">World 6: The Broken Tool</span>
+              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Episode ${currentEpisode + 1} of ${episodes.length}</span>
+            </div>
+            <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Condition Shift</div>
+          </div>
+
+          <!-- TASK HEADER -->
+          <div class="mb-4">
+            <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Spatial Pivot</h2>
+            <p class="text-xs text-[var(--text-secondary)] mt-0.5">Adapt room layouts when conditions shift.</p>
+          </div>
 
           <!-- Constraint Shift Notification Banner -->
-          <div class="p-4 bg-amber-50 border border-amber-300/80 mb-5 rounded-xs animate-fadeIn">
+          <div class="p-4 bg-amber-50 border border-amber-300/80 mb-4 rounded-xs animate-fadeIn candidate-content-protected">
             <div class="flex items-center gap-2 mb-1">
               <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse"></span>
-              <span class="text-[10px] font-mono uppercase tracking-wider text-amber-900 font-bold">Structural Condition Change Detected</span>
+              <span class="text-[10px] font-mono uppercase tracking-wider text-amber-900 font-bold">New Room Condition Detected</span>
             </div>
             <div class="text-xs text-amber-950 leading-relaxed font-serif">${ep.shift_description}</div>
             <div class="mt-2 text-[11px] text-amber-800">
-              Prior Strategy: <strong>${ep.pre_strategies.find(s => s.id === initialStrategy)?.label || initialStrategy}</strong>
+              Prior Plan: <strong>${ep.pre_strategies.find(s => s.id === initialStrategy)?.label || initialStrategy}</strong>
             </div>
           </div>
 
-          <div class="mb-6 space-y-3">
-            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Select Adaptive Constraint Shift</div>
+          <!-- INTERACTION AREA: Post-Shift Strategy Selection -->
+          <div class="mb-5 space-y-2.5 candidate-content-protected">
+            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Choose Adapted Layout:</div>
             ${ep.post_strategies.map(s => {
               const isSelected = revisedStrategy === s.id;
               return `
-                <div class="post-strat-card p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
+                <div class="post-strat-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
                   <div>
                     <div class="font-medium text-[var(--text-primary)]">${s.label}</div>
                     <div class="text-[10px] font-mono text-[var(--text-secondary)] mt-0.5">${s.note}</div>
                   </div>
-                  <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '&#10003;' : ''}</span>
+                  <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '&#10003;' : ''}</span>
                 </div>
               `;
             }).join('')}
           </div>
 
-          <div class="flex justify-end">
-            <button type="button" id="confirmPostShiftBtn" ${revisedStrategy ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
-              ${currentEpisode < episodes.length - 1 ? 'Confirm Reframing & Next Episode &rarr;' : 'Finish Part 2 &rarr;'}
+          <!-- PRIMARY ACTION BUTTON -->
+          <div class="flex justify-end mb-4">
+            <button type="button" id="confirmPostShiftBtn" ${revisedStrategy ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+              ${currentEpisode < episodes.length - 1 ? 'Confirm Plan & Next Episode &rarr;' : 'Finish Part 2 &rarr;'}
             </button>
+          </div>
+
+          <!-- Progress Footer -->
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+            Episode ${currentEpisode + 1} of ${episodes.length} · Step 2
           </div>
         </div>
       `;
@@ -530,13 +622,13 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
   const trials = [
     {
       stimulus_id: 'CR3_T1',
-      title: 'Trial 1: The Pristine Paper Crease',
+      title: 'Trial 1: The Crisp Paper Fold',
       target_motif: 'burnished_crease',
-      objective: 'Form a sharp, permanent crease on heavy cotton-rag paper without splitting surface fibers or tearing the sheet.',
+      objective: 'Form a sharp, smooth crease on thick paper without tearing surface fibers.',
       tools: [
-        { id: 'bone_folder', name: 'Polished Bone Folder', icon: '&#129685;', affordance: 'Smooth rounded contour; distributes friction safely' },
-        { id: 'metal_stylus', name: 'Steel Scribe Stylus', icon: '&#128296;', affordance: 'Hard needle point; concentrates extreme line pressure' },
-        { id: 'bamboo_wedge', name: 'Beveled Bamboo Scraper', icon: '&#127883;', affordance: 'Broad beveled wooden plane; gentle planar pressure' }
+        { id: 'bone_folder', name: 'Polished Bone Tool', icon: '&#129685;', affordance: 'Smooth curved edge that applies friction gently' },
+        { id: 'metal_stylus', name: 'Steel Scribe Stylus', icon: '&#128296;', affordance: 'Hard pointed needle tip for sharp indentation' },
+        { id: 'bamboo_wedge', name: 'Beveled Bamboo Scraper', icon: '&#127883;', affordance: 'Broad flat wooden face for broad surface pressure' }
       ],
       methods: [
         { id: 'firm_edge_pass', name: 'Firm Edge Pass', desc: 'Slide rounded edge along ruler with continuous diagonal pressure.' },
@@ -557,18 +649,18 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
     },
     {
       stimulus_id: 'CR3_T2',
-      title: 'Trial 2: Mulberry Parchment Stipple',
+      title: 'Trial 2: Mulberry Paper Stipple',
       target_motif: 'fine_stipple',
-      objective: 'Produce a delicate, even constellation of dispersed pigment micro-droplets on fibrous mulberry paper.',
+      objective: 'Produce an even scatter of tiny ink drops on fibrous paper.',
       tools: [
-        { id: 'horsehair_brush', name: 'Stiff Horsehair Brush', icon: '&#128396;', affordance: 'Resilient coarse bristles; springs back under tension' },
-        { id: 'sponge_block', name: 'Natural Porous Sea Sponge', icon: '&#9711;', affordance: 'Irregular cellular cavities; holds and dabs damp pigment' },
-        { id: 'linen_swab', name: 'Wound Linen Swab', icon: '&#129526;', affordance: 'Dense rolled fabric tip; absorbs liquid rapidly' }
+        { id: 'horsehair_brush', name: 'Stiff Hair Brush', icon: '&#128396;', affordance: 'Springy stiff bristles that snap back easily' },
+        { id: 'sponge_block', name: 'Natural Sea Sponge', icon: '&#9711;', affordance: 'Soft porous texture that dabs damp color' },
+        { id: 'linen_swab', name: 'Rolled Cloth Swab', icon: '&#129526;', affordance: 'Rolled fabric tip that absorbs liquid quickly' }
       ],
       methods: [
-        { id: 'textured_flick', name: 'Textured Bristle Flick', desc: 'Pull loaded bristles back with thumb to release fine mist.' },
-        { id: 'mottled_dab', name: 'Mottled Perpendicular Dab', desc: 'Light stamp of textured surface directly on paper.' },
-        { id: 'drag_stroke', name: 'Continuous Fluid Drag', desc: 'Draw applicator steadily across page in sweeping stroke.' }
+        { id: 'textured_flick', name: 'Bristle Flick', desc: 'Pull loaded bristles back with thumb to release fine mist.' },
+        { id: 'mottled_dab', name: 'Surface Dab', desc: 'Light stamp of textured surface directly on paper.' },
+        { id: 'drag_stroke', name: 'Smooth Sweep', desc: 'Draw applicator steadily across page in sweeping stroke.' }
       ],
       feedback_map: {
         'horsehair_brush:textured_flick': { success: true, text: 'Fine, even constellation of organic micro-droplets dispersed across parchment.' },
@@ -584,18 +676,18 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
     },
     {
       stimulus_id: 'CR3_T3',
-      title: 'Trial 3: Specular Gold Leaf Seal',
+      title: 'Trial 3: Gold Leaf Polish',
       target_motif: 'gold_leaf_seal',
-      objective: 'Burnish delicate gold leaf onto a seal impression to achieve mirror-like specular reflectivity without flaking.',
+      objective: 'Smooth delicate gold leaf onto a seal for a mirror-like shine.',
       tools: [
-        { id: 'agate_stone', name: 'Dog-Tooth Agate Burnisher', icon: '&#11044;', affordance: 'Micro-crystalline smooth gemstone; zero surface drag' },
-        { id: 'polished_wood', name: 'Dense Boxwood Block', icon: '&#129685;', affordance: 'Planar ultra-dense fruitwood; uniform planar pressure' },
-        { id: 'copper_burnisher', name: 'Curved Copper Spoon', icon: '&#129348;', affordance: 'Pliable polished metal bowl; warm specular glide' }
+        { id: 'agate_stone', name: 'Agate Burnisher Stone', icon: '&#11044;', affordance: 'Silky smooth gemstone tip with zero friction' },
+        { id: 'polished_wood', name: 'Dense Boxwood Block', icon: '&#129685;', affordance: 'Dense wood block that gives flat pressure' },
+        { id: 'copper_burnisher', name: 'Curved Copper Spoon', icon: '&#129348;', affordance: 'Polished metal curve for gentle gliding' }
       ],
       methods: [
-        { id: 'friction_free_rub', name: 'Micro-Circular Polishing Rub', desc: 'Small gliding circular motions with light steady contact.' },
-        { id: 'planar_press', name: 'Direct Clamping Press', desc: 'Perpendicular downward pressure without lateral motion.' },
-        { id: 'chisel_scrape', name: 'Angled Edge Scrape', desc: 'Shearing drag across surface with acute blade angle.' }
+        { id: 'friction_free_rub', name: 'Small Circles', desc: 'Small circular motions with light steady contact.' },
+        { id: 'planar_press', name: 'Flat Press', desc: 'Straight downward pressure without sliding sideways.' },
+        { id: 'chisel_scrape', name: 'Angled Scrape', desc: 'Drag across surface with sharp edge.' }
       ],
       feedback_map: {
         'agate_stone:friction_free_rub': { success: true, text: 'Flawless mirror-like specular gold luster achieved with zero abrasion.' },
@@ -614,16 +706,19 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader('Part 3: The Improvised Tool', 'Investigating material affordances and adapting craft technique from mechanical feedback.')}
+        <div class="candidate-content-protected">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="act-badge">World 6: The Broken Tool</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3</span>
+          </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>`,
-            goal: 'Select a tool and action method, observe the craft outcome feedback, and adapt your approach across 3 trials.',
+            goal: 'Pair a tool with an action method, test the result, and adapt your approach.',
             steps: [
-              'Examine the craft goal and available implements.',
-              'Pair a tool with an action method and apply it.',
-              'Observe physical feedback on the material.',
-              'Refine your choice and confirm your final craft technique.'
+              'Review the craft goal and available implements.',
+              'Choose an implement and an action method.',
+              'Click Apply Technique to test the result.',
+              'Refine your choice and confirm to finish World 6.'
             ]
           })}
         </div>
@@ -645,23 +740,48 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
     app.innerHTML = `
       <div class="animate-fadeIn">
-        ${renderHeader(`Part 3: The Improvised Tool (${currentTrial + 1}/3)`, tr.title)}
-
-        <!-- Craft Objective Card -->
-        <div class="p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs">
-          <div class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider mb-1 font-semibold">Craft Objective</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed font-serif">${tr.objective}</div>
+        <!-- TOP BAR -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="act-badge">World 6: The Broken Tool</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Trial ${currentTrial + 1} of ${trials.length}</span>
+          </div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
         </div>
 
-        <!-- Tool Selection -->
-        <div class="mb-5">
-          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-2.5">1. Select Implement</div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <!-- TASK HEADER -->
+        <div class="mb-4">
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Improvised Tool</h2>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Adapt craft technique from physical feedback.</p>
+        </div>
+
+        <!-- YOUR TASK -->
+        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            Pick a tool and an action method below. Click Apply Technique to test your result. You can change your choice before confirming.
+          </div>
+        </div>
+
+        <!-- LOOK AT THIS: Craft Objective Card -->
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider font-semibold">Craft Objective</span>
+            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${tr.stimulus_id}</span>
+          </div>
+          <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${tr.title}</div>
+          <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${tr.objective}</div>
+        </div>
+
+        <!-- INTERACTION AREA 1: Tool Selection -->
+        <div class="mb-4 candidate-content-protected">
+          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-2">1. Select Implement:</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             ${tr.tools.map(t => {
               const isSelected = selectedTool === t.id;
               return `
-                <div class="cr3-tool-card p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
-                  <div class="flex items-center gap-2 mb-1.5">
+                <div class="cr3-tool-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[64px]" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
+                  <div class="flex items-center gap-2 mb-1">
                     <span class="text-lg">${t.icon}</span>
                     <span class="font-medium text-[var(--text-primary)]">${t.name}</span>
                   </div>
@@ -672,15 +792,15 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
           </div>
         </div>
 
-        <!-- Method Selection -->
-        <div class="mb-5">
-          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-2.5">2. Choose Action Method</div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <!-- INTERACTION AREA 2: Method Selection -->
+        <div class="mb-4 candidate-content-protected">
+          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-2">2. Choose Action Method:</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             ${tr.methods.map(m => {
               const isSelected = selectedMethod === m.id;
               return `
-                <div class="cr3-method-card p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
-                  <div class="font-medium text-[var(--text-primary)] mb-1">${m.name}</div>
+                <div class="cr3-method-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[64px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+                  <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
                   <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${m.desc}</div>
                 </div>
               `;
@@ -689,26 +809,32 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- Apply & Observe Feedback -->
-        <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 rounded-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 candidate-content-protected">
           <div class="text-xs text-[var(--text-secondary)]">
             Active Pairing: <strong class="text-[var(--text-primary)]">${selectedTool ? tr.tools.find(t => t.id === selectedTool)?.name : 'None'} + ${selectedMethod ? tr.methods.find(m => m.id === selectedMethod)?.name : 'None'}</strong>
           </div>
-          <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 transition rounded-xs">
+          <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 transition rounded-xs min-h-[44px]">
             Apply Technique
           </button>
         </div>
 
         ${feedbackText ? `
-          <div class="p-4 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-emerald-950' : 'border-amber-600/40 text-amber-950'} mb-5 rounded-xs text-xs leading-relaxed animate-fadeIn">
+          <div class="p-4 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-emerald-950' : 'border-amber-600/40 text-amber-950'} mb-4 rounded-xs text-xs leading-relaxed animate-fadeIn candidate-content-protected">
             <div class="font-mono text-[10px] uppercase font-semibold mb-1 ${feedbackText.success ? 'text-emerald-800' : 'text-amber-800'}">Material Outcome Observation</div>
             <div>${feedbackText.text}</div>
           </div>
         ` : ''}
 
-        <div class="flex justify-end">
-          <button type="button" id="confirmTrialBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
+        <!-- PRIMARY ACTION BUTTON -->
+        <div class="flex justify-end mb-4">
+          <button type="button" id="confirmTrialBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
             ${currentTrial < trials.length - 1 ? 'Confirm Technique & Next Trial &rarr;' : 'Finish World 6 &rarr;'}
           </button>
+        </div>
+
+        <!-- Progress Footer -->
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+          Trial ${currentTrial + 1} of ${trials.length}
         </div>
       </div>
     `;

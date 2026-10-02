@@ -57,17 +57,17 @@ export function runMiniGame(context) {
 
   // Clean, Poetic Header Shell without Skip Buttons
   const renderHeader = (mgTitle, mgDesc) => `
-    <div class="border-b border-[var(--grid-border)] pb-3 mb-5 flex justify-between items-end">
+    <div class="border-b border-[var(--grid-border)] pb-3 mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
       <div>
         <div class="flex items-center gap-2">
           <span class="act-badge">World ${worldIndex + 1} of 7: ${meta.name}</span>
-          <span class="font-serif text-lg text-[var(--text-secondary)]" style="direction: rtl;">${meta.name_ur}</span>
+          <span class="font-serif text-base sm:text-lg text-[var(--text-secondary)]" style="direction: rtl;">${meta.name_ur}</span>
         </div>
-        <h2 class="text-2xl font-serif text-[var(--text-primary)]">${mgTitle}</h2>
-        <p class="text-xs text-[var(--text-secondary)] mt-0.5">${mgDesc}</p>
+        <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">${mgTitle}</h2>
+        <p class="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">${mgDesc}</p>
       </div>
-      <div class="text-right">
-        <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">Part ${miniGameIndex + 1} of 3</span>
+      <div class="text-left sm:text-right shrink-0">
+        <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-mono">Part ${miniGameIndex + 1} of 3</span>
       </div>
     </div>
   `;

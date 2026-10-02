@@ -3,6 +3,8 @@
    Mini-games: Q1 (Information Seeking), Q2 (Investigation Under Uncertainty), Q3 (Knowledge Integration)
    Adheres to Design Freeze v1 + Addendum v1.1.
    Emits raw behavioral telemetry only (no client-authored scores or correctness).
+   Remediated for plain English (<= 12 words per sentence), mobile-first layout,
+   and scoped candidate content protection.
    ========================================================================== */
 
 import { renderTutorialCard } from './index.js';
@@ -38,58 +40,58 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
   const decisions = [
     {
       stimulus_id: 'Q1_D1',
-      title: 'Item 1: Antique Illuminated Manuscript Folio',
-      scenario: 'Determine the conservation binding strategy for a 19th-century gold-leaf manuscript.',
+      title: 'Item 1: Antique Gold-Leaf Manuscript Leaf',
+      scenario: 'Choose the binding method for a fragile 19th-century manuscript page.',
       options: [
-        { id: 'flexible_cord_binding', label: 'Sewn Flexible Cord Binding (Accommodates fragile spine)' },
-        { id: 'tight_adhesive_clamp', label: 'Rigid Resin Adhesive Clamp (Heavy structural hold)' },
-        { id: 'unbound_portfolio', label: 'Unbound Archival Enclosure (Stored as loose leaves)' }
+        { id: 'flexible_cord_binding', label: 'Sewn Flexible Cord (Allows spine to bend safely)' },
+        { id: 'tight_adhesive_clamp', label: 'Rigid Glue Clamp (Firm hold on spine)' },
+        { id: 'unbound_portfolio', label: 'Loose Archival Folder (Kept as separate sheets)' }
       ],
       optional_resources: [
-        { id: 'OPT_USEFUL_1', topic: 'Calligraphy Binding Technique', info_value: 'high', summary: 'Traditional Srinagar binders utilized loose vegetable-tanned goat cords to allow spine flexing without fracturing gold leaf borders.' },
-        { id: 'OPT_CONTROL_1', topic: 'Catalog Inventory Stamp Dates', info_value: 'low', summary: 'Standard inventory accession stamps were introduced in colonial municipal records in October 1888.' }
+        { id: 'OPT_USEFUL_1', topic: 'Binding Methods Note', info_value: 'high', summary: 'Srinagar bookbinders used soft vegetable cord to protect delicate gold borders.' },
+        { id: 'OPT_CONTROL_1', topic: 'Library Stamp Dates', info_value: 'low', summary: 'City library accession stamps began in late October 1888.' }
       ]
     },
     {
       stimulus_id: 'Q1_D2',
       title: 'Item 2: Papier-Mâché Pen Case (Qalamdan)',
-      scenario: 'Select the surface curing and stabilization treatment for an heirloom lacquer case.',
+      scenario: 'Select a protective surface coating for this painted lacquer case.',
       options: [
-        { id: 'curing_linseed_glaze', label: 'Cold-Pressed Linseed Oil & Amber Varnish Curing' },
-        { id: 'quick_synthetic_seal', label: 'Rapid Synthetic Acrylic Spray' },
-        { id: 'wax_buff_only', label: 'Dry Carnauba Wax Buffing' }
+        { id: 'curing_linseed_glaze', label: 'Linseed Oil & Amber Varnish (Traditional slow curing glaze)' },
+        { id: 'quick_synthetic_seal', label: 'Quick Synthetic Clear Spray (Modern fast-drying finish)' },
+        { id: 'wax_buff_only', label: 'Dry Wax Polish (Gentle surface buffing)' }
       ],
       optional_resources: [
-        { id: 'OPT_USEFUL_2', topic: 'Papier-Mâché Lacquer Curing', info_value: 'high', summary: 'Slow solar drying combined with natural amber copal preserves organic earth pigments without clouding fine miniature brushwork.' },
-        { id: 'OPT_CONTROL_2', topic: 'Storage Cabinet Hinge Repairs', info_value: 'low', summary: 'Brass cabinet hinges require tallow lubrication twice annually to prevent creaking.' }
+        { id: 'OPT_USEFUL_2', topic: 'Papier-Mâché Care Guide', info_value: 'high', summary: 'Slow drying with natural amber resin keeps natural mineral colors bright.' },
+        { id: 'OPT_CONTROL_2', topic: 'Cabinet Hinge Maintenance', info_value: 'low', summary: 'Brass display cabinet hinges need oiling twice each year.' }
       ]
     },
     {
       stimulus_id: 'Q1_D3',
-      title: 'Item 3: Workshop Ledger Attribution',
-      scenario: 'Classify the workshop provenance category for an undated Persian artisan register.',
+      title: 'Item 3: Workshop Artisan Register',
+      scenario: 'Identify the origin of this undated Persian artisan register.',
       options: [
-        { id: 'guild_ledger_verified', label: 'Official Guild Registry (Guildmaster seal entry)' },
-        { id: 'private_merchant_tally', label: 'Informal Merchant Trade Tally' },
-        { id: 'state_excise_record', label: 'Royal Treasury Revenue Record' }
+        { id: 'guild_ledger_verified', label: 'Official Guild Register (Bears official guildmaster seal)' },
+        { id: 'private_merchant_tally', label: 'Merchant Shop Notebook (Informal daily trade tally)' },
+        { id: 'state_excise_record', label: 'Treasury Tax Record (Official tax register)' }
       ],
       optional_resources: [
-        { id: 'OPT_USEFUL_1', topic: 'Calligraphy Binding Technique', info_value: 'high', summary: 'Binding stitches using dyed crimson thread typically indicate official royal artisan guild registers.' },
-        { id: 'OPT_CONTROL_1', topic: 'Catalog Inventory Stamp Dates', info_value: 'low', summary: 'Tax stamps are cataloged under Series B filing codes.' }
+        { id: 'OPT_USEFUL_1', topic: 'Register Stitching Styles', info_value: 'high', summary: 'Crimson thread stitching was reserved for registered royal guilds.' },
+        { id: 'OPT_CONTROL_1', topic: 'Filing Code Reference', info_value: 'low', summary: 'Old municipal tax files use code series B.' }
       ]
     },
     {
       stimulus_id: 'Q1_D4',
-      title: 'Item 4: Botanical Pigment Specimen Jars',
-      scenario: 'Specify long-term climate preservation for delicate indigo and saffron plant extracts.',
+      title: 'Item 4: Natural Pigment Jars',
+      scenario: 'Select storage conditions for delicate saffron and indigo pigments.',
       options: [
-        { id: 'dark_vented_cedar_chest', label: 'Dark Cedar Cabinet with Moisture Buffers' },
-        { id: 'ambient_glass_display', label: 'Unfiltered Daylight Gallery Vitrine' },
-        { id: 'sealed_vacuum_capsule', label: 'Hermetic Zero-Humidity Chamber' }
+        { id: 'dark_vented_cedar_chest', label: 'Dark Cedar Chest (Controlled humidity and shade)' },
+        { id: 'ambient_glass_display', label: 'Open Glass Vitrine (Direct gallery daylight)' },
+        { id: 'sealed_vacuum_capsule', label: 'Sealed Dry Capsule (Zero-humidity container)' }
       ],
       optional_resources: [
-        { id: 'OPT_USEFUL_2', topic: 'Organic Pigment Preservation', info_value: 'high', summary: 'Saffron and wild indigo degrade rapidly under ultraviolet exposure; cedarwood oils provide natural insect deterrence.' },
-        { id: 'OPT_CONTROL_2', topic: 'Storage Cabinet Hinge Repairs', info_value: 'low', summary: 'Cabinet shelves are load-rated for 25 kilograms.' }
+        { id: 'OPT_USEFUL_2', topic: 'Natural Pigment Care', info_value: 'high', summary: 'Direct sunlight fades saffron. Cedar wood naturally repels insects.' },
+        { id: 'OPT_CONTROL_2', topic: 'Shelf Weight Limits', info_value: 'low', summary: 'Wooden display shelves can hold up to 25 kilograms.' }
       ]
     }
   ];
@@ -97,15 +99,19 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader('Part 1: The Curatorial Dossier', 'Making 4 preservation cataloging decisions with optional archival reference dossiers.')}
+        <div class="candidate-content-protected">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="act-badge">World 5: The Hidden Gallery</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3</span>
+          </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`,
-            goal: 'Make required cataloging decisions for 4 archival artifacts. You may voluntarily inspect optional reference notes at your discretion.',
+            goal: 'Make preservation decisions for 4 historic items. You may view optional notes if helpful.',
             steps: [
-              'Examine the archival artifact and decision question.',
-              'Optionally review reference research notes if desired.',
-              'Select and confirm your curatorial decision for each of the 4 items.'
+              'Review the historic artifact and decision prompt.',
+              'Click optional research notes if you want extra context.',
+              'Choose your preservation decision for each of the 4 items.',
+              'Click confirm to continue.'
             ]
           })}
         </div>
@@ -124,34 +130,54 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
 
     app.innerHTML = `
       <div class="animate-fadeIn">
-        <div class="flex justify-between items-center mb-2">
-          ${renderHeader('Part 1: The Curatorial Dossier', 'Evaluate the cataloging decision. Reference notes are available below.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Decision ${currentDecision + 1} of ${decisions.length}</span>
-        </div>
-
-        <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-sm mb-4 text-xs font-serif text-[var(--text-primary)] flex items-center justify-between">
-          <span class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block"></span>
-            <strong>${d.title}:</strong> ${d.scenario}
-          </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)] font-mono">${d.stimulus_id}</span>
-        </div>
-
-        <!-- Optional Reference Resources Area (Voluntary) -->
-        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 rounded-xs shadow-xs">
-          <div class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider mb-2.5 flex items-center justify-between">
-            <span>Optional Archival Reference Notes (Voluntary Consultation)</span>
-            <span class="text-[9px] text-[var(--text-secondary)]">Click to expand notes</span>
+        <!-- TOP BAR -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="act-badge">World 5: The Hidden Gallery</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Item ${currentDecision + 1} of ${decisions.length}</span>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+        </div>
+
+        <!-- TASK HEADER -->
+        <div class="mb-4">
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Curatorial Dossier</h2>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Choose the best way to care for each historic item.</p>
+        </div>
+
+        <!-- YOUR TASK -->
+        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            Review the artifact below. Choose an action. Optional reference notes are available if you want them.
+          </div>
+        </div>
+
+        <!-- LOOK AT THIS -->
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Artifact Record</span>
+            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${d.stimulus_id}</span>
+          </div>
+          <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${d.title}</div>
+          <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${d.scenario}</div>
+        </div>
+
+        <!-- INTERACTION AREA: Optional Reference Notes -->
+        <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
+          <div class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
+            <span>Optional Reference Notes (Click to Open)</span>
+            <span class="text-[9px] text-[var(--text-secondary)] font-normal">Voluntary consultation</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             ${d.optional_resources.map(res => `
-              <div class="opt-res-card p-3 bg-white border ${viewedResources[res.id] ? 'border-[var(--accent-gold)] bg-amber-50/30' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs" data-res="${res.id}">
+              <div class="opt-res-card p-3 bg-white border ${viewedResources[res.id] ? 'border-[var(--accent-gold)] bg-amber-50/30' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[48px] flex flex-col justify-center" data-res="${res.id}">
                 <div class="flex items-center justify-between">
                   <span class="font-medium text-[var(--text-primary)] flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5 text-[var(--accent-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <svg class="w-3.5 h-3.5 text-[var(--accent-gold)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     ${res.topic}
                   </span>
-                  <span class="text-[9px] font-mono uppercase text-[var(--text-secondary)]">${viewedResources[res.id] ? 'Read' : 'Inspect'}</span>
+                  <span class="text-[9px] font-mono uppercase text-[var(--text-secondary)]">${viewedResources[res.id] ? 'Opened' : 'Inspect'}</span>
                 </div>
                 ${viewedResources[res.id] ? `<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-fadeIn">${res.summary}</p>` : ''}
               </div>
@@ -159,26 +185,32 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
           </div>
         </div>
 
-        <!-- Required Decision Options -->
-        <div class="p-6 bg-white border border-[var(--grid-border)] mb-6 shadow-xs rounded-xs">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-3">Curatorial Actions:</div>
+        <!-- YOUR CHOICE: Curatorial Actions -->
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs candidate-content-protected">
+          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Choose Preservation Action:</div>
           <div class="space-y-2.5">
             ${d.options.map(opt => `
-              <div class="q1-opt p-3.5 bg-white border ${selectedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between" data-choice="${opt.id}" tabindex="0" role="button">
+              <div class="q1-opt p-3.5 bg-white border ${selectedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-choice="${opt.id}" tabindex="0" role="button">
                 <span class="flex items-center gap-2.5">
-                  <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedChoice === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedChoice === opt.id ? '✓' : ''}</span>
+                  <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedChoice === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedChoice === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${opt.id}</span>
+                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase shrink-0">${opt.id}</span>
               </div>
             `).join('')}
           </div>
         </div>
 
-        <div class="flex justify-end">
-          <button type="button" id="confirmQ1Btn" ${selectedChoice ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
+        <!-- PRIMARY ACTION BUTTON -->
+        <div class="flex justify-end mb-4">
+          <button type="button" id="confirmQ1Btn" ${selectedChoice ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
             ${currentDecision < decisions.length - 1 ? 'Confirm Decision &rarr;' : 'Finish Curatorial Decisions &rarr;'}
           </button>
+        </div>
+
+        <!-- Progress Footer -->
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+          Item ${currentDecision + 1} of ${decisions.length}
         </div>
       </div>
     `;
@@ -269,71 +301,71 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
     {
       stimulus_id: 'Q2_T1',
       artifact_id: 'manuscript_seal_1',
-      title: 'Relic 1: Wax Intaglio Seal on Vellum',
-      description: 'A dark carmine wax impression affixed to a vellum legal testament.',
+      title: 'Relic 1: Wax Seal on Parchment',
+      description: 'A dark red wax seal stamped onto an old parchment document.',
       uncertainty_level: 'moderate',
       expected_value: 'high',
       clues: [
-        { id: 'CLUE_SEAL_INTAGLIO', label: 'Intaglio Border Latin/Urdu Script', detail: 'Identifies the imperial registrar stamp in Srinagar, dated roughly 1862.' },
-        { id: 'CLUE_WAX_RESIN', label: 'Resin and Lac Specimen Analysis', detail: 'Shellac composition matches Himalayan pine resins rather than imported European seals.' },
-        { id: 'CLUE_PARCHMENT_GRAIN', label: 'Vellum Animal Grain Pattern', detail: 'High-altitude goat skin with characteristic hand-scraped follicle margins.' }
+        { id: 'CLUE_SEAL_INTAGLIO', label: 'Carved Seal Border Script', detail: 'Shows the official stamp of the Srinagar city office from 1862.' },
+        { id: 'CLUE_WAX_RESIN', label: 'Wax Material Analysis', detail: 'Made with local pine resin rather than imported European wax.' },
+        { id: 'CLUE_PARCHMENT_GRAIN', label: 'Parchment Skin Grain', detail: 'Mountain goatskin with hand-scraped natural grain.' }
       ],
       attributions: [
-        { id: 'attr_imperial_registrar_srinagar', label: 'Imperial Registrar of Srinagar (1860s)' },
-        { id: 'attr_commercial_trader', label: 'Commercial River Trader Manifest' },
-        { id: 'attr_modern_reproduction', label: 'Late Twentieth Century Replica' }
+        { id: 'attr_imperial_registrar_srinagar', label: 'City Office of Srinagar (1860s)' },
+        { id: 'attr_commercial_trader', label: 'River Trader Shipping Record' },
+        { id: 'attr_modern_reproduction', label: 'Modern Souvenir Copy' }
       ]
     },
     {
       stimulus_id: 'Q2_T2',
       artifact_id: 'ciphered_marginalia_2',
-      title: 'Relic 2: Ciphered Marginalia Folio',
-      description: 'Hand-written marginalia in an unfamiliar cursive cipher along the margins of an astronomy chart.',
+      title: 'Relic 2: Star Chart with Handwritten Notes',
+      description: 'Handwritten notes written in old cursive script along a star chart.',
       uncertainty_level: 'high',
       expected_value: 'high',
       clues: [
-        { id: 'CLUE_CIPHER_DIACRITIC', label: 'Abjad Numerical Cryptography Marks', detail: 'Ciphers decode to chronogram dates recording a solar eclipse in 1845.' },
-        { id: 'CLUE_SCRIBE_HAND', label: 'Cursive Calligraphic Flourish', detail: 'Matches the private notebooks of court astrologer Mir Habib.' },
-        { id: 'CLUE_GALL_INK_CORROSION', label: 'Iron Gall Ink Vitriol Depth', detail: 'Shows genuine chemical paper oxidation consistent with 180 years of aging.' }
+        { id: 'CLUE_CIPHER_DIACRITIC', label: 'Script Number Marks', detail: 'Notes record the date of an eclipse in 1845.' },
+        { id: 'CLUE_SCRIBE_HAND', label: 'Penmanship Style', detail: 'Matches the private notebook of court scholar Mir Habib.' },
+        { id: 'CLUE_GALL_INK_CORROSION', label: 'Ink Aging Depth', detail: 'Natural ink aging shows paper is over 170 years old.' }
       ],
       attributions: [
-        { id: 'attr_court_astrologer_notebook', label: 'Court Astrologer Private Ephemeris' },
-        { id: 'attr_apothecary_recipe', label: 'Herbalist Compound Recipe' },
-        { id: 'attr_random_scribble', label: 'Unattributed Scribe Practice Marks' }
+        { id: 'attr_court_astrologer_notebook', label: 'Court Scholar Personal Notebook' },
+        { id: 'attr_apothecary_recipe', label: 'Herbal Medicine Recipe' },
+        { id: 'attr_random_scribble', label: 'Scribe Practice Scratches' }
       ]
     },
     {
       stimulus_id: 'Q2_T3',
       artifact_id: 'standard_receipt_3',
-      title: 'Relic 3: Uniform Municipal Tax Receipt (Control)',
-      description: 'A pre-printed municipal toll collection slip with printed column borders.',
+      title: 'Relic 3: City Transit Toll Receipt (Control)',
+      description: 'A printed paper slip with standard columns and serial numbers.',
       uncertainty_level: 'low',
       expected_value: 'low_control',
       clues: [
-        { id: 'CLUE_PRINT_TYPE', label: 'Standard Moveable Type Lettering', detail: 'Common mass-printed municipal transit form with no unique historical variance.' },
-        { id: 'CLUE_STAMP_INK', label: 'Blue Aniline Office Stamp', detail: 'Routine commercial municipal ink with standard serial numbering.' }
+        { id: 'CLUE_PRINT_TYPE', label: 'Standard Moveable Type', detail: 'Mass-printed transit slip used for routine city transport.' },
+        { id: 'CLUE_STAMP_INK', label: 'Routine Blue Ink Stamp', detail: 'Common government office stamp with standard numbering.' }
       ],
       attributions: [
-        { id: 'attr_standard_tax_slip', label: 'Standard Municipal Transit Receipt' },
-        { id: 'attr_royal_chancery_grant', label: 'Royal Chancery Land Grant' },
-        { id: 'attr_secret_monastery_order', label: 'Monastic Passage Certificate' }
+        { id: 'attr_standard_tax_slip', label: 'City Transit Pass Receipt' },
+        { id: 'attr_royal_chancery_grant', label: 'Palace Land Grant' },
+        { id: 'attr_secret_monastery_order', label: 'Monastic Travel Permission' }
       ]
     },
     {
       stimulus_id: 'Q2_T4',
       artifact_id: 'unknown_crest_impression_4',
-      title: 'Relic 4: Embossed Paper Falcon Crest',
-      description: 'A relief-embossed paper emblem showing a falcon perched above mountain peaks.',
+      title: 'Relic 4: Embossed Paper Falcon Stamp',
+      description: 'A raised paper emblem showing a falcon above mountain ridges.',
       uncertainty_level: 'high',
       expected_value: 'moderate',
       clues: [
-        { id: 'CLUE_FALCON_CREST', label: 'Embossed Heraldic Falcon Motif', detail: 'The falcon emblem was adopted by private paper ateliers along the Jhelum river.' },
-        { id: 'CLUE_PAPER_WATERMARK', label: 'Chain Line & Watermark Inspection', detail: 'Contains fine wire watermark with the artisan initials M.K.' }
+        { id: 'CLUE_FALCON_CREST', label: 'Raised Falcon Symbol', detail: 'Used by paper makers working along the Jhelum River.' },
+        { id: 'CLUE_PAPER_WATERMARK', label: 'Paper Watermark Inspection', detail: 'Fine wire watermark includes maker initials M.K.' }
       ],
       attributions: [
-        { id: 'attr_jhelum_paper_atelier', label: 'Jhelum River Private Paper Atelier' },
-        { id: 'attr_foreign_consulate_letter', label: 'Foreign Consulate Diplomatic Stationery' },
-        { id: 'attr_unknown_unresolved', label: 'Unresolved Provenance' }
+        { id: 'attr_jhelum_paper_atelier', label: 'Jhelum River Paper Workshop' },
+        { id: 'attr_foreign_consulate_letter', label: 'Foreign Embassy Stationery' },
+        { id: 'attr_unknown_unresolved', label: 'Unresolved Historical Origin' }
       ]
     }
   ];
@@ -341,15 +373,19 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader('Part 2: The Antiquarian’s Bench', 'Investigating 4 uncataloged historical relics under varying uncertainty.')}
+        <div class="candidate-content-protected">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="act-badge">World 5: The Hidden Gallery</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3</span>
+          </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>`,
-            goal: 'Investigate physical clues on 4 historical relics to resolve provenance uncertainty.',
+            goal: 'Investigate physical clues on 4 historical relics to identify their origins.',
             steps: [
-              'Examine each uncataloged relic and its initial description.',
-              'Click clues to uncover material evidence at your discretion.',
-              'Attribute the relic based on your investigation.'
+              'Examine each historic relic and read its description.',
+              'Click clues to uncover material facts at your choice.',
+              'Select your origin conclusion for the relic.',
+              'Click finalize to advance.'
             ]
           })}
         </div>
@@ -369,28 +405,48 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
 
     app.innerHTML = `
       <div class="animate-fadeIn">
-        <div class="flex justify-between items-center mb-2">
-          ${renderHeader('Part 2: The Antiquarian’s Bench', 'Inspect material clues to resolve provenance uncertainty.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Relic ${currentTrial + 1} of ${relics.length}</span>
-        </div>
-
-        <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-sm mb-4 text-xs font-serif text-[var(--text-primary)] flex items-center justify-between">
-          <span class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block"></span>
-            <strong>${r.title}:</strong> ${r.description}
-          </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)] font-mono">${r.stimulus_id}</span>
-        </div>
-
-        <!-- Clues Inspection Grid -->
-        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 rounded-xs shadow-xs">
-          <div class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider mb-2.5 flex items-center justify-between">
-            <span>Material Clues Available for Physical Inspection</span>
-            <span class="text-[9px] text-[var(--text-secondary)]">Click clue to examine</span>
+        <!-- TOP BAR -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="act-badge">World 5: The Hidden Gallery</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Relic ${currentTrial + 1} of ${relics.length}</span>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+        </div>
+
+        <!-- TASK HEADER -->
+        <div class="mb-4">
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Antiquarian’s Bench</h2>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Inspect physical clues to identify each historic object.</p>
+        </div>
+
+        <!-- YOUR TASK -->
+        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            Examine the relic below. Inspect any clues you wish. Then choose its origin.
+          </div>
+        </div>
+
+        <!-- LOOK AT THIS -->
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Relic Specimen</span>
+            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${r.stimulus_id}</span>
+          </div>
+          <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${r.title}</div>
+          <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${r.description}</div>
+        </div>
+
+        <!-- INTERACTION AREA: Clues Inspection Grid -->
+        <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
+          <div class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
+            <span>Physical Clues Available for Inspection</span>
+            <span class="text-[9px] text-[var(--text-secondary)] font-normal">Click clue to examine</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             ${r.clues.map(c => `
-              <div class="clue-btn p-3.5 bg-white border ${inspectedClues[c.id] ? 'border-[var(--accent-gold)] bg-amber-50/40 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs" data-clue="${c.id}" tabindex="0" role="button">
+              <div class="clue-btn p-3.5 bg-white border ${inspectedClues[c.id] ? 'border-[var(--accent-gold)] bg-amber-50/40 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[48px] flex flex-col justify-between" data-clue="${c.id}" tabindex="0" role="button">
                 <div class="font-medium text-[var(--text-primary)] flex items-center justify-between">
                   <span>${c.label}</span>
                   <span class="text-[9px] font-mono uppercase text-[var(--text-secondary)]">${inspectedClues[c.id] ? 'Inspected' : 'Inspect'}</span>
@@ -401,26 +457,32 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
           </div>
         </div>
 
-        <!-- Attribution Selection -->
-        <div class="p-6 bg-white border border-[var(--grid-border)] mb-6 shadow-xs rounded-xs">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-3">Conclude Archival Attribution:</div>
+        <!-- YOUR CHOICE: Attribution Selection -->
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs candidate-content-protected">
+          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Conclude Historical Origin:</div>
           <div class="space-y-2.5">
             ${r.attributions.map(attr => `
-              <div class="q2-attr p-3.5 bg-white border ${selectedAttribution === attr.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between" data-attr="${attr.id}" tabindex="0" role="button">
+              <div class="q2-attr p-3.5 bg-white border ${selectedAttribution === attr.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-attr="${attr.id}" tabindex="0" role="button">
                 <span class="flex items-center gap-2.5">
-                  <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedAttribution === attr.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAttribution === attr.id ? '✓' : ''}</span>
+                  <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedAttribution === attr.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAttribution === attr.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${attr.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${attr.id}</span>
+                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase shrink-0">${attr.id}</span>
               </div>
             `).join('')}
           </div>
         </div>
 
-        <div class="flex justify-end">
-          <button type="button" id="confirmQ2Btn" ${selectedAttribution ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
+        <!-- PRIMARY ACTION BUTTON -->
+        <div class="flex justify-end mb-4">
+          <button type="button" id="confirmQ2Btn" ${selectedAttribution ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
             ${currentTrial < relics.length - 1 ? 'Finalize Investigation &rarr;' : 'Finish Antiquarian Bench &rarr;'}
           </button>
+        </div>
+
+        <!-- Progress Footer -->
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+          Relic ${currentTrial + 1} of ${relics.length}
         </div>
       </div>
     `;
@@ -521,47 +583,47 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
   const episodes = [
     {
       stimulus_id: 'Q3_E1',
-      title: 'Episode 1: The Master Calligrapher’s Folio',
+      title: 'Episode 1: The Master Painter’s Folio',
       ambiguity_type: 'unattributed_artisan_folio',
-      ambiguity_text: 'An illuminated folio features miniature gold dust borders with charcoal underdrawing. Two Master Calligraphers worked during this era.',
+      ambiguity_text: 'An illuminated folio has gold dust borders and charcoal sketches. Two master painters worked during this era.',
       context_id: 'provenance_context_1',
-      context_title: 'Archival Registry Dossier #104 (Rainawari Atelier)',
-      context_text: 'Archival records confirm Master Sadiq operated exclusively in the Rainawari workshop between 1870-1885 and pioneered willow-branch charcoal underdrawings with lapis border ruling.',
-      decision_question: 'Based on your synthesis, attribute the folio’s master atelier and technique lineage:',
+      context_title: 'Rainawari Workshop Records (1870–1885)',
+      context_text: 'Records confirm Master Sadiq worked in Rainawari. He used willow-branch charcoal sketches and lapis blue borders.',
+      decision_question: 'Attribute the folio maker and technique lineage:',
       choices: [
-        { id: 'choice_sadiq_rainawari', label: 'Master Sadiq (Rainawari Atelier — willow-branch underdrawing)' },
-        { id: 'choice_habib_court', label: 'Master Habib (Royal Court Palace — imported pencil underdrawing)' },
-        { id: 'choice_generic_bazaar', label: 'Unspecified Old Srinagar Commercial Bazaar Production' }
+        { id: 'choice_sadiq_rainawari', label: 'Master Sadiq (Rainawari workshop — willow charcoal sketch)' },
+        { id: 'choice_habib_court', label: 'Master Habib (Palace court — imported graphite pencil)' },
+        { id: 'choice_generic_bazaar', label: 'General City Market Production' }
       ]
     },
     {
       stimulus_id: 'Q3_E2',
-      title: 'Episode 2: The Post-Flood Exhibition Pavilion',
+      title: 'Episode 2: The Exhibition Pavilion Ceiling',
       ambiguity_type: 'mismatched_period_provenance',
-      ambiguity_text: 'A decorative ceiling panel displays carving motifs from both the late 19th and early 20th century reconstructions.',
+      ambiguity_text: 'A carved ceiling panel displays woodwork styles from two different rebuilding periods.',
       context_id: 'provenance_context_2',
-      context_title: 'Municipal Public Works Ledger #88 (Dal Lake Pavilion)',
-      context_text: 'Following the devastating 1902 autumn flood, the pavilion ceiling was rebuilt using seasoned Himalayan cedar, while the pre-flood structure used soft river pine.',
-      decision_question: 'Integrate the structural timber provenance into your curatorial report:',
+      context_title: 'Dal Lake Pavilion Repair Notes (1902)',
+      context_text: 'Following the 1902 Dal Lake flood, builders used seasoned cedar wood. Earlier builders used soft river pine.',
+      decision_question: 'Identify the structural timber and repair era:',
       choices: [
-        { id: 'choice_post_flood_cedar', label: 'Post-1902 Flood Restoration (Himalayan seasoned cedar timber)' },
-        { id: 'choice_pre_flood_pine', label: 'Original Pre-Flood Construction (Soft river pine timber)' },
-        { id: 'choice_modern_concrete', label: 'Twentieth Century Composite Replica' }
+        { id: 'choice_post_flood_cedar', label: 'Post-1902 Flood Repair (Seasoned mountain cedar wood)' },
+        { id: 'choice_pre_flood_pine', label: 'Original Pre-Flood Building (Soft river pine wood)' },
+        { id: 'choice_modern_concrete', label: 'Twentieth Century Replica' }
       ]
     },
     {
       stimulus_id: 'Q3_E3',
-      title: 'Episode 3: The Shrine Couplet\'s Refrain',
+      title: 'Episode 3: The Woven Silk Couplet',
       ambiguity_type: 'regional_dialect_verse_origin',
-      ambiguity_text: 'A woven silk pashmina textile bears an embroidered couplet with an archaic Kashmiri metric cadence.',
+      ambiguity_text: 'A woven silk pashmina scarf has an old Kashmiri verse embroidered on it.',
       context_id: 'provenance_context_3',
-      context_title: 'Oral Verse Anthology Vol. IV (Lalla-Ded Shrines)',
-      context_text: 'Couplets structured with the archaic 4-beat "Vakh" metric refrain originate specifically from the southern valley shrines (Pampore/Tral) rather than urban royal court poets.',
-      decision_question: 'Select the verified cultural and geographic lineage for the exhibition catalog:',
+      context_title: 'Valley Poetry Records (Lalla-Ded Shrines)',
+      context_text: 'Verses with this 4-beat pattern come from southern valley shrines (Pampore and Tral).',
+      decision_question: 'Select the verified cultural origin of this verse:',
       choices: [
-        { id: 'choice_southern_vakh_shrine', label: 'Southern Valley Shrine Lineage (Archaic 4-beat Vakh cadence)' },
-        { id: 'choice_urban_court_ghazal', label: 'Urban Courtly Scribe Tradition (Formal Persian rhyming meter)' },
-        { id: 'choice_folk_bazaar_song', label: 'Nomadic Commercial Caravan Song' }
+        { id: 'choice_southern_vakh_shrine', label: 'Southern Valley Shrine Verse (Traditional 4-beat rhythm)' },
+        { id: 'choice_urban_court_ghazal', label: 'Palace Court Scribe Poem (Formal Persian rhyming meter)' },
+        { id: 'choice_folk_bazaar_song', label: 'Traveling Caravan Folk Song' }
       ]
     }
   ];
@@ -569,15 +631,19 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader("Part 3: The Weaver's Chronicle", 'Resolving 3 ambiguous curatorial episodes through optional archival context integration.')}
+        <div class="candidate-content-protected">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="act-badge">World 5: The Hidden Gallery</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3</span>
+          </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`,
-            goal: 'Synthesize archival knowledge: retrieve optional context dossiers and integrate the insights into downstream decisions.',
+            goal: 'Connect archival clues to solve catalog questions across 3 episodes.',
             steps: [
-              'Read the historical ambiguity presented in each episode.',
-              'Optionally retrieve the archival context dossier to uncover provenance facts.',
-              'Integrate the facts into your final cataloging choice.'
+              'Read the historical question in each episode.',
+              'Click to open the archival research note if you need facts.',
+              'Select your catalog conclusion.',
+              'Click confirm to finish World 5.'
             ]
           })}
         </div>
@@ -597,62 +663,88 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
 
     app.innerHTML = `
       <div class="animate-fadeIn">
-        <div class="flex justify-between items-center mb-2">
-          ${renderHeader("Part 3: The Weaver's Chronicle", 'Integrate archival context into catalog decisions.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Episode ${currentEpisode + 1} of ${episodes.length}</span>
+        <!-- TOP BAR -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="act-badge">World 5: The Hidden Gallery</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Episode ${currentEpisode + 1} of ${episodes.length}</span>
+          </div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
         </div>
 
-        <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-sm mb-4 text-xs font-serif text-[var(--text-primary)] flex items-center justify-between">
-          <span class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block"></span>
-            <strong>${ep.title}:</strong> ${ep.ambiguity_text}
-          </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)] font-mono">${ep.stimulus_id}</span>
+        <!-- TASK HEADER -->
+        <div class="mb-4">
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Weaver's Chronicle</h2>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Connect historical clues to solve catalog questions.</p>
         </div>
 
-        <!-- Optional Context Retrieval Area -->
-        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 rounded-xs shadow-xs">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider">Archival Context Dossier</span>
+        <!-- YOUR TASK -->
+        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            Read the mystery below. You may open the reference note. Choose the best answer to continue.
+          </div>
+        </div>
+
+        <!-- LOOK AT THIS -->
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Historic Case</span>
+            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${ep.stimulus_id}</span>
+          </div>
+          <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${ep.title}</div>
+          <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${ep.ambiguity_text}</div>
+        </div>
+
+        <!-- INTERACTION AREA 1: Optional Context Retrieval -->
+        <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <span class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider">Archival Research Note</span>
             ${!contextRetrieved ? `
-              <button type="button" id="retrieveContextBtn" class="px-3.5 py-1.5 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] text-[10px] font-mono uppercase tracking-wider text-[var(--text-primary)] hover:bg-amber-50 transition rounded-xs shadow-xs" tabindex="0">
-                Retrieve Context Dossier &rarr;
+              <button type="button" id="retrieveContextBtn" class="px-4 py-2 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] text-[10px] font-mono uppercase tracking-wider text-[var(--text-primary)] hover:bg-amber-50 transition rounded-xs shadow-xs min-h-[44px] flex items-center justify-center gap-1.5" tabindex="0">
+                <span>Open Research Note</span> &rarr;
               </button>
-            ` : '<span class="text-[10px] font-mono text-emerald-700 font-semibold uppercase">Dossier Retrieved</span>'}
+            ` : '<span class="text-[10px] font-mono text-emerald-700 font-semibold uppercase">Note Opened</span>'}
           </div>
 
           ${contextRetrieved ? `
-            <div class="p-4 bg-white border border-emerald-600/40 rounded-xs text-xs text-[var(--text-primary)] leading-relaxed animate-fadeIn">
+            <div class="p-3.5 bg-white border border-emerald-600/40 rounded-xs text-xs text-[var(--text-primary)] leading-relaxed animate-fadeIn">
               <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-800 font-semibold mb-1">${ep.context_title}</div>
               <div>${ep.context_text}</div>
             </div>
           ` : `
             <div class="text-xs text-[var(--text-secondary)] italic">
-              Archival context is available to clarify historical ambiguities before finalizing attribution.
+              Optional research notes are available to clarify historic details.
             </div>
           `}
         </div>
 
-        <!-- Downstream Integration Decision -->
-        <div class="p-6 bg-white border border-[var(--grid-border)] mb-6 shadow-xs rounded-xs">
+        <!-- YOUR CHOICE: Downstream Integration Decision -->
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs candidate-content-protected">
           <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">${ep.decision_question}</div>
           <div class="space-y-2.5">
             ${ep.choices.map(c => `
-              <div class="q3-choice p-3.5 bg-white border ${selectedIntegrationChoice === c.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between" data-choice="${c.id}" tabindex="0" role="button">
+              <div class="q3-choice p-3.5 bg-white border ${selectedIntegrationChoice === c.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-choice="${c.id}" tabindex="0" role="button">
                 <span class="flex items-center gap-2.5">
-                  <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedIntegrationChoice === c.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedIntegrationChoice === c.id ? '✓' : ''}</span>
+                  <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedIntegrationChoice === c.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedIntegrationChoice === c.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${c.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${c.id}</span>
+                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase shrink-0">${c.id}</span>
               </div>
             `).join('')}
           </div>
         </div>
 
-        <div class="flex justify-end">
-          <button type="button" id="confirmQ3Btn" ${selectedIntegrationChoice ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
-            ${currentEpisode < episodes.length - 1 ? 'Confirm Synthesis &rarr;' : 'Finish World 5 &rarr;'}
+        <!-- PRIMARY ACTION BUTTON -->
+        <div class="flex justify-end mb-4">
+          <button type="button" id="confirmQ3Btn" ${selectedIntegrationChoice ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+            ${currentEpisode < episodes.length - 1 ? 'Confirm Choice &rarr;' : 'Finish World 5 &rarr;'}
           </button>
+        </div>
+
+        <!-- Progress Footer -->
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+          Episode ${currentEpisode + 1} of ${episodes.length}
         </div>
       </div>
     `;

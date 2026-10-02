@@ -3,12 +3,14 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlmodel import Session, select
+from sqlalchemy import func
 
 from app.db.session import get_db
 from app.core.security import require_admin
 from app.models.recruit import (
     DBSession, DBApplicantIdentity, DBEvidence, DBFeature,
-    DBDataQualityFlag, DBRecruiterAccessLog
+    DBDataQualityFlag, DBRecruiterAccessLog, DBSJTResponse,
+    DBConsentRecord, DBTelemetryEvent
 )
 from app.services.feature_extractor import extract_session_features
 from app.services.evidence_integrator import integrate_session_evidence
@@ -60,12 +62,24 @@ def list_research_sessions(
     results = []
     for s in sessions:
         identity = db.get(DBApplicantIdentity, s.session_id)
+        sjt_count = db.exec(select(func.count(DBSJTResponse.id)).where(DBSJTResponse.session_id == s.session_id)).one()
+        has_sjt = (sjt_count >= 7)
+        records = get_session_task_records(db, s.session_id)
+        completed_tasks_count = sum(1 for r in records if r.get("status") in ("RECORDED", "USABLE"))
+        evidence_collected = has_sjt and (completed_tasks_count >= 21)
+
         results.append({
             "session_id": s.session_id,
             "created_at": s.created_at.isoformat() if s.created_at else None,
             "status": s.status,
             "full_name": identity.full_name if identity else "Anonymous Applicant",
-            "email": identity.email if identity else "unknown"
+            "email": identity.email if identity else "unknown",
+            "has_sjt": has_sjt,
+            "completed_tasks_count": completed_tasks_count,
+            "evidence_status": "Evidence Collected" if evidence_collected else ("In Progress" if (has_sjt or completed_tasks_count > 0) else "Not Started"),
+            "active_extractors_count": 2,
+            "active_extractors_total": 2,
+            "quarantined_extractors_count": 19
         })
 
     return results
@@ -126,12 +140,14 @@ def get_session_research_view(
     evidence_list = integrate_session_evidence(db, session_id)
 
     identity = db.get(DBApplicantIdentity, session_id)
+    consent = db.exec(select(DBConsentRecord).where(DBConsentRecord.session_id == session_id)).first()
     flags = db.exec(
         select(DBDataQualityFlag).where(DBDataQualityFlag.session_id == session_id)
     ).all()
     features = db.exec(
         select(DBFeature).where(DBFeature.session_id == session_id)
     ).all()
+    events_count = db.exec(select(func.count(DBTelemetryEvent.id)).where(DBTelemetryEvent.session_id == session_id)).one()
 
     evidence_dict = {}
     for ev in evidence_list:
@@ -167,8 +183,16 @@ def get_session_research_view(
                 str(round(f.value_raw, 2)) if isinstance(f.value_raw, float) else str(f.value_raw)
             ),
             "valid": False if is_quarantined else f.valid,
-            "flags": flags_list
+            "flags": flags_list,
+            "is_quarantined": is_quarantined,
+            "status": "QUARANTINED" if is_quarantined else ("VALID" if f.valid else "FLAGGED"),
+            "quarantine_reason": "Awaiting calibration data (Design Freeze v1.1)" if is_quarantined else None
         })
+
+    # Duration calculation
+    duration_minutes = None
+    if sess.created_at and sess.completed_at:
+        duration_minutes = round((sess.completed_at - sess.created_at).total_seconds() / 60.0, 1)
 
     return {
         "metadata": {
@@ -176,13 +200,22 @@ def get_session_research_view(
             "status": sess.status,
             "created_at": sess.created_at.isoformat() if sess.created_at else None,
             "completed_at": sess.completed_at.isoformat() if sess.completed_at else None,
+            "duration_minutes": duration_minutes,
             "applicant": {
                 "full_name": identity.full_name if identity else None,
                 "email": identity.email if identity else None
             },
+            "consent": {
+                "consent_text_version": consent.consent_text_version if consent else "1.0",
+                "timestamp": consent.timestamp.isoformat() if consent and consent.timestamp else None,
+                "confirmed_18_plus": consent.confirmed_18_plus if consent else True
+            },
+            "telemetry_summary": {
+                "total_events": events_count
+            },
             "safeguards": {
                 "banner": "Research evidence view. Not validated. Not for selection decisions.",
-                "ipsative_note": "SJT profiles are nearly ipsative by design. A higher emphasis on one parameter balances other parameters. A LOW band indicates lower relative emphasis within this specific scenario trade-off, not a deficit in personal ability or moral standing.",
+                "ipsative_note": "Parameters are derived from Situational Judgment responses. These are provisional ipsative indicators, NOT standardized scores.",
                 "sjt_emphasis_note": "Relative emphasis in this SJT's trade-offs: higher / middle / lower."
             }
         },

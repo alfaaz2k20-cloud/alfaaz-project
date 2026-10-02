@@ -1,8 +1,9 @@
 /* ==========================================================================
    ALFAAZ RECRUIT — WORLD 3: THE SHARED CANVAS (مشترکہ نقش)
    Mini-games: C1 (Resource Cooperation), C2 (Coordination), C3 (Collaboration Repair)
-   Adheres to Design Freeze v1 + Addendum v1.1.
-   Emits raw behavioral telemetry only (no client-authored scores or correctness).
+   Plain language remediation for human playtest pass 1.
+   Sentences <= 12 words. Simple conversational English. Jargon removed.
+   Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
    ========================================================================== */
 
 import { renderTutorialCard } from './index.js';
@@ -35,45 +36,45 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
   const rounds = [
     {
       stimulus_id: 'C1_R1',
-      title: 'Round 1: Partner Mosaic Deficit',
-      description: 'Your partner’s workstation is short by 3 tiles to complete their mosaic panel. You have 8 tiles.',
+      title: 'Round 1: Partner Needs Tiles',
+      description: 'Your partner needs 3 more tiles to finish. You have 8 tiles.',
       partner_initial: 2,
       user_initial: 8,
       default_transfer: 0,
-      context_note: 'Partner Deficit Condition'
+      context_note: 'Partner Needs Help'
     },
     {
       stimulus_id: 'C1_R2',
-      title: 'Round 2: Balanced Mosaic Workstation',
-      description: 'Both you and your partner have adequate supplies (5 tiles each) to complete your respective panels.',
+      title: 'Round 2: Balanced Baskets',
+      description: 'Both you and your partner have 5 tiles. Both have enough to finish.',
       partner_initial: 5,
       user_initial: 5,
       default_transfer: 0,
-      context_note: 'Balanced Need Condition'
+      context_note: 'Both Have Enough'
     },
     {
       stimulus_id: 'C1_R3',
-      title: 'Round 3: Self-Station Ceramic Shortage',
-      description: 'Your workstation has a critical deficit (3 tiles; quota requires 6), while your partner has 7 tiles (requires 4). Over-sharing deprives your station and halts assembly; retaining resources is appropriate.',
+      title: 'Round 3: Your Basket is Low',
+      description: 'Your basket has only 3 tiles (you need 6). Your partner has 7 tiles.',
       partner_initial: 7,
       user_initial: 3,
       default_transfer: 0,
-      context_note: 'Retaining Resource Condition'
+      context_note: 'Keep Your Tiles'
     }
   ];
 
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader("Part 1: The Artisan's Basket", 'Coordinating ceramic mosaic supplies with your workshop partner across 3 distinct inventory situations.')}
+        <div class="candidate-content-protected max-w-2xl mx-auto">
+          ${renderHeader("The Artisan's Basket", 'Coordinate ceramic tiles with your workshop partner.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>`,
-            goal: 'Evaluate the inventory needs in each round and decide how many tiles (if any) to transfer from your basket.',
+            goal: 'Look at both baskets and decide if you want to share tiles.',
             steps: [
-              'Check both workstations to see if materials are in deficit, balanced, or surplus.',
-              'Use the + / - buttons to set your transfer count.',
-              'Confirm your distribution for each of the 3 rounds.'
+              'Check how many tiles you and your partner have.',
+              'Use plus and minus to move tiles between baskets.',
+              'Confirm your choice across 3 rounds.'
             ]
           })}
         </div>
@@ -93,52 +94,77 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
     const userTotal = r.user_initial - transferCount;
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
-        <div class="flex justify-between items-center mb-2">
-          ${renderHeader("Part 1: The Artisan's Basket", 'Review workstation requirements and allocate tiles appropriately.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Round ${currentRound + 1} of 3</span>
+      <div class="animate-fadeIn max-w-2xl mx-auto">
+        <!-- TOP BAR -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
+          <div class="flex items-center gap-2">
+            <span class="act-badge">World 3: The Shared Canvas</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Round ${currentRound + 1} of 3</span>
+          </div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
         </div>
 
-        <!-- Situation Banner -->
-        <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-sm mb-4 text-xs font-serif text-[var(--text-primary)] flex items-center justify-between">
-          <span class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block"></span>
+        <!-- TASK HEADER -->
+        <div class="mb-4">
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Artisan's Basket</h2>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Coordinate ceramic tiles with your workshop partner.</p>
+        </div>
+
+        <!-- YOUR TASK -->
+        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            Check tile counts below. Move tiles to your partner if needed.
+          </div>
+        </div>
+
+        <!-- LOOK AT THIS -->
+        <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected flex items-center justify-between">
+          <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${r.title}:</strong> ${r.description}
           </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${r.context_note}</span>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--text-secondary)]">${r.context_note}</span>
         </div>
 
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 shadow-xs rounded-xs">
-          <div class="grid grid-cols-2 gap-4 text-center mb-6">
-            <div class="p-4 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
-              <span class="text-[10px] text-[var(--accent-gold)] uppercase font-semibold tracking-wider font-mono">Partner Basket</span>
-              <div class="text-xl font-serif font-semibold text-[#bd6f5d] mt-1">${partnerTotal} Ceramic Tiles</div>
-              <div class="flex justify-center gap-1.5 mt-3 flex-wrap max-w-[140px] mx-auto">
-                ${Array(Math.max(0, partnerTotal)).fill('<div class="w-4 h-4 bg-[#bd6f5d]/70 rounded-xs shadow-xs"></div>').join('')}
+        <!-- INTERACTION AREA -->
+        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
+          <div class="grid grid-cols-2 gap-4 text-center mb-5">
+            <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
+              <span class="text-[10px] text-[var(--accent-gold)] uppercase font-semibold font-mono">Partner Basket</span>
+              <div class="text-xl font-serif font-semibold text-[#bd6f5d] mt-1">${partnerTotal} Tiles</div>
+              <div class="flex justify-center gap-1 mt-2.5 flex-wrap max-w-[140px] mx-auto">
+                ${Array(Math.max(0, partnerTotal)).fill('<div class="w-3.5 h-3.5 bg-[#bd6f5d]/70 rounded-xs shadow-xs"></div>').join('')}
               </div>
             </div>
-            <div class="p-4 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
-              <span class="text-[10px] text-emerald-700 uppercase font-semibold tracking-wider font-mono">Your Basket</span>
-              <div class="text-xl font-serif font-semibold text-emerald-800 mt-1">${userTotal} Ceramic Tiles</div>
-              <div class="flex justify-center gap-1.5 mt-3 flex-wrap max-w-[140px] mx-auto">
-                ${Array(Math.max(0, userTotal)).fill('<div class="w-4 h-4 bg-emerald-700/70 rounded-xs shadow-xs"></div>').join('')}
+            <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
+              <span class="text-[10px] text-emerald-700 uppercase font-semibold font-mono">Your Basket</span>
+              <div class="text-xl font-serif font-semibold text-emerald-800 mt-1">${userTotal} Tiles</div>
+              <div class="flex justify-center gap-1 mt-2.5 flex-wrap max-w-[140px] mx-auto">
+                ${Array(Math.max(0, userTotal)).fill('<div class="w-3.5 h-3.5 bg-emerald-700/70 rounded-xs shadow-xs"></div>').join('')}
               </div>
             </div>
           </div>
 
-          <div class="text-center pt-2 border-t border-[var(--grid-border)]">
-            <div class="text-xs text-[var(--text-secondary)] mb-3 font-medium">Tiles to transfer to partner:</div>
+          <div class="text-center pt-3 border-t border-[var(--grid-border)]">
+            <div class="text-xs text-[var(--text-secondary)] mb-2 font-mono">Tiles to share with partner:</div>
             <div class="flex justify-center items-center gap-4">
-              <button type="button" id="minusTileBtn" class="w-10 h-10 rounded-xs bg-white border border-[var(--grid-border)] text-lg font-bold hover:border-[var(--accent-gold)] hover:bg-amber-50 active:scale-95 transition shadow-xs" tabindex="0">-</button>
-              <span id="transferCount" class="font-serif text-3xl font-semibold text-[var(--accent-gold)] w-10 text-center">${transferCount}</span>
-              <button type="button" id="plusTileBtn" class="w-10 h-10 rounded-xs bg-white border border-[var(--grid-border)] text-lg font-bold hover:border-[var(--accent-gold)] hover:bg-amber-50 active:scale-95 transition shadow-xs" tabindex="0">+</button>
+              <button type="button" id="minusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold hover:border-[var(--accent-gold)] hover:bg-amber-50 active:scale-95 transition shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">-</button>
+              <span id="transferCount" class="font-serif text-3xl font-semibold text-[var(--accent-gold)] w-12 text-center">${transferCount}</span>
+              <button type="button" id="plusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold hover:border-[var(--accent-gold)] hover:bg-amber-50 active:scale-95 transition shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">+</button>
             </div>
           </div>
         </div>
 
+        <!-- YOUR CHOICE -->
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+          <span>Sharing: <strong class="text-[var(--text-primary)]">${transferCount} tiles</strong> (You keep ${userTotal})</span>
+          <span class="text-[10px] text-stone-400 font-mono">Round ${currentRound + 1} of 3</span>
+        </div>
+
+        <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button type="button" id="confirmTransferBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs">
-            ${currentRound < 2 ? 'Confirm Allocation &rarr;' : 'Finish Resource Distribution &rarr;'}
+          <button type="button" id="confirmTransferBtn" class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs min-h-[44px]">
+            ${currentRound < 2 ? 'Confirm Tile Sharing &rarr;' : 'Finish Tile Allocation &rarr;'}
           </button>
         </div>
       </div>
@@ -213,7 +239,6 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
 
 // --------------------------------------------------------------------------
 // C2: Coordination (3 coordinated placement rounds)
-// Partner / system state changes across rounds. Per-placement raw events.
 // --------------------------------------------------------------------------
 function runC2Coordination(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
@@ -224,32 +249,32 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
   const rounds = [
     {
       stimulus_id: 'C2_R1',
-      title: 'Round 1: Open Wall Turn',
-      partner_desc: 'Partner has hung their painting on the Upper Left (North) cluster.',
+      title: 'Round 1: Open Wall Space',
+      partner_desc: 'Partner hung their painting on the top left corner.',
       slots: [
-        { id: 'SLOT_NORTH_RIGHT', label: 'Upper Right (Balanced Spacing)' },
-        { id: 'SLOT_OVERLAP_LEFT', label: 'Adjacent Left (Tight Cluster)' },
-        { id: 'SLOT_BOTTOM_CENTER', label: 'Lower Center (Vertical Complement)' }
+        { id: 'SLOT_NORTH_RIGHT', label: 'Top Right (Even Spacing)' },
+        { id: 'SLOT_OVERLAP_LEFT', label: 'Next to Partner (Tight Cluster)' },
+        { id: 'SLOT_BOTTOM_CENTER', label: 'Bottom Center (Center Spot)' }
       ]
     },
     {
       stimulus_id: 'C2_R2',
-      title: 'Round 2: Restricted Wall Space',
-      partner_desc: 'Partner is framing the Center Hallway; central corridor clearance must remain open.',
+      title: 'Round 2: Keep Hallway Clear',
+      partner_desc: 'Partner is framing the center hallway. Keep the doorway path clear.',
       slots: [
-        { id: 'SLOT_PERIMETER_EAST', label: 'East Perimeter (Clear Corridor)' },
-        { id: 'SLOT_CENTER_ADJACENT', label: 'Center Blocking Slot (Crowds Hallway)' },
-        { id: 'SLOT_PERIMETER_WEST', label: 'West Perimeter (Clear Corridor)' }
+        { id: 'SLOT_PERIMETER_EAST', label: 'East Wall (Keeps Path Open)' },
+        { id: 'SLOT_CENTER_ADJACENT', label: 'Center Slot (Crowds the Hall)' },
+        { id: 'SLOT_PERIMETER_WEST', label: 'West Wall (Keeps Path Open)' }
       ]
     },
     {
       stimulus_id: 'C2_R3',
-      title: 'Round 3: Dynamic Canvas Adjustment',
-      partner_desc: 'Partner shifted their composition toward the Lower (South) exhibition area.',
+      title: 'Round 3: Partner Moved Down',
+      partner_desc: 'Partner moved their artwork down to the lower wall.',
       slots: [
-        { id: 'SLOT_UPPER_GALLERY', label: 'Upper Wall (Restores Bilateral Balance)' },
-        { id: 'SLOT_LOWER_CONGESTED', label: 'Lower Wall (Overcrowds South)' },
-        { id: 'SLOT_MID_SIDE', label: 'Mid-Side Niche (Neutral Position)' }
+        { id: 'SLOT_UPPER_GALLERY', label: 'Top Wall (Balances Both Sides)' },
+        { id: 'SLOT_LOWER_CONGESTED', label: 'Lower Wall (Crowds Lower Wall)' },
+        { id: 'SLOT_MID_SIDE', label: 'Side Niche (Side Corner)' }
       ]
     }
   ];
@@ -257,14 +282,14 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader('Part 2: The Gallery Wall', 'Coordinating artwork hanging positions across 3 spatial layout rounds.')}
+        <div class="candidate-content-protected max-w-2xl mx-auto">
+          ${renderHeader('The Gallery Wall', 'Coordinate artwork placement with your partner.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>`,
-            goal: 'Select an artwork hanging slot in each round that complements your partner’s arrangement without interference.',
+            goal: 'Pick a hanging spot that leaves space for your partner.',
             steps: [
-              'Review your colleague’s hung piece and the layout state in each round.',
-              'Inspect the available placement slots on the wall.',
+              'Check where your partner hung their piece in each round.',
+              'Inspect the available hanging spots on the wall.',
               'Confirm your chosen position across all 3 rounds.'
             ]
           })}
@@ -281,41 +306,66 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
     }
 
     const r = rounds[currentRound];
+    const activeSlot = r.slots.find(s => s.id === chosenSlot);
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
-        <div class="flex justify-between items-center mb-2">
-          ${renderHeader('Part 2: The Gallery Wall', 'Coordinate placement with your partner’s artwork.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Round ${currentRound + 1} of 3</span>
+      <div class="animate-fadeIn max-w-2xl mx-auto">
+        <!-- TOP BAR -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
+          <div class="flex items-center gap-2">
+            <span class="act-badge">World 3: The Shared Canvas</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Round ${currentRound + 1} of 3</span>
+          </div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
         </div>
 
-        <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-sm mb-4 text-xs font-serif text-[var(--text-primary)] flex items-center justify-between">
-          <span class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block"></span>
-            <strong>${r.title}:</strong> ${r.partner_desc}
-          </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)] font-mono">${r.stimulus_id}</span>
+        <!-- TASK HEADER -->
+        <div class="mb-4">
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Gallery Wall</h2>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Coordinate artwork placement with your partner.</p>
         </div>
 
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 shadow-xs rounded-xs">
-          <div class="w-full bg-white border border-[var(--grid-border)] p-6 rounded-xs shadow-inner mb-4">
-            <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-3">Available Wall Placement Slots:</div>
-            <div class="flex flex-col gap-2.5">
-              ${r.slots.map(s => `
-                <button type="button" class="slot-btn px-4 py-3 text-xs border rounded-xs ${chosenSlot === s.id ? 'border-[var(--accent-gold)] bg-amber-50 font-semibold shadow-xs' : 'border-[var(--grid-border)] bg-white hover:border-[var(--accent-gold)]'} transition flex items-center justify-between" data-slot="${s.id}" tabindex="0">
-                  <span class="flex items-center gap-2">
-                    <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${chosenSlot === s.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-400'}">${chosenSlot === s.id ? '✓' : ''}</span>
-                    <span class="text-[var(--text-primary)]">${s.label}</span>
-                  </span>
-                  <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${s.id}</span>
-                </button>
-              `).join('')}
-            </div>
+        <!-- YOUR TASK -->
+        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            Check your partner's position. Choose an open spot that balances the wall.
           </div>
         </div>
 
+        <!-- LOOK AT THIS -->
+        <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected flex items-center justify-between">
+          <span class="text-xs font-serif text-[var(--text-primary)]">
+            <strong>${r.title}:</strong> ${r.partner_desc}
+          </span>
+          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${r.stimulus_id}</span>
+        </div>
+
+        <!-- INTERACTION AREA -->
+        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
+          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Available Wall Placement Slots:</div>
+          <div class="flex flex-col gap-2.5">
+            ${r.slots.map(s => `
+              <button type="button" class="slot-btn px-4 py-3 text-xs border rounded-xs ${chosenSlot === s.id ? 'border-[var(--accent-gold)] bg-amber-50/70 font-semibold shadow-xs' : 'border-[var(--grid-border)] bg-white hover:border-[var(--accent-gold)]'} transition flex items-center justify-between min-h-[48px]" data-slot="${s.id}" tabindex="0">
+                <span class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${chosenSlot === s.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-400'}">${chosenSlot === s.id ? '✓' : ''}</span>
+                  <span class="text-[var(--text-primary)]">${s.label}</span>
+                </span>
+                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${s.id}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- YOUR CHOICE -->
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+          <span>${chosenSlot ? `You selected: <strong class="text-[var(--text-primary)]">${activeSlot?.label}</strong>` : 'Select a spot above to continue.'}</span>
+          <span class="text-[10px] text-stone-400 font-mono">Round ${currentRound + 1} of 3</span>
+        </div>
+
+        <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button type="button" id="confirmWallBtn" ${chosenSlot ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
+          <button type="button" id="confirmWallBtn" ${chosenSlot ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs min-h-[44px]">
             ${currentRound < 2 ? 'Confirm Placement &rarr;' : 'Finish Wall Coordination &rarr;'}
           </button>
         </div>
@@ -387,7 +437,6 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
 function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
   let inTutorial = true;
   let currentOpportunity = 0;
-  let currentStep = 'identify'; // 'identify' -> 'repair' -> 'execute'
   let selectedFault = null;
   let selectedRepair = null;
   let lastInputModality = 'mouse';
@@ -395,50 +444,50 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
   const opportunities = [
     {
       stimulus_id: 'C3_R1',
-      title: 'Opportunity 1: Partner Circuit Breakdown',
-      partner_state: 'Partner’s exhibition lantern circuit has gone dark due to an electrical conduit misalignment.',
+      title: 'Opportunity 1: Partner Lantern is Dark',
+      partner_state: 'Your partner\'s lantern turned dark during setup.',
       condition_type: 'identify_and_repair',
       fault_options: [
-        { id: 'fault_conduit_disconnected', label: 'Conduit feeder disconnected at terminal block' },
-        { id: 'fault_bulb_broken', label: 'Bulb filament shattered' },
-        { id: 'fault_switch_off', label: 'Main pavilion master switch is turned off' }
+        { id: 'fault_conduit_disconnected', label: 'The wire came loose at the connector' },
+        { id: 'fault_bulb_broken', label: 'The glass bulb is broken' },
+        { id: 'fault_switch_off', label: 'The main hall switch is off' }
       ],
       repair_options: [
-        { id: 'adjust_conduit', label: 'Realight conduit terminal and secure ground clamp' },
-        { id: 'call_help_desk', label: 'Click general help desk button' },
-        { id: 'replace_lantern', label: 'Dismantle lantern fixture' }
+        { id: 'adjust_conduit', label: 'Reconnect the loose wire and tighten the clamp' },
+        { id: 'call_help_desk', label: 'Call the main help desk' },
+        { id: 'replace_lantern', label: 'Take down the entire lamp' }
       ],
       execution_action: 'restore_power'
     },
     {
       stimulus_id: 'C3_R2',
-      title: 'Opportunity 2: Hanging Rig Counterweight Jam',
-      partner_state: 'Partner’s ceiling suspension cable is jammed in the pulley guide, preventing joint panel alignment.',
+      title: 'Opportunity 2: Hanging Rope Stuck',
+      partner_state: 'The hanging rope got caught in the wheel bracket.',
       condition_type: 'identify_and_repair',
       fault_options: [
-        { id: 'fault_cable_pulley_pinch', label: 'Suspension cable wedged between pulley wheel and guide bracket' },
-        { id: 'fault_cable_snapped', label: 'Counterweight line severed completely' },
-        { id: 'fault_wall_anchor_loose', label: 'Wall anchor bolt loosened' }
+        { id: 'fault_cable_pulley_pinch', label: 'Rope is pinched between wheel and metal frame' },
+        { id: 'fault_cable_snapped', label: 'The rope snapped completely' },
+        { id: 'fault_wall_anchor_loose', label: 'The wall hook is loose' }
       ],
       repair_options: [
-        { id: 'reseat_pulley_cable', label: 'Release tension lever and reseat cable into center pulley groove' },
-        { id: 'call_facility_maintenance', label: 'Log generic facility maintenance request ticket' },
-        { id: 'force_pull_cable', label: 'Yank cable forcefully downward' }
+        { id: 'reseat_pulley_cable', label: 'Loosen the lever and place the rope back on the wheel' },
+        { id: 'call_facility_maintenance', label: 'File a general repair request' },
+        { id: 'force_pull_cable', label: 'Pull the rope down hard' }
       ],
       execution_action: 'align_panel_height'
     },
     {
       stimulus_id: 'C3_R3',
-      title: 'Opportunity 3: Shadow Corridor Obstruction',
-      partner_state: 'Partner’s painting is obscured by an accidental spotlight shadow barrier.',
+      title: 'Opportunity 3: Shadow Blocks Artwork',
+      partner_state: 'A movable wooden screen casts a dark shadow over your partner\'s painting.',
       condition_type: 'identify_and_repair',
       fault_options: [
-        { id: 'fault_blindspot_obstruction', label: 'Spotlight angle obstructed by movable partition' },
-        { id: 'fault_color_distortion', label: 'Color temperature mismatched' }
+        { id: 'fault_blindspot_obstruction', label: 'Wooden screen blocks the spotlight beam' },
+        { id: 'fault_color_distortion', label: 'The light color looks wrong' }
       ],
       repair_options: [
-        { id: 'shift_lantern', label: 'Re-angle spotlight beam 30 degrees to bypass obstruction' },
-        { id: 'generic_complaint', label: 'Submit generic lighting complaint ticket' }
+        { id: 'shift_lantern', label: 'Turn the spotlight slightly to shine around the screen' },
+        { id: 'generic_complaint', label: 'Submit a general lighting complaint' }
       ],
       execution_action: 'illuminate_path'
     }
@@ -447,15 +496,15 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
   function render() {
     if (inTutorial) {
       app.innerHTML = `
-        <div>
-          ${renderHeader('Part 3: The Dual Lanterns', 'Diagnosing and repairing collaborative workflow breakdowns across 3 exhibition situations.')}
+        <div class="candidate-content-protected max-w-2xl mx-auto">
+          ${renderHeader('The Dual Lanterns', 'Resolve studio breakdowns to keep the hall ready.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>`,
-            goal: 'Collaboratively repair workflow breakdowns: identify the specific issue, perform a useful repair action, and execute the fix.',
+            goal: 'Find the work issue, pick a fix, and repair it together.',
             steps: [
-              'Examine the operational situation in each opportunity.',
-              'Identify the breakdown root cause (or recognize clean balance).',
-              'Select a constructive repair action and execute the solution.'
+              'Examine the situation described in each round.',
+              'Identify the issue from the list.',
+              'Choose a helpful fix and apply the repair.'
             ]
           })}
         </div>
@@ -463,7 +512,6 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
       document.getElementById('startActivityBtn')?.addEventListener('click', () => {
         inTutorial = false;
         currentOpportunity = 0;
-        currentStep = 'identify';
         selectedFault = null;
         selectedRepair = null;
         logRepairPresented();
@@ -473,32 +521,53 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
     }
 
     const opp = opportunities[currentOpportunity];
+    const activeFault = opp.fault_options.find(f => f.id === selectedFault);
+    const activeRepair = opp.repair_options.find(r => r.id === selectedRepair);
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
-        <div class="flex justify-between items-center mb-2">
-          ${renderHeader('Part 3: The Dual Lanterns', 'Resolve operational breakdowns to maintain joint exhibition harmony.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Opportunity ${currentOpportunity + 1} of 3</span>
+      <div class="animate-fadeIn max-w-2xl mx-auto">
+        <!-- TOP BAR -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
+          <div class="flex items-center gap-2">
+            <span class="act-badge">World 3: The Shared Canvas</span>
+            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Problem ${currentOpportunity + 1} of 3</span>
+          </div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
         </div>
 
-        <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-sm mb-4 text-xs font-serif text-[var(--text-primary)] flex items-center justify-between">
-          <span class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block"></span>
+        <!-- TASK HEADER -->
+        <div class="mb-4">
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Dual Lanterns</h2>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Resolve studio issues to keep exhibition work moving.</p>
+        </div>
+
+        <!-- YOUR TASK -->
+        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
+          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            Step 1: Identify what went wrong. Step 2: Choose how to fix it.
+          </div>
+        </div>
+
+        <!-- LOOK AT THIS -->
+        <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected flex items-center justify-between">
+          <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${opp.title}:</strong> ${opp.partner_state}
           </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)] font-mono">${opp.stimulus_id}</span>
+          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${opp.stimulus_id}</span>
         </div>
 
-        <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 shadow-xs rounded-xs">
+        <!-- INTERACTION AREA -->
+        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
           <!-- Step 1: Identify Breakdown -->
-          <div class="mb-5">
-            <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2">
-              Step 1: Identify the Operational Breakdown
+          <div class="mb-4">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2 font-mono">
+              Step 1: What is the issue?
             </div>
             <div class="space-y-2">
               ${opp.fault_options.map(f => `
-                <div class="fault-opt p-3 bg-white border ${selectedFault === f.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center gap-2" data-fault="${f.id}" tabindex="0" role="button">
-                  <span class="w-3 h-3 rounded-full border border-current flex items-center justify-center text-[8px] ${selectedFault === f.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedFault === f.id ? '✓' : ''}</span>
+                <div class="fault-opt p-3 bg-white border ${selectedFault === f.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs font-medium' : 'border-[var(--grid-border)] hover:border-[var(--accent-gold)]'} rounded-xs cursor-pointer transition text-xs flex items-center gap-2 min-h-[44px]" data-fault="${f.id}" tabindex="0" role="button">
+                  <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[8px] ${selectedFault === f.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedFault === f.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)]">${f.label}</span>
                 </div>
               `).join('')}
@@ -507,14 +576,14 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
 
           <!-- Step 2: Perform Constructive Repair -->
           ${selectedFault ? `
-            <div class="mb-5 pt-4 border-t border-[var(--grid-border)] animate-fadeIn">
-              <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2">
-                Step 2: Perform Constructive Repair Action
+            <div class="pt-4 border-t border-[var(--grid-border)] animate-fadeIn">
+              <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2 font-mono">
+                Step 2: Choose a constructive fix:
               </div>
               <div class="space-y-2">
                 ${opp.repair_options.map(r => `
-                  <div class="repair-opt p-3 bg-white border ${selectedRepair === r.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center gap-2" data-repair="${r.id}" tabindex="0" role="button">
-                    <span class="w-3 h-3 rounded-full border border-current flex items-center justify-center text-[8px] ${selectedRepair === r.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedRepair === r.id ? '✓' : ''}</span>
+                  <div class="repair-opt p-3 bg-white border ${selectedRepair === r.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs font-medium' : 'border-[var(--grid-border)] hover:border-[var(--accent-gold)]'} rounded-xs cursor-pointer transition text-xs flex items-center gap-2 min-h-[44px]" data-repair="${r.id}" tabindex="0" role="button">
+                    <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[8px] ${selectedRepair === r.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedRepair === r.id ? '✓' : ''}</span>
                     <span class="text-[var(--text-primary)]">${r.label}</span>
                   </div>
                 `).join('')}
@@ -523,9 +592,16 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
           ` : ''}
         </div>
 
+        <!-- YOUR CHOICE -->
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+          <span>${selectedFault && selectedRepair ? `Fix selected: <strong class="text-[var(--text-primary)]">${activeRepair?.label}</strong>` : (selectedFault ? 'Now choose a fix in Step 2.' : 'Select an issue in Step 1.')}</span>
+          <span class="text-[10px] text-stone-400 font-mono">${currentOpportunity + 1} / 3</span>
+        </div>
+
+        <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button type="button" id="executeRepairBtn" ${selectedFault && selectedRepair ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
-            ${currentOpportunity < 2 ? 'Execute Repair & Proceed &rarr;' : 'Finalize Joint Repair &rarr;'}
+          <button type="button" id="executeRepairBtn" ${selectedFault && selectedRepair ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs min-h-[44px]">
+            ${currentOpportunity < 2 ? 'Apply Fix & Next Problem &rarr;' : 'Finish World 3 &rarr;'}
           </button>
         </div>
       </div>

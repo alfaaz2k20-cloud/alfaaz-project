@@ -608,11 +608,11 @@ function renderWarmup(app) {
   let warmupStartTime = performance.now();
 
   app.innerHTML = `
-    <div class="space-y-6 text-center py-4">
-      <span class="act-badge">Calibration</span>
-      <h2 class="text-2xl font-serif text-[var(--text-primary)]">Interactive Calibration</h2>
-      <p class="text-xs text-[var(--text-secondary)] max-w-md mx-auto">
-        Please tap or click the center symbol 3 times at a natural, comfortable pace to establish your baseline device rhythm.
+    <div class="space-y-6 text-center py-4 animate-fadeIn">
+      <span class="act-badge">Device Check · رہنمائی</span>
+      <h2 class="text-2xl font-serif text-[var(--text-primary)]">Screen & Rhythm Check</h2>
+      <p class="text-xs text-[var(--text-secondary)] max-w-md mx-auto leading-relaxed">
+        Please tap or click the center circle 3 times at a natural, comfortable pace to check your device.
       </p>
 
       <div class="py-8 flex justify-center">
@@ -621,8 +621,8 @@ function renderWarmup(app) {
         </button>
       </div>
 
-      <div id="warmupStatus" class="text-xs text-[var(--text-secondary)] tracking-wider uppercase">
-        Waiting for first tap...
+      <div id="warmupStatus" class="text-xs text-[var(--text-secondary)] tracking-wider uppercase font-mono">
+        Waiting for tap 1 of 3...
       </div>
     </div>
   `;
@@ -634,9 +634,12 @@ function renderWarmup(app) {
     taps.push(performance.now());
     const count = taps.length;
     btn.textContent = `Tap (${count}/3)`;
-    status.textContent = `Registered tap ${count} of 3`;
+    status.textContent = `Recorded tap ${count} of 3`;
 
     if (count >= 3) {
+      btn.setAttribute('disabled', 'true');
+      btn.classList.add('opacity-50');
+
       const latencies = [taps[1] - taps[0], taps[2] - taps[1]];
       const avgLatency = (latencies[0] + latencies[1]) / 2;
       const readingDwell = performance.now() - warmupStartTime;
@@ -657,19 +660,53 @@ function renderWarmup(app) {
       }
 
       logEvent('warmup', 'warmup_completed', { avgLatency, readingDwell });
-      
-      // Load Public SJT payload
-      try {
-        const sjtResp = await apiFetch('/recruit/sjt/public');
-        const sjtData = await sjtResp.json();
-        state.sjtScenarios = sjtData.scenarios || [];
-        state.currentSjtIndex = 0;
-        state.screen = 'sjt';
-        saveLocalState();
-        renderScreen();
-      } catch (err) {
-        console.error('Failed to load SJT payload:', err);
+
+      // Load Public SJT payload with clear loading state and retry resilience
+      async function loadSjtWithRetry() {
+        app.innerHTML = `
+          <div class="space-y-6 text-center py-16 animate-fadeIn">
+            <div class="w-8 h-8 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-3" style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
+            <h2 class="text-xl font-serif text-[var(--text-primary)]">Loading Scenarios...</h2>
+            <p class="text-xs text-[var(--text-secondary)] max-w-sm mx-auto leading-relaxed">
+              Connecting to the assessment server. This may take a few moments if starting from cold.
+            </p>
+          </div>
+        `;
+
+        try {
+          const sjtResp = await apiFetch('/recruit/sjt/public');
+          if (!sjtResp || !sjtResp.ok) {
+            throw new Error(sjtResp ? `Server returned HTTP ${sjtResp.status}` : 'Network timeout');
+          }
+          const sjtData = await sjtResp.json();
+          state.sjtScenarios = sjtData.scenarios || [];
+          state.currentSjtIndex = 0;
+          state.screen = 'sjt';
+          saveLocalState();
+          renderScreen();
+        } catch (err) {
+          console.warn('Failed to load SJT payload:', err);
+          app.innerHTML = `
+            <div class="space-y-6 text-center py-12 animate-fadeIn">
+              <div class="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto text-xl font-serif">!</div>
+              <h2 class="text-xl font-serif text-[var(--text-primary)]">Connection Notice</h2>
+              <p class="text-xs text-[var(--text-secondary)] max-w-sm mx-auto leading-relaxed">
+                The server is taking longer than expected to respond. Your device check is safely saved.
+              </p>
+              <div class="pt-2">
+                <button id="retrySjtLoadBtn" class="min-h-[44px] px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs">
+                  Retry Connection &rarr;
+                </button>
+              </div>
+            </div>
+          `;
+          document.getElementById('retrySjtLoadBtn')?.addEventListener('click', () => {
+            loadSjtWithRetry();
+          });
+        }
       }
+
+      loadSjtWithRetry();
     }
   });
 }
@@ -694,38 +731,48 @@ function renderSJT(app, progressBarFill) {
   const selectedOptId = state.sjtResponses[scenario.id] || null;
 
   const optionsHtml = scenario.options.map(opt => `
-    <div class="option-card ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button">
-      <span class="font-serif text-sm font-semibold text-[var(--accent-gold)]">${opt.id.slice(-1)}.</span>
-      <span class="text-sm text-[var(--text-primary)] leading-relaxed">${opt.text}</span>
+    <div class="option-card min-h-[48px] ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button" aria-label="Option ${opt.id.slice(-1)}">
+      <span class="font-serif text-sm font-semibold text-[var(--accent-gold)] shrink-0">${opt.id.slice(-1)}.</span>
+      <span class="text-xs sm:text-sm text-[var(--text-primary)] leading-relaxed">${opt.text}</span>
     </div>
   `).join('');
 
   app.innerHTML = `
-    <div class="space-y-6">
-      <div class="border-b border-[var(--grid-border)] pb-3 flex justify-between items-end">
+    <div class="space-y-5 animate-fadeIn">
+      <!-- Top Context and Step -->
+      <div class="border-b border-[var(--grid-border)] pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-1">
         <div>
           <span class="act-badge">Act ${scenario.act}: ${scenario.act_title_en}</span>
           <span class="act-title-ur font-serif">${scenario.act_title_ur || ''}</span>
-          <h2 class="text-2xl font-serif text-[var(--text-primary)]">Scenario ${scenario.id}</h2>
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">Scenario ${current} of ${total}</h2>
         </div>
-        <div class="text-xs text-[var(--text-secondary)] uppercase tracking-wider">
-          Scenario ${current} of ${total}
+        <div class="text-[11px] sm:text-xs text-[var(--text-secondary)] uppercase tracking-wider font-mono">
+          Question ${current} / ${total}
         </div>
       </div>
 
-      <div class="text-sm text-[var(--text-primary)] leading-relaxed bg-[#faf8f5] p-5 border border-[var(--grid-border)]">
+      <!-- YOUR TASK -->
+      <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-xs text-xs font-serif text-[var(--text-primary)] flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block shrink-0"></span>
+        <span><strong>Your Task:</strong> Read the situation below and choose what you would do.</span>
+      </div>
+
+      <!-- SITUATION -->
+      <div class="scenario-text text-xs sm:text-sm text-[var(--text-primary)] leading-relaxed bg-[#faf8f5] p-4 sm:p-5 border border-[var(--grid-border)] rounded-xs">
         ${scenario.setup}
       </div>
 
-      <div class="space-y-3">
-        <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)]">Choose the course of action you would most naturally take:</div>
+      <!-- YOUR CHOICE -->
+      <div class="space-y-2.5">
+        <div class="text-[11px] uppercase tracking-wider text-[var(--text-secondary)] font-medium">Choose one response:</div>
         ${optionsHtml}
       </div>
 
-      <div class="pt-4 flex justify-between items-center border-t border-[var(--grid-border)]">
-        <span class="text-xs text-[var(--text-secondary)]">Keyboard: Press 1–4 to choose</span>
-        <button id="nextSjtBtn" ${selectedOptId ? '' : 'disabled'} class="px-6 py-2 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 disabled:hover:bg-[var(--text-primary)] transition">
-          ${current === total ? 'Complete SJT &rarr;' : 'Next Scenario &rarr;'}
+      <!-- PRIMARY ACTION -->
+      <div class="pt-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-[var(--grid-border)]">
+        <span class="text-xs text-[var(--text-secondary)] order-2 sm:order-1 font-mono text-[11px]">Tip: Press keys 1–4 to choose</span>
+        <button id="nextSjtBtn" ${selectedOptId ? '' : 'disabled'} class="w-full sm:w-auto min-h-[44px] px-7 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 disabled:hover:bg-[var(--text-primary)] transition shadow-sm rounded-xs order-1 sm:order-2">
+          ${current === total ? 'Complete Part 1 &rarr;' : 'Next Scenario &rarr;'}
         </button>
       </div>
     </div>
@@ -766,14 +813,28 @@ function renderSJT(app, progressBarFill) {
 
 async function submitSjtAndProceed() {
   window.onkeydown = null;
+  const app = document.getElementById('recruitApp');
+  if (app) {
+    app.innerHTML = `
+      <div class="space-y-6 text-center py-16 animate-fadeIn">
+        <div class="w-8 h-8 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-3" style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
+        <h2 class="text-xl font-serif text-[var(--text-primary)]">Saving Judgments...</h2>
+        <p class="text-xs text-[var(--text-secondary)]">Recording your situation judgments to your session profile.</p>
+      </div>
+    `;
+  }
+
   try {
-    await apiFetch('/recruit/sjt/submit', {
+    const res = await apiFetch('/recruit/sjt/submit', {
       method: 'POST',
       body: JSON.stringify({
         session_id: state.sessionId,
         responses: state.sjtResponses
       })
     });
+    if (!res || !res.ok) {
+      throw new Error(res ? `Server returned HTTP ${res.status}` : 'Connection failed');
+    }
     state.screen = 'games';
     state.currentWorldIndex = 0;
     state.currentMiniGameIndex = 0;
@@ -781,7 +842,26 @@ async function submitSjtAndProceed() {
     saveLocalState();
     renderScreen();
   } catch (err) {
-    console.error('SJT submit error:', err);
+    console.warn('SJT submit error:', err);
+    if (app) {
+      app.innerHTML = `
+        <div class="space-y-6 text-center py-12 animate-fadeIn">
+          <div class="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto text-xl font-serif">!</div>
+          <h2 class="text-xl font-serif text-[var(--text-primary)]">Submission Notice</h2>
+          <p class="text-xs text-[var(--text-secondary)] max-w-sm mx-auto leading-relaxed">
+            Could not record responses due to a temporary server connection delay. Your choices are safely kept.
+          </p>
+          <div class="pt-2">
+            <button id="retrySjtSubmitBtn" class="min-h-[44px] px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs">
+              Retry Submission &rarr;
+            </button>
+          </div>
+        </div>
+      `;
+      document.getElementById('retrySjtSubmitBtn')?.addEventListener('click', () => {
+        submitSjtAndProceed();
+      });
+    }
   }
 }
 
