@@ -152,26 +152,58 @@ def _extract_A1(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeatu
 # --------------------------------------------------------------------------
 def _extract_A2(session_id: str, events: List[DBTelemetryEvent]) -> List[DBFeature]:
     decision_events = [e for e in events if e.action in ["decision_logged", "exception_resolved"]]
-    obs_count = len(decision_events)
 
-    correct = 0
+    genuine_stim_seen = set()
+    all_stim_seen = set()
+    correct_count = 0
+    total_evaluated = 0
+
     for e in decision_events:
         data = json.loads(e.data_json) if e.data_json else {}
         stim_id = data.get("stimulus_id")
+        trial_key = stim_id if stim_id else (f"trial_{data['trial_index']}" if "trial_index" in data else None)
         action_id = data.get("action_id") or data.get("action") or data.get("chosen_action")
-        if stim_id and action_id:
-            stim = get_stimulus_ground_truth("A2", stim_id)
-            if stim and stim.get("expected_action"):
-                if action_id == stim.get("expected_action"):
-                    correct += 1
-            elif data.get("is_correct", False):
-                correct += 1
-        elif data.get("is_correct", True):
-            correct += 1
 
-    precision = (correct / obs_count) if obs_count > 0 else 1.0
+        if trial_key:
+            if trial_key in all_stim_seen:
+                continue
+            all_stim_seen.add(trial_key)
 
-    # Strictly require minimum 3 observations; N=1 and N=2 are INSUFFICIENT
+            if stim_id:
+                stim = get_stimulus_ground_truth("A2", stim_id)
+                if stim:
+                    if stim.get("condition_type") == "true_exception":
+                        genuine_stim_seen.add(stim_id)
+
+                    expected = stim.get("expected_action")
+                    is_correct = (action_id == expected) if (expected and action_id) else data.get("is_correct", False)
+                    if is_correct:
+                        correct_count += 1
+                    total_evaluated += 1
+                else:
+                    if data.get("is_correct", False):
+                        correct_count += 1
+                    total_evaluated += 1
+            else:
+                total_evaluated += 1
+                if data.get("is_correct", True):
+                    correct_count += 1
+        else:
+            total_evaluated += 1
+            if data.get("is_correct", True):
+                correct_count += 1
+
+    # Invariant: clean controls do not count toward N.
+    # N is the count of genuine exception opportunities (>= 3).
+    # For synthetic tests without stimulus_id, fall back to total_evaluated.
+    if genuine_stim_seen or all_stim_seen:
+        obs_count = len(genuine_stim_seen) if genuine_stim_seen else len(all_stim_seen)
+    else:
+        obs_count = total_evaluated
+
+    precision = (correct_count / total_evaluated) if total_evaluated > 0 else 1.0
+
+    # Strictly require minimum 3 genuine exception observations; N=1 and N=2 are INSUFFICIENT
     valid = obs_count >= 3
 
     return [

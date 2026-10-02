@@ -63,48 +63,6 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
       title: 'Historical Tarikh Chronicle of Kashmir Artists',
       rule_prompt: 'Filing Rule: Classify by Genre',
       tags: ['Genre: Chronicle', 'Tarikh History', 'Biographical Record']
-    },
-    {
-      id: 'DOC_06',
-      title: '19th-Century Calligraphic Diwan Supplement (1876)',
-      rule_prompt: 'Filing Rule: Classify by Period',
-      tags: ['Year: 1876', '19th Century', 'Manuscript Diwan', 'Illuminated Border']
-    },
-    {
-      id: 'DOC_07',
-      title: 'Mathnawi Rhymed Couplets Anthology',
-      rule_prompt: 'Filing Rule: Classify by Genre',
-      tags: ['Genre: Poetry', 'Mathnawi Verse', 'Poetic Meters']
-    },
-    {
-      id: 'DOC_08',
-      title: 'Mid-20th-Century Cultural Congress Charter (1948)',
-      rule_prompt: 'Filing Rule: Classify by Period',
-      tags: ['Year: 1948', '20th Century', 'Official Charter', 'Archival Record']
-    },
-    {
-      id: 'DOC_09',
-      title: 'Waqiat-i-Kashmir Historical Annals',
-      rule_prompt: 'Filing Rule: Classify by Genre',
-      tags: ['Genre: Chronicle', 'Historical Narrative', 'Atelier Register']
-    },
-    {
-      id: 'DOC_10',
-      title: 'Mahmud Gami Kashmiri Shireen-Khusraw Folio',
-      rule_prompt: 'Filing Rule: Classify by Language',
-      tags: ['Language: Kashmiri', 'Vernacular Verse', 'Sufi Couplets']
-    },
-    {
-      id: 'DOC_11',
-      title: 'Late 19th-Century Silk Route Revenue Survey (1885)',
-      rule_prompt: 'Filing Rule: Classify by Period',
-      tags: ['Year: 1885', '19th Century', 'Trade Ledger', 'Accession Seals']
-    },
-    {
-      id: 'DOC_12',
-      title: 'Rasul Mir Romantic Ghazal Folio',
-      rule_prompt: 'Filing Rule: Classify by Genre',
-      tags: ['Genre: Poetry', 'Lyric Ghazal', 'Calligraphic Rubrication']
     }
   ];
 
@@ -120,7 +78,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader('Part 1: The Manuscript Folios', 'Preserving and organizing historical folios and objects across 12 rule-based classification trials.')}
+          ${renderHeader('Part 1: The Manuscript Folios', 'Preserving and organizing historical folios and objects across 5 rule-based classification trials.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`,
             goal: 'Organize each historical item into its designated archive shelf based on archival classification rules.',
@@ -273,6 +231,12 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
       title: 'Disbound Manuscript Folio with Pagination Jump',
       anomaly_description: 'Binding threads severed. Margin numbering skips from Folio 14 directly to Folio 19 with missing text catchword.',
       type_note: 'Structural Discrepancy & Missing Catchword'
+    },
+    {
+      stimulus_id: 'EXC_04',
+      title: 'Illustrated Shahnama Leaf with Split Binding Accession',
+      anomaly_description: 'Double folio split across signature gutter with inverted seal impressions and mismatched accession notation.',
+      type_note: 'Binding Rupture & Inverted Accession Seal'
     }
   ];
 
@@ -301,14 +265,14 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader('Part 2: The Fragile Leaf', 'Handling archival folios across 3 distinct accession decisions.')}
+          ${renderHeader('Part 2: The Fragile Leaf', 'Handling archival folios across 4 distinct accession decisions.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`,
-            goal: 'Evaluate the physical condition of 3 folios and decide whether to flag an exception, file standardly, or hold.',
+            goal: 'Evaluate the physical condition of 4 folios and decide whether to flag an exception, file standardly, or hold.',
             steps: [
               'Review the condition notes and physical examination summary for each folio.',
               'Identify whether an anomaly or damage requires specialized conservation.',
-              'Select your archival handling recommendation across all 3 trials.'
+              'Select your archival handling recommendation across all 4 trials.'
             ]
           })}
         </div>
@@ -328,7 +292,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
       <div class="animate-fadeIn">
         <div class="flex justify-between items-center mb-2">
           ${renderHeader('Part 2: The Fragile Leaf', 'Examine the folio condition and select your archival handling recommendation.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Item ${currentTrial + 1} of 3</span>
+          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Item ${currentTrial + 1} of 4</span>
         </div>
 
         <div class="p-6 bg-[#faf8f5] border border-[var(--grid-border)] mb-6 text-center shadow-xs rounded-xs">
@@ -356,7 +320,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
 
         <div class="flex justify-end">
           <button id="a2ConfirmBtn" ${chosenAction ? '' : 'disabled'} class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs">
-            ${currentTrial < 2 ? 'Confirm Handling Decision &rarr;' : 'Finish Exception Evaluation &rarr;'}
+            ${currentTrial < 3 ? 'Confirm Handling Decision &rarr;' : 'Finish Exception Evaluation &rarr;'}
           </button>
         </div>
       </div>
@@ -401,14 +365,14 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
         task_def_version: '1.0'
       });
 
-      if (currentTrial < 2) {
+      if (currentTrial < 3) {
         currentTrial++;
         chosenAction = null;
         render();
       } else {
         onComplete({
           mini_game: 'A2',
-          observations_count: 3
+          observations_count: 4
         });
       }
     });
@@ -457,24 +421,6 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
       title: 'Placard 5: Exhibition Opening Notice',
       text: 'Exhibition Opening Reception: February 31st, 2026 | Location: Main Pavilion',
       note: 'Public Schedule Verification'
-    },
-    {
-      id: 'REC_06',
-      title: 'Placard 6: Hand-Forged Brass Book Clasp',
-      text: 'Artifact: Hand-Forged Brass Bookbinding Clasp | Provenance: Srinagar Royal Atelier | Era: 1880',
-      note: 'Hardware Object Verification'
-    },
-    {
-      id: 'REC_07',
-      title: 'Placard 7: Silk Sash Exhibition Label',
-      text: 'Accession: AR-1904 | Medium: Silk & Silver Zari | Cataloger Notes: Discrepancy in accession serial numbering [Duplicate Entry]',
-      note: 'Accession Number Verification'
-    },
-    {
-      id: 'REC_08',
-      title: 'Placard 8: Valley Calligraphers Guild Roll',
-      text: 'Roll of Scribes: 14 Registered Master Scribes | Inscription Language: Persian Nasta\'liq | Status: Verified Complete',
-      note: 'Guild Roll Verification'
     }
   ];
 
@@ -482,10 +428,10 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader('Part 3: The Exhibition Ledger', 'Reviewing 8 exhibition placards for typographical, factual, and omission discrepancies.')}
+          ${renderHeader('Part 3: The Exhibition Ledger', 'Reviewing 5 exhibition placards for typographical, factual, and omission discrepancies.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>`,
-            goal: 'Carefully proofread all 8 display records. Flag only those with genuine discrepancies or factual errors.',
+            goal: 'Carefully proofread all 5 display records. Flag only those with genuine discrepancies or factual errors.',
             steps: [
               'Examine each display record description in the ledger.',
               'Click or toggle the discrepancy flag on any record containing concrete errors.',
@@ -507,8 +453,8 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
     app.innerHTML = `
       <div class="animate-fadeIn">
         <div class="flex justify-between items-center mb-2">
-          ${renderHeader('Part 3: The Exhibition Ledger', 'Proofread all 8 exhibition records. Flag any record that contains a discrepancy.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">8 Records</span>
+          ${renderHeader('Part 3: The Exhibition Ledger', 'Proofread all 5 exhibition records. Flag any record that contains a discrepancy.')}
+          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">5 Records</span>
         </div>
 
         <div class="space-y-3.5 mb-6">

@@ -135,7 +135,7 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
         # Game-specific derivation
         desc_text = None
         opp_count = 0
-        gate_status = "DERIVED"
+        gate_status = "RECORDED"
 
         if gid == "F1":
             submits = [e for e in evs if e.action in ["trial_submit", "dialogue_selected"]]
@@ -155,27 +155,40 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
         elif gid == "A1":
             fileds = [e for e in evs if e.action in ["document_filed", "item_sorted"]]
             opp_count = len(fileds)
-            desc_text = f"completed {opp_count} of 12 classification items"
+            desc_text = f"completed {opp_count} of 5 classification items"
 
         elif gid == "A2":
-            # Strict A2 Gate: N<3 -> INSUFFICIENT
-            decs = [e for e in evs if e.action in ["decision_logged", "exception_resolved"]]
-            opp_count = len(decs)
+            # Strict A2 Gate: genuine exceptions < 3 -> INSUFFICIENT
+            decs = [e for e in evs if e.action == "decision_logged"]
+            if not decs:
+                decs = [e for e in evs if e.action == "exception_resolved"]
+            seen_stim = set()
+            genuine_stim = set()
+            for e in decs:
+                d = json.loads(e.data_json) if e.data_json else {}
+                sid = d.get("stimulus_id")
+                if sid and sid not in seen_stim:
+                    seen_stim.add(sid)
+                    stim = get_stimulus_ground_truth("A2", sid)
+                    if stim and stim.get("condition_type") == "true_exception":
+                        genuine_stim.add(sid)
+
+            opp_count = len(genuine_stim) if seen_stim else len(decs)
             if opp_count < 3:
                 gate_status = "INSUFFICIENT"
                 desc_text = "INSUFFICIENT"
             else:
-                desc_text = f"handled {opp_count} of 3 exceptions as defined"
+                desc_text = f"handled {min(opp_count, 3)} of 3 exceptions as defined"
 
         elif gid == "A3":
             res = reconstruct_a3_inspection_state(evs)
             opp_count = res.get("inspected_count", 0)
-            desc_text = f"inspected {res.get('inspected_count', 0)} of 8 records; flagged {res.get('flagged_count', 0)} discrepancies"
+            desc_text = f"inspected {res.get('inspected_count', 0)} of 5 records; flagged {res.get('flagged_count', 0)} discrepancies"
 
         elif gid == "C1":
             res = reconstruct_c1_allocation_state(evs)
             opp_count = len(res.get("rounds", {}))
-            desc_text = f"completed {opp_count} of 4 resource allocation rounds; {NEUTRAL_TAG}"
+            desc_text = f"completed {opp_count} of 3 resource allocation rounds; {NEUTRAL_TAG}"
 
         elif gid == "C2":
             confirms = [e for e in evs if e.action == "placement_confirmed"]
@@ -194,47 +207,47 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
 
         elif gid == "E2":
             res = reconstruct_e2_recovery_state(evs)
-            opp_count = res.get("total_sequences_completed", 0)
+            opp_count = res.get("completed_count", res.get("total_sequences_completed", 0))
             desc_text = f"completed {opp_count} of 4 sequences across 3 disruptions and 1 control; {NEUTRAL_TAG}"
 
         elif gid == "E3":
             res = reconstruct_e3_adaptation_state(evs)
-            opp_count = res.get("transitions_completed", 0)
+            opp_count = res.get("completed_count", res.get("transitions_completed", 0))
             desc_text = f"completed {opp_count} of 3 environmental condition transitions"
 
         elif gid == "Q1":
             res = reconstruct_q1_information_seeking_state(evs)
-            opp_count = res.get("optional_alcoves_inspected", 0)
+            opp_count = res.get("optional_alcoves_inspected", res.get("useful_resources_viewed_count", 0) + res.get("control_resources_viewed_count", 0))
             desc_text = f"explored {opp_count} of 4 optional alcoves; {NEUTRAL_TAG}"
 
         elif gid == "Q2":
             res = reconstruct_q2_investigation_state(evs)
-            opp_count = res.get("optional_clues_inspected", 0)
+            opp_count = res.get("total_clues_inspected", res.get("optional_clues_inspected", 0))
             desc_text = f"inspected {opp_count} optional investigative clues across 4 artifacts; {NEUTRAL_TAG}"
 
         elif gid == "Q3":
             res = reconstruct_q3_integration_state(evs)
-            opp_count = res.get("optional_dossiers_requested", 0)
+            opp_count = res.get("context_retrieved_count", res.get("optional_dossiers_requested", 0))
             desc_text = f"retrieved {opp_count} optional dossiers across 3 synthesis decisions; {NEUTRAL_TAG}"
 
         elif gid == "CR1":
             res = reconstruct_cr1_construction_state(evs)
-            opp_count = res.get("total_elements_placed", 0)
+            opp_count = res.get("total_elements_placed", res.get("valid_solution_count", res.get("completed_count", 0)))
             desc_text = f"assembled 3 compositions using {opp_count} distinct elements; {NEUTRAL_TAG}"
 
         elif gid == "CR2":
             res = reconstruct_cr2_reframing_state(evs)
-            opp_count = res.get("total_reframing_adjustments", 0)
+            opp_count = res.get("strategy_revised_count", res.get("total_reframing_adjustments", 0))
             desc_text = f"completed 3 constraint shifts with {opp_count} reframing adjustments; {NEUTRAL_TAG}"
 
         elif gid == "CR3":
             res = reconstruct_cr3_affordance_state(evs)
-            opp_count = res.get("total_affordances_tested", 0)
+            opp_count = res.get("total_affordances_tested", res.get("aligned_count", res.get("completed_count", 0)))
             desc_text = f"tested {opp_count} tool affordances across 3 fixture problems; {NEUTRAL_TAG}"
 
         elif gid == "M1":
             res = reconstruct_m1_diligence_state(evs)
-            opp_count = res.get("units_completed", 0)
+            opp_count = res.get("completed_count", res.get("units_completed", 0))
             desc_text = f"completed {opp_count} of 3 required verification units; {NEUTRAL_TAG}"
 
         elif gid == "M2":

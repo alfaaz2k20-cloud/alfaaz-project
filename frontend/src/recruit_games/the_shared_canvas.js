@@ -53,16 +53,7 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
     },
     {
       stimulus_id: 'C1_R3',
-      title: 'Round 3: Partner Surplus Control',
-      description: 'Your partner already has an excess of materials (8 tiles) for their section, while you have 5 tiles.',
-      partner_initial: 8,
-      user_initial: 5,
-      default_transfer: 0,
-      context_note: 'Surplus / No-Need Control'
-    },
-    {
-      stimulus_id: 'C1_R4',
-      title: 'Round 4: Self-Station Ceramic Shortage',
+      title: 'Round 3: Self-Station Ceramic Shortage',
       description: 'Your workstation has a critical deficit (3 tiles; quota requires 6), while your partner has 7 tiles (requires 4). Over-sharing deprives your station and halts assembly; retaining resources is appropriate.',
       partner_initial: 7,
       user_initial: 3,
@@ -75,14 +66,14 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
     if (inTutorial) {
       app.innerHTML = `
         <div>
-          ${renderHeader("Part 1: The Artisan's Basket", 'Coordinating ceramic mosaic supplies with your workshop partner across 4 distinct inventory situations.')}
+          ${renderHeader("Part 1: The Artisan's Basket", 'Coordinating ceramic mosaic supplies with your workshop partner across 3 distinct inventory situations.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>`,
             goal: 'Evaluate the inventory needs in each round and decide how many tiles (if any) to transfer from your basket.',
             steps: [
               'Check both workstations to see if materials are in deficit, balanced, or surplus.',
               'Use the + / - buttons to set your transfer count.',
-              'Confirm your distribution for each of the 4 rounds.'
+              'Confirm your distribution for each of the 3 rounds.'
             ]
           })}
         </div>
@@ -105,7 +96,7 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
       <div class="animate-fadeIn">
         <div class="flex justify-between items-center mb-2">
           ${renderHeader("Part 1: The Artisan's Basket", 'Review workstation requirements and allocate tiles appropriately.')}
-          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Round ${currentRound + 1} of 4</span>
+          <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-mono font-medium">Round ${currentRound + 1} of 3</span>
         </div>
 
         <!-- Situation Banner -->
@@ -147,7 +138,7 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
 
         <div class="flex justify-end">
           <button type="button" id="confirmTransferBtn" class="px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs">
-            ${currentRound < 3 ? 'Confirm Allocation &rarr;' : 'Finish Resource Distribution &rarr;'}
+            ${currentRound < 2 ? 'Confirm Allocation &rarr;' : 'Finish Resource Distribution &rarr;'}
           </button>
         </div>
       </div>
@@ -193,7 +184,7 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
         task_def_version: '1.0'
       });
 
-      if (currentRound < 3) {
+      if (currentRound < 2) {
         currentRound++;
         transferCount = 0;
         logRoundPresented();
@@ -201,7 +192,7 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
       } else {
         onComplete({
           mini_game: 'C1',
-          observations_count: 4
+          observations_count: 3
         });
       }
     });

@@ -129,7 +129,7 @@
             },
             {
               "id": "support_volume",
-              "label": "Support Volume (Maintain baseline studio boost \u2014 causes severe echo clash)",
+              "label": "Support Volume (Maintain baseline studio boost — causes severe echo clash)",
               "is_appropriate": false
             },
             {
@@ -170,7 +170,7 @@
             },
             {
               "id": "preserve_natural_intimacy",
-              "label": "Preserve Natural Intimacy (Leave whisper unboosted \u2014 completely drowned out)",
+              "label": "Preserve Natural Intimacy (Leave whisper unboosted — completely drowned out)",
               "is_appropriate": false
             },
             {
@@ -228,7 +228,7 @@
       "world_id": "W2",
       "parameter_id": "conscientiousness",
       "facet": "rule_governed_classification",
-      "total_trials": 12,
+      "total_trials": 5,
       "trials": [
         {
           "stimulus_id": "DOC_01",
@@ -254,41 +254,6 @@
           "stimulus_id": "DOC_05",
           "rule": "GENRE",
           "target_folder": "chronicle"
-        },
-        {
-          "stimulus_id": "DOC_06",
-          "rule": "PERIOD",
-          "target_folder": "19th_century"
-        },
-        {
-          "stimulus_id": "DOC_07",
-          "rule": "GENRE",
-          "target_folder": "poetry"
-        },
-        {
-          "stimulus_id": "DOC_08",
-          "rule": "PERIOD",
-          "target_folder": "20th_century"
-        },
-        {
-          "stimulus_id": "DOC_09",
-          "rule": "GENRE",
-          "target_folder": "chronicle"
-        },
-        {
-          "stimulus_id": "DOC_10",
-          "rule": "LANGUAGE",
-          "target_folder": "kashmiri"
-        },
-        {
-          "stimulus_id": "DOC_11",
-          "rule": "PERIOD",
-          "target_folder": "19th_century"
-        },
-        {
-          "stimulus_id": "DOC_12",
-          "rule": "GENRE",
-          "target_folder": "poetry"
         }
       ]
     },
@@ -297,7 +262,7 @@
       "world_id": "W2",
       "parameter_id": "conscientiousness",
       "facet": "exception_handling",
-      "total_trials": 3,
+      "total_trials": 4,
       "trials": [
         {
           "stimulus_id": "EXC_01",
@@ -316,6 +281,12 @@
           "condition_id": "catalog_anomaly_pagination",
           "condition_type": "true_exception",
           "expected_action": "flag_exception"
+        },
+        {
+          "stimulus_id": "EXC_04",
+          "condition_id": "catalog_anomaly_binding_split",
+          "condition_type": "true_exception",
+          "expected_action": "flag_exception"
         }
       ]
     },
@@ -324,7 +295,7 @@
       "world_id": "W2",
       "parameter_id": "conscientiousness",
       "facet": "proofreading_vigilance",
-      "total_trials": 8,
+      "total_trials": 5,
       "trials": [
         {
           "stimulus_id": "REC_01",
@@ -350,21 +321,6 @@
           "stimulus_id": "REC_05",
           "has_error": true,
           "error_type": "factual_error"
-        },
-        {
-          "stimulus_id": "REC_06",
-          "has_error": false,
-          "error_type": "clean_control"
-        },
-        {
-          "stimulus_id": "REC_07",
-          "has_error": true,
-          "error_type": "accession_discrepancy"
-        },
-        {
-          "stimulus_id": "REC_08",
-          "has_error": false,
-          "error_type": "clean_control"
         }
       ]
     },
@@ -373,7 +329,7 @@
       "world_id": "W3",
       "parameter_id": "collaborative_spirit",
       "facet": "need_sensitive_resource_sharing",
-      "total_trials": 4,
+      "total_trials": 3,
       "trials": [
         {
           "stimulus_id": "C1_R1",
@@ -391,13 +347,6 @@
         },
         {
           "stimulus_id": "C1_R3",
-          "condition_id": "partner_surplus",
-          "condition_type": "no_need_control",
-          "partner_state": "partner_excess_materials",
-          "expected_action": "retain_resources"
-        },
-        {
-          "stimulus_id": "C1_R4",
           "condition_id": "self_deficit_retain",
           "condition_type": "retain_needed",
           "partner_state": "partner_holding_ample_tiles_user_critical_shortage",

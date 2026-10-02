@@ -32,36 +32,37 @@ class TestStep2W2Archive(unittest.TestCase):
         self.db.close()
 
     def test_w2_task_definitions_golden_fixture(self):
-        """Verify task definitions for A1 (12 items), A2 (3 exceptions), A3 (8 QC records)."""
+        """Verify task definitions for A1 (5 items), A2 (4 items: 3 exceptions + 1 control), A3 (5 QC records)."""
         defs = get_task_definitions()
         games = defs.get("games", {})
 
-        # A1: 12 items
+        # A1: 5 items
         self.assertIn("A1", games)
         a1 = games["A1"]
-        self.assertEqual(a1.get("total_trials"), 12)
-        self.assertEqual(len(a1.get("trials", [])), 12)
-        expected_a1_stims = [f"DOC_{i:02d}" for i in range(1, 13)]
+        self.assertEqual(a1.get("total_trials"), 5)
+        self.assertEqual(len(a1.get("trials", [])), 5)
+        expected_a1_stims = [f"DOC_{i:02d}" for i in range(1, 6)]
         self.assertEqual([t["stimulus_id"] for t in a1["trials"]], expected_a1_stims)
 
-        # A2: 3 trials
+        # A2: 4 trials (3 true exceptions, 1 clean control)
         self.assertIn("A2", games)
         a2 = games["A2"]
-        self.assertEqual(a2.get("total_trials"), 3)
-        self.assertEqual(len(a2.get("trials", [])), 3)
+        self.assertEqual(a2.get("total_trials"), 4)
+        self.assertEqual(len(a2.get("trials", [])), 4)
         self.assertEqual(a2["trials"][0]["condition_type"], "true_exception")
         self.assertEqual(a2["trials"][1]["condition_type"], "clean_control")
         self.assertEqual(a2["trials"][2]["condition_type"], "true_exception")
+        self.assertEqual(a2["trials"][3]["condition_type"], "true_exception")
 
-        # A3: 8 records (4 error, 4 clean control)
+        # A3: 5 records (3 error, 2 clean control)
         self.assertIn("A3", games)
         a3 = games["A3"]
-        self.assertEqual(a3.get("total_trials"), 8)
-        self.assertEqual(len(a3.get("trials", [])), 8)
+        self.assertEqual(a3.get("total_trials"), 5)
+        self.assertEqual(len(a3.get("trials", [])), 5)
         err_counts = sum(1 for t in a3["trials"] if t.get("has_error"))
         clean_counts = sum(1 for t in a3["trials"] if not t.get("has_error"))
-        self.assertEqual(err_counts, 4)
-        self.assertEqual(clean_counts, 4)
+        self.assertEqual(err_counts, 3)
+        self.assertEqual(clean_counts, 2)
 
     def test_a1_server_ground_truth_scoring_without_client_correctness(self):
         """A1 raw telemetry has choice + stimulus_id; server evaluates correctness strictly via ground truth."""
@@ -152,7 +153,7 @@ class TestStep2W2Archive(unittest.TestCase):
         self.assertFalse(f_n2["exception_flagging_precision"].valid, "N=2 must not be valid")
         self.assertIn("INSUFFICIENT_OBSERVATIONS", json.loads(f_n2["exception_flagging_precision"].flags_json))
 
-        # 3. Test N=3
+        # 3. Test N=3 genuine exceptions (EXC_01, EXC_02, EXC_03, EXC_04 -> 3 genuine + 1 control)
         sess_n3 = str(uuid.uuid4())
         self.db.add(DBSession(session_id=sess_n3, status="GAMES"))
         self.db.add_all([
@@ -170,6 +171,11 @@ class TestStep2W2Archive(unittest.TestCase):
                 session_id=sess_n3, seq=3, segment_id=1, t_ms=3000.0,
                 screen="game", mini_game="A2", action="decision_logged", task_def_version="1.0",
                 data_json=json.dumps({"stimulus_id": "EXC_03", "action_id": "flag_exception"})
+            ),
+            DBTelemetryEvent(
+                session_id=sess_n3, seq=4, segment_id=1, t_ms=4000.0,
+                screen="game", mini_game="A2", action="decision_logged", task_def_version="1.0",
+                data_json=json.dumps({"stimulus_id": "EXC_04", "action_id": "flag_exception"})
             )
         ])
         self.db.commit()
@@ -202,8 +208,8 @@ class TestStep2W2Archive(unittest.TestCase):
         # 1. Ingest primitive events: 5 inspected records, 3 toggled discrepancies, verification finalized
         primitive_events = []
         seq = 10
-        # Candidate inspects all 8 records
-        for i in range(1, 9):
+        # Candidate inspects all 5 records
+        for i in range(1, 6):
             primitive_events.append({
                 "seq": seq,
                 "screen": "game",
@@ -215,8 +221,8 @@ class TestStep2W2Archive(unittest.TestCase):
             })
             seq += 1
 
-        # Candidate flags discrepancy on REC_01, REC_03, REC_05, REC_07 (true error records in task definitions)
-        for i in [1, 3, 5, 7]:
+        # Candidate flags discrepancy on REC_01, REC_03, REC_05 (true error records in task definitions)
+        for i in [1, 3, 5]:
             primitive_events.append({
                 "seq": seq,
                 "screen": "game",
@@ -250,10 +256,10 @@ class TestStep2W2Archive(unittest.TestCase):
         ).all()
         reconstruction = reconstruct_a3_inspection_state(stored_events)
 
-        self.assertEqual(reconstruction["inspected_count"], 8)
-        self.assertEqual(reconstruction["flagged_count"], 4)
-        self.assertEqual(reconstruction["flagged_records"], ["REC_01", "REC_03", "REC_05", "REC_07"])
-        self.assertEqual(reconstruction["detection_accuracy"], 1.0) # 4 true errors caught + 4 clean controls untouched = 8/8
+        self.assertEqual(reconstruction["inspected_count"], 5)
+        self.assertEqual(reconstruction["flagged_count"], 3)
+        self.assertEqual(reconstruction["flagged_records"], ["REC_01", "REC_03", "REC_05"])
+        self.assertEqual(reconstruction["detection_accuracy"], 1.0) # 3 true errors caught + 2 clean controls untouched = 5/5
         self.assertTrue(reconstruction["verification_finalized"])
 
         # 3. Test that client attempting to author summary fields is stripped and flagged
