@@ -1063,7 +1063,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const F={lines:["<stro
       `,(x=document.getElementById("stopOptionalEarlyBtn"))==null||x.addEventListener("click",()=>{b="mouse",t("continuation_choice_selected",{choice:"conclude",optional_index:a,input_modality:b,task_def_version:"1.0"}),v({mini_game:"M2",observations_count:m.length+a})}),(_=document.getElementById("foldOptionalSleeveBtn"))==null||_.addEventListener("click",()=>{b="mouse",t("unit_action_performed",{stimulus_id:h.stimulus_id,unit_index:m.length+a,action_type:"assemble_sleeve",input_modality:b,task_def_version:"1.0"}),t("unit_completed",{stimulus_id:h.stimulus_id,unit_index:m.length+a,is_mandatory:!1,task_def_version:"1.0"}),a++,a<p.length?(e="choice",t("choice_presented",{trial_index:m.length+a,mandatory_completed_count:m.length,task_def_version:"1.0"}),o()):v({mini_game:"M2",observations_count:m.length+a})})}}function s(f){t("unit_presented",{stimulus_id:f.stimulus_id,unit_index:f.is_mandatory?i:m.length+a,is_mandatory:f.is_mandatory,task_def_version:"1.0"})}o()}function fe(r,n,t,v){let c=!0,e=0,i="mouse";const a=[{stimulus_id:"M3_U1",is_mandatory:!0,row_name:"Gallery Row 1: Lighting & Illumination Alignment",feedback_type:"salient"},{stimulus_id:"M3_U2",is_mandatory:!0,row_name:"Gallery Row 2: Poetry Anthologies Welcome Stand",feedback_type:"moderate"},{stimulus_id:"M3_U3",is_mandatory:!0,row_name:"Gallery Row 3: Courtyard Entry Floral Registry",feedback_type:"minimal"},{stimulus_id:"M3_U4",is_mandatory:!1,row_name:"Gallery Row 4: Auxiliary Bench Linen Inspection",feedback_type:"none"},{stimulus_id:"M3_U5",is_mandatory:!1,row_name:"Gallery Row 5: Outer Colonnade Lantern Wick Inspection",feedback_type:"none"},{stimulus_id:"M3_U6",is_mandatory:!1,row_name:"Gallery Row 6: Perimeter Garden Urn Water Check",feedback_type:"none"}],b=3;function m(){var f,u,l;if(c){r.innerHTML=`
         <div>
           ${n("Part 3: The Evening Registry","Verifying event readiness records under routine repetitive conditions.")}
-          ${C({icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>',goal:"Verify ledger rows for gallery preparation. A minimum of 3 rows is required.",steps:["Mandatory minimum: Exactly 3 ledger rows.","Once you complete 3 rows, you have satisfied the requirement.","You may conclude the activity at any time after row 3, or continue.","Stopping at the minimum is completely neutral."]})}
+          ${C({icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>',goal:"Verify ledger rows for gallery preparation. A minimum of 3 rows is required.",steps:["Mandatory minimum: Exactly 3 ledger rows.","Once you complete 3 rows, you have satisfied the requirement.","You may conclude the activity at any time after row 3, or continue. Stopping is neutral.","Feedback saliency decreases during continuation; this is an intentional part of the activity, not an error or submission state."]})}
         </div>
       `,(f=document.getElementById("startActivityBtn"))==null||f.addEventListener("click",()=>{c=!1,e=0,p(),m()});return}const o=a[e],s=e>=b;r.innerHTML=`
       <div class="animate-fadeIn">
@@ -1080,9 +1080,14 @@ import"./global-DxYxv3W5.js";/* empty css               */const F={lines:["<stro
         </div>
 
         ${s?`
-          <div class="p-3 bg-stone-50 border border-stone-200 rounded-xs text-xs text-stone-700 mb-4 flex items-center justify-between">
-            <span>You have completed the required 3 units. You may conclude at any time without penalty.</span>
-            <span class="text-[10px] font-mono text-stone-500 uppercase font-semibold">Stopping is neutral</span>
+          <div class="p-3 bg-stone-50 border border-stone-200 rounded-xs text-xs text-stone-700 mb-4 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-[var(--text-primary)]">Mandatory minimum completed (3 of 3 rows).</span>
+              <span class="text-[10px] font-mono text-stone-500 uppercase font-semibold">Stopping is neutral</span>
+            </div>
+            <p class="text-[11px] text-stone-600 leading-relaxed">
+              You may conclude the activity now, or voluntarily verify additional rows. Feedback saliency decreases during continuation; this gradual reduction is an intentional part of the activity design and does not indicate an error or submission state.
+            </p>
           </div>
         `:""}
 

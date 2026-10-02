@@ -445,8 +445,8 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
             steps: [
               'Mandatory minimum: Exactly 3 ledger rows.',
               'Once you complete 3 rows, you have satisfied the requirement.',
-              'You may conclude the activity at any time after row 3, or continue.',
-              'Stopping at the minimum is completely neutral.'
+              'You may conclude the activity at any time after row 3, or continue. Stopping is neutral.',
+              'Feedback saliency decreases during continuation; this is an intentional part of the activity, not an error or submission state.'
             ]
           })}
         </div>
@@ -478,9 +478,14 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
         </div>
 
         ${hasMetMinimum ? `
-          <div class="p-3 bg-stone-50 border border-stone-200 rounded-xs text-xs text-stone-700 mb-4 flex items-center justify-between">
-            <span>You have completed the required 3 units. You may conclude at any time without penalty.</span>
-            <span class="text-[10px] font-mono text-stone-500 uppercase font-semibold">Stopping is neutral</span>
+          <div class="p-3 bg-stone-50 border border-stone-200 rounded-xs text-xs text-stone-700 mb-4 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-[var(--text-primary)]">Mandatory minimum completed (3 of 3 rows).</span>
+              <span class="text-[10px] font-mono text-stone-500 uppercase font-semibold">Stopping is neutral</span>
+            </div>
+            <p class="text-[11px] text-stone-600 leading-relaxed">
+              You may conclude the activity now, or voluntarily verify additional rows. Feedback saliency decreases during continuation; this gradual reduction is an intentional part of the activity design and does not indicate an error or submission state.
+            </p>
           </div>
         ` : ''}
 
