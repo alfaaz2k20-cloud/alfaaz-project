@@ -117,15 +117,15 @@ class TestGate1ConsentIdentity(unittest.TestCase):
         self.assertIn("const researchParticipationConsent = consentAgree.checked;", source)
         self.assertIn('aria-disabled="true"', source)
 
-    def test_interim_consent_copy_blocks_production(self):
+    def test_owner_approved_consent_copy_has_no_production_blockers(self):
         consent_path = Path(__file__).resolve().parents[1] / "config" / "copy" / "consent.json"
         consent_copy = json.loads(consent_path.read_text(encoding="utf-8"))
         blockers = _find_recruit_copy_blockers(consent_copy, "consent")
 
-        self.assertIn("consent.interim", blockers)
-        self.assertIn("consent.candidate_notice.interim", blockers)
-        self.assertIn("consent.age_confirmation.interim", blockers)
-        self.assertIn("consent.research_participation.interim", blockers)
+        self.assertEqual(blockers, [])
+        self.assertEqual(consent_copy["version"], "2026-10-v1")
+        self.assertTrue(consent_copy["age_confirmation"]["label"])
+        self.assertTrue(consent_copy["research_participation"]["label"])
 
 
 if __name__ == "__main__":
