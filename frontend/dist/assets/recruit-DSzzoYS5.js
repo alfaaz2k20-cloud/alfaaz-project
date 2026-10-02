@@ -9,9 +9,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 2: The Archive</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Item ${e+1} of ${p.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Item ${e+1} of ${p.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -23,8 +23,8 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
           <div class="flex justify-between items-center mb-1">
-            <span class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold">Your Task</span>
-            <span class="text-xs text-[var(--accent-gold)] font-mono font-medium">${r.rule_prompt}</span>
+            <span class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold">Your Task</span>
+            <span class="text-xs text-[var(--accent-gold)] font-sans font-medium">${r.rule_prompt}</span>
           </div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Examine this page. Pick the shelf that matches the active sorting rule.
@@ -34,7 +34,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <!-- LOOK AT THIS -->
         <div class="p-5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected">
           <div class="flex justify-between items-start mb-2">
-            <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase font-mono">${r.id}</span>
+            <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase font-medium">Folio ${e+1} of ${p.length}</span>
             <button id="guideBtn" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1 hover:bg-amber-50 transition flex items-center gap-1.5 rounded-xs min-h-[32px]" tabindex="0">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               ${a?"Close Guide":"Shelf Guide"}
@@ -55,7 +55,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- INTERACTION AREA -->
         <div class="mb-4 candidate-content-protected">
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-mono">Select Destination Shelf:</div>
+          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Select Destination Shelf:</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             ${c.map(h=>`
               <button type="button" class="folder-btn p-3.5 bg-white border border-[var(--grid-border)] text-xs font-semibold hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-left shadow-xs flex items-center gap-2.5 rounded-xs min-h-[48px]" data-folder="${h.id}" tabindex="0">
@@ -67,7 +67,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Page ${e+1} of ${p.length}
         </div>
       </div>
@@ -82,9 +82,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 2: The Archive</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Page ${e+1} of 4</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Page ${e+1} of 4</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -95,7 +95,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read the page condition notes below. Choose the best handling option.
           </div>
@@ -104,8 +104,8 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <!-- LOOK AT THIS -->
         <div class="p-5 bg-white border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-[10px] tracking-widest text-[#bd6f5d] uppercase font-semibold font-mono">${r.stimulus_id}</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase bg-[#faf8f5] px-2 py-0.5 border border-[var(--grid-border)] rounded-xs">${r.type_note}</span>
+            <span class="text-[10px] tracking-widest text-[#bd6f5d] uppercase font-semibold">Manuscript Folio ${e+1} of 4</span>
+            <span class="text-[10px] text-[var(--text-secondary)] uppercase bg-[#faf8f5] px-2 py-0.5 border border-[var(--grid-border)] rounded-xs font-medium">${r.type_note}</span>
           </div>
           <h3 class="text-base font-serif text-[var(--text-primary)] font-medium mb-1.5">${r.title}</h3>
           <p class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[#faf8f5] p-3 border border-[var(--grid-border)]/60 rounded-xs">
@@ -115,7 +115,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- INTERACTION AREA -->
         <div class="space-y-2.5 mb-4 candidate-content-protected">
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-mono">Choose handling action:</div>
+          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose handling action:</div>
           ${c.map(o=>`
             <div class="a2-opt p-3.5 bg-white border ${a===o.id?"border-[var(--accent-gold)] bg-amber-50/70 shadow-xs":"border-[var(--grid-border)]"} cursor-pointer hover:border-[var(--accent-gold)] transition rounded-xs min-h-[52px]" data-action="${o.id}" tabindex="0" role="button">
               <div class="flex justify-between items-center mb-0.5">
@@ -123,7 +123,6 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
                   <span class="w-2 h-2 rounded-full ${a===o.id?"bg-[var(--accent-gold)]":"bg-stone-300"}"></span>
                   ${o.title}
                 </div>
-                <span class="text-[10px] font-mono text-[var(--accent-gold)] uppercase tracking-wider">${o.tag}</span>
               </div>
               <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed pl-3.5">${o.desc}</div>
             </div>
@@ -131,9 +130,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>${a?`You selected: <strong class="text-[var(--text-primary)]">${n==null?void 0:n.title}</strong>`:"Select an option above to continue."}</span>
-          <span class="text-[10px] text-stone-400 font-mono">${e+1} / 4</span>
+          <span class="text-[10px] text-stone-400 font-sans">${e+1} / 4</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
@@ -154,9 +153,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 2: The Archive</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · 5 Cards</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; 5 Cards</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -167,7 +166,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read all 5 display cards. Click flag if a card has a mistake. Leave clean cards unflagged.
           </div>
@@ -179,15 +178,15 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
               <div class="record-card p-4 bg-white border ${h?"border-[#bd6f5d] bg-amber-50/20":"border-[var(--grid-border)]"} rounded-xs transition shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" data-id="${n.id}" tabindex="0">
                 <div class="space-y-1 flex-1">
                   <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-mono text-[var(--accent-gold)] uppercase tracking-wider">${n.id}</span>
+                    <span class="text-[10px] text-[var(--accent-gold)] uppercase tracking-wider font-semibold">Ledger Card ${x+1} of 5</span>
                   </div>
                   <div class="text-xs font-semibold text-[var(--text-primary)]">${n.title}</div>
-                  <div class="text-xs text-[var(--text-secondary)] font-mono leading-relaxed bg-[#faf8f5] p-2 border border-[var(--grid-border)]/60 rounded-xs mt-1">
+                  <div class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[#faf8f5] p-2.5 border border-[var(--grid-border)]/60 rounded-xs mt-1">
                     ${n.text}
                   </div>
                 </div>
 
-                <button type="button" class="toggle-flag-btn px-4 py-2.5 border text-xs font-mono uppercase tracking-wider shrink-0 transition rounded-xs min-h-[44px] w-full sm:w-auto ${h?"bg-[#bd6f5d] text-white border-[#bd6f5d]":"bg-white text-[var(--text-secondary)] border-[var(--grid-border)] hover:border-[var(--accent-gold)]"}" data-id="${n.id}">
+                <button type="button" class="toggle-flag-btn px-4 py-2.5 border text-xs font-sans uppercase tracking-wider shrink-0 transition rounded-xs min-h-[44px] w-full sm:w-auto ${h?"bg-[#bd6f5d] text-white border-[#bd6f5d]":"bg-white text-[var(--text-secondary)] border-[var(--grid-border)] hover:border-[var(--accent-gold)]"}" data-id="${n.id}">
                   ${h?"Mistake Flagged ✓":"Flag Mistake"}
                 </button>
               </div>
@@ -195,9 +194,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>Cards flagged: <strong class="text-[var(--text-primary)]">${e.size} of 5</strong></span>
-          <span class="text-[10px] text-stone-400 font-mono">Clean cards remain unflagged</span>
+          <span class="text-[10px] text-stone-400 font-sans">Clean cards remain unflagged</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
@@ -218,9 +217,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 1: The Frequency</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Round ${e+1} of 6</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Round ${e+1} of 6</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -231,7 +230,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read the sound note below. Pick your response and move the slider.
           </div>
@@ -244,7 +243,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
             </div>
             <div>
-              <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold">${n.title}</div>
+              <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold">${n.title}</div>
               <div id="partnerSpeech" class="text-xs text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${n.cue_text}</div>
             </div>
           </div>
@@ -252,7 +251,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- INTERACTION AREA -->
         <div class="mb-5 candidate-content-protected">
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-mono">1. Choose your response:</div>
+          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">1. Choose your response:</div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs transition min-h-[56px] ${s==="accommodate"?"border-[var(--accent-gold)] bg-amber-50/70 shadow-xs":"border-[var(--grid-border)] bg-white hover:border-[var(--accent-gold)]"}" data-action="accommodate">
               <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
@@ -280,13 +279,13 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- Slider Area -->
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 rounded-xs shadow-inner candidate-content-protected">
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-mono text-center">2. Adjust sound level:</div>
+          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans text-center">2. Adjust sound level:</div>
           <canvas id="waveCanvas" width="600" height="80" class="w-full h-20 bg-white border border-[var(--grid-border)] mb-4 rounded-xs"></canvas>
 
           <div class="w-full max-w-md mx-auto">
             <div class="flex justify-between items-center text-xs text-[var(--text-secondary)] mb-2">
               <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-600 inline-block"></span> Soft (0)</span>
-              <span class="font-mono text-sm font-semibold text-[var(--accent-gold)] bg-white px-3 py-1 border border-[var(--grid-border)] rounded-xs" id="sliderValDisplay">${a}</span>
+              <span class="font-sans text-sm font-semibold text-[var(--accent-gold)] bg-white px-3 py-1 border border-[var(--grid-border)] rounded-xs" id="sliderValDisplay">${a}</span>
               <span class="flex items-center gap-1">Bright (100) <span class="w-2 h-2 rounded-full bg-orange-500 inline-block"></span></span>
             </div>
             <input type="range" id="freqSlider" min="0" max="100" step="5" value="${a}" class="w-full accent-[#bd6f5d] cursor-pointer h-2 bg-stone-200 rounded-lg min-h-[44px]">
@@ -294,9 +293,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>Your setting: <strong class="text-[var(--text-primary)]" id="choiceSummary">${s==="accommodate"?"Adjust Sound":s==="maintain_objective"?"Keep Baseline":"Check Channel"} (Level: ${a})</strong></span>
-          <span class="text-[10px] text-stone-400 font-mono">${e+1} / 6</span>
+          <span class="text-[10px] text-stone-400 font-sans">${e+1} / 6</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
@@ -317,9 +316,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 1: The Frequency</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Round ${e+1} of 4</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Round ${e+1} of 4</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -330,7 +329,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read the message from your teammate. Pick the best response below.
           </div>
@@ -343,7 +342,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
             </div>
             <div>
-              <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold">${r.speaker_role}</div>
+              <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold">${r.speaker_role}</div>
               <div class="text-xs text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${r.cue_text}</div>
             </div>
           </div>
@@ -351,7 +350,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- INTERACTION AREA -->
         <div class="mb-4 candidate-content-protected">
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-mono">Pick your response:</div>
+          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Pick your response:</div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             ${c.map(v=>`
               <div class="f2-card p-4 bg-white border ${a===v.id?"border-[var(--accent-gold)] bg-amber-50/70 shadow-xs":"border-[var(--grid-border)]"} cursor-pointer hover:border-[var(--accent-gold)] transition space-y-1.5 rounded-xs min-h-[56px]" data-action="${v.id}" tabindex="0" role="button">
@@ -366,9 +365,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span id="f2ChoiceText">${a?`You selected: <strong class="text-[var(--text-primary)]">${(o=c.find(v=>v.id===a))==null?void 0:o.title}</strong>`:"Select an option above to continue."}</span>
-          <span class="text-[10px] text-stone-400 font-mono">${e+1} / 4</span>
+          <span class="text-[10px] text-stone-400 font-sans">${e+1} / 4</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
@@ -389,9 +388,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 1: The Frequency</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Transition ${e+1} of 3 (Step 1)</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Transition ${e+1} of 3 (Step 1)</span>
             </div>
-            <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+            <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -402,7 +401,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
             <div class="text-xs text-[var(--text-primary)] leading-relaxed">
               Read the performer action in this room. Pick your first response.
             </div>
@@ -411,18 +410,18 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <!-- LOOK AT THIS -->
           <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected space-y-3">
             <div>
-              <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--accent-gold)] font-semibold">Performer Action</span>
+              <span class="text-[10px] uppercase font-sans tracking-wider text-[var(--accent-gold)] font-semibold">Performer Action</span>
               <div class="text-xs font-serif text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${x.cue_text}</div>
             </div>
             <div class="p-3 bg-amber-50/50 border border-[var(--grid-border)] rounded-xs">
-              <span class="text-[10px] uppercase font-mono tracking-wider text-amber-800 font-semibold">First Room Setting</span>
+              <span class="text-[10px] uppercase font-sans tracking-wider text-amber-800 font-semibold">First Room Setting</span>
               <div class="text-xs text-[var(--text-primary)] mt-0.5">${x.baseline_context}</div>
             </div>
           </div>
 
           <!-- INTERACTION AREA -->
           <div class="space-y-2.5 mb-4 candidate-content-protected">
-            <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-mono">Choose your response:</div>
+            <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose your response:</div>
             ${x.baseline_options.map(g=>`
               <div class="f3-opt p-3.5 bg-white border ${s===g.id?"border-[var(--accent-gold)] bg-amber-50/70 shadow-xs":"border-[var(--grid-border)]"} cursor-pointer hover:border-[var(--accent-gold)] transition rounded-xs min-h-[50px]" data-choice="${g.id}" tabindex="0" role="button">
                 <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
@@ -435,9 +434,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           </div>
 
           <!-- YOUR CHOICE -->
-          <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+          <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
             <span>${s?`You selected: <strong class="text-[var(--text-primary)]">${f==null?void 0:f.label}</strong>`:"Select an option above to continue."}</span>
-            <span class="text-[10px] text-stone-400 font-mono">Step 1 of 2</span>
+            <span class="text-[10px] text-stone-400 font-sans">Step 1 of 2</span>
           </div>
 
           <!-- PRIMARY ACTION BUTTON -->
@@ -453,9 +452,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 1: The Frequency</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Transition ${e+1} of 3 (Step 2)</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Transition ${e+1} of 3 (Step 2)</span>
             </div>
-            <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+            <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -466,7 +465,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
             <div class="text-xs text-[var(--text-primary)] leading-relaxed">
               The performer action is the same. Pick your updated response for the new room.
             </div>
@@ -475,18 +474,18 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <!-- LOOK AT THIS -->
           <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected space-y-3">
             <div>
-              <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--accent-gold)] font-semibold">Same Performer Action</span>
+              <span class="text-[10px] uppercase font-sans tracking-wider text-[var(--accent-gold)] font-semibold">Same Performer Action</span>
               <div class="text-xs font-serif text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${x.cue_text}</div>
             </div>
             <div class="p-3 bg-amber-100/70 border border-[#bd6f5d]/50 rounded-xs">
-              <span class="text-[10px] uppercase font-mono tracking-wider text-[#bd6f5d] font-semibold">New Room Setting</span>
+              <span class="text-[10px] uppercase font-sans tracking-wider text-[#bd6f5d] font-semibold">New Room Setting</span>
               <div class="text-xs text-[var(--text-primary)] font-medium mt-0.5">${x.shifted_context}</div>
             </div>
           </div>
 
           <!-- INTERACTION AREA -->
           <div class="space-y-2.5 mb-4 candidate-content-protected">
-            <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-mono">Choose your updated response:</div>
+            <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose your updated response:</div>
             ${x.shifted_options.map(g=>`
               <div class="f3-updated-opt p-3.5 bg-white border ${p===g.id?"border-[var(--accent-gold)] bg-amber-50/70 shadow-xs":"border-[var(--grid-border)]"} cursor-pointer hover:border-[var(--accent-gold)] transition rounded-xs min-h-[50px]" data-choice="${g.id}" tabindex="0" role="button">
                 <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
@@ -499,9 +498,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           </div>
 
           <!-- YOUR CHOICE -->
-          <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+          <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
             <span>${p?`You selected: <strong class="text-[var(--text-primary)]">${f==null?void 0:f.label}</strong>`:"Select an option above to continue."}</span>
-            <span class="text-[10px] text-stone-400 font-mono">Step 2 of 2</span>
+            <span class="text-[10px] text-stone-400 font-sans">Step 2 of 2</span>
           </div>
 
           <!-- PRIMARY ACTION BUTTON -->
@@ -522,9 +521,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 3: The Shared Canvas</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Round ${e+1} of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Round ${e+1} of 3</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -535,7 +534,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Check tile counts below. Move tiles to your partner if needed.
           </div>
@@ -546,21 +545,21 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${r.title}:</strong> ${r.description}
           </span>
-          <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--text-secondary)]">${r.context_note}</span>
+          <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--text-secondary)]">${r.context_note}</span>
         </div>
 
         <!-- INTERACTION AREA -->
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
           <div class="grid grid-cols-2 gap-4 text-center mb-5">
             <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
-              <span class="text-[10px] text-[var(--accent-gold)] uppercase font-semibold font-mono">Partner Basket</span>
+              <span class="text-[10px] text-[var(--accent-gold)] uppercase font-semibold font-sans">Partner Basket</span>
               <div class="text-xl font-serif font-semibold text-[#bd6f5d] mt-1">${n} Tiles</div>
               <div class="flex justify-center gap-1 mt-2.5 flex-wrap max-w-[140px] mx-auto">
                 ${Array(Math.max(0,n)).fill('<div class="w-3.5 h-3.5 bg-[#bd6f5d]/70 rounded-xs shadow-xs"></div>').join("")}
               </div>
             </div>
             <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
-              <span class="text-[10px] text-emerald-700 uppercase font-semibold font-mono">Your Basket</span>
+              <span class="text-[10px] text-emerald-700 uppercase font-semibold font-sans">Your Basket</span>
               <div class="text-xl font-serif font-semibold text-emerald-800 mt-1">${x} Tiles</div>
               <div class="flex justify-center gap-1 mt-2.5 flex-wrap max-w-[140px] mx-auto">
                 ${Array(Math.max(0,x)).fill('<div class="w-3.5 h-3.5 bg-emerald-700/70 rounded-xs shadow-xs"></div>').join("")}
@@ -569,7 +568,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           </div>
 
           <div class="text-center pt-3 border-t border-[var(--grid-border)]">
-            <div class="text-xs text-[var(--text-secondary)] mb-2 font-mono">Tiles to share with partner:</div>
+            <div class="text-xs text-[var(--text-secondary)] mb-2 font-sans">Tiles to share with partner:</div>
             <div class="flex justify-center items-center gap-4">
               <button type="button" id="minusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold hover:border-[var(--accent-gold)] hover:bg-amber-50 active:scale-95 transition shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">-</button>
               <span id="transferCount" class="font-serif text-3xl font-semibold text-[var(--accent-gold)] w-12 text-center">${a}</span>
@@ -579,9 +578,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>Sharing: <strong class="text-[var(--text-primary)]">${a} tiles</strong> (You keep ${x})</span>
-          <span class="text-[10px] text-stone-400 font-mono">Round ${e+1} of 3</span>
+          <span class="text-[10px] text-stone-400 font-sans">Round ${e+1} of 3</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
@@ -602,9 +601,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 3: The Shared Canvas</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Round ${e+1} of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Round ${e+1} of 3</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -615,7 +614,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Check your partner's position. Choose an open spot that balances the wall.
           </div>
@@ -626,12 +625,12 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${r.title}:</strong> ${r.partner_desc}
           </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${r.stimulus_id}</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Round ${e+1} of 3</span>
         </div>
 
         <!-- INTERACTION AREA -->
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Available Wall Placement Slots:</div>
+          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Available Wall Placement Slots:</div>
           <div class="flex flex-col gap-2.5">
             ${r.slots.map(o=>`
               <button type="button" class="slot-btn px-4 py-3 text-xs border rounded-xs ${a===o.id?"border-[var(--accent-gold)] bg-amber-50/70 font-semibold shadow-xs":"border-[var(--grid-border)] bg-white hover:border-[var(--accent-gold)]"} transition flex items-center justify-between min-h-[48px]" data-slot="${o.id}" tabindex="0">
@@ -639,16 +638,16 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${a===o.id?"bg-[var(--accent-gold)] text-white":"text-stone-400"}">${a===o.id?"✓":""}</span>
                   <span class="text-[var(--text-primary)]">${o.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${o.id}</span>
+                <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Slot ${o.id.replace("SLOT_","")}</span>
               </button>
             `).join("")}
           </div>
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>${a?`You selected: <strong class="text-[var(--text-primary)]">${n==null?void 0:n.label}</strong>`:"Select a spot above to continue."}</span>
-          <span class="text-[10px] text-stone-400 font-mono">Round ${e+1} of 3</span>
+          <span class="text-[10px] text-stone-400 font-sans">Round ${e+1} of 3</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
@@ -669,9 +668,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 3: The Shared Canvas</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Problem ${e+1} of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Problem ${e+1} of 3</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -682,7 +681,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Step 1: Identify what went wrong. Step 2: Choose how to fix it.
           </div>
@@ -693,14 +692,14 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${n.title}:</strong> ${n.partner_state}
           </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${n.stimulus_id}</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Stage ${currentTrial+1} of 3</span>
         </div>
 
         <!-- INTERACTION AREA -->
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
           <!-- Step 1: Identify Breakdown -->
           <div class="mb-4">
-            <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2 font-mono">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2 font-sans">
               Step 1: What is the issue?
             </div>
             <div class="space-y-2">
@@ -716,7 +715,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <!-- Step 2: Perform Constructive Repair -->
           ${a?`
             <div class="pt-4 border-t border-[var(--grid-border)] animate-fadeIn">
-              <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2 font-mono">
+              <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2 font-sans">
                 Step 2: Choose a constructive fix:
               </div>
               <div class="space-y-2">
@@ -732,9 +731,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>${a&&s?`Fix selected: <strong class="text-[var(--text-primary)]">${x==null?void 0:x.label}</strong>`:a?"Now choose a fix in Step 2.":"Select an issue in Step 1."}</span>
-          <span class="text-[10px] text-stone-400 font-mono">${e+1} / 3</span>
+          <span class="text-[10px] text-stone-400 font-sans">${e+1} / 3</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
@@ -755,9 +754,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 4: The Shifting Grid</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Tile ${e+1} of ${s.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Tile ${e+1} of ${s.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -768,7 +767,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Examine the tile below. Click Container 1 or 2 to file it.
           </div>
@@ -780,7 +779,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
             ${u.icon}
           </div>
           <div class="text-sm font-serif font-semibold text-[var(--text-primary)]">${u.label}</div>
-          <div class="text-[11px] text-[var(--text-secondary)] mt-0.5 font-mono uppercase">${u.color} &bull; ${u.shape}</div>
+          <div class="text-[11px] text-[var(--text-secondary)] mt-0.5 font-sans uppercase">${u.color} &bull; ${u.shape}</div>
         </div>
 
         <!-- INTERACTION AREA -->
@@ -788,17 +787,17 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 active:scale-98 transition text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_1" tabindex="0">
             <span class="text-2xl text-[var(--accent-gold)] block mb-1">&#9679;</span>
             <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 1</span>
-            <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-mono">Reference: Gold Circle</span>
+            <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Gold Circle</span>
           </button>
           <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 active:scale-98 transition text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
             <span class="text-2xl text-emerald-800 block mb-1">&#9632;</span>
             <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 2</span>
-            <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-mono">Reference: Sage Square</span>
+            <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Sage Square</span>
           </button>
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Tile ${e+1} of ${s.length}
         </div>
       </div>
@@ -813,9 +812,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 4: The Shifting Grid</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Event ${e+1} of ${p.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Event ${e+1} of ${p.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -826,7 +825,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read the situation below. Pick the most practical next step.
           </div>
@@ -837,12 +836,12 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${r.title}:</strong> ${r.situation}
           </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${r.stimulus_id}</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${currentTrial+1} of 4</span>
         </div>
 
         <!-- INTERACTION AREA -->
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Available Responses:</div>
+          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Available Responses:</div>
           <div class="space-y-2.5">
             ${r.options.map(o=>`
               <div class="e2-opt p-3.5 bg-white border ${a===o.id?"border-[var(--accent-gold)] bg-amber-50/70 shadow-xs":"border-[var(--grid-border)]"} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-action="${o.id}" tabindex="0" role="button">
@@ -850,16 +849,16 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${a===o.id?"bg-[var(--accent-gold)] text-white":"text-stone-300"}">${a===o.id?"✓":""}</span>
                   <span class="text-[var(--text-primary)] font-medium">${o.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${o.note}</span>
+                <span class="text-[10px] text-[var(--text-secondary)] uppercase font-medium">${o.note}</span>
               </div>
             `).join("")}
           </div>
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>${a?`You selected: <strong class="text-[var(--text-primary)]">${n==null?void 0:n.label}</strong>`:"Select an option above to continue."}</span>
-          <span class="text-[10px] text-stone-400 font-mono">${e+1} / ${p.length}</span>
+          <span class="text-[10px] text-stone-400 font-sans">${e+1} / ${p.length}</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
@@ -880,9 +879,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 4: The Shifting Grid</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Condition ${e+1} of ${p.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Condition ${e+1} of ${p.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -893,7 +892,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read the active condition below. Pick the layout that fits best.
           </div>
@@ -904,12 +903,12 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${r.title}:</strong> ${r.description}
           </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${r.stimulus_id}</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Layout ${e+1} of ${p.length}</span>
         </div>
 
         <!-- INTERACTION AREA -->
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Layout Options:</div>
+          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Layout Options:</div>
           <div class="space-y-2.5">
             ${r.options.map(o=>`
               <div class="e3-opt p-3.5 bg-white border ${a===o.id?"border-[var(--accent-gold)] bg-amber-50/70 shadow-xs":"border-[var(--grid-border)]"} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-layout="${o.id}" tabindex="0" role="button">
@@ -917,16 +916,16 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${a===o.id?"bg-[var(--accent-gold)] text-white":"text-stone-300"}">${a===o.id?"✓":""}</span>
                   <span class="text-[var(--text-primary)] font-medium">${o.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${o.id}</span>
+                <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Option ${o.id.replace("LAYOUT_","")}</span>
               </div>
             `).join("")}
           </div>
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>${a?`You selected: <strong class="text-[var(--text-primary)]">${n==null?void 0:n.label}</strong>`:"Select a layout above to continue."}</span>
-          <span class="text-[10px] text-stone-400 font-mono">${e+1} / ${p.length}</span>
+          <span class="text-[10px] text-stone-400 font-sans">${e+1} / ${p.length}</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
@@ -936,11 +935,11 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           </button>
         </div>
       </div>
-    `,i.querySelectorAll(".e3-opt").forEach(o=>{const v=f=>{s=f,a=o.getAttribute("data-layout"),t("composition_action_attempted",{trial_index:e,stimulus_id:r.stimulus_id,action_id:a,input_modality:s,task_def_version:"1.0"}),c()};o.addEventListener("click",()=>v("mouse")),o.addEventListener("keydown",f=>{(f.key==="Enter"||f.key===" ")&&(f.preventDefault(),v("keyboard"))})}),(h=document.getElementById("confirmE3Btn"))==null||h.addEventListener("click",()=>{t("composition_confirmed",{trial_index:e,stimulus_id:r.stimulus_id,chosen_action:a,input_modality:s,task_def_version:"1.0"}),e<p.length-1?(e++,a=null,u(),c()):b({mini_game:"E3",observations_count:3})})}function u(){const r=p[e];t("condition_presented",{trial_index:e,stimulus_id:r.stimulus_id,constraint_state:r.constraint_state,task_def_version:"1.0"})}c()}function me(i,l){const{appContainer:t,miniGameIndex:b,logEvent:m,onMiniGameComplete:e}=i;switch(b){case 0:pe(t,l,m,e);break;case 1:xe(t,l,m,e);break;case 2:ve(t,l,m,e);break}}function pe(i,l,t,b){let m=!0,e=0,a=null,s={},p="mouse";const c=[{stimulus_id:"Q1_D1",title:"Item 1: Antique Gold-Leaf Manuscript Leaf",scenario:"Choose the binding method for a fragile 19th-century manuscript page.",options:[{id:"flexible_cord_binding",label:"Sewn Flexible Cord (Allows spine to bend safely)"},{id:"tight_adhesive_clamp",label:"Rigid Glue Clamp (Firm hold on spine)"},{id:"unbound_portfolio",label:"Loose Archival Folder (Kept as separate sheets)"}],optional_resources:[{id:"OPT_USEFUL_1",topic:"Binding Methods Note",info_value:"high",summary:"Srinagar bookbinders used soft vegetable cord to protect delicate gold borders."},{id:"OPT_CONTROL_1",topic:"Library Stamp Dates",info_value:"low",summary:"City library accession stamps began in late October 1888."}]},{stimulus_id:"Q1_D2",title:"Item 2: Papier-Mâché Pen Case (Qalamdan)",scenario:"Select a protective surface coating for this painted lacquer case.",options:[{id:"curing_linseed_glaze",label:"Linseed Oil & Amber Varnish (Traditional slow curing glaze)"},{id:"quick_synthetic_seal",label:"Quick Synthetic Clear Spray (Modern fast-drying finish)"},{id:"wax_buff_only",label:"Dry Wax Polish (Gentle surface buffing)"}],optional_resources:[{id:"OPT_USEFUL_2",topic:"Papier-Mâché Care Guide",info_value:"high",summary:"Slow drying with natural amber resin keeps natural mineral colors bright."},{id:"OPT_CONTROL_2",topic:"Cabinet Hinge Maintenance",info_value:"low",summary:"Brass display cabinet hinges need oiling twice each year."}]},{stimulus_id:"Q1_D3",title:"Item 3: Workshop Artisan Register",scenario:"Identify the origin of this undated Persian artisan register.",options:[{id:"guild_ledger_verified",label:"Official Guild Register (Bears official guildmaster seal)"},{id:"private_merchant_tally",label:"Merchant Shop Notebook (Informal daily trade tally)"},{id:"state_excise_record",label:"Treasury Tax Record (Official tax register)"}],optional_resources:[{id:"OPT_USEFUL_1",topic:"Register Stitching Styles",info_value:"high",summary:"Crimson thread stitching was reserved for registered royal guilds."},{id:"OPT_CONTROL_1",topic:"Filing Code Reference",info_value:"low",summary:"Old municipal tax files use code series B."}]},{stimulus_id:"Q1_D4",title:"Item 4: Natural Pigment Jars",scenario:"Select storage conditions for delicate saffron and indigo pigments.",options:[{id:"dark_vented_cedar_chest",label:"Dark Cedar Chest (Controlled humidity and shade)"},{id:"ambient_glass_display",label:"Open Glass Vitrine (Direct gallery daylight)"},{id:"sealed_vacuum_capsule",label:"Sealed Dry Capsule (Zero-humidity container)"}],optional_resources:[{id:"OPT_USEFUL_2",topic:"Natural Pigment Care",info_value:"high",summary:"Direct sunlight fades saffron. Cedar wood naturally repels insects."},{id:"OPT_CONTROL_2",topic:"Shelf Weight Limits",info_value:"low",summary:"Wooden display shelves can hold up to 25 kilograms."}]}];function u(){var x,h;if(m){i.innerHTML=`
+    `,i.querySelectorAll(".e3-opt").forEach(o=>{const v=f=>{s=f,a=o.getAttribute("data-layout"),t("composition_action_attempted",{trial_index:e,stimulus_id:r.stimulus_id,action_id:a,input_modality:s,task_def_version:"1.0"}),c()};o.addEventListener("click",()=>v("mouse")),o.addEventListener("keydown",f=>{(f.key==="Enter"||f.key===" ")&&(f.preventDefault(),v("keyboard"))})}),(h=document.getElementById("confirmE3Btn"))==null||h.addEventListener("click",()=>{t("composition_confirmed",{trial_index:e,stimulus_id:r.stimulus_id,chosen_action:a,input_modality:s,task_def_version:"1.0"}),e<p.length-1?(e++,a=null,u(),c()):b({mini_game:"E3",observations_count:3})})}function u(){const r=p[e];t("condition_presented",{trial_index:e,stimulus_id:r.stimulus_id,constraint_state:r.constraint_state,task_def_version:"1.0"})}c()}function pe(i,l){const{appContainer:t,miniGameIndex:b,logEvent:m,onMiniGameComplete:e}=i;switch(b){case 0:me(t,l,m,e);break;case 1:xe(t,l,m,e);break;case 2:ve(t,l,m,e);break}}function me(i,l,t,b){let m=!0,e=0,a=null,s={},p="mouse";const c=[{stimulus_id:"Q1_D1",title:"Item 1: Antique Gold-Leaf Manuscript Leaf",scenario:"Choose the binding method for a fragile 19th-century manuscript page.",options:[{id:"flexible_cord_binding",label:"Sewn Flexible Cord (Allows spine to bend safely)"},{id:"tight_adhesive_clamp",label:"Rigid Glue Clamp (Firm hold on spine)"},{id:"unbound_portfolio",label:"Loose Archival Folder (Kept as separate sheets)"}],optional_resources:[{id:"OPT_USEFUL_1",topic:"Binding Methods Note",info_value:"high",summary:"Srinagar bookbinders used soft vegetable cord to protect delicate gold borders."},{id:"OPT_CONTROL_1",topic:"Library Stamp Dates",info_value:"low",summary:"City library accession stamps began in late October 1888."}]},{stimulus_id:"Q1_D2",title:"Item 2: Papier-Mâché Pen Case (Qalamdan)",scenario:"Select a protective surface coating for this painted lacquer case.",options:[{id:"curing_linseed_glaze",label:"Linseed Oil & Amber Varnish (Traditional slow curing glaze)"},{id:"quick_synthetic_seal",label:"Quick Synthetic Clear Spray (Modern fast-drying finish)"},{id:"wax_buff_only",label:"Dry Wax Polish (Gentle surface buffing)"}],optional_resources:[{id:"OPT_USEFUL_2",topic:"Papier-Mâché Care Guide",info_value:"high",summary:"Slow drying with natural amber resin keeps natural mineral colors bright."},{id:"OPT_CONTROL_2",topic:"Cabinet Hinge Maintenance",info_value:"low",summary:"Brass display cabinet hinges need oiling twice each year."}]},{stimulus_id:"Q1_D3",title:"Item 3: Workshop Artisan Register",scenario:"Identify the origin of this undated Persian artisan register.",options:[{id:"guild_ledger_verified",label:"Official Guild Register (Bears official guildmaster seal)"},{id:"private_merchant_tally",label:"Merchant Shop Notebook (Informal daily trade tally)"},{id:"state_excise_record",label:"Treasury Tax Record (Official tax register)"}],optional_resources:[{id:"OPT_USEFUL_1",topic:"Register Stitching Styles",info_value:"high",summary:"Crimson thread stitching was reserved for registered royal guilds."},{id:"OPT_CONTROL_1",topic:"Filing Code Reference",info_value:"low",summary:"Old municipal tax files use code series B."}]},{stimulus_id:"Q1_D4",title:"Item 4: Natural Pigment Jars",scenario:"Select storage conditions for delicate saffron and indigo pigments.",options:[{id:"dark_vented_cedar_chest",label:"Dark Cedar Chest (Controlled humidity and shade)"},{id:"ambient_glass_display",label:"Open Glass Vitrine (Direct gallery daylight)"},{id:"sealed_vacuum_capsule",label:"Sealed Dry Capsule (Zero-humidity container)"}],optional_resources:[{id:"OPT_USEFUL_2",topic:"Natural Pigment Care",info_value:"high",summary:"Direct sunlight fades saffron. Cedar wood naturally repels insects."},{id:"OPT_CONTROL_2",topic:"Shelf Weight Limits",info_value:"low",summary:"Wooden display shelves can hold up to 25 kilograms."}]}];function u(){var x,h;if(m){i.innerHTML=`
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3</span>
           </div>
           ${T({icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>',goal:"Make preservation decisions for 4 historic items. You may view optional notes if helpful.",steps:["Review the historic artifact and decision prompt.","Click optional research notes if you want extra context.","Choose your preservation decision for each of the 4 items.","Click confirm to continue."]})}
         </div>
@@ -950,9 +949,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Item ${e+1} of ${c.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Item ${e+1} of ${c.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -963,7 +962,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Review the artifact below. Choose an action. Optional reference notes are available if you want them.
           </div>
@@ -972,8 +971,8 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <!-- LOOK AT THIS -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Artifact Record</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${n.stimulus_id}</span>
+            <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Artifact Record</span>
+            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Record ${currentTrial+1} of 4</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${n.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${n.scenario}</div>
@@ -981,7 +980,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- INTERACTION AREA: Optional Reference Notes -->
         <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
+          <div class="text-[10px] uppercase font-sans text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
             <span>Optional Reference Notes (Click to Open)</span>
             <span class="text-[9px] text-[var(--text-secondary)] font-normal">Voluntary consultation</span>
           </div>
@@ -993,7 +992,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
                     <svg class="w-3.5 h-3.5 text-[var(--accent-gold)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     ${o.topic}
                   </span>
-                  <span class="text-[9px] font-mono uppercase text-[var(--text-secondary)]">${s[o.id]?"Opened":"Inspect"}</span>
+                  <span class="text-[9px] font-sans uppercase text-[var(--text-secondary)]">${s[o.id]?"Opened":"Inspect"}</span>
                 </div>
                 ${s[o.id]?`<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-fadeIn">${o.summary}</p>`:""}
               </div>
@@ -1003,7 +1002,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR CHOICE: Curatorial Actions -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Choose Preservation Action:</div>
+          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Choose Preservation Action:</div>
           <div class="space-y-2.5">
             ${n.options.map(o=>`
               <div class="q1-opt p-3.5 bg-white border ${a===o.id?"border-[var(--accent-gold)] bg-amber-50/50 shadow-xs":"border-[var(--grid-border)]"} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-choice="${o.id}" tabindex="0" role="button">
@@ -1011,7 +1010,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
                   <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${a===o.id?"bg-[var(--accent-gold)] text-white":"text-stone-300"}">${a===o.id?"✓":""}</span>
                   <span class="text-[var(--text-primary)] font-medium">${o.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase shrink-0">${o.id}</span>
+                <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium shrink-0">Action ${String.fromCharCode(65+n.options.indexOf(o))}</span>
               </div>
             `).join("")}
           </div>
@@ -1025,7 +1024,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Item ${e+1} of ${c.length}
         </div>
       </div>
@@ -1033,7 +1032,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3</span>
           </div>
           ${T({icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>',goal:"Investigate physical clues on 4 historical relics to identify their origins.",steps:["Examine each historic relic and read its description.","Click clues to uncover material facts at your choice.","Select your origin conclusion for the relic.","Click finalize to advance."]})}
         </div>
@@ -1043,9 +1042,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Relic ${e+1} of ${c.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Relic ${e+1} of ${c.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -1056,7 +1055,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Examine the relic below. Inspect any clues you wish. Then choose its origin.
           </div>
@@ -1065,8 +1064,8 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <!-- LOOK AT THIS -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Relic Specimen</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${n.stimulus_id}</span>
+            <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Relic Specimen</span>
+            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Specimen ${e+1} of 3</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${n.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${n.description}</div>
@@ -1074,7 +1073,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- INTERACTION AREA: Clues Inspection Grid -->
         <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
+          <div class="text-[10px] uppercase font-sans text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
             <span>Physical Clues Available for Inspection</span>
             <span class="text-[9px] text-[var(--text-secondary)] font-normal">Click clue to examine</span>
           </div>
@@ -1083,7 +1082,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
               <div class="clue-btn p-3.5 bg-white border ${a[o.id]?"border-[var(--accent-gold)] bg-amber-50/40 shadow-xs":"border-[var(--grid-border)]"} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[48px] flex flex-col justify-between" data-clue="${o.id}" tabindex="0" role="button">
                 <div class="font-medium text-[var(--text-primary)] flex items-center justify-between">
                   <span>${o.label}</span>
-                  <span class="text-[9px] font-mono uppercase text-[var(--text-secondary)]">${a[o.id]?"Inspected":"Inspect"}</span>
+                  <span class="text-[9px] font-sans uppercase text-[var(--text-secondary)]">${a[o.id]?"Inspected":"Inspect"}</span>
                 </div>
                 ${a[o.id]?`<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-fadeIn">${o.detail}</p>`:""}
               </div>
@@ -1093,7 +1092,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR CHOICE: Attribution Selection -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Conclude Historical Origin:</div>
+          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Conclude Historical Origin:</div>
           <div class="space-y-2.5">
             ${n.attributions.map(o=>`
               <div class="q2-attr p-3.5 bg-white border ${s===o.id?"border-[var(--accent-gold)] bg-amber-50/50 shadow-xs":"border-[var(--grid-border)]"} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-attr="${o.id}" tabindex="0" role="button">
@@ -1101,7 +1100,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
                   <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${s===o.id?"bg-[var(--accent-gold)] text-white":"text-stone-300"}">${s===o.id?"✓":""}</span>
                   <span class="text-[var(--text-primary)] font-medium">${o.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase shrink-0">${o.id}</span>
+                <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium shrink-0">Origin ${String.fromCharCode(65+n.attributions.indexOf(o))}</span>
               </div>
             `).join("")}
           </div>
@@ -1115,7 +1114,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Relic ${e+1} of ${c.length}
         </div>
       </div>
@@ -1123,7 +1122,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3</span>
           </div>
           ${T({icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>',goal:"Connect archival clues to solve catalog questions across 3 episodes.",steps:["Read the historical question in each episode.","Click to open the archival research note if you need facts.","Select your catalog conclusion.","Click confirm to finish World 5."]})}
         </div>
@@ -1133,9 +1132,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Episode ${e+1} of ${c.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Episode ${e+1} of ${c.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -1146,7 +1145,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read the mystery below. You may open the reference note. Choose the best answer to continue.
           </div>
@@ -1155,8 +1154,8 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <!-- LOOK AT THIS -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Historic Case</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${n.stimulus_id}</span>
+            <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Historic Case</span>
+            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Case ${currentTrial+1} of 3</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${n.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${n.ambiguity_text}</div>
@@ -1165,9 +1164,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <!-- INTERACTION AREA 1: Optional Context Retrieval -->
         <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-            <span class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider">Archival Research Note</span>
-            ${a?'<span class="text-[10px] font-mono text-emerald-700 font-semibold uppercase">Note Opened</span>':`
-              <button type="button" id="retrieveContextBtn" class="px-4 py-2 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] text-[10px] font-mono uppercase tracking-wider text-[var(--text-primary)] hover:bg-amber-50 transition rounded-xs shadow-xs min-h-[44px] flex items-center justify-center gap-1.5" tabindex="0">
+            <span class="text-[10px] uppercase font-sans text-[var(--accent-gold)] font-semibold tracking-wider">Archival Research Note</span>
+            ${a?'<span class="text-[10px] font-sans text-emerald-700 font-semibold uppercase">Note Opened</span>':`
+              <button type="button" id="retrieveContextBtn" class="px-4 py-2 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] text-[10px] font-sans uppercase tracking-wider text-[var(--text-primary)] hover:bg-amber-50 transition rounded-xs shadow-xs min-h-[44px] flex items-center justify-center gap-1.5" tabindex="0">
                 <span>Open Research Note</span> &rarr;
               </button>
             `}
@@ -1175,7 +1174,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
           ${a?`
             <div class="p-3.5 bg-white border border-emerald-600/40 rounded-xs text-xs text-[var(--text-primary)] leading-relaxed animate-fadeIn">
-              <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-800 font-semibold mb-1">${n.context_title}</div>
+              <div class="text-[10px] font-sans uppercase tracking-wider text-emerald-800 font-semibold mb-1">${n.context_title}</div>
               <div>${n.context_text}</div>
             </div>
           `:`
@@ -1187,7 +1186,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR CHOICE: Downstream Integration Decision -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">${n.decision_question}</div>
+          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">${n.decision_question}</div>
           <div class="space-y-2.5">
             ${n.choices.map(v=>`
               <div class="q3-choice p-3.5 bg-white border ${s===v.id?"border-[var(--accent-gold)] bg-amber-50/50 shadow-xs":"border-[var(--grid-border)]"} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-choice="${v.id}" tabindex="0" role="button">
@@ -1195,7 +1194,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
                   <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${s===v.id?"bg-[var(--accent-gold)] text-white":"text-stone-300"}">${s===v.id?"✓":""}</span>
                   <span class="text-[var(--text-primary)] font-medium">${v.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase shrink-0">${v.id}</span>
+                <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium shrink-0">Format ${v.id.replace("CHOICE_","")}</span>
               </div>
             `).join("")}
           </div>
@@ -1209,7 +1208,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Episode ${e+1} of ${c.length}
         </div>
       </div>
@@ -1217,7 +1216,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3</span>
           </div>
           ${T({icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>',goal:"Select studio materials to build a working fixture across 2 stages.",steps:["Read the hardware challenge and available workbench items.","Click parts to add or remove them from your setup.","You may test your setup to check mechanical balance.","Click confirm to advance to the next stage."]})}
         </div>
@@ -1227,9 +1226,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Stage ${e+1} of ${c.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Stage ${e+1} of ${c.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -1240,7 +1239,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Review the broken part below. Select one or more workbench items to fix it. Multiple valid combinations exist.
           </div>
@@ -1249,8 +1248,8 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <!-- LOOK AT THIS: Constraint Card -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider font-semibold">Atelier Hardware Need</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${n.stage_id}</span>
+            <span class="text-[10px] text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Atelier Hardware Need</span>
+            <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Stage ${e+1} of ${c.length}</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${n.title}</div>
           <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${n.scenario}</div>
@@ -1258,7 +1257,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- INTERACTION AREA: Workbench Selection -->
         <div class="p-4 sm:p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs candidate-content-protected">
-          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-3">Available Workbench Components (Click to Equip)</div>
+          <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-3">Available Workbench Components (Click to Equip)</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 mb-4">
             ${n.materials.map(v=>{const f=a.includes(v.id);return`
                 <div class="part-card p-3.5 bg-white border ${f?"border-[var(--accent-gold)] bg-amber-50/50 shadow-xs":"border-[var(--grid-border)]"} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex flex-col justify-between min-h-[72px]" data-id="${v.id}" tabindex="0" role="button" aria-label="${v.name}">
@@ -1268,7 +1267,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
                     <div class="text-[10px] text-[var(--text-secondary)]">${v.role}</div>
                   </div>
                   <div class="mt-2 text-right">
-                    <span class="text-[10px] font-mono font-semibold ${f?"text-[var(--accent-gold)]":"text-stone-400"}">${f?"&#10003; EQUIPPED":"+ ADD"}</span>
+                    <span class="text-[10px] font-sans font-semibold ${f?"text-[var(--accent-gold)]":"text-stone-400"}">${f?"&#10003; EQUIPPED":"+ ADD"}</span>
                   </div>
                 </div>
               `}).join("")}
@@ -1286,7 +1285,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
           ${s?`
             <div class="mt-3 p-3 bg-white border ${s.valid?"border-emerald-600/40 text-emerald-900":"border-amber-600/40 text-amber-900"} text-xs rounded-xs leading-relaxed animate-fadeIn">
-              <span class="font-mono text-[10px] uppercase font-semibold block mb-0.5">${s.valid?"Assembly Test: Passed":"Assembly Test: Note"}</span>
+              <span class="font-sans text-[10px] uppercase font-semibold block mb-0.5">${s.valid?"Assembly Test: Passed":"Assembly Test: Note"}</span>
               ${s.message}
             </div>
           `:""}
@@ -1300,7 +1299,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Stage ${e+1} of ${c.length}
         </div>
       </div>
@@ -1308,7 +1307,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3</span>
           </div>
           ${T({icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>',goal:"Pick a layout strategy, then adapt your plan when a space condition changes.",steps:["Review the gallery space and pick an initial floor plan.","A structural change will appear in the room.","Choose how to adapt your plan to the new condition.","Confirm your choice across 3 episodes."]})}
         </div>
@@ -1318,9 +1317,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 6: The Broken Tool</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Episode ${e+1} of ${u.length}</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Episode ${e+1} of ${u.length}</span>
             </div>
-            <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+            <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -1331,7 +1330,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
             <div class="text-xs text-[var(--text-primary)] leading-relaxed">
               Read the room context below. Choose an initial layout concept for the gallery space.
             </div>
@@ -1340,8 +1339,8 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <!-- LOOK AT THIS: Context Card -->
           <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
             <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider font-semibold">Gallery Layout Setting</span>
-              <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${x.episode_id}</span>
+              <span class="text-[10px] text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Gallery Layout Setting</span>
+              <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Episode ${e+1} of ${u.length}</span>
             </div>
             <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${x.title}</div>
             <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${x.pre_context}</div>
@@ -1349,7 +1348,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
           <!-- INTERACTION AREA: Initial Strategy Selection -->
           <div class="mb-5 space-y-2.5 candidate-content-protected">
-            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Select Initial Curation Concept:</div>
+            <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider">Select Initial Curation Concept:</div>
             ${x.pre_strategies.map(g=>{const y=s===g.id;return`
                 <div class="pre-strat-card p-3.5 sm:p-4 bg-white border ${y?"border-[var(--accent-gold)] bg-amber-50/50 shadow-xs":"border-[var(--grid-border)]"} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-id="${g.id}" tabindex="0" role="button" aria-label="${g.label}">
                   <div>
@@ -1369,8 +1368,8 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           </div>
 
           <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
-            Episode ${e+1} of ${u.length} · Step 1
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
+            Episode ${e+1} of ${u.length} &middot; Step 1
           </div>
         </div>
       `,i.querySelectorAll(".pre-strat-card").forEach(g=>{const y=_=>{c=_,s=g.getAttribute("data-id"),r()};g.addEventListener("click",()=>y("mouse")),g.addEventListener("keydown",_=>{(_.key==="Enter"||_.key===" ")&&(_.preventDefault(),y("keyboard"))})}),(o=document.getElementById("confirmPreShiftBtn"))==null||o.addEventListener("click",()=>{t("initial_strategy_selected",{episode_id:x.episode_id,trial_index:e,strategy_id:s,input_modality:c,task_def_version:"1.0"}),t("constraint_shifted",{episode_id:x.episode_id,trial_index:e,constraint_change:x.constraint_change,task_def_version:"1.0"}),a="post_shift",p=s,r()})):(i.innerHTML=`
@@ -1379,9 +1378,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 6: The Broken Tool</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Episode ${e+1} of ${u.length}</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Episode ${e+1} of ${u.length}</span>
             </div>
-            <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Condition Shift</div>
+            <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Condition Shift</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -1394,7 +1393,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <div class="p-4 bg-amber-50 border border-amber-300/80 mb-4 rounded-xs animate-fadeIn candidate-content-protected">
             <div class="flex items-center gap-2 mb-1">
               <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse"></span>
-              <span class="text-[10px] font-mono uppercase tracking-wider text-amber-900 font-bold">New Room Condition Detected</span>
+              <span class="text-[10px] font-sans uppercase tracking-wider text-amber-900 font-bold">New Room Condition Detected</span>
             </div>
             <div class="text-xs text-amber-950 leading-relaxed font-serif">${x.shift_description}</div>
             <div class="mt-2 text-[11px] text-amber-800">
@@ -1404,12 +1403,12 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
           <!-- INTERACTION AREA: Post-Shift Strategy Selection -->
           <div class="mb-5 space-y-2.5 candidate-content-protected">
-            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Choose Adapted Layout:</div>
+            <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider">Choose Adapted Layout:</div>
             ${x.post_strategies.map(g=>{const y=p===g.id;return`
                 <div class="post-strat-card p-3.5 sm:p-4 bg-white border ${y?"border-[var(--accent-gold)] bg-amber-50/50 shadow-xs":"border-[var(--grid-border)]"} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-id="${g.id}" tabindex="0" role="button" aria-label="${g.label}">
                   <div>
                     <div class="font-medium text-[var(--text-primary)]">${g.label}</div>
-                    <div class="text-[10px] font-mono text-[var(--text-secondary)] mt-0.5">${g.note}</div>
+                    <div class="text-[10px] font-sans text-[var(--text-secondary)] mt-0.5">${g.note}</div>
                   </div>
                   <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${y?"bg-[var(--accent-gold)] text-white":"text-stone-300"}">${y?"&#10003;":""}</span>
                 </div>
@@ -1424,15 +1423,15 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           </div>
 
           <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
-            Episode ${e+1} of ${u.length} · Step 2
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
+            Episode ${e+1} of ${u.length} &middot; Step 2
           </div>
         </div>
       `,i.querySelectorAll(".post-strat-card").forEach(g=>{const y=_=>{c=_,p=g.getAttribute("data-id"),r()};g.addEventListener("click",()=>y("mouse")),g.addEventListener("keydown",_=>{(_.key==="Enter"||_.key===" ")&&(_.preventDefault(),y("keyboard"))})}),(f=document.getElementById("confirmPostShiftBtn"))==null||f.addEventListener("click",()=>{t("strategy_revised",{episode_id:x.episode_id,trial_index:e,initial_strategy_id:s,revised_strategy_id:p,input_modality:c,task_def_version:"1.0"}),e<u.length-1?(e++,a="pre_shift",s=null,p=null,n(),r()):b({mini_game:"CR2",observations_count:3})}))}function n(){const x=u[e];t("episode_presented",{episode_id:x.episode_id,trial_index:e,initial_context:x.pre_context,task_def_version:"1.0"})}r()}function ge(i,l,t,b){let m=!0,e=0,a=null,s=null,p=null,c="mouse";const u=[{stimulus_id:"CR3_T1",title:"Trial 1: The Crisp Paper Fold",target_motif:"burnished_crease",objective:"Form a sharp, smooth crease on thick paper without tearing surface fibers.",tools:[{id:"bone_folder",name:"Polished Bone Tool",icon:"&#129685;",affordance:"Smooth curved edge that applies friction gently"},{id:"metal_stylus",name:"Steel Scribe Stylus",icon:"&#128296;",affordance:"Hard pointed needle tip for sharp indentation"},{id:"bamboo_wedge",name:"Beveled Bamboo Scraper",icon:"&#127883;",affordance:"Broad flat wooden face for broad surface pressure"}],methods:[{id:"firm_edge_pass",name:"Firm Edge Pass",desc:"Slide rounded edge along ruler with continuous diagonal pressure."},{id:"flat_face_rub",name:"Flat Face Rub",desc:"Distribute wide surface friction across fold line."},{id:"sharp_point_drag",name:"Sharp Point Drag",desc:"Draw tip directly across surface to score the fiber line."}],feedback_map:{"bone_folder:firm_edge_pass":{success:!0,text:"Clean, crisp burnished crease formed with zero surface abrasion."},"bamboo_wedge:flat_face_rub":{success:!0,text:"Smooth, even flattened fold achieved without marring surface grain."},"metal_stylus:sharp_point_drag":{success:!1,text:"Paper fibers sliced; sharp point cut through the paper fold."},"metal_stylus:firm_edge_pass":{success:!1,text:"Metal edge left dark metallic friction scuffs across the parchment."},"bone_folder:flat_face_rub":{success:!0,text:"Gentle, even crease formed; fibers compressed smoothly."},"bamboo_wedge:firm_edge_pass":{success:!0,text:"Uniform clean fold line established with natural wood contour."},"bone_folder:sharp_point_drag":{success:!1,text:"Uneven dragging motion; point dented paper surface."},"bamboo_wedge:sharp_point_drag":{success:!1,text:"Wood corner snagged on rough paper grain."},"metal_stylus:flat_face_rub":{success:!1,text:"Insufficient surface area; uneven pressure indentation."}}},{stimulus_id:"CR3_T2",title:"Trial 2: Mulberry Paper Stipple",target_motif:"fine_stipple",objective:"Produce an even scatter of tiny ink drops on fibrous paper.",tools:[{id:"horsehair_brush",name:"Stiff Hair Brush",icon:"&#128396;",affordance:"Springy stiff bristles that snap back easily"},{id:"sponge_block",name:"Natural Sea Sponge",icon:"&#9711;",affordance:"Soft porous texture that dabs damp color"},{id:"linen_swab",name:"Rolled Cloth Swab",icon:"&#129526;",affordance:"Rolled fabric tip that absorbs liquid quickly"}],methods:[{id:"textured_flick",name:"Bristle Flick",desc:"Pull loaded bristles back with thumb to release fine mist."},{id:"mottled_dab",name:"Surface Dab",desc:"Light stamp of textured surface directly on paper."},{id:"drag_stroke",name:"Smooth Sweep",desc:"Draw applicator steadily across page in sweeping stroke."}],feedback_map:{"horsehair_brush:textured_flick":{success:!0,text:"Fine, even constellation of organic micro-droplets dispersed across parchment."},"sponge_block:mottled_dab":{success:!0,text:"Rich textured tonal stipple with soft, organic cellular grain."},"linen_swab:drag_stroke":{success:!1,text:"Produced a single continuous solid streak; zero stipple effect."},"linen_swab:textured_flick":{success:!1,text:"Fabric has no elastic bristle snap; pigment remained bound in swab."},"sponge_block:drag_stroke":{success:!1,text:"Smeared broad irregular smudge across paper."},"horsehair_brush:drag_stroke":{success:!1,text:"Solid brushstroke line created; no dispersed speckling."},"horsehair_brush:mottled_dab":{success:!0,text:"Bristle tips formed delicate speckled texture upon contact."},"sponge_block:textured_flick":{success:!1,text:"Sponge cannot be flicked; dropped heavy inconsistent blot."},"linen_swab:mottled_dab":{success:!1,text:"Dense blot soaked through fiber without texture."}}},{stimulus_id:"CR3_T3",title:"Trial 3: Gold Leaf Polish",target_motif:"gold_leaf_seal",objective:"Smooth delicate gold leaf onto a seal for a mirror-like shine.",tools:[{id:"agate_stone",name:"Agate Burnisher Stone",icon:"&#11044;",affordance:"Silky smooth gemstone tip with zero friction"},{id:"polished_wood",name:"Dense Boxwood Block",icon:"&#129685;",affordance:"Dense wood block that gives flat pressure"},{id:"copper_burnisher",name:"Curved Copper Spoon",icon:"&#129348;",affordance:"Polished metal curve for gentle gliding"}],methods:[{id:"friction_free_rub",name:"Small Circles",desc:"Small circular motions with light steady contact."},{id:"planar_press",name:"Flat Press",desc:"Straight downward pressure without sliding sideways."},{id:"chisel_scrape",name:"Angled Scrape",desc:"Drag across surface with sharp edge."}],feedback_map:{"agate_stone:friction_free_rub":{success:!0,text:"Flawless mirror-like specular gold luster achieved with zero abrasion."},"polished_wood:planar_press":{success:!0,text:"Uniformly bonded gold leaf with balanced satin foundation."},"copper_burnisher:friction_free_rub":{success:!0,text:"Deep warm metallic sheen burnished smoothly over seal."},"agate_stone:planar_press":{success:!0,text:"Firm adhesion established; solid reflective gilding."},"polished_wood:friction_free_rub":{success:!0,text:"Subtle warm satin luster across gold leaf."},"copper_burnisher:planar_press":{success:!0,text:"Stable flat bond achieved under spoon bowl."},"agate_stone:chisel_scrape":{success:!1,text:"Hard edge scratched through delicate gold foil."},"polished_wood:chisel_scrape":{success:!1,text:"Wood corner tore gold leaf away from size."},"copper_burnisher:chisel_scrape":{success:!1,text:"Metal rim gouged underlying paper impression."}}}];function r(){var h,o,v,f,g;if(m){i.innerHTML=`
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3</span>
           </div>
           ${T({icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>',goal:"Pair a tool with an action method, test the result, and adapt your approach.",steps:["Review the craft goal and available implements.","Choose an implement and an action method.","Click Apply Technique to test the result.","Refine your choice and confirm to finish World 6."]})}
         </div>
@@ -1442,9 +1441,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Trial ${e+1} of ${u.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Trial ${e+1} of ${u.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -1455,7 +1454,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Pick a tool and an action method below. Click Apply Technique to test your result. You can change your choice before confirming.
           </div>
@@ -1464,8 +1463,8 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <!-- LOOK AT THIS: Craft Objective Card -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider font-semibold">Craft Objective</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${x.stimulus_id}</span>
+            <span class="text-[10px] text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Craft Objective</span>
+            <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Trial ${e+1} of ${u.length}</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${x.title}</div>
           <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${x.objective}</div>
@@ -1473,7 +1472,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- INTERACTION AREA 1: Tool Selection -->
         <div class="mb-4 candidate-content-protected">
-          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-2">1. Select Implement:</div>
+          <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">1. Select Implement:</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             ${x.tools.map(y=>`
                 <div class="cr3-tool-card p-3.5 sm:p-4 bg-white border ${a===y.id?"border-[var(--accent-gold)] bg-amber-50/50 shadow-xs":"border-[var(--grid-border)]"} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[64px]" data-id="${y.id}" tabindex="0" role="button" aria-label="${y.name}">
@@ -1489,7 +1488,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- INTERACTION AREA 2: Method Selection -->
         <div class="mb-4 candidate-content-protected">
-          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-2">2. Choose Action Method:</div>
+          <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">2. Choose Action Method:</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             ${x.methods.map(y=>`
                 <div class="cr3-method-card p-3.5 sm:p-4 bg-white border ${s===y.id?"border-[var(--accent-gold)] bg-amber-50/50 shadow-xs":"border-[var(--grid-border)]"} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[64px]" data-id="${y.id}" tabindex="0" role="button" aria-label="${y.name}">
@@ -1512,7 +1511,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         ${p?`
           <div class="p-4 bg-white border ${p.success?"border-emerald-600/40 text-emerald-950":"border-amber-600/40 text-amber-950"} mb-4 rounded-xs text-xs leading-relaxed animate-fadeIn candidate-content-protected">
-            <div class="font-mono text-[10px] uppercase font-semibold mb-1 ${p.success?"text-emerald-800":"text-amber-800"}">Material Outcome Observation</div>
+            <div class="font-sans text-[10px] uppercase font-semibold mb-1 ${p.success?"text-emerald-800":"text-amber-800"}">Material Outcome Observation</div>
             <div>${p.text}</div>
           </div>
         `:""}
@@ -1525,7 +1524,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Trial ${e+1} of ${u.length}
         </div>
       </div>
@@ -1533,7 +1532,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3</span>
           </div>
           ${T({icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>',goal:"Press the wax seal on each of the 3 required invitation envelopes.",steps:["Mandatory requirement: Exactly 3 invitations.","Review the named recipient on each handcrafted envelope.","Click the button to press the wax seal.","Completing all 3 fulfills this activity requirement."]})}
         </div>
@@ -1543,9 +1542,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Envelope ${e+1} of ${s.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Envelope ${e+1} of ${s.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -1556,7 +1555,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Review the recipient below. Click Press Wax Seal. Completing all 3 fulfills this activity.
           </div>
@@ -1565,7 +1564,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <!-- LOOK AT THIS: Envelope Preview -->
         <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 text-center shadow-xs rounded-xs candidate-content-protected">
           <div class="w-full max-w-sm mx-auto min-h-[140px] bg-amber-50/70 border border-[var(--grid-border)] flex flex-col items-center justify-center p-5 relative shadow-sm rounded-xs">
-            <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-mono">Ceremonial Invitation</span>
+            <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-sans">Ceremonial Invitation</span>
             <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1.5">${u.recipient}</div>
             <div class="text-[11px] text-stone-500 mt-0.5">${u.note}</div>
             
@@ -1584,7 +1583,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Envelope ${e+1} of ${s.length} (Required Minimum: 3)
         </div>
       </div>
@@ -1592,7 +1591,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3</span>
           </div>
           ${T({icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>',goal:"Prepare 3 required folders. Then decide whether to finish or make extras.",steps:["Complete the 3 required courtesy folders.","After the third folder, you will be given a clear choice.","You may conclude the activity now, or make extra folders.","Stopping at the minimum is completely neutral."]})}
         </div>
@@ -1602,9 +1601,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 7: The Repetition</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Folder ${a+1} of ${c.length}</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Folder ${a+1} of ${c.length}</span>
             </div>
-            <div class="text-[11px] text-amber-800 font-mono font-medium">Required Phase (${a+1}/3)</div>
+            <div class="text-[11px] text-amber-800 font-sans font-medium">Required Phase (${a+1}/3)</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -1615,7 +1614,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
             <div class="text-xs text-[var(--text-primary)] leading-relaxed">
               Assemble the required folder below. Three required folders are needed to satisfy this activity.
             </div>
@@ -1624,7 +1623,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <!-- LOOK AT THIS: Folder Card -->
           <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 text-center shadow-xs rounded-xs candidate-content-protected">
             <div class="max-w-sm mx-auto p-4 bg-white border border-[var(--grid-border)] rounded-xs">
-              <span class="text-[10px] uppercase tracking-wider text-stone-500 font-mono">Required Courtesy Folder</span>
+              <span class="text-[10px] uppercase tracking-wider text-stone-500 font-sans">Required Courtesy Folder</span>
               <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1">${y.label}</div>
             </div>
           </div>
@@ -1637,7 +1636,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           </div>
 
           <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
             Required Folder ${a+1} of ${c.length}
           </div>
         </div>
@@ -1647,9 +1646,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 7: The Repetition</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Choice Point</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Choice Point</span>
             </div>
-            <div class="text-[11px] text-emerald-800 font-mono font-medium">Requirement Completed</div>
+            <div class="text-[11px] text-emerald-800 font-sans font-medium">Requirement Completed</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -1682,8 +1681,8 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           </div>
 
           <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
-            Choice Point · Stopping is neutral
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
+            Choice Point &middot; Stopping is neutral
           </div>
         </div>
       `,(o=document.getElementById("concludeBtn"))==null||o.addEventListener("click",()=>{p="mouse",t("continuation_choice_selected",{choice:"conclude",optional_index:s,input_modality:p,task_def_version:"1.0"}),b({mini_game:"M2",observations_count:c.length+s})}),(v=document.getElementById("continueOptionalBtn"))==null||v.addEventListener("click",()=>{p="mouse",t("continuation_choice_selected",{choice:"continue",optional_index:s,input_modality:p,task_def_version:"1.0"}),e="optional",n(u[s]),r()});else if(e==="optional"){const y=u[s];i.innerHTML=`
@@ -1692,9 +1691,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 7: The Repetition</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Extra Folder ${s+1} of ${u.length}</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Extra Folder ${s+1} of ${u.length}</span>
             </div>
-            <div class="text-[11px] text-emerald-800 font-mono font-medium">Voluntary Extra</div>
+            <div class="text-[11px] text-emerald-800 font-sans font-medium">Voluntary Extra</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -1705,7 +1704,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-emerald-50/70 border border-emerald-400/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-mono text-emerald-800 font-semibold mb-1">Voluntary Extra</div>
+            <div class="text-[10px] uppercase tracking-wider font-sans text-emerald-800 font-semibold mb-1">Voluntary Extra</div>
             <div class="text-xs text-emerald-950 leading-relaxed">
               You may assemble this extra folder or finish at any time. Stopping is completely neutral.
             </div>
@@ -1714,7 +1713,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <!-- LOOK AT THIS: Folder Card -->
           <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 text-center shadow-xs rounded-xs candidate-content-protected">
             <div class="max-w-sm mx-auto p-4 bg-white border border-[var(--grid-border)] rounded-xs">
-              <span class="text-[10px] uppercase tracking-wider text-stone-500 font-mono">Voluntary Courtesy Folder</span>
+              <span class="text-[10px] uppercase tracking-wider text-stone-500 font-sans">Voluntary Courtesy Folder</span>
               <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1">${y.label}</div>
             </div>
           </div>
@@ -1730,7 +1729,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           </div>
 
           <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
             Extra Folder ${s+1} of ${u.length}
           </div>
         </div>
@@ -1738,7 +1737,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3</span>
           </div>
           ${T({icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>',goal:"Verify checklist rows for gallery preparation. A minimum of 3 rows is required.",steps:["Mandatory requirement: Exactly 3 checklist rows.","Completing 3 rows satisfies this activity.","You may conclude at any time after row 3, or continue. Stopping is neutral.","Feedback messages become shorter on later rows. This is normal and intentional."]})}
         </div>
@@ -1748,9 +1747,9 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Row ${e+1} of ${s.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Row ${e+1} of ${s.length}</span>
           </div>
-          <div class="text-[11px] ${n?"text-emerald-800":"text-amber-800"} font-mono font-medium">
+          <div class="text-[11px] ${n?"text-emerald-800":"text-amber-800"} font-sans font-medium">
             ${n?"Optional Continuation":"Required Minimum (3)"}
           </div>
         </div>
@@ -1767,7 +1766,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <div class="p-3.5 bg-stone-50 border border-stone-200 rounded-xs text-xs text-stone-700 mb-4 space-y-1 candidate-content-protected">
             <div class="flex items-center justify-between">
               <span class="font-medium text-[var(--text-primary)]">Mandatory minimum completed (3 of 3 rows).</span>
-              <span class="text-[10px] font-mono text-stone-500 uppercase font-semibold">Stopping is neutral</span>
+              <span class="text-[10px] font-sans text-stone-500 uppercase font-semibold">Stopping is neutral</span>
             </div>
             <p class="text-[11px] text-stone-600 leading-relaxed">
               You may finish this activity now, or verify extra rows. Feedback details decrease on later rows; this is normal and intentional.
@@ -1776,7 +1775,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         `:`
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
             <div class="text-xs text-[var(--text-primary)] leading-relaxed">
               Review the checklist row below and click Verify Row. Completing 3 rows satisfies the activity.
             </div>
@@ -1786,7 +1785,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <!-- LOOK AT THIS: Registry Row Item -->
         <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 text-center shadow-xs rounded-xs candidate-content-protected">
           <div class="max-w-md mx-auto p-4 bg-white border border-[var(--grid-border)] rounded-xs">
-            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-mono">Checklist Item</span>
+            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-sans">Checklist Item</span>
             <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1">${r.row_name}</div>
           </div>
         </div>
@@ -1806,7 +1805,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Row ${e+1} of ${s.length}
         </div>
       </div>
@@ -1817,7 +1816,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           ${i||'<i data-lucide="compass" class="w-5 h-5"></i>'}
         </div>
         <div>
-          <span class="text-[10px] uppercase tracking-widest text-[var(--accent-gold)] font-medium">Activity Guide · طریقہ کار</span>
+          <span class="text-[10px] uppercase tracking-widest text-[var(--accent-gold)] font-medium">Activity Guide &middot; طریقہ کار</span>
           <h3 class="text-base font-serif text-[var(--text-primary)] font-semibold">${l}</h3>
         </div>
       </div>
@@ -1848,10 +1847,10 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <p class="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">${c}</p>
       </div>
       <div class="text-left sm:text-right shrink-0">
-        <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-mono">Part ${m+1} of 3</span>
+        <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-sans">Part ${m+1} of 3</span>
       </div>
     </div>
-  `;switch(t){case"W1":ee(i,s);break;case"W2":Q(i,s);break;case"W3":ie(i,s);break;case"W4":de(i,s);break;case"W5":me(i,s);break;case"W6":be(i,s);break;case"W7":ye(i,s);break;default:e&&e({});break}}let d={sessionId:null,configHash:null,worldSequence:[],seeds:{},screen:"consent",pausedPreviousScreen:null,sjtScenarios:[],currentSjtIndex:0,sjtResponses:{},currentWorldIndex:0,currentMiniGameIndex:0,accessibilityModes:[],segmentId:1,seq:1,telemetryQueue:[],isPaused:!1,activeMiniGameInProgress:!1,telemetryTerminal:!1};const D="alfaaz_recruit_state",q="alfaaz_recruit_unsent";function C(){try{const i={sessionId:d.sessionId,configHash:d.configHash,worldSequence:d.worldSequence,seeds:d.seeds,screen:d.screen,sjtScenarios:d.sjtScenarios,currentSjtIndex:d.currentSjtIndex,sjtResponses:d.sjtResponses,currentWorldIndex:d.currentWorldIndex,currentMiniGameIndex:d.currentMiniGameIndex,accessibilityModes:d.accessibilityModes,segmentId:d.segmentId,seq:d.seq,isPaused:d.isPaused,activeMiniGameInProgress:d.activeMiniGameInProgress||!1};sessionStorage.setItem(D,JSON.stringify(i)),sessionStorage.setItem(q,JSON.stringify(d.telemetryQueue))}catch(i){console.warn("[Persistence] Error saving sessionStorage:",i)}}function Ce(){try{const i=sessionStorage.getItem(D),l=sessionStorage.getItem(q);if(l){const t=JSON.parse(l);Array.isArray(t)&&(d.telemetryQueue=t)}if(i){const t=JSON.parse(i);if(t.sessionId){if(d.sessionId=t.sessionId,d.configHash=t.configHash||null,d.worldSequence=t.worldSequence||[],d.seeds=t.seeds||{},d.screen=t.screen||"consent",d.sjtScenarios=t.sjtScenarios||[],d.currentSjtIndex=t.currentSjtIndex||0,d.sjtResponses=t.sjtResponses||{},d.currentWorldIndex=t.currentWorldIndex||0,d.currentMiniGameIndex=t.currentMiniGameIndex||0,d.accessibilityModes=t.accessibilityModes||[],d.seq=t.seq||1,d.isPaused=t.isPaused||!1,d.segmentId=(t.segmentId||1)+1,k(d.screen,"segment_start",{segment_id:d.segmentId}),t.activeMiniGameInProgress&&t.screen==="games"){const b=d.worldSequence[d.currentWorldIndex],m=H(b,d.currentMiniGameIndex);k("game","interrupted",{mini_game:m,reason:"page_reload"}),d.currentMiniGameIndex<2?d.currentMiniGameIndex++:(d.currentMiniGameIndex=0,d.currentWorldIndex++),d.activeMiniGameInProgress=!1}return C(),!0}}}catch(i){console.warn("[Persistence] Error restoring sessionStorage:",i)}return!1}async function L(i,l={}){if(window.globalApiFetch)return await window.globalApiFetch(i,l);const t=window.ALFAAZ_API_URL||"https://alfaaz-project.onrender.com",b={"Content-Type":"application/json",...l.headers||{}};return fetch(`${t}${i}`,{...l,headers:b})}function k(i,l,t={},b={},m="mouse",e=null,a=null){const s=performance.now();let p=t,c=b;try{const r=JSON.stringify(t),n=JSON.stringify(b),x=new TextEncoder().encode(r).length+new TextEncoder().encode(n).length;x>4096&&(p={event_oversize:!0,original_size_bytes:x},c={oversized:!0})}catch{}const u={seq:d.seq++,segment_id:d.segmentId,t_ms:s,screen:i,game_world:d.worldSequence[d.currentWorldIndex]||null,mini_game:e,trial:a,action:l,input_type:m,task_def_version:t&&t.task_def_version||"1.0",state:c,data:p};d.telemetryQueue.push(u),C(),(d.telemetryQueue.length>=50||l==="minigame_end"||l==="sjt_complete")&&P()}let B=!1;async function P(){if(B||!d.sessionId||d.telemetryQueue.length===0||d.telemetryTerminal)return;B=!0;const i=[...d.telemetryQueue],l=i.slice(0,100),t=i.slice(100);d.telemetryQueue=t,C();try{const b=await L("/recruit/telemetry",{method:"POST",body:JSON.stringify({session_id:d.sessionId,events:l})});if(b&&b.status===422){const m=await b.json().catch(()=>({}));if(m.detail&&(m.detail.detail==="events_cap_reached"||m.detail.status==="DATA_LIMITED")){console.warn("[Telemetry] Terminal event cap reached (50,000). Halting future telemetry flushes."),d.telemetryTerminal=!0,d.telemetryQueue=[...l,...t],C(),B=!1;return}}if(b&&b.status===413){if(console.warn("[Telemetry] Batch rejected with HTTP 413 (oversize)."),l.length>1){const m=Math.ceil(l.length/2);d.telemetryQueue=[...l.slice(0,m),...l.slice(m),...t]}else console.error("[Telemetry] Single event exceeds body limit. Discarding oversized payload.");C(),B=!1;return}if(!b||!b.ok)throw new Error(b?`HTTP ${b.status}`:"No response");C()}catch(b){console.warn("[Telemetry] Flush failed, re-queuing:",b),d.telemetryQueue=[...l,...d.telemetryQueue],C()}finally{B=!1}}setInterval(()=>{d.sessionId&&d.telemetryQueue.length>0&&!d.telemetryTerminal&&P()},2500);window.addEventListener("beforeunload",()=>{if(d.sessionId&&d.telemetryQueue.length>0){const i=window.ALFAAZ_API_URL||"",l=JSON.stringify({session_id:d.sessionId,events:d.telemetryQueue.slice(0,100)});navigator.sendBeacon(`${i}/recruit/telemetry`,l)}});window.addEventListener("pagehide",()=>{if(d.sessionId&&d.telemetryQueue.length>0){const i=window.ALFAAZ_API_URL||"",l=JSON.stringify({session_id:d.sessionId,events:d.telemetryQueue.slice(0,100)});navigator.sendBeacon(`${i}/recruit/telemetry`,l)}});document.addEventListener("visibilitychange",()=>{document.hidden?(k(d.screen,"visibility_hidden",{timestamp:Date.now()}),k(d.screen,"tab_hidden",{timestamp:Date.now()}),P()):(k(d.screen,"visibility_visible",{timestamp:Date.now()}),k(d.screen,"tab_visible",{timestamp:Date.now()}))});window.addEventListener("blur",()=>{k(d.screen,"blur",{timestamp:Date.now()})});window.addEventListener("focus",()=>{k(d.screen,"focus",{timestamp:Date.now()})});document.addEventListener("DOMContentLoaded",async()=>{Ce(),I(),Ae()});function Ae(){const i=document.getElementById("pauseBtn");i==null||i.addEventListener("click",U);const l=document.getElementById("exitBtn");l==null||l.addEventListener("click",()=>{confirm("Are you sure you wish to exit the volunteer assessment? You can return at any time.")&&(k(d.screen,"candidate_exited"),P(),window.location.href="index.html")})}function U(){d.isPaused?(d.isPaused=!1,k(d.screen,"resume"),d.screen=d.pausedPreviousScreen||"sjt",I()):(d.isPaused=!0,d.pausedPreviousScreen=d.screen,k(d.screen,"pause"),d.screen="paused",I())}function I(){const i=document.getElementById("recruitApp"),l=document.getElementById("sessionHeaderControls"),t=document.getElementById("topProgressBar"),b=document.getElementById("progressBarFill");switch(d.screen!=="consent"&&d.screen!=="complete"&&d.screen!=="paused"?(l==null||l.classList.remove("hidden"),t==null||t.classList.remove("hidden")):(l==null||l.classList.add("hidden"),t==null||t.classList.add("hidden")),window.lucide&&window.lucide.createIcons(),d.screen){case"consent":Ee(i);break;case"identity":Re(i);break;case"accessibility":Ie(i);break;case"warmup":$e(i);break;case"sjt":O(i,b);break;case"games":Y(i,b);break;case"paused":Pe(i);break;case"complete":Me(i);break}}function Ee(i){var e;i.innerHTML=`
+  `;switch(t){case"W1":ee(i,s);break;case"W2":Q(i,s);break;case"W3":ie(i,s);break;case"W4":de(i,s);break;case"W5":pe(i,s);break;case"W6":be(i,s);break;case"W7":ye(i,s);break;default:e&&e({});break}}let d={sessionId:null,configHash:null,worldSequence:[],seeds:{},screen:"consent",pausedPreviousScreen:null,sjtScenarios:[],currentSjtIndex:0,sjtResponses:{},currentWorldIndex:0,currentMiniGameIndex:0,accessibilityModes:[],segmentId:1,seq:1,telemetryQueue:[],isPaused:!1,activeMiniGameInProgress:!1,telemetryTerminal:!1};const D="alfaaz_recruit_state",q="alfaaz_recruit_unsent";function C(){try{const i={sessionId:d.sessionId,configHash:d.configHash,worldSequence:d.worldSequence,seeds:d.seeds,screen:d.screen,sjtScenarios:d.sjtScenarios,currentSjtIndex:d.currentSjtIndex,sjtResponses:d.sjtResponses,currentWorldIndex:d.currentWorldIndex,currentMiniGameIndex:d.currentMiniGameIndex,accessibilityModes:d.accessibilityModes,segmentId:d.segmentId,seq:d.seq,isPaused:d.isPaused,activeMiniGameInProgress:d.activeMiniGameInProgress||!1};sessionStorage.setItem(D,JSON.stringify(i)),sessionStorage.setItem(q,JSON.stringify(d.telemetryQueue))}catch(i){console.warn("[Persistence] Error saving sessionStorage:",i)}}function Ce(){try{const i=sessionStorage.getItem(D),l=sessionStorage.getItem(q);if(l){const t=JSON.parse(l);Array.isArray(t)&&(d.telemetryQueue=t)}if(i){const t=JSON.parse(i);if(t.sessionId){if(d.sessionId=t.sessionId,d.configHash=t.configHash||null,d.worldSequence=t.worldSequence||[],d.seeds=t.seeds||{},d.screen=t.screen||"consent",d.sjtScenarios=t.sjtScenarios||[],d.currentSjtIndex=t.currentSjtIndex||0,d.sjtResponses=t.sjtResponses||{},d.currentWorldIndex=t.currentWorldIndex||0,d.currentMiniGameIndex=t.currentMiniGameIndex||0,d.accessibilityModes=t.accessibilityModes||[],d.seq=t.seq||1,d.isPaused=t.isPaused||!1,d.segmentId=(t.segmentId||1)+1,k(d.screen,"segment_start",{segment_id:d.segmentId}),t.activeMiniGameInProgress&&t.screen==="games"){const b=d.worldSequence[d.currentWorldIndex],m=H(b,d.currentMiniGameIndex);k("game","interrupted",{mini_game:m,reason:"page_reload"}),d.currentMiniGameIndex<2?d.currentMiniGameIndex++:(d.currentMiniGameIndex=0,d.currentWorldIndex++),d.activeMiniGameInProgress=!1}return C(),!0}}}catch(i){console.warn("[Persistence] Error restoring sessionStorage:",i)}return!1}async function L(i,l={}){if(window.globalApiFetch)return await window.globalApiFetch(i,l);const t=window.ALFAAZ_API_URL||"https://alfaaz-project.onrender.com",b={"Content-Type":"application/json",...l.headers||{}};return fetch(`${t}${i}`,{...l,headers:b})}function k(i,l,t={},b={},m="mouse",e=null,a=null){const s=performance.now();let p=t,c=b;try{const r=JSON.stringify(t),n=JSON.stringify(b),x=new TextEncoder().encode(r).length+new TextEncoder().encode(n).length;x>4096&&(p={event_oversize:!0,original_size_bytes:x},c={oversized:!0})}catch{}const u={seq:d.seq++,segment_id:d.segmentId,t_ms:s,screen:i,game_world:d.worldSequence[d.currentWorldIndex]||null,mini_game:e,trial:a,action:l,input_type:m,task_def_version:t&&t.task_def_version||"1.0",state:c,data:p};d.telemetryQueue.push(u),C(),(d.telemetryQueue.length>=50||l==="minigame_end"||l==="sjt_complete")&&P()}let O=!1;async function P(){if(O||!d.sessionId||d.telemetryQueue.length===0||d.telemetryTerminal)return;O=!0;const i=[...d.telemetryQueue],l=i.slice(0,100),t=i.slice(100);d.telemetryQueue=t,C();try{const b=await L("/recruit/telemetry",{method:"POST",body:JSON.stringify({session_id:d.sessionId,events:l})});if(b&&b.status===422){const m=await b.json().catch(()=>({}));if(m.detail&&(m.detail.detail==="events_cap_reached"||m.detail.status==="DATA_LIMITED")){console.warn("[Telemetry] Terminal event cap reached (50,000). Halting future telemetry flushes."),d.telemetryTerminal=!0,d.telemetryQueue=[...l,...t],C(),O=!1;return}}if(b&&b.status===413){if(console.warn("[Telemetry] Batch rejected with HTTP 413 (oversize)."),l.length>1){const m=Math.ceil(l.length/2);d.telemetryQueue=[...l.slice(0,m),...l.slice(m),...t]}else console.error("[Telemetry] Single event exceeds body limit. Discarding oversized payload.");C(),O=!1;return}if(!b||!b.ok)throw new Error(b?`HTTP ${b.status}`:"No response");C()}catch(b){console.warn("[Telemetry] Flush failed, re-queuing:",b),d.telemetryQueue=[...l,...d.telemetryQueue],C()}finally{O=!1}}setInterval(()=>{d.sessionId&&d.telemetryQueue.length>0&&!d.telemetryTerminal&&P()},2500);window.addEventListener("beforeunload",()=>{if(d.sessionId&&d.telemetryQueue.length>0){const i=window.ALFAAZ_API_URL||"",l=JSON.stringify({session_id:d.sessionId,events:d.telemetryQueue.slice(0,100)});navigator.sendBeacon(`${i}/recruit/telemetry`,l)}});window.addEventListener("pagehide",()=>{if(d.sessionId&&d.telemetryQueue.length>0){const i=window.ALFAAZ_API_URL||"",l=JSON.stringify({session_id:d.sessionId,events:d.telemetryQueue.slice(0,100)});navigator.sendBeacon(`${i}/recruit/telemetry`,l)}});document.addEventListener("visibilitychange",()=>{document.hidden?(k(d.screen,"visibility_hidden",{timestamp:Date.now()}),k(d.screen,"tab_hidden",{timestamp:Date.now()}),P()):(k(d.screen,"visibility_visible",{timestamp:Date.now()}),k(d.screen,"tab_visible",{timestamp:Date.now()}))});window.addEventListener("blur",()=>{k(d.screen,"blur",{timestamp:Date.now()})});window.addEventListener("focus",()=>{k(d.screen,"focus",{timestamp:Date.now()})});document.addEventListener("DOMContentLoaded",async()=>{Ce(),I(),Ae()});function Ae(){const i=document.getElementById("pauseBtn");i==null||i.addEventListener("click",U);const l=document.getElementById("exitBtn");l==null||l.addEventListener("click",()=>{confirm("Are you sure you wish to exit the volunteer assessment? You can return at any time.")&&(k(d.screen,"candidate_exited"),P(),window.location.href="index.html")})}function U(){d.isPaused?(d.isPaused=!1,k(d.screen,"resume"),d.screen=d.pausedPreviousScreen||"sjt",I()):(d.isPaused=!0,d.pausedPreviousScreen=d.screen,k(d.screen,"pause"),d.screen="paused",I())}function I(){const i=document.getElementById("recruitApp"),l=document.getElementById("sessionHeaderControls"),t=document.getElementById("topProgressBar"),b=document.getElementById("progressBarFill");switch(d.screen!=="consent"&&d.screen!=="complete"&&d.screen!=="paused"?(l==null||l.classList.remove("hidden"),t==null||t.classList.remove("hidden")):(l==null||l.classList.add("hidden"),t==null||t.classList.add("hidden")),window.lucide&&window.lucide.createIcons(),d.screen){case"consent":Ee(i);break;case"identity":Re(i);break;case"accessibility":Ie(i);break;case"warmup":$e(i);break;case"sjt":B(i,b);break;case"games":G(i,b);break;case"paused":Pe(i);break;case"complete":Me(i);break}}function Ee(i){var e;i.innerHTML=`
     <div class="space-y-6">
       <div class="border-b border-[var(--grid-border)] pb-4 text-center">
         <span class="act-badge">Onboarding & Research</span>
@@ -1962,7 +1961,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         </button>
       </div>
 
-      <div id="warmupStatus" class="text-xs text-[var(--text-secondary)] tracking-wider uppercase font-mono">
+      <div id="warmupStatus" class="text-xs text-[var(--text-secondary)] tracking-wider uppercase font-medium">
         Waiting for tap 1 of 3...
       </div>
     </div>
@@ -1987,7 +1986,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
                 </button>
               </div>
             </div>
-          `,(u=document.getElementById("retrySjtLoadBtn"))==null||u.addEventListener("click",()=>{c()})}}c()}})}function O(i,l){var c;const t=d.sjtScenarios[d.currentSjtIndex];if(!t){G();return}const b=d.sjtScenarios.length,m=d.currentSjtIndex+1;l&&(l.style.width=`${(m-1)/(b+7)*100}%`);const e=document.getElementById("segmentProgress");e&&(e.textContent=`SJT ${m}/${b}`);const a=d.sjtResponses[t.id]||null,s=t.options.map(u=>`
+          `,(u=document.getElementById("retrySjtLoadBtn"))==null||u.addEventListener("click",()=>{c()})}}c()}})}function B(i,l){var c;const t=d.sjtScenarios[d.currentSjtIndex];if(!t){Y();return}const b=d.sjtScenarios.length,m=d.currentSjtIndex+1;l&&(l.style.width=`${(m-1)/(b+7)*100}%`);const e=document.getElementById("segmentProgress");e&&(e.textContent=`SJT ${m}/${b}`);const a=d.sjtResponses[t.id]||null,s=t.options.map(u=>`
     <div class="option-card min-h-[48px] ${a===u.id?"selected":""}" data-opt-id="${u.id}" tabindex="0" role="button" aria-label="Option ${u.id.slice(-1)}">
       <span class="font-serif text-sm font-semibold text-[var(--accent-gold)] shrink-0">${u.id.slice(-1)}.</span>
       <span class="text-xs sm:text-sm text-[var(--text-primary)] leading-relaxed">${u.text}</span>
@@ -2001,8 +2000,8 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <span class="act-title-ur font-serif">${t.act_title_ur||""}</span>
           <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">Scenario ${m} of ${b}</h2>
         </div>
-        <div class="text-[11px] sm:text-xs text-[var(--text-secondary)] uppercase tracking-wider font-mono">
-          Question ${m} / ${b}
+        <div class="text-[11px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider font-medium">
+          Part 1 &middot; ${m} of ${b}
         </div>
       </div>
 
@@ -2025,13 +2024,13 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
 
       <!-- PRIMARY ACTION -->
       <div class="pt-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-[var(--grid-border)]">
-        <span class="text-xs text-[var(--text-secondary)] order-2 sm:order-1 font-mono text-[11px]">Tip: Press keys 1–4 to choose</span>
+        <span class="text-xs text-[var(--text-secondary)] order-2 sm:order-1 text-[11px]">Tip: Press keys 1-4 to choose</span>
         <button id="nextSjtBtn" ${a?"":"disabled"} class="w-full sm:w-auto min-h-[44px] px-7 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 disabled:hover:bg-[var(--text-primary)] transition shadow-sm rounded-xs order-1 sm:order-2">
           ${m===b?"Complete Part 1 &rarr;":"Next Scenario &rarr;"}
         </button>
       </div>
     </div>
-  `,k("sjt","scenario_displayed",{scenario_id:t.id,index:m}),i.querySelectorAll(".option-card").forEach(u=>{u.addEventListener("click",()=>{const r=u.getAttribute("data-opt-id");d.sjtResponses[t.id]=r,k("sjt","option_selected",{scenario_id:t.id,option_id:r}),O(i,l)})}),(c=document.getElementById("nextSjtBtn"))==null||c.addEventListener("click",()=>{d.sjtResponses[t.id]&&(d.currentSjtIndex++,O(i,l))});const p=u=>{if(["1","2","3","4"].includes(u.key)){const r=parseInt(u.key)-1;t.options[r]&&(d.sjtResponses[t.id]=t.options[r].id,k("sjt","option_selected_key",{scenario_id:t.id,option_id:t.options[r].id}),O(i,l))}};window.onkeydown=p}async function G(){var l;window.onkeydown=null;const i=document.getElementById("recruitApp");i&&(i.innerHTML=`
+  `,k("sjt","scenario_displayed",{scenario_id:t.id,index:m}),i.querySelectorAll(".option-card").forEach(u=>{u.addEventListener("click",()=>{const r=u.getAttribute("data-opt-id");d.sjtResponses[t.id]=r,k("sjt","option_selected",{scenario_id:t.id,option_id:r}),B(i,l)})}),(c=document.getElementById("nextSjtBtn"))==null||c.addEventListener("click",()=>{d.sjtResponses[t.id]&&(d.currentSjtIndex++,B(i,l))});const p=u=>{if(["1","2","3","4"].includes(u.key)){const r=parseInt(u.key)-1;t.options[r]&&(d.sjtResponses[t.id]=t.options[r].id,k("sjt","option_selected_key",{scenario_id:t.id,option_id:t.options[r].id}),B(i,l))}};window.onkeydown=p}async function Y(){var l;window.onkeydown=null;const i=document.getElementById("recruitApp");i&&(i.innerHTML=`
       <div class="space-y-6 text-center py-16 animate-fadeIn">
         <div class="w-8 h-8 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-3" style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
         <h2 class="text-xl font-serif text-[var(--text-primary)]">Saving Judgments...</h2>
@@ -2050,7 +2049,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
             </button>
           </div>
         </div>
-      `,(l=document.getElementById("retrySjtSubmitBtn"))==null||l.addEventListener("click",()=>{G()}))}}function Y(i,l){const t=d.worldSequence[d.currentWorldIndex];if(!t||d.currentWorldIndex>=d.worldSequence.length){Le();return}d.activeMiniGameInProgress=!0,C();const b=document.getElementById("segmentProgress");b&&(b.textContent=`World ${d.currentWorldIndex+1}/7`),l&&(l.style.width=`${(d.currentSjtIndex+d.currentWorldIndex+1)/(d.sjtScenarios.length+7)*100}%`),Se({appContainer:i,worldCode:t,worldIndex:d.currentWorldIndex,miniGameIndex:d.currentMiniGameIndex,logEvent:(m,e,a,s)=>{const p=H(t,d.currentMiniGameIndex);k("game",m,e,a,s,p)},onMiniGameComplete:m=>{d.activeMiniGameInProgress=!1;const e=H(t,d.currentMiniGameIndex);k("game","minigame_end",m,{},"mouse",e),P(),d.currentMiniGameIndex<2?d.currentMiniGameIndex++:(d.currentMiniGameIndex=0,d.currentWorldIndex++),C(),Y(i,l)}})}function H(i,l){const t={W1:["F1","F2","F3"],W2:["A1","A2","A3"],W3:["C1","C2","C3"],W4:["E1","E2","E3"],W5:["Q1","Q2","Q3"],W6:["CR1","CR2","CR3"],W7:["M1","M2","M3"]};return t[i]&&t[i][l]||"MG"}async function Le(){d.activeMiniGameInProgress=!1,C();const i=document.getElementById("recruitApp");i&&(i.innerHTML=`
+      `,(l=document.getElementById("retrySjtSubmitBtn"))==null||l.addEventListener("click",()=>{Y()}))}}function G(i,l){const t=d.worldSequence[d.currentWorldIndex];if(!t||d.currentWorldIndex>=d.worldSequence.length){Le();return}d.activeMiniGameInProgress=!0,C();const b=document.getElementById("segmentProgress");b&&(b.textContent=`World ${d.currentWorldIndex+1}/7`),l&&(l.style.width=`${(d.currentSjtIndex+d.currentWorldIndex+1)/(d.sjtScenarios.length+7)*100}%`),Se({appContainer:i,worldCode:t,worldIndex:d.currentWorldIndex,miniGameIndex:d.currentMiniGameIndex,logEvent:(m,e,a,s)=>{const p=H(t,d.currentMiniGameIndex);k("game",m,e,a,s,p)},onMiniGameComplete:m=>{d.activeMiniGameInProgress=!1;const e=H(t,d.currentMiniGameIndex);k("game","minigame_end",m,{},"mouse",e),P(),d.currentMiniGameIndex<2?d.currentMiniGameIndex++:(d.currentMiniGameIndex=0,d.currentWorldIndex++),C(),G(i,l)}})}function H(i,l){const t={W1:["F1","F2","F3"],W2:["A1","A2","A3"],W3:["C1","C2","C3"],W4:["E1","E2","E3"],W5:["Q1","Q2","Q3"],W6:["CR1","CR2","CR3"],W7:["M1","M2","M3"]};return t[i]&&t[i][l]||"MG"}async function Le(){d.activeMiniGameInProgress=!1,C();const i=document.getElementById("recruitApp");i&&(i.innerHTML=`
       <div class="space-y-6 text-center py-16 animate-fadeIn">
         <div class="w-10 h-10 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <h2 class="text-2xl font-serif text-[var(--text-primary)]">Finalizing Assessment...</h2>

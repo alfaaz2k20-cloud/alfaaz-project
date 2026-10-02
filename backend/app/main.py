@@ -24,10 +24,50 @@ from sqlalchemy import inspect as sa_inspect, text as sa_text
 try:
     with engine.begin() as _conn:
         _insp = sa_inspect(_conn)
-        if "telemetry_events" in _insp.get_table_names():
+        _tables = _insp.get_table_names()
+        if "telemetry_events" in _tables:
             _existing_cols = [c["name"] for c in _insp.get_columns("telemetry_events")]
             if "task_def_version" not in _existing_cols:
                 _conn.execute(sa_text("ALTER TABLE telemetry_events ADD COLUMN task_def_version VARCHAR DEFAULT '1.0'"))
+        if "evidence" in _tables:
+            _ev_cols = [c["name"] for c in _insp.get_columns("evidence")]
+            _conn_dialect = _conn.dialect.name
+            _missing_ev = [
+                ("version", "INTEGER DEFAULT 1"),
+                ("is_superseded", "BOOLEAN DEFAULT 0" if _conn_dialect == "sqlite" else "BOOLEAN DEFAULT FALSE"),
+                ("superseded_at", "DATETIME" if _conn_dialect == "sqlite" else "TIMESTAMP"),
+                ("spec_version", "VARCHAR DEFAULT '2026-10-v2'"),
+                ("sjt_version", "VARCHAR DEFAULT '2026-09-rev'"),
+                ("scoring_version", "VARCHAR DEFAULT '1.0-exact-thirds'"),
+                ("feature_version", "VARCHAR DEFAULT '1.0'"),
+                ("config_hash", "VARCHAR"),
+                ("created_at", "DATETIME DEFAULT CURRENT_TIMESTAMP" if _conn_dialect == "sqlite" else "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+            ]
+            for _cname, _ctype in _missing_ev:
+                if _cname not in _ev_cols:
+                    _conn.execute(sa_text(f"ALTER TABLE evidence ADD COLUMN {_cname} {_ctype}"))
+        if "applicant_identities" in _tables:
+            _ai_cols = [c["name"] for c in _insp.get_columns("applicant_identities")]
+            if "phone_or_contact" not in _ai_cols:
+                _conn.execute(sa_text("ALTER TABLE applicant_identities ADD COLUMN phone_or_contact VARCHAR"))
+        if "recruit_sessions" in _tables:
+            _rs_cols = [c["name"] for c in _insp.get_columns("recruit_sessions")]
+            _conn_dialect = _conn.dialect.name
+            _missing_rs = [
+                ("current_screen", "VARCHAR"),
+                ("order_id", "INTEGER"),
+                ("spec_version", "VARCHAR DEFAULT '2026-10-v2'"),
+                ("sjt_version", "VARCHAR DEFAULT '2026-09-rev'"),
+                ("scoring_version", "VARCHAR DEFAULT '1.0-exact-thirds'"),
+                ("feature_version", "VARCHAR DEFAULT '1.0'"),
+                ("config_hash", "VARCHAR"),
+                ("device_class", "VARCHAR"),
+                ("input_modality", "VARCHAR"),
+                ("completed_at", "DATETIME" if _conn_dialect == "sqlite" else "TIMESTAMP")
+            ]
+            for _cname, _ctype in _missing_rs:
+                if _cname not in _rs_cols:
+                    _conn.execute(sa_text(f"ALTER TABLE recruit_sessions ADD COLUMN {_cname} {_ctype}"))
 except Exception as _e:
     pass
 

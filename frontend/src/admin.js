@@ -408,19 +408,22 @@ document.addEventListener('DOMContentLoaded', () => {
           card.className = 'data-card user-card';
           const safeName = window.escapeHtml(s.full_name || 'Anonymous Applicant');
           const safeEmail = window.escapeHtml(s.email || '—');
+          const contactInfo = s.phone_or_contact ? ` · ${window.escapeHtml(s.phone_or_contact)}` : '';
           const dateStr = s.created_at ? new Date(s.created_at).toLocaleString() : '—';
-          const sjtBadgeText = s.has_sjt ? 'SJT: Completed' : 'SJT: Not Started';
+          const sjtBadgeText = s.has_sjt ? 'SJT: Completed' : 'SJT: In Progress';
           const sjtBadgeClass = s.has_sjt ? 'badge-approved' : 'badge-pending';
           const tasksCount = s.completed_tasks_count || 0;
           const tasksText = `Tasks: ${tasksCount} / 21 completed`;
           const evidenceStatus = s.evidence_status || (tasksCount >= 21 && s.has_sjt ? 'Evidence Collected' : 'In Progress');
           const evidenceBadgeClass = evidenceStatus === 'Evidence Collected' ? 'badge-approved' : 'badge-pending';
+          const sessionStatus = s.status || 'ACTIVE';
+          const sessionStatusClass = sessionStatus === 'COMPLETED' ? 'badge-approved' : (sessionStatus === 'CONSENTED' ? 'badge-pending' : 'badge-open');
 
           card.innerHTML = `
             <div style="flex:1;">
-              <div class="data-label">Candidate</div>
+              <div class="data-label">Candidate · Status: <span class="badge ${sessionStatusClass}" style="font-size:9px; padding:1px 5px; margin-left:4px;">${sessionStatus}</span></div>
               <div class="data-display" style="font-weight: 500;">${safeName}</div>
-              <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">${safeEmail} · <span style="font-family:monospace; font-size:10px;">${s.session_id.slice(0, 8)}...</span></div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">${safeEmail}${contactInfo} · <span style="font-family:monospace; font-size:10px;">${s.session_id.slice(0, 8)}...</span></div>
               <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
                 <span class="badge ${sjtBadgeClass}" style="font-size:10px;">${sjtBadgeText}</span>
                 <span class="badge" style="font-size:10px; background:#f0eeea; color:var(--text-primary); border:1px solid var(--grid-border);">${tasksText}</span>
@@ -430,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="min-width:200px;">
               <div class="data-label">Evidence & Extractor Calibration</div>
               <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
-                <span class="badge" style="font-size:10px; background:#e8f4f8; color:#1e5066; border:1px solid #bce0ed; align-self:flex-start;">Active Extractors: 2 / 2</span>
+                <span class="badge" style="font-size:10px; background:#e8f4f8; color:#1e5066; border:1px solid #bce0ed; align-self:flex-start;">Active Extractors: 2 / 2 (A1, A2)</span>
                 <span style="font-size:10px; color:var(--text-secondary); font-style:italic;">19 extractors quarantined (Design Freeze v1.1)</span>
               </div>
               <div style="font-size:11px; color:var(--text-secondary); margin-top:6px;">Submitted: ${dateStr}</div>
@@ -471,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json();
         if (!res.ok) {
-          body.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--accent-red); font-size:13px;">Error loading dossier: ${window.escapeHtml(data.detail || 'Server error')}</div>`;
+          body.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--accent-red); font-size:13px;">Error loading dossier (${res.status}): ${window.escapeHtml(data.detail || 'Server error')}<br><br><button class="action-btn gold" onclick="viewCandidateDossier('${sessionId}')" style="font-size:11px; padding:0.5rem 1rem;">Retry</button></div>`;
           return;
         }
 
@@ -486,6 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const candidateName = window.escapeHtml(applicant.full_name || 'Candidate');
         const candidateEmail = window.escapeHtml(applicant.email || '—');
+        const candidatePhone = window.escapeHtml(applicant.phone_or_contact || '—');
         const consentDateStr = consent.timestamp ? new Date(consent.timestamp).toLocaleString() : (meta.created_at ? new Date(meta.created_at).toLocaleString() : '—');
         const dpdpVersion = window.escapeHtml(consent.consent_text_version || '1.0');
         const durationMin = meta.duration_minutes !== null && meta.duration_minutes !== undefined ? `${meta.duration_minutes} min` : 'In progress';
@@ -500,7 +504,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; font-size:12px;">
               <div><strong>Full Name:</strong> ${candidateName}</div>
               <div><strong>Email:</strong> ${candidateEmail}</div>
+              <div><strong>Contact / Phone:</strong> ${candidatePhone}</div>
               <div><strong>Session ID:</strong> <span style="font-family:monospace; font-size:11px;">${sessionId}</span></div>
+              <div><strong>Session Status:</strong> <span class="badge ${meta.status === 'COMPLETED' ? 'badge-approved' : 'badge-pending'}" style="font-size:9px;">${meta.status || 'ACTIVE'}</span></div>
+              <div><strong>Duration:</strong> ${durationMin}</div>
               <div><strong>Consent Recorded:</strong> ${consentDateStr}</div>
               <div><strong>DPDP Notice Version:</strong> <span style="font-family:monospace; font-size:11px;">v${dpdpVersion}</span></div>
               <div><strong>Age Confirmation:</strong> Confirmed 18+</div>
@@ -695,7 +702,8 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       } catch (err) {
         console.error('Candidate dossier load error:', err);
-        body.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--accent-red);">Failed to load candidate dossier. Please check server connection.</div>';
+        const errMsg = err?.message || 'Please check server connection.';
+        body.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--accent-red);">Failed to load candidate dossier.<br><span style="font-size:11px; color:var(--text-secondary); margin-top:6px; display:inline-block;">${window.escapeHtml(errMsg)}</span><br><br><button class="action-btn gold" onclick="viewCandidateDossier('${sessionId}')" style="font-size:11px; padding:0.5rem 1rem;">Retry</button></div>`;
       }
     };
 

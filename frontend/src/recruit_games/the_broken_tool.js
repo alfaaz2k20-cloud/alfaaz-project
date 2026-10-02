@@ -81,7 +81,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3</span>
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`,
@@ -114,9 +114,9 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Stage ${currentStageIdx + 1} of ${stages.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Stage ${currentStageIdx + 1} of ${stages.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -127,7 +127,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Review the broken part below. Select one or more workbench items to fix it. Multiple valid combinations exist.
           </div>
@@ -136,8 +136,8 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
         <!-- LOOK AT THIS: Constraint Card -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider font-semibold">Atelier Hardware Need</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${st.stage_id}</span>
+            <span class="text-[10px] text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Atelier Hardware Need</span>
+            <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Stage ${currentStageIdx + 1} of ${stages.length}</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${st.title}</div>
           <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${st.scenario}</div>
@@ -145,7 +145,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
 
         <!-- INTERACTION AREA: Workbench Selection -->
         <div class="p-4 sm:p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs candidate-content-protected">
-          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-3">Available Workbench Components (Click to Equip)</div>
+          <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-3">Available Workbench Components (Click to Equip)</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 mb-4">
             ${st.materials.map(m => {
               const isSelected = selectedParts.includes(m.id);
@@ -157,7 +157,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
                     <div class="text-[10px] text-[var(--text-secondary)]">${m.role}</div>
                   </div>
                   <div class="mt-2 text-right">
-                    <span class="text-[10px] font-mono font-semibold ${isSelected ? 'text-[var(--accent-gold)]' : 'text-stone-400'}">${isSelected ? '&#10003; EQUIPPED' : '+ ADD'}</span>
+                    <span class="text-[10px] font-sans font-semibold ${isSelected ? 'text-[var(--accent-gold)]' : 'text-stone-400'}">${isSelected ? '&#10003; EQUIPPED' : '+ ADD'}</span>
                   </div>
                 </div>
               `;
@@ -176,7 +176,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
 
           ${testFeedback ? `
             <div class="mt-3 p-3 bg-white border ${testFeedback.valid ? 'border-emerald-600/40 text-emerald-900' : 'border-amber-600/40 text-amber-900'} text-xs rounded-xs leading-relaxed animate-fadeIn">
-              <span class="font-mono text-[10px] uppercase font-semibold block mb-0.5">${testFeedback.valid ? 'Assembly Test: Passed' : 'Assembly Test: Note'}</span>
+              <span class="font-sans text-[10px] uppercase font-semibold block mb-0.5">${testFeedback.valid ? 'Assembly Test: Passed' : 'Assembly Test: Note'}</span>
               ${testFeedback.message}
             </div>
           ` : ''}
@@ -190,7 +190,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Stage ${currentStageIdx + 1} of ${stages.length}
         </div>
       </div>
@@ -356,7 +356,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3</span>
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`,
@@ -391,9 +391,9 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 6: The Broken Tool</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Episode ${currentEpisode + 1} of ${episodes.length}</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Episode ${currentEpisode + 1} of ${episodes.length}</span>
             </div>
-            <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+            <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -404,7 +404,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
             <div class="text-xs text-[var(--text-primary)] leading-relaxed">
               Read the room context below. Choose an initial layout concept for the gallery space.
             </div>
@@ -413,8 +413,8 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           <!-- LOOK AT THIS: Context Card -->
           <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
             <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider font-semibold">Gallery Layout Setting</span>
-              <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${ep.episode_id}</span>
+              <span class="text-[10px] text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Gallery Layout Setting</span>
+              <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Episode ${currentEpisode + 1} of ${episodes.length}</span>
             </div>
             <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${ep.title}</div>
             <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${ep.pre_context}</div>
@@ -422,7 +422,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 
           <!-- INTERACTION AREA: Initial Strategy Selection -->
           <div class="mb-5 space-y-2.5 candidate-content-protected">
-            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Select Initial Curation Concept:</div>
+            <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider">Select Initial Curation Concept:</div>
             ${ep.pre_strategies.map(s => {
               const isSelected = initialStrategy === s.id;
               return `
@@ -445,8 +445,8 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           </div>
 
           <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
-            Episode ${currentEpisode + 1} of ${episodes.length} · Step 1
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
+            Episode ${currentEpisode + 1} of ${episodes.length} &middot; Step 1
           </div>
         </div>
       `;
@@ -496,9 +496,9 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 6: The Broken Tool</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Episode ${currentEpisode + 1} of ${episodes.length}</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Episode ${currentEpisode + 1} of ${episodes.length}</span>
             </div>
-            <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Condition Shift</div>
+            <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Condition Shift</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -511,7 +511,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           <div class="p-4 bg-amber-50 border border-amber-300/80 mb-4 rounded-xs animate-fadeIn candidate-content-protected">
             <div class="flex items-center gap-2 mb-1">
               <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse"></span>
-              <span class="text-[10px] font-mono uppercase tracking-wider text-amber-900 font-bold">New Room Condition Detected</span>
+              <span class="text-[10px] font-sans uppercase tracking-wider text-amber-900 font-bold">New Room Condition Detected</span>
             </div>
             <div class="text-xs text-amber-950 leading-relaxed font-serif">${ep.shift_description}</div>
             <div class="mt-2 text-[11px] text-amber-800">
@@ -521,14 +521,14 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 
           <!-- INTERACTION AREA: Post-Shift Strategy Selection -->
           <div class="mb-5 space-y-2.5 candidate-content-protected">
-            <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">Choose Adapted Layout:</div>
+            <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider">Choose Adapted Layout:</div>
             ${ep.post_strategies.map(s => {
               const isSelected = revisedStrategy === s.id;
               return `
                 <div class="post-strat-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
                   <div>
                     <div class="font-medium text-[var(--text-primary)]">${s.label}</div>
-                    <div class="text-[10px] font-mono text-[var(--text-secondary)] mt-0.5">${s.note}</div>
+                    <div class="text-[10px] font-sans text-[var(--text-secondary)] mt-0.5">${s.note}</div>
                   </div>
                   <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '&#10003;' : ''}</span>
                 </div>
@@ -544,8 +544,8 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           </div>
 
           <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
-            Episode ${currentEpisode + 1} of ${episodes.length} · Step 2
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
+            Episode ${currentEpisode + 1} of ${episodes.length} &middot; Step 2
           </div>
         </div>
       `;
@@ -709,7 +709,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3</span>
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>`,
@@ -744,9 +744,9 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Trial ${currentTrial + 1} of ${trials.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Trial ${currentTrial + 1} of ${trials.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -757,7 +757,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Pick a tool and an action method below. Click Apply Technique to test your result. You can change your choice before confirming.
           </div>
@@ -766,8 +766,8 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
         <!-- LOOK AT THIS: Craft Objective Card -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[10px] text-[var(--accent-gold)] font-mono uppercase tracking-wider font-semibold">Craft Objective</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${tr.stimulus_id}</span>
+            <span class="text-[10px] text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Craft Objective</span>
+            <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Trial ${currentTrial + 1} of ${trials.length}</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${tr.title}</div>
           <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${tr.objective}</div>
@@ -775,7 +775,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
         <!-- INTERACTION AREA 1: Tool Selection -->
         <div class="mb-4 candidate-content-protected">
-          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-2">1. Select Implement:</div>
+          <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">1. Select Implement:</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             ${tr.tools.map(t => {
               const isSelected = selectedTool === t.id;
@@ -794,7 +794,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
         <!-- INTERACTION AREA 2: Method Selection -->
         <div class="mb-4 candidate-content-protected">
-          <div class="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-2">2. Choose Action Method:</div>
+          <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">2. Choose Action Method:</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             ${tr.methods.map(m => {
               const isSelected = selectedMethod === m.id;
@@ -820,7 +820,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
         ${feedbackText ? `
           <div class="p-4 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-emerald-950' : 'border-amber-600/40 text-amber-950'} mb-4 rounded-xs text-xs leading-relaxed animate-fadeIn candidate-content-protected">
-            <div class="font-mono text-[10px] uppercase font-semibold mb-1 ${feedbackText.success ? 'text-emerald-800' : 'text-amber-800'}">Material Outcome Observation</div>
+            <div class="font-sans text-[10px] uppercase font-semibold mb-1 ${feedbackText.success ? 'text-emerald-800' : 'text-amber-800'}">Material Outcome Observation</div>
             <div>${feedbackText.text}</div>
           </div>
         ` : ''}
@@ -833,7 +833,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Trial ${currentTrial + 1} of ${trials.length}
         </div>
       </div>

@@ -102,7 +102,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3</span>
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`,
@@ -134,9 +134,9 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Item ${currentDecision + 1} of ${decisions.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Item ${currentDecision + 1} of ${decisions.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -147,7 +147,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Review the artifact below. Choose an action. Optional reference notes are available if you want them.
           </div>
@@ -156,8 +156,8 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
         <!-- LOOK AT THIS -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Artifact Record</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${d.stimulus_id}</span>
+            <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Artifact Record</span>
+            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Record ${currentTrial + 1} of 4</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${d.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${d.scenario}</div>
@@ -165,7 +165,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
 
         <!-- INTERACTION AREA: Optional Reference Notes -->
         <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
+          <div class="text-[10px] uppercase font-sans text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
             <span>Optional Reference Notes (Click to Open)</span>
             <span class="text-[9px] text-[var(--text-secondary)] font-normal">Voluntary consultation</span>
           </div>
@@ -177,7 +177,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
                     <svg class="w-3.5 h-3.5 text-[var(--accent-gold)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     ${res.topic}
                   </span>
-                  <span class="text-[9px] font-mono uppercase text-[var(--text-secondary)]">${viewedResources[res.id] ? 'Opened' : 'Inspect'}</span>
+                  <span class="text-[9px] font-sans uppercase text-[var(--text-secondary)]">${viewedResources[res.id] ? 'Opened' : 'Inspect'}</span>
                 </div>
                 ${viewedResources[res.id] ? `<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-fadeIn">${res.summary}</p>` : ''}
               </div>
@@ -187,7 +187,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR CHOICE: Curatorial Actions -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Choose Preservation Action:</div>
+          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Choose Preservation Action:</div>
           <div class="space-y-2.5">
             ${d.options.map(opt => `
               <div class="q1-opt p-3.5 bg-white border ${selectedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-choice="${opt.id}" tabindex="0" role="button">
@@ -195,7 +195,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
                   <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedChoice === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedChoice === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase shrink-0">${opt.id}</span>
+                <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium shrink-0">Action ${String.fromCharCode(65 + d.options.indexOf(opt))}</span>
               </div>
             `).join('')}
           </div>
@@ -209,7 +209,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Item ${currentDecision + 1} of ${decisions.length}
         </div>
       </div>
@@ -376,7 +376,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3</span>
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>`,
@@ -409,9 +409,9 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Relic ${currentTrial + 1} of ${relics.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Relic ${currentTrial + 1} of ${relics.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -422,7 +422,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Examine the relic below. Inspect any clues you wish. Then choose its origin.
           </div>
@@ -431,8 +431,8 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
         <!-- LOOK AT THIS -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Relic Specimen</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${r.stimulus_id}</span>
+            <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Relic Specimen</span>
+            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Specimen ${currentTrial + 1} of 3</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${r.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${r.description}</div>
@@ -440,7 +440,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
 
         <!-- INTERACTION AREA: Clues Inspection Grid -->
         <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
+          <div class="text-[10px] uppercase font-sans text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
             <span>Physical Clues Available for Inspection</span>
             <span class="text-[9px] text-[var(--text-secondary)] font-normal">Click clue to examine</span>
           </div>
@@ -449,7 +449,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
               <div class="clue-btn p-3.5 bg-white border ${inspectedClues[c.id] ? 'border-[var(--accent-gold)] bg-amber-50/40 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[48px] flex flex-col justify-between" data-clue="${c.id}" tabindex="0" role="button">
                 <div class="font-medium text-[var(--text-primary)] flex items-center justify-between">
                   <span>${c.label}</span>
-                  <span class="text-[9px] font-mono uppercase text-[var(--text-secondary)]">${inspectedClues[c.id] ? 'Inspected' : 'Inspect'}</span>
+                  <span class="text-[9px] font-sans uppercase text-[var(--text-secondary)]">${inspectedClues[c.id] ? 'Inspected' : 'Inspect'}</span>
                 </div>
                 ${inspectedClues[c.id] ? `<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-fadeIn">${c.detail}</p>` : ''}
               </div>
@@ -459,7 +459,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
 
         <!-- YOUR CHOICE: Attribution Selection -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Conclude Historical Origin:</div>
+          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Conclude Historical Origin:</div>
           <div class="space-y-2.5">
             ${r.attributions.map(attr => `
               <div class="q2-attr p-3.5 bg-white border ${selectedAttribution === attr.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-attr="${attr.id}" tabindex="0" role="button">
@@ -467,7 +467,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
                   <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedAttribution === attr.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAttribution === attr.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${attr.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase shrink-0">${attr.id}</span>
+                <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium shrink-0">Origin ${String.fromCharCode(65 + r.attributions.indexOf(attr))}</span>
               </div>
             `).join('')}
           </div>
@@ -481,7 +481,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Relic ${currentTrial + 1} of ${relics.length}
         </div>
       </div>
@@ -634,7 +634,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3</span>
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`,
@@ -667,9 +667,9 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Episode ${currentEpisode + 1} of ${episodes.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Episode ${currentEpisode + 1} of ${episodes.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 2 minutes</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -680,7 +680,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read the mystery below. You may open the reference note. Choose the best answer to continue.
           </div>
@@ -689,8 +689,8 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
         <!-- LOOK AT THIS -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Historic Case</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${ep.stimulus_id}</span>
+            <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Historic Case</span>
+            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Case ${currentTrial + 1} of 3</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${ep.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${ep.ambiguity_text}</div>
@@ -699,17 +699,17 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
         <!-- INTERACTION AREA 1: Optional Context Retrieval -->
         <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-            <span class="text-[10px] uppercase font-mono text-[var(--accent-gold)] font-semibold tracking-wider">Archival Research Note</span>
+            <span class="text-[10px] uppercase font-sans text-[var(--accent-gold)] font-semibold tracking-wider">Archival Research Note</span>
             ${!contextRetrieved ? `
-              <button type="button" id="retrieveContextBtn" class="px-4 py-2 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] text-[10px] font-mono uppercase tracking-wider text-[var(--text-primary)] hover:bg-amber-50 transition rounded-xs shadow-xs min-h-[44px] flex items-center justify-center gap-1.5" tabindex="0">
+              <button type="button" id="retrieveContextBtn" class="px-4 py-2 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] text-[10px] font-sans uppercase tracking-wider text-[var(--text-primary)] hover:bg-amber-50 transition rounded-xs shadow-xs min-h-[44px] flex items-center justify-center gap-1.5" tabindex="0">
                 <span>Open Research Note</span> &rarr;
               </button>
-            ` : '<span class="text-[10px] font-mono text-emerald-700 font-semibold uppercase">Note Opened</span>'}
+            ` : '<span class="text-[10px] font-sans text-emerald-700 font-semibold uppercase">Note Opened</span>'}
           </div>
 
           ${contextRetrieved ? `
             <div class="p-3.5 bg-white border border-emerald-600/40 rounded-xs text-xs text-[var(--text-primary)] leading-relaxed animate-fadeIn">
-              <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-800 font-semibold mb-1">${ep.context_title}</div>
+              <div class="text-[10px] font-sans uppercase tracking-wider text-emerald-800 font-semibold mb-1">${ep.context_title}</div>
               <div>${ep.context_text}</div>
             </div>
           ` : `
@@ -721,7 +721,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR CHOICE: Downstream Integration Decision -->
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">${ep.decision_question}</div>
+          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">${ep.decision_question}</div>
           <div class="space-y-2.5">
             ${ep.choices.map(c => `
               <div class="q3-choice p-3.5 bg-white border ${selectedIntegrationChoice === c.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-choice="${c.id}" tabindex="0" role="button">
@@ -729,7 +729,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
                   <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedIntegrationChoice === c.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedIntegrationChoice === c.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${c.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase shrink-0">${c.id}</span>
+                <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium shrink-0">Format ${c.id.replace('CHOICE_', '')}</span>
               </div>
             `).join('')}
           </div>
@@ -743,7 +743,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Episode ${currentEpisode + 1} of ${episodes.length}
         </div>
       </div>

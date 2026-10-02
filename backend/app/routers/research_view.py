@@ -74,6 +74,7 @@ def list_research_sessions(
             "status": s.status,
             "full_name": identity.full_name if identity else "Anonymous Applicant",
             "email": identity.email if identity else "unknown",
+            "phone_or_contact": identity.phone_or_contact if identity else None,
             "has_sjt": has_sjt,
             "completed_tasks_count": completed_tasks_count,
             "evidence_status": "Evidence Collected" if evidence_collected else ("In Progress" if (has_sjt or completed_tasks_count > 0) else "Not Started"),
@@ -203,7 +204,8 @@ def get_session_research_view(
             "duration_minutes": duration_minutes,
             "applicant": {
                 "full_name": identity.full_name if identity else None,
-                "email": identity.email if identity else None
+                "email": identity.email if identity else None,
+                "phone_or_contact": identity.phone_or_contact if identity else None
             },
             "consent": {
                 "consent_text_version": consent.consent_text_version if consent else "1.0",

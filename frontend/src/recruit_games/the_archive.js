@@ -117,9 +117,9 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 2: The Archive</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Item ${currentDocIdx + 1} of ${documents.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Item ${currentDocIdx + 1} of ${documents.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -131,8 +131,8 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
           <div class="flex justify-between items-center mb-1">
-            <span class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold">Your Task</span>
-            <span class="text-xs text-[var(--accent-gold)] font-mono font-medium">${doc.rule_prompt}</span>
+            <span class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold">Your Task</span>
+            <span class="text-xs text-[var(--accent-gold)] font-sans font-medium">${doc.rule_prompt}</span>
           </div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Examine this page. Pick the shelf that matches the active sorting rule.
@@ -142,7 +142,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
         <!-- LOOK AT THIS -->
         <div class="p-5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected">
           <div class="flex justify-between items-start mb-2">
-            <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase font-mono">${doc.id}</span>
+            <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase font-medium">Folio ${currentDocIdx + 1} of ${documents.length}</span>
             <button id="guideBtn" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1 hover:bg-amber-50 transition flex items-center gap-1.5 rounded-xs min-h-[32px]" tabindex="0">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               ${guideOpened ? 'Close Guide' : 'Shelf Guide'}
@@ -163,7 +163,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
 
         <!-- INTERACTION AREA -->
         <div class="mb-4 candidate-content-protected">
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-mono">Select Destination Shelf:</div>
+          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Select Destination Shelf:</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             ${folders.map(f => `
               <button type="button" class="folder-btn p-3.5 bg-white border border-[var(--grid-border)] text-xs font-semibold hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-left shadow-xs flex items-center gap-2.5 rounded-xs min-h-[48px]" data-folder="${f.id}" tabindex="0">
@@ -175,7 +175,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Page ${currentDocIdx + 1} of ${documents.length}
         </div>
       </div>
@@ -319,9 +319,9 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 2: The Archive</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Page ${currentTrial + 1} of 4</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Page ${currentTrial + 1} of 4</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -332,7 +332,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read the page condition notes below. Choose the best handling option.
           </div>
@@ -341,8 +341,8 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
         <!-- LOOK AT THIS -->
         <div class="p-5 bg-white border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-[10px] tracking-widest text-[#bd6f5d] uppercase font-semibold font-mono">${t.stimulus_id}</span>
-            <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase bg-[#faf8f5] px-2 py-0.5 border border-[var(--grid-border)] rounded-xs">${t.type_note}</span>
+            <span class="text-[10px] tracking-widest text-[#bd6f5d] uppercase font-semibold">Manuscript Folio ${currentTrial + 1} of 4</span>
+            <span class="text-[10px] text-[var(--text-secondary)] uppercase bg-[#faf8f5] px-2 py-0.5 border border-[var(--grid-border)] rounded-xs font-medium">${t.type_note}</span>
           </div>
           <h3 class="text-base font-serif text-[var(--text-primary)] font-medium mb-1.5">${t.title}</h3>
           <p class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[#faf8f5] p-3 border border-[var(--grid-border)]/60 rounded-xs">
@@ -352,7 +352,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
 
         <!-- INTERACTION AREA -->
         <div class="space-y-2.5 mb-4 candidate-content-protected">
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-mono">Choose handling action:</div>
+          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose handling action:</div>
           ${actions.map(a => `
             <div class="a2-opt p-3.5 bg-white border ${chosenAction === a.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition rounded-xs min-h-[52px]" data-action="${a.id}" tabindex="0" role="button">
               <div class="flex justify-between items-center mb-0.5">
@@ -360,7 +360,6 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
                   <span class="w-2 h-2 rounded-full ${chosenAction === a.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                   ${a.title}
                 </div>
-                <span class="text-[10px] font-mono text-[var(--accent-gold)] uppercase tracking-wider">${a.tag}</span>
               </div>
               <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed pl-3.5">${a.desc}</div>
             </div>
@@ -368,9 +367,9 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>${chosenAction ? `You selected: <strong class="text-[var(--text-primary)]">${activeAct?.title}</strong>` : 'Select an option above to continue.'}</span>
-          <span class="text-[10px] text-stone-400 font-mono">${currentTrial + 1} / 4</span>
+          <span class="text-[10px] text-stone-400 font-sans">${currentTrial + 1} / 4</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
@@ -505,9 +504,9 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 2: The Archive</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · 5 Cards</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; 5 Cards</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -518,7 +517,7 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read all 5 display cards. Click flag if a card has a mistake. Leave clean cards unflagged.
           </div>
@@ -532,15 +531,15 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
               <div class="record-card p-4 bg-white border ${isFlagged ? 'border-[#bd6f5d] bg-amber-50/20' : 'border-[var(--grid-border)]'} rounded-xs transition shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" data-id="${r.id}" tabindex="0">
                 <div class="space-y-1 flex-1">
                   <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-mono text-[var(--accent-gold)] uppercase tracking-wider">${r.id}</span>
+                    <span class="text-[10px] text-[var(--accent-gold)] uppercase tracking-wider font-semibold">Ledger Card ${idx + 1} of 5</span>
                   </div>
                   <div class="text-xs font-semibold text-[var(--text-primary)]">${r.title}</div>
-                  <div class="text-xs text-[var(--text-secondary)] font-mono leading-relaxed bg-[#faf8f5] p-2 border border-[var(--grid-border)]/60 rounded-xs mt-1">
+                  <div class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[#faf8f5] p-2.5 border border-[var(--grid-border)]/60 rounded-xs mt-1">
                     ${r.text}
                   </div>
                 </div>
 
-                <button type="button" class="toggle-flag-btn px-4 py-2.5 border text-xs font-mono uppercase tracking-wider shrink-0 transition rounded-xs min-h-[44px] w-full sm:w-auto ${isFlagged ? 'bg-[#bd6f5d] text-white border-[#bd6f5d]' : 'bg-white text-[var(--text-secondary)] border-[var(--grid-border)] hover:border-[var(--accent-gold)]'}" data-id="${r.id}">
+                <button type="button" class="toggle-flag-btn px-4 py-2.5 border text-xs font-sans uppercase tracking-wider shrink-0 transition rounded-xs min-h-[44px] w-full sm:w-auto ${isFlagged ? 'bg-[#bd6f5d] text-white border-[#bd6f5d]' : 'bg-white text-[var(--text-secondary)] border-[var(--grid-border)] hover:border-[var(--accent-gold)]'}" data-id="${r.id}">
                   ${isFlagged ? 'Mistake Flagged ✓' : 'Flag Mistake'}
                 </button>
               </div>
@@ -549,9 +548,9 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>Cards flagged: <strong class="text-[var(--text-primary)]">${flaggedRecords.size} of 5</strong></span>
-          <span class="text-[10px] text-stone-400 font-mono">Clean cards remain unflagged</span>
+          <span class="text-[10px] text-stone-400 font-sans">Clean cards remain unflagged</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->

@@ -79,9 +79,9 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 4: The Shifting Grid</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Tile ${currentIdx + 1} of ${trials.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Tile ${currentIdx + 1} of ${trials.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -92,7 +92,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Examine the tile below. Click Container 1 or 2 to file it.
           </div>
@@ -104,7 +104,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
             ${t.icon}
           </div>
           <div class="text-sm font-serif font-semibold text-[var(--text-primary)]">${t.label}</div>
-          <div class="text-[11px] text-[var(--text-secondary)] mt-0.5 font-mono uppercase">${t.color} &bull; ${t.shape}</div>
+          <div class="text-[11px] text-[var(--text-secondary)] mt-0.5 font-sans uppercase">${t.color} &bull; ${t.shape}</div>
         </div>
 
         <!-- INTERACTION AREA -->
@@ -112,17 +112,17 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
           <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 active:scale-98 transition text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_1" tabindex="0">
             <span class="text-2xl text-[var(--accent-gold)] block mb-1">&#9679;</span>
             <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 1</span>
-            <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-mono">Reference: Gold Circle</span>
+            <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Gold Circle</span>
           </button>
           <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 active:scale-98 transition text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
             <span class="text-2xl text-emerald-800 block mb-1">&#9632;</span>
             <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 2</span>
-            <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-mono">Reference: Sage Square</span>
+            <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Sage Square</span>
           </button>
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Tile ${currentIdx + 1} of ${trials.length}
         </div>
       </div>
@@ -272,9 +272,9 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 4: The Shifting Grid</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Event ${currentSeq + 1} of ${sequences.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Event ${currentSeq + 1} of ${sequences.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -285,7 +285,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read the situation below. Pick the most practical next step.
           </div>
@@ -296,12 +296,12 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${s.title}:</strong> ${s.situation}
           </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${s.stimulus_id}</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${currentTrial + 1} of 4</span>
         </div>
 
         <!-- INTERACTION AREA -->
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Available Responses:</div>
+          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Available Responses:</div>
           <div class="space-y-2.5">
             ${s.options.map(opt => `
               <div class="e2-opt p-3.5 bg-white border ${selectedAction === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-action="${opt.id}" tabindex="0" role="button">
@@ -309,16 +309,16 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedAction === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAction === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${opt.note}</span>
+                <span class="text-[10px] text-[var(--text-secondary)] uppercase font-medium">${opt.note}</span>
               </div>
             `).join('')}
           </div>
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>${selectedAction ? `You selected: <strong class="text-[var(--text-primary)]">${activeOpt?.label}</strong>` : 'Select an option above to continue.'}</span>
-          <span class="text-[10px] text-stone-400 font-mono">${currentSeq + 1} / ${sequences.length}</span>
+          <span class="text-[10px] text-stone-400 font-sans">${currentSeq + 1} / ${sequences.length}</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
@@ -470,9 +470,9 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 4: The Shifting Grid</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Condition ${currentCondition + 1} of ${conditions.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Condition ${currentCondition + 1} of ${conditions.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -483,7 +483,7 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Read the active condition below. Pick the layout that fits best.
           </div>
@@ -494,12 +494,12 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${c.title}:</strong> ${c.description}
           </span>
-          <span class="text-[10px] uppercase font-mono tracking-wider text-[var(--text-secondary)]">${c.stimulus_id}</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Layout ${currentCondition + 1} of ${conditions.length}</span>
         </div>
 
         <!-- INTERACTION AREA -->
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider mb-2.5">Layout Options:</div>
+          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Layout Options:</div>
           <div class="space-y-2.5">
             ${c.options.map(opt => `
               <div class="e3-opt p-3.5 bg-white border ${selectedLayout === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-layout="${opt.id}" tabindex="0" role="button">
@@ -507,16 +507,16 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedLayout === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedLayout === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
                 </span>
-                <span class="text-[10px] font-mono text-[var(--text-secondary)] uppercase">${opt.id}</span>
+                <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Option ${opt.id.replace('LAYOUT_', '')}</span>
               </div>
             `).join('')}
           </div>
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-mono text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>${selectedLayout ? `You selected: <strong class="text-[var(--text-primary)]">${activeLayout?.label}</strong>` : 'Select a layout above to continue.'}</span>
-          <span class="text-[10px] text-stone-400 font-mono">${currentCondition + 1} / ${conditions.length}</span>
+          <span class="text-[10px] text-stone-400 font-sans">${currentCondition + 1} / ${conditions.length}</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->

@@ -621,7 +621,7 @@ function renderWarmup(app) {
         </button>
       </div>
 
-      <div id="warmupStatus" class="text-xs text-[var(--text-secondary)] tracking-wider uppercase font-mono">
+      <div id="warmupStatus" class="text-xs text-[var(--text-secondary)] tracking-wider uppercase font-medium">
         Waiting for tap 1 of 3...
       </div>
     </div>
@@ -746,8 +746,8 @@ function renderSJT(app, progressBarFill) {
           <span class="act-title-ur font-serif">${scenario.act_title_ur || ''}</span>
           <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">Scenario ${current} of ${total}</h2>
         </div>
-        <div class="text-[11px] sm:text-xs text-[var(--text-secondary)] uppercase tracking-wider font-mono">
-          Question ${current} / ${total}
+        <div class="text-[11px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider font-medium">
+          Part 1 &middot; ${current} of ${total}
         </div>
       </div>
 
@@ -770,7 +770,7 @@ function renderSJT(app, progressBarFill) {
 
       <!-- PRIMARY ACTION -->
       <div class="pt-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-[var(--grid-border)]">
-        <span class="text-xs text-[var(--text-secondary)] order-2 sm:order-1 font-mono text-[11px]">Tip: Press keys 1–4 to choose</span>
+        <span class="text-xs text-[var(--text-secondary)] order-2 sm:order-1 text-[11px]">Tip: Press keys 1-4 to choose</span>
         <button id="nextSjtBtn" ${selectedOptId ? '' : 'disabled'} class="w-full sm:w-auto min-h-[44px] px-7 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 disabled:hover:bg-[var(--text-primary)] transition shadow-sm rounded-xs order-1 sm:order-2">
           ${current === total ? 'Complete Part 1 &rarr;' : 'Next Scenario &rarr;'}
         </button>

@@ -28,7 +28,7 @@ export function renderTutorialCard({ icon, goal, steps, onStart }) {
           ${icon || '<i data-lucide="compass" class="w-5 h-5"></i>'}
         </div>
         <div>
-          <span class="text-[10px] uppercase tracking-widest text-[var(--accent-gold)] font-medium">Activity Guide · طریقہ کار</span>
+          <span class="text-[10px] uppercase tracking-widest text-[var(--accent-gold)] font-medium">Activity Guide &middot; طریقہ کار</span>
           <h3 class="text-base font-serif text-[var(--text-primary)] font-semibold">${goal}</h3>
         </div>
       </div>
@@ -67,7 +67,7 @@ export function runMiniGame(context) {
         <p class="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">${mgDesc}</p>
       </div>
       <div class="text-left sm:text-right shrink-0">
-        <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-mono">Part ${miniGameIndex + 1} of 3</span>
+        <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-sans">Part ${miniGameIndex + 1} of 3</span>
       </div>
     </div>
   `;

@@ -48,7 +48,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3</span>
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>`,
@@ -79,9 +79,9 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 1 of 3 · Envelope ${currentIdx + 1} of ${units.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Envelope ${currentIdx + 1} of ${units.length}</span>
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-mono font-medium">Takes about 1 minute</div>
+          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->
@@ -92,7 +92,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
           <div class="text-xs text-[var(--text-primary)] leading-relaxed">
             Review the recipient below. Click Press Wax Seal. Completing all 3 fulfills this activity.
           </div>
@@ -101,7 +101,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
         <!-- LOOK AT THIS: Envelope Preview -->
         <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 text-center shadow-xs rounded-xs candidate-content-protected">
           <div class="w-full max-w-sm mx-auto min-h-[140px] bg-amber-50/70 border border-[var(--grid-border)] flex flex-col items-center justify-center p-5 relative shadow-sm rounded-xs">
-            <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-mono">Ceremonial Invitation</span>
+            <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-sans">Ceremonial Invitation</span>
             <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1.5">${u.recipient}</div>
             <div class="text-[11px] text-stone-500 mt-0.5">${u.note}</div>
             
@@ -120,7 +120,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Envelope ${currentIdx + 1} of ${units.length} (Required Minimum: 3)
         </div>
       </div>
@@ -199,7 +199,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3</span>
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`,
@@ -232,9 +232,9 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 7: The Repetition</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Folder ${mandatoryIdx + 1} of ${mandatoryUnits.length}</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Folder ${mandatoryIdx + 1} of ${mandatoryUnits.length}</span>
             </div>
-            <div class="text-[11px] text-amber-800 font-mono font-medium">Required Phase (${mandatoryIdx + 1}/3)</div>
+            <div class="text-[11px] text-amber-800 font-sans font-medium">Required Phase (${mandatoryIdx + 1}/3)</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -245,7 +245,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
 
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
             <div class="text-xs text-[var(--text-primary)] leading-relaxed">
               Assemble the required folder below. Three required folders are needed to satisfy this activity.
             </div>
@@ -254,7 +254,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           <!-- LOOK AT THIS: Folder Card -->
           <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 text-center shadow-xs rounded-xs candidate-content-protected">
             <div class="max-w-sm mx-auto p-4 bg-white border border-[var(--grid-border)] rounded-xs">
-              <span class="text-[10px] uppercase tracking-wider text-stone-500 font-mono">Required Courtesy Folder</span>
+              <span class="text-[10px] uppercase tracking-wider text-stone-500 font-sans">Required Courtesy Folder</span>
               <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1">${u.label}</div>
             </div>
           </div>
@@ -267,7 +267,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           </div>
 
           <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
             Required Folder ${mandatoryIdx + 1} of ${mandatoryUnits.length}
           </div>
         </div>
@@ -313,9 +313,9 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 7: The Repetition</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Choice Point</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Choice Point</span>
             </div>
-            <div class="text-[11px] text-emerald-800 font-mono font-medium">Requirement Completed</div>
+            <div class="text-[11px] text-emerald-800 font-sans font-medium">Requirement Completed</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -348,8 +348,8 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           </div>
 
           <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
-            Choice Point · Stopping is neutral
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
+            Choice Point &middot; Stopping is neutral
           </div>
         </div>
       `;
@@ -391,9 +391,9 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 7: The Repetition</span>
-              <span class="text-xs text-[var(--text-secondary)] font-mono">Part 2 of 3 · Extra Folder ${optionalIdx + 1} of ${optionalUnits.length}</span>
+              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Extra Folder ${optionalIdx + 1} of ${optionalUnits.length}</span>
             </div>
-            <div class="text-[11px] text-emerald-800 font-mono font-medium">Voluntary Extra</div>
+            <div class="text-[11px] text-emerald-800 font-sans font-medium">Voluntary Extra</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -404,7 +404,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
 
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-emerald-50/70 border border-emerald-400/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-mono text-emerald-800 font-semibold mb-1">Voluntary Extra</div>
+            <div class="text-[10px] uppercase tracking-wider font-sans text-emerald-800 font-semibold mb-1">Voluntary Extra</div>
             <div class="text-xs text-emerald-950 leading-relaxed">
               You may assemble this extra folder or finish at any time. Stopping is completely neutral.
             </div>
@@ -413,7 +413,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           <!-- LOOK AT THIS: Folder Card -->
           <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 text-center shadow-xs rounded-xs candidate-content-protected">
             <div class="max-w-sm mx-auto p-4 bg-white border border-[var(--grid-border)] rounded-xs">
-              <span class="text-[10px] uppercase tracking-wider text-stone-500 font-mono">Voluntary Courtesy Folder</span>
+              <span class="text-[10px] uppercase tracking-wider text-stone-500 font-sans">Voluntary Courtesy Folder</span>
               <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1">${u.label}</div>
             </div>
           </div>
@@ -429,7 +429,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           </div>
 
           <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
             Extra Folder ${optionalIdx + 1} of ${optionalUnits.length}
           </div>
         </div>
@@ -527,7 +527,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3</span>
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>`,
@@ -559,9 +559,9 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-mono">Part 3 of 3 · Row ${currentIdx + 1} of ${allUnits.length}</span>
+            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Row ${currentIdx + 1} of ${allUnits.length}</span>
           </div>
-          <div class="text-[11px] ${hasMetMinimum ? 'text-emerald-800' : 'text-amber-800'} font-mono font-medium">
+          <div class="text-[11px] ${hasMetMinimum ? 'text-emerald-800' : 'text-amber-800'} font-sans font-medium">
             ${hasMetMinimum ? 'Optional Continuation' : 'Required Minimum (3)'}
           </div>
         </div>
@@ -578,7 +578,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
           <div class="p-3.5 bg-stone-50 border border-stone-200 rounded-xs text-xs text-stone-700 mb-4 space-y-1 candidate-content-protected">
             <div class="flex items-center justify-between">
               <span class="font-medium text-[var(--text-primary)]">Mandatory minimum completed (3 of 3 rows).</span>
-              <span class="text-[10px] font-mono text-stone-500 uppercase font-semibold">Stopping is neutral</span>
+              <span class="text-[10px] font-sans text-stone-500 uppercase font-semibold">Stopping is neutral</span>
             </div>
             <p class="text-[11px] text-stone-600 leading-relaxed">
               You may finish this activity now, or verify extra rows. Feedback details decrease on later rows; this is normal and intentional.
@@ -587,7 +587,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
         ` : `
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-mono text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
             <div class="text-xs text-[var(--text-primary)] leading-relaxed">
               Review the checklist row below and click Verify Row. Completing 3 rows satisfies the activity.
             </div>
@@ -597,7 +597,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
         <!-- LOOK AT THIS: Registry Row Item -->
         <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 text-center shadow-xs rounded-xs candidate-content-protected">
           <div class="max-w-md mx-auto p-4 bg-white border border-[var(--grid-border)] rounded-xs">
-            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-mono">Checklist Item</span>
+            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-sans">Checklist Item</span>
             <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1">${u.row_name}</div>
           </div>
         </div>
@@ -617,7 +617,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-mono">
+        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
           Row ${currentIdx + 1} of ${allUnits.length}
         </div>
       </div>
