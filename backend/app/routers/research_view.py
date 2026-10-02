@@ -12,6 +12,7 @@ from app.models.recruit import (
 )
 from app.services.feature_extractor import extract_session_features
 from app.services.evidence_integrator import integrate_session_evidence
+from app.services.descriptive_task_record import get_session_task_records, DOSSIER_STATEMENT
 
 router = APIRouter(prefix="/recruit/research", tags=["Recruiter Research View"])
 
@@ -187,6 +188,8 @@ def get_session_research_view(
         },
         "evidence_by_parameter": evidence_dict,
         "features": formatted_features,
+        "task_records": get_session_task_records(db, session_id),
+        "task_records_statement": DOSSIER_STATEMENT,
         "data_quality_flags": [
             {"scope": fl.scope, "flag": fl.flag, "detail": fl.detail} for fl in flags
         ]

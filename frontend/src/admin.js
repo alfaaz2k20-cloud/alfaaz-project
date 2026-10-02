@@ -572,6 +572,50 @@ document.addEventListener('DOMContentLoaded', () => {
           `;
         }
 
+        // Format Task record (descriptive) Table
+        const taskRecords = data.task_records || [];
+        const taskStatement = data.task_records_statement || 'Descriptive task counts; not a score, not norm-referenced, and not a basis for automated decisions.';
+        let taskRecordsHtml = '';
+        if (taskRecords.length > 0) {
+          const trRows = taskRecords.map(r => {
+            const safeWorld = window.escapeHtml(r.world_name || r.world_id);
+            const safeGame = window.escapeHtml(r.game_name || r.game_id);
+            const safeText = window.escapeHtml(r.display_text);
+            const safeGid = window.escapeHtml(r.game_id);
+            const statusLabel = r.status;
+            return `
+              <tr style="border-bottom: 1px solid var(--grid-border);">
+                <td style="padding: 0.6rem 0.5rem; font-size: 11px; font-weight: 500; color: var(--text-primary);">${safeWorld}</td>
+                <td style="padding: 0.6rem 0.5rem; font-size: 11px; color: var(--text-secondary);"><span style="font-family:monospace; font-size:10px; background:#f0eeea; padding:1px 4px; border-radius:2px; margin-right:4px;">${safeGid}</span> ${safeGame}</td>
+                <td style="padding: 0.6rem 0.5rem; font-size: 11px; color: var(--text-primary);">${safeText}</td>
+                <td style="padding: 0.6rem 0.5rem; font-size: 10px; text-align: right; font-family: monospace; color: var(--text-secondary);">${statusLabel}</td>
+              </tr>
+            `;
+          }).join('');
+
+          taskRecordsHtml = `
+            <div style="margin-top: 2rem;">
+              <h4 style="font-family:var(--font-heading); font-size:1.3rem; margin-bottom:0.35rem; color:var(--text-primary);">Task record (descriptive)</h4>
+              <p style="font-size:11px; color:var(--text-secondary); font-style:italic; margin-bottom:0.75rem;">${taskStatement}</p>
+              <div style="overflow-x: auto; border: 1px solid var(--grid-border); background: #faf8f5;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                  <thead>
+                    <tr style="background: #f0eeea; border-bottom: 1px solid var(--grid-border); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">
+                      <th style="padding: 0.6rem 0.5rem;">World</th>
+                      <th style="padding: 0.6rem 0.5rem;">Interactive Task</th>
+                      <th style="padding: 0.6rem 0.5rem;">Factual Task Observation</th>
+                      <th style="padding: 0.6rem 0.5rem; text-align: right;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${trRows}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        }
+
         body.innerHTML = `
           <div style="font-size:12px; margin-bottom:1.5rem; background:rgba(189,111,93,0.08); border:1px solid var(--accent-gold); padding:1rem; line-height:1.6;">
             <strong>Safeguard Note:</strong> ${meta.safeguards?.banner || 'Research evidence view. Not for automated selection decisions.'} Scores reflect forced-choice trade-offs in scenario judgment and behavioral task observations.
@@ -590,6 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <h4 style="font-family:var(--font-heading); font-size:1.3rem; margin-bottom:1rem; color:var(--text-primary);">Evaluated Parameters (7)</h4>
             ${paramRows}
           </div>
+          ${taskRecordsHtml}
           ${featuresHtml}
           ${flagsHtml}
         `;
