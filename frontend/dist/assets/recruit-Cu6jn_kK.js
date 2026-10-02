@@ -692,7 +692,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${n.title}:</strong> ${n.partner_state}
           </span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Stage ${currentTrial+1} of 3</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Stage ${e+1} of 3</span>
         </div>
 
         <!-- INTERACTION AREA -->
@@ -836,7 +836,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${r.title}:</strong> ${r.situation}
           </span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${currentTrial+1} of 4</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${e+1} of 4</span>
         </div>
 
         <!-- INTERACTION AREA -->
@@ -972,7 +972,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Artifact Record</span>
-            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Record ${currentTrial+1} of 4</span>
+            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Record ${e+1} of 4</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${n.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${n.scenario}</div>
@@ -1155,7 +1155,7 @@ import"./global-DxYxv3W5.js";/* empty css               */const K={lines:["<stro
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Historic Case</span>
-            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Case ${currentTrial+1} of 3</span>
+            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Case ${e+1} of 3</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${n.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${n.ambiguity_text}</div>

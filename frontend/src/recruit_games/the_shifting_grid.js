@@ -296,7 +296,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${s.title}:</strong> ${s.situation}
           </span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${currentTrial + 1} of 4</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${currentSeq + 1} of 4</span>
         </div>
 
         <!-- INTERACTION AREA -->

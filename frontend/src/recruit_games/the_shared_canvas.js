@@ -554,7 +554,7 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${opp.title}:</strong> ${opp.partner_state}
           </span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Stage ${currentTrial + 1} of 3</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Stage ${currentOpportunity + 1} of 3</span>
         </div>
 
         <!-- INTERACTION AREA -->

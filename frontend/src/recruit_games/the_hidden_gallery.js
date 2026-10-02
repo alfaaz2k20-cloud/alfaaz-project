@@ -157,7 +157,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Artifact Record</span>
-            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Record ${currentTrial + 1} of 4</span>
+            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Record ${currentDecision + 1} of 4</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${d.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${d.scenario}</div>
@@ -690,7 +690,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Historic Case</span>
-            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Case ${currentTrial + 1} of 3</span>
+            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Case ${currentEpisode + 1} of 3</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${ep.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${ep.ambiguity_text}</div>
