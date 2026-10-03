@@ -422,10 +422,13 @@ function renderConsent(app) {
           <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--bg-primary)] border border-[var(--accent-green)]"></div>
           <h2 class="text-lg font-serif text-[var(--text-primary)] mb-2">Why We Observe</h2>
           <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
-            As you interact with the tasks, we collect behavioral telemetry (where you click, how long you pause). 
+            As you interact with the tasks, we collect behavioral telemetry. 
             <strong>Why do we do this?</strong> To understand your intuitive working style. It helps us match you to the right 
-            creative roles within the collective by measuring traits like empathy, curiosity, and emotional agility. 
+            creative roles within the collective. 
             Your raw data is pseudonymous and will never be used for automated rejection or sold to third parties.
+          </p>
+          <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
+          Contact Us: <a href="mailto:alfaaz2k20@gmail.com" class="text-[var(--accent-gold)] hover:underline">alfaaz2k20@gmail.com</a>
           </p>
         </div>
       </div>
