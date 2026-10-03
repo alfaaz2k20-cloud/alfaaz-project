@@ -118,12 +118,15 @@ def run_tests():
         comp_req = CompleteSessionRequest(session_id=s_id)
         res_comp_1 = complete_session(comp_req, db=db)
         assert_eq(res_comp_1["status"], "SUCCESS", "First complete call returns SUCCESS")
+        assert_eq(res_comp_1.get("session_status"), "COMPLETE", "First complete call returns session_status COMPLETE")
+        assert_eq(res_comp_1.get("is_already_completed"), False, "First complete call is_already_completed is False")
         db.refresh(sess)
         assert_eq(sess.status, "COMPLETE", "Session status is COMPLETE")
 
         # Second complete call (idempotent retry)
         res_comp_2 = complete_session(comp_req, db=db)
         assert_eq(res_comp_2["status"], "SUCCESS", "Second complete call returns SUCCESS")
+        assert_eq(res_comp_2.get("session_status"), "COMPLETE", "Second complete call returns session_status COMPLETE")
         assert_eq(res_comp_2.get("is_already_completed"), True, "is_already_completed flag is True")
 
         # 4. Test Telemetry Invariants for Completed Session (Cases A, B, C)
@@ -195,6 +198,112 @@ def run_tests():
         assert_true("metadata" in dossier, "Dossier metadata present")
         assert_true("dimensions" in dossier, "Dossier dimensions present")
         assert_eq(dossier["metadata"]["status"], "COMPLETE", "Dossier metadata reports COMPLETE status")
+
+    # 6. Test Legacy Schema Migration
+    print("\n--- Test 6: Legacy Database Schema Migration & Dossier Resilience ---")
+    legacy_engine = create_engine("sqlite:///:memory:")
+    SQLModel.metadata.create_all(legacy_engine)
+    from sqlalchemy import inspect as sa_insp_tool, text as sa_txt
+    with legacy_engine.begin() as lconn:
+        # Revert evidence table to legacy schema missing newly added columns
+        lconn.execute(sa_txt("DROP TABLE evidence"))
+        lconn.execute(sa_txt("""
+            CREATE TABLE evidence (
+                id INTEGER PRIMARY KEY,
+                session_id VARCHAR,
+                parameter VARCHAR,
+                game_status VARCHAR DEFAULT 'INSUFFICIENT',
+                game_band VARCHAR,
+                consistency VARCHAR DEFAULT 'NOT_COMPUTED',
+                relationship VARCHAR DEFAULT 'NOT_COMPUTED',
+                confidence VARCHAR DEFAULT 'LIMITED',
+                observed_behavior_summary TEXT,
+                data_quality_flags_json TEXT DEFAULT '[]'
+            )
+        """))
+
+        # Run migration procedure
+        _insp = sa_insp_tool(lconn)
+        _tables = _insp.get_table_names()
+        _conn_dialect = lconn.dialect.name
+
+        def _add_column_if_missing_test(table_name: str, col_name: str, col_type: str):
+            if table_name in _tables:
+                existing = [c["name"] for c in _insp.get_columns(table_name)]
+                if col_name not in existing:
+                    lconn.execute(sa_txt(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"))
+
+        missing_te = [
+            ("server_received", "DATETIME DEFAULT CURRENT_TIMESTAMP"),
+            ("game_world", "VARCHAR"),
+            ("mini_game", "VARCHAR"),
+            ("trial", "INTEGER"),
+            ("input_type", "VARCHAR"),
+            ("task_def_version", "VARCHAR DEFAULT '1.0'"),
+            ("state_json", "TEXT"),
+            ("data_json", "TEXT")
+        ]
+        for cname, ctype in missing_te:
+            _add_column_if_missing_test("telemetry_events", cname, ctype)
+        missing_ev = [
+            ("version", "INTEGER DEFAULT 1"),
+            ("is_superseded", "BOOLEAN DEFAULT 0"),
+            ("superseded_at", "DATETIME"),
+            ("spec_version", "VARCHAR DEFAULT '2026-10-v2'"),
+            ("sjt_version", "VARCHAR DEFAULT '2026-09-rev'"),
+            ("scoring_version", "VARCHAR DEFAULT '1.0-exact-thirds'"),
+            ("feature_version", "VARCHAR DEFAULT '1.0'"),
+            ("config_hash", "VARCHAR"),
+            ("created_at", "DATETIME DEFAULT CURRENT_TIMESTAMP"),
+            ("sjt_raw", "INTEGER"),
+            ("sjt_min", "INTEGER"),
+            ("sjt_max", "INTEGER"),
+            ("sjt_span", "INTEGER"),
+            ("sjt_num", "INTEGER"),
+            ("sjt_relative", "FLOAT"),
+            ("sjt_band", "VARCHAR"),
+            ("predicted_sjt_relative", "FLOAT"),
+            ("model_version", "VARCHAR"),
+            ("prediction_status", "VARCHAR"),
+            ("fused_relative", "FLOAT"),
+            ("profile_relative_score", "FLOAT"),
+            ("profile_relative_rank", "INTEGER"),
+            ("profile_relative_level", "VARCHAR"),
+            ("profile_completeness", "VARCHAR"),
+        ]
+        for cname, ctype in missing_ev:
+            _add_column_if_missing_test("evidence", cname, ctype)
+
+        missing_rs = [
+            ("current_screen", "VARCHAR"),
+            ("order_id", "INTEGER"),
+            ("spec_version", "VARCHAR DEFAULT '2026-10-v2'"),
+            ("sjt_version", "VARCHAR DEFAULT '2026-09-rev'"),
+            ("scoring_version", "VARCHAR DEFAULT '1.0-exact-thirds'"),
+            ("feature_version", "VARCHAR DEFAULT '1.0'"),
+            ("config_hash", "VARCHAR"),
+            ("device_class", "VARCHAR"),
+            ("input_modality", "VARCHAR"),
+            ("completed_at", "DATETIME")
+        ]
+        for cname, ctype in missing_rs:
+            _add_column_if_missing_test("recruit_sessions", cname, ctype)
+        _add_column_if_missing_test("applicant_identities", "phone_or_contact", "VARCHAR")
+        _add_column_if_missing_test("applicant_identities", "created_at", "DATETIME DEFAULT CURRENT_TIMESTAMP")
+        _add_column_if_missing_test("consent_records", "choices_json", "TEXT DEFAULT '{}'")
+        _add_column_if_missing_test("consent_records", "confirmed_18_plus", "BOOLEAN DEFAULT 1")
+
+    # Verify that get_session_research_view now functions on this migrated database without column crashes
+    with Session(legacy_engine) as legacy_db:
+        leg_sid = "legacy-session-01"
+        legacy_db.add(DBSession(session_id=leg_sid, status="COMPLETE"))
+        legacy_db.add(DBApplicantIdentity(session_id=leg_sid, full_name="Legacy Candidate", email="leg@test.com"))
+        legacy_db.add(DBConsentRecord(session_id=leg_sid, consent_text_version="1.0"))
+        legacy_db.commit()
+
+        leg_dossier = get_session_research_view(leg_sid, request=DummyRequest(), admin_user=admin_user, db=legacy_db)
+        assert_true("dimensions" in leg_dossier, "Legacy database successfully migrated and dossier opens")
+        assert_eq(len(leg_dossier["dimensions"]), 7, "All 7 dimensions present in migrated dossier")
 
     print("\n" + "=" * 60)
     print(f"ALL {passed}/{total} VERIFICATION CHECKS PASSED WITH ZERO FAILURES!")

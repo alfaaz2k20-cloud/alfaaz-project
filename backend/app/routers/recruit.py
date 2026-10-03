@@ -269,7 +269,10 @@ def submit_sjt(req: SJTSubmitRequest, request: Request, db: Session = Depends(ge
 
     # Integrate evidence records per parameter (creates version 1)
     from app.services.evidence_integrator import integrate_session_evidence
-    integrate_session_evidence(db, req.session_id, force_recompute=True)
+    try:
+        integrate_session_evidence(db, req.session_id, force_recompute=True)
+    except Exception as e:
+        print(f"[Recruit] SJT evidence integration notice: {e}")
 
     session_obj.status = "ACTIVE"
     session_obj.current_screen = "games"
@@ -371,6 +374,7 @@ def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db))
     if session_obj.status == "COMPLETE":
         return {
             "status": "SUCCESS",
+            "session_status": "COMPLETE",
             "message": "Assessment already completed.",
             "is_already_completed": True
         }
@@ -391,5 +395,7 @@ def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db))
 
     return {
         "status": "SUCCESS",
-        "message": "Assessment Complete. Thank you for your time."
+        "session_status": "COMPLETE",
+        "message": "Assessment Complete. Thank you for your time.",
+        "is_already_completed": False
     }

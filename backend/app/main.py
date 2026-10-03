@@ -25,51 +25,93 @@ try:
     with engine.begin() as _conn:
         _insp = sa_inspect(_conn)
         _tables = _insp.get_table_names()
-        if "telemetry_events" in _tables:
-            _existing_cols = [c["name"] for c in _insp.get_columns("telemetry_events")]
-            if "task_def_version" not in _existing_cols:
-                _conn.execute(sa_text("ALTER TABLE telemetry_events ADD COLUMN task_def_version VARCHAR DEFAULT '1.0'"))
-        if "evidence" in _tables:
-            _ev_cols = [c["name"] for c in _insp.get_columns("evidence")]
-            _conn_dialect = _conn.dialect.name
-            _missing_ev = [
-                ("version", "INTEGER DEFAULT 1"),
-                ("is_superseded", "BOOLEAN DEFAULT 0" if _conn_dialect == "sqlite" else "BOOLEAN DEFAULT FALSE"),
-                ("superseded_at", "DATETIME" if _conn_dialect == "sqlite" else "TIMESTAMP"),
-                ("spec_version", "VARCHAR DEFAULT '2026-10-v2'"),
-                ("sjt_version", "VARCHAR DEFAULT '2026-09-rev'"),
-                ("scoring_version", "VARCHAR DEFAULT '1.0-exact-thirds'"),
-                ("feature_version", "VARCHAR DEFAULT '1.0'"),
-                ("config_hash", "VARCHAR"),
-                ("created_at", "DATETIME DEFAULT CURRENT_TIMESTAMP" if _conn_dialect == "sqlite" else "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-            ]
-            for _cname, _ctype in _missing_ev:
-                if _cname not in _ev_cols:
-                    _conn.execute(sa_text(f"ALTER TABLE evidence ADD COLUMN {_cname} {_ctype}"))
-        if "applicant_identities" in _tables:
-            _ai_cols = [c["name"] for c in _insp.get_columns("applicant_identities")]
-            if "phone_or_contact" not in _ai_cols:
-                _conn.execute(sa_text("ALTER TABLE applicant_identities ADD COLUMN phone_or_contact VARCHAR"))
-        if "recruit_sessions" in _tables:
-            _rs_cols = [c["name"] for c in _insp.get_columns("recruit_sessions")]
-            _conn_dialect = _conn.dialect.name
-            _missing_rs = [
-                ("current_screen", "VARCHAR"),
-                ("order_id", "INTEGER"),
-                ("spec_version", "VARCHAR DEFAULT '2026-10-v2'"),
-                ("sjt_version", "VARCHAR DEFAULT '2026-09-rev'"),
-                ("scoring_version", "VARCHAR DEFAULT '1.0-exact-thirds'"),
-                ("feature_version", "VARCHAR DEFAULT '1.0'"),
-                ("config_hash", "VARCHAR"),
-                ("device_class", "VARCHAR"),
-                ("input_modality", "VARCHAR"),
-                ("completed_at", "DATETIME" if _conn_dialect == "sqlite" else "TIMESTAMP")
-            ]
-            for _cname, _ctype in _missing_rs:
-                if _cname not in _rs_cols:
-                    _conn.execute(sa_text(f"ALTER TABLE recruit_sessions ADD COLUMN {_cname} {_ctype}"))
+        _conn_dialect = _conn.dialect.name
+
+        def _add_column_if_missing(table_name: str, col_name: str, col_type: str):
+            if table_name in _tables:
+                existing = [c["name"] for c in _insp.get_columns(table_name)]
+                if col_name not in existing:
+                    try:
+                        _conn.execute(sa_text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"))
+                    except Exception as _err:
+                        print(f"[DB Migration] Notice: adding {table_name}.{col_name}: {_err}")
+
+        # 1. telemetry_events
+        _missing_te = [
+            ("server_received", "DATETIME DEFAULT CURRENT_TIMESTAMP" if _conn_dialect == "sqlite" else "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"),
+            ("game_world", "VARCHAR"),
+            ("mini_game", "VARCHAR"),
+            ("trial", "INTEGER"),
+            ("input_type", "VARCHAR"),
+            ("task_def_version", "VARCHAR DEFAULT '1.0'"),
+            ("state_json", "TEXT"),
+            ("data_json", "TEXT")
+        ]
+        for _cname, _ctype in _missing_te:
+            _add_column_if_missing("telemetry_events", _cname, _ctype)
+
+        # 2. evidence
+        _missing_ev = [
+            ("version", "INTEGER DEFAULT 1"),
+            ("is_superseded", "BOOLEAN DEFAULT 0" if _conn_dialect == "sqlite" else "BOOLEAN DEFAULT FALSE"),
+            ("superseded_at", "DATETIME" if _conn_dialect == "sqlite" else "TIMESTAMP"),
+            ("spec_version", "VARCHAR DEFAULT '2026-10-v2'"),
+            ("sjt_version", "VARCHAR DEFAULT '2026-09-rev'"),
+            ("scoring_version", "VARCHAR DEFAULT '1.0-exact-thirds'"),
+            ("feature_version", "VARCHAR DEFAULT '1.0'"),
+            ("config_hash", "VARCHAR"),
+            ("created_at", "DATETIME DEFAULT CURRENT_TIMESTAMP" if _conn_dialect == "sqlite" else "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"),
+            ("sjt_raw", "INTEGER"),
+            ("sjt_min", "INTEGER"),
+            ("sjt_max", "INTEGER"),
+            ("sjt_span", "INTEGER"),
+            ("sjt_num", "INTEGER"),
+            ("sjt_relative", "FLOAT"),
+            ("sjt_band", "VARCHAR"),
+            ("predicted_sjt_relative", "FLOAT"),
+            ("model_version", "VARCHAR"),
+            ("prediction_status", "VARCHAR"),
+            ("fused_relative", "FLOAT"),
+            ("profile_relative_score", "FLOAT"),
+            ("profile_relative_rank", "INTEGER"),
+            ("profile_relative_level", "VARCHAR"),
+            ("profile_completeness", "VARCHAR"),
+            ("game_status", "VARCHAR DEFAULT 'INSUFFICIENT'"),
+            ("game_band", "VARCHAR"),
+            ("consistency", "VARCHAR DEFAULT 'NOT_COMPUTED'"),
+            ("relationship", "VARCHAR DEFAULT 'NOT_COMPUTED'"),
+            ("confidence", "VARCHAR DEFAULT 'LIMITED'"),
+            ("observed_behavior_summary", "TEXT"),
+            ("data_quality_flags_json", "TEXT DEFAULT '[]'")
+        ]
+        for _cname, _ctype in _missing_ev:
+            _add_column_if_missing("evidence", _cname, _ctype)
+
+        # 3. applicant_identities
+        _add_column_if_missing("applicant_identities", "phone_or_contact", "VARCHAR")
+        _add_column_if_missing("applicant_identities", "created_at", "DATETIME DEFAULT CURRENT_TIMESTAMP" if _conn_dialect == "sqlite" else "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+
+        # 4. recruit_sessions
+        _missing_rs = [
+            ("current_screen", "VARCHAR"),
+            ("order_id", "INTEGER"),
+            ("spec_version", "VARCHAR DEFAULT '2026-10-v2'"),
+            ("sjt_version", "VARCHAR DEFAULT '2026-09-rev'"),
+            ("scoring_version", "VARCHAR DEFAULT '1.0-exact-thirds'"),
+            ("feature_version", "VARCHAR DEFAULT '1.0'"),
+            ("config_hash", "VARCHAR"),
+            ("device_class", "VARCHAR"),
+            ("input_modality", "VARCHAR"),
+            ("completed_at", "DATETIME" if _conn_dialect == "sqlite" else "TIMESTAMP")
+        ]
+        for _cname, _ctype in _missing_rs:
+            _add_column_if_missing("recruit_sessions", _cname, _ctype)
+
+        # 5. consent_records
+        _add_column_if_missing("consent_records", "choices_json", "TEXT DEFAULT '{}'")
+        _add_column_if_missing("consent_records", "confirmed_18_plus", "BOOLEAN DEFAULT 1" if _conn_dialect == "sqlite" else "BOOLEAN DEFAULT TRUE")
 except Exception as _e:
-    pass
+    print(f"[DB Migration] Startup migration notice: {_e}")
 
 # Initialize Application
 app = FastAPI(title="Alfaaz Collective API", version="2.0")

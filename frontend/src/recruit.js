@@ -200,12 +200,26 @@ function logEvent(screen, action, data = {}, stateSnapshot = {}, inputType = 'mo
   }
 }
 
-let isFlushing = false;
+let currentFlushPromise = null;
 let telemetryBatchSize = 50;
+
 async function flushTelemetry() {
-  if (isFlushing || !state.sessionId || state.telemetryQueue.length === 0) return false;
+  if (!state.sessionId || state.telemetryQueue.length === 0) return true;
   if (state.telemetryTerminal) return true;
-  isFlushing = true;
+  if (currentFlushPromise) {
+    return currentFlushPromise;
+  }
+  currentFlushPromise = _executeFlushTelemetry();
+  try {
+    return await currentFlushPromise;
+  } finally {
+    currentFlushPromise = null;
+  }
+}
+
+async function _executeFlushTelemetry() {
+  if (!state.sessionId || state.telemetryQueue.length === 0) return true;
+  if (state.telemetryTerminal) return true;
   const sending = state.telemetryQueue.slice(0, telemetryBatchSize);
 
   try {
@@ -238,8 +252,31 @@ async function flushTelemetry() {
       return false;
     }
 
+    if (resp && resp.status === 403) {
+      const errJson = await resp.json().catch(() => ({}));
+      const detailStr = (typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail || '')).toLowerCase();
+      if (detailStr.includes('already complete')) {
+        console.info('[Telemetry] Session is already complete on server; draining local queue.');
+        state.telemetryQueue = [];
+        state.telemetryTerminal = true;
+        saveLocalState({ immediate: true });
+        return true;
+      }
+    }
+
     if (!resp || !resp.ok) {
       throw new Error(resp ? `HTTP ${resp.status}` : 'No response');
+    }
+
+    const data = await resp.json().catch(() => ({}));
+    if (data.result && data.result.session_status === 'COMPLETE') {
+      state.telemetryQueue.splice(0, sending.length);
+      if (data.result.new_rejected_count > 0) {
+        state.telemetryQueue = [];
+        state.telemetryTerminal = true;
+      }
+      saveLocalState({ immediate: true });
+      return true;
     }
 
     state.telemetryQueue.splice(0, sending.length);
@@ -249,23 +286,23 @@ async function flushTelemetry() {
     console.warn('[Telemetry] Flush failed; telemetry remains queued:', err);
     saveLocalState({ immediate: true });
     return false;
-  } finally {
-    isFlushing = false;
   }
 }
 
-async function flushAllTelemetry() {
-  // Wait for any active flush to finish to avoid lock collisions
-  let retries = 0;
-  while (isFlushing && retries < 10) {
-    await new Promise(r => setTimeout(r, 500));
-    retries++;
-  }
-
+async function flushAllTelemetry(maxRetries = 3) {
+  let attempts = 0;
   while (!state.telemetryTerminal && state.telemetryQueue.length > 0) {
     const queuedBeforeFlush = state.telemetryQueue.length;
     const sent = await flushTelemetry();
-    if (!sent || state.telemetryQueue.length >= queuedBeforeFlush) return false;
+    if (!sent || state.telemetryQueue.length >= queuedBeforeFlush) {
+      attempts++;
+      if (attempts >= maxRetries) {
+        return false;
+      }
+      await new Promise(r => setTimeout(r, 600 * attempts));
+    } else {
+      attempts = 0;
+    }
   }
   return true;
 }
@@ -1060,18 +1097,36 @@ async function finishAssessment() {
     if (head) head.textContent = 'Finalizing assessment...';
     if (sub) sub.textContent = 'Saving your completed activity... Please keep this page open.';
 
-    const response = await apiFetch('/recruit/complete', {
-      method: 'POST',
-      body: JSON.stringify({ session_id: state.sessionId })
-    });
+    let response = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        response = await apiFetch('/recruit/complete', {
+          method: 'POST',
+          body: JSON.stringify({ session_id: state.sessionId })
+        });
+        if (response && response.ok) break;
+      } catch (e) {
+        if (attempt === 2) throw e;
+      }
+      await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+    }
+
     if (!response || !response.ok) {
       throw new Error(response ? `Server returned HTTP ${response.status}` : 'No response from server');
     }
 
-    window.removeEventListener('keydown', keyGuard, { capture: true });
-    state.screen = 'complete';
-    saveLocalState({ immediate: true });
-    renderScreen();
+    const resJson = await response.json().catch(() => ({}));
+    if (resJson.status === 'SUCCESS' || resJson.session_status === 'COMPLETE' || resJson.is_already_completed) {
+      window.removeEventListener('keydown', keyGuard, { capture: true });
+      state.screen = 'complete';
+      state.telemetryTerminal = true;
+      state.telemetryQueue = [];
+      saveLocalState({ immediate: true });
+      renderScreen();
+      return;
+    }
+
+    throw new Error('Unexpected completion status');
   } catch (err) {
     window.removeEventListener('keydown', keyGuard, { capture: true });
     console.warn('Session complete submission error:', err);
