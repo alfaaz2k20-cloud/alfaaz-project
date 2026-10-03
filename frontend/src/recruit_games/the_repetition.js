@@ -8,7 +8,7 @@
    and scoped candidate content protection.
    ========================================================================== */
 
-import { renderTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheRepetition(context, renderHeader) {
   const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
@@ -62,7 +62,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentIdx = 0;
         logUnitPresented();
@@ -104,7 +104,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
             <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-sans">Ceremonial Invitation</span>
             <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1.5">${u.recipient}</div>
             <div class="text-[11px] text-stone-500 mt-0.5">${u.note}</div>
-            
+
             <div id="sealDisplay" class="w-12 h-12 rounded-full border-2 border-dashed border-[var(--accent-gold)] mt-3 flex items-center justify-center text-[10px] text-[var(--accent-gold)] font-bold shadow-xs">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
             </div>
@@ -213,7 +213,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         phase = 'mandatory';
         mandatoryIdx = 0;
@@ -541,7 +541,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentIdx = 0;
         logTrialPresented();

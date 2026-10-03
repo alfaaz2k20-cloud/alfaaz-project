@@ -6,7 +6,7 @@
    Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
    ========================================================================== */
 
-import { renderTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheShiftingGrid(context, renderHeader) {
   const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
@@ -61,7 +61,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentIdx = 0;
         trialStartTime = performance.now();
@@ -253,7 +253,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentSeq = 0;
         selectedAction = null;
@@ -451,7 +451,7 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentCondition = 0;
         selectedLayout = null;

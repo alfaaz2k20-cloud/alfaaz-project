@@ -6,7 +6,7 @@
    Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
    ========================================================================== */
 
-import { renderTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheArchive(context, renderHeader) {
   const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
@@ -91,7 +91,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentDocIdx = 0;
         docStartTime = performance.now();
@@ -301,7 +301,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentTrial = 0;
         chosenAction = null;
@@ -489,7 +489,7 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         flaggedRecords = new Set();
         inspectedRecords = new Set();

@@ -6,7 +6,7 @@
    Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
    ========================================================================== */
 
-import { renderTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheFrequency(context, renderHeader) {
   const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
@@ -96,7 +96,7 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentTrial = 0;
         sliderVal = 50;
@@ -420,7 +420,7 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentTrial = 0;
         selectedAction = null;
@@ -643,7 +643,7 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentTransition = 0;
         phase = 'baseline';

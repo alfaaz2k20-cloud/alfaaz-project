@@ -20,11 +20,11 @@ const WORLD_METADATA = {
   'W7': { name: 'The Repetition', name_ur: 'تکرار', subtitle: 'Readiness & Ceremony' }
 };
 
-export function renderTutorialCard({ icon, goal, steps, onStart }) {
+export function renderTutorialCard({ icon, goal, steps }) {
   return `
-    <div class="tutorial-card p-6 border border-[var(--accent-gold)] bg-gradient-to-br from-[#faf8f5] to-[#f5efe8] space-y-4 mb-6 transition-all duration-300">
+    <div class="tutorial-card cursor-pointer p-6 border border-[var(--accent-gold)] bg-gradient-to-br from-[#faf8f5] to-[#f5efe8] space-y-4 mb-6 transition-all duration-300" tabindex="0" role="button" aria-label="Begin Activity Guide">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-amber-100/80 border border-[var(--accent-gold)] flex items-center justify-center text-[var(--accent-gold)]">
+        <div class="w-10 h-10 rounded-full bg-amber-100/80 border border-[var(--accent-gold)] flex items-center justify-center text-[var(--accent-gold)] shrink-0">
           ${icon || '<i data-lucide="compass" class="w-5 h-5"></i>'}
         </div>
         <div>
@@ -42,13 +42,45 @@ export function renderTutorialCard({ icon, goal, steps, onStart }) {
         `).join('')}
       </div>
 
-      <div class="pt-2 flex justify-end">
+      <div class="pt-2 flex justify-between items-center">
+        <span class="text-[11px] text-[var(--text-secondary)] italic">Click anywhere or press Enter to begin</span>
         <button id="startActivityBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition flex items-center gap-2">
           Begin Activity &rarr;
         </button>
       </div>
     </div>
   `;
+}
+
+export function bindTutorialCard(app, onStart) {
+  let started = false;
+  const trigger = (e) => {
+    if (e) {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    }
+    if (started) return;
+    started = true;
+    onStart();
+  };
+
+  const btn = app.querySelector('#startActivityBtn');
+  const card = app.querySelector('.tutorial-card');
+
+  if (btn) {
+    btn.addEventListener('click', trigger, { once: true });
+  }
+
+  if (card) {
+    card.addEventListener('click', (e) => {
+      trigger(e);
+    }, { once: true });
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        trigger(e);
+      }
+    }, { once: true });
+  }
 }
 
 export function runMiniGame(context) {

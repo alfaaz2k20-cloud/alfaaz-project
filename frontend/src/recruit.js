@@ -52,7 +52,7 @@ function persistLocalState() {
       telemetryTerminal: state.telemetryTerminal
     };
     sessionStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(toSave));
-    sessionStorage.setItem(UNSENT_STORAGE_KEY, JSON.stringify(state.telemetryQueue));
+    sessionStorage.setItem(UNSENT_STORAGE_KEY, JSON.stringify(state.telemetryQueue.slice(-100)));
   } catch (e) {
     console.warn('[Persistence] Error saving sessionStorage:', e);
   }

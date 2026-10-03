@@ -7,7 +7,7 @@
    and scoped candidate content protection.
    ========================================================================== */
 
-import { renderTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheBrokenTool(context, renderHeader) {
   const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
@@ -95,7 +95,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentStageIdx = 0;
         selectedParts = [];
@@ -370,7 +370,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentEpisode = 0;
         phase = 'pre_shift';
@@ -723,7 +723,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentTrial = 0;
         selectedTool = null;

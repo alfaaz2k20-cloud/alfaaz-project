@@ -7,7 +7,7 @@
    and scoped candidate content protection.
    ========================================================================== */
 
-import { renderTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheHiddenGallery(context, renderHeader) {
   const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
@@ -116,7 +116,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentDecision = 0;
         selectedChoice = null;
@@ -390,7 +390,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentTrial = 0;
         inspectedClues = {};
@@ -648,7 +648,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
           })}
         </div>
       `;
-      document.getElementById('startActivityBtn')?.addEventListener('click', () => {
+      bindTutorialCard(app, () => {
         inTutorial = false;
         currentEpisode = 0;
         contextRetrieved = false;

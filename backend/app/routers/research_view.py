@@ -136,6 +136,7 @@ FEATURE_LABELS = {
 }
 
 @router.get("/session/{session_id}")
+@router.get("/sessions/{session_id}")
 def get_session_research_view(
     session_id: str,
     request: Request,

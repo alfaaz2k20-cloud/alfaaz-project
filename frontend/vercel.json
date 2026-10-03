@@ -3,5 +3,11 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/service-worker.js", "destination": "/sw.js" },
+    { "source": "/recruit/admin", "destination": "/admin.html" },
+    { "source": "/recruit/sjt", "destination": "/recruit.html" },
+    { "source": "/recruit/research", "destination": "/research.html" }
+  ]
 }
