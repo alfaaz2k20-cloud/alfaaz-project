@@ -270,6 +270,15 @@ def run_tests():
             ("profile_relative_rank", "INTEGER"),
             ("profile_relative_level", "VARCHAR"),
             ("profile_completeness", "VARCHAR"),
+            ("cross_method_delta", "FLOAT"),
+            ("game_raw", "FLOAT"),
+            ("game_min", "FLOAT"),
+            ("game_max", "FLOAT"),
+            ("game_span", "FLOAT"),
+            ("game_num", "FLOAT"),
+            ("game_relative", "FLOAT"),
+            ("game_observation_count", "INTEGER"),
+            ("game_consistency_spread", "FLOAT")
         ]
         for cname, ctype in missing_ev:
             _add_column_if_missing_test("evidence", cname, ctype)

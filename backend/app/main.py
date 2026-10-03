@@ -82,7 +82,16 @@ try:
             ("relationship", "VARCHAR DEFAULT 'NOT_COMPUTED'"),
             ("confidence", "VARCHAR DEFAULT 'LIMITED'"),
             ("observed_behavior_summary", "TEXT"),
-            ("data_quality_flags_json", "TEXT DEFAULT '[]'")
+            ("data_quality_flags_json", "TEXT DEFAULT '[]'"),
+            ("cross_method_delta", "FLOAT"),
+            ("game_raw", "FLOAT"),
+            ("game_min", "FLOAT"),
+            ("game_max", "FLOAT"),
+            ("game_span", "FLOAT"),
+            ("game_num", "FLOAT"),
+            ("game_relative", "FLOAT"),
+            ("game_observation_count", "INTEGER"),
+            ("game_consistency_spread", "FLOAT")
         ]
         for _cname, _ctype in _missing_ev:
             _add_column_if_missing("evidence", _cname, _ctype)

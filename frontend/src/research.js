@@ -162,11 +162,11 @@ async function loadSessionDetail(sessionId) {
     };
 
     const relBadge = (rel) => {
-        if (rel === 'ALIGNED') return '<span class="text-green-700 font-medium">Aligned</span>';
-        if (rel === 'PARTLY_ALIGNED') return '<span class="text-amber-700 font-medium">Partly Aligned</span>';
-        if (rel === 'DIFFERENT') return '<span class="text-purple-700 font-medium">Divergent</span>';
-        if (rel === 'NOT_ENOUGH_EVIDENCE') return '<span class="text-gray-500">Awaiting Data</span>';
-        return '<span class="text-gray-400">Not Available</span>';
+        if (rel === 'ALIGNED') return '<span class="text-green-700 font-semibold uppercase text-[10px] tracking-wider">Aligned</span>';
+        if (rel === 'PARTLY_ALIGNED') return '<span class="text-amber-700 font-semibold uppercase text-[10px] tracking-wider">Partly Aligned</span>';
+        if (rel === 'DIFFERENT') return '<span class="text-purple-700 font-semibold uppercase text-[10px] tracking-wider">Different</span>';
+        if (rel === 'NOT_ENOUGH_EVIDENCE') return '<span class="text-stone-500 text-[10px]">Not Enough Evidence</span>';
+        return '<span class="text-stone-400 text-[10px]">Not Available</span>';
     };
 
     const dimensionRows = dims.map(d => {
@@ -177,6 +177,9 @@ async function loadSessionDetail(sessionId) {
         const relDisp = relBadge(d.relationship);
         const confDisp = d.confidence || 'LIMITED';
         const safeName = window.escapeHtml(d.display_name || d.parameter);
+        const sjtRel = (d.sjt && d.sjt.relative !== null && d.sjt.relative !== undefined) ? d.sjt.relative.toFixed(2) : '—';
+        const gameRel = (d.game_relative !== null && d.game_relative !== undefined) ? d.game_relative.toFixed(2) : ((d.games && d.games.relative !== null && d.games.relative !== undefined) ? d.games.relative.toFixed(2) : '—');
+        const deltaDisp = (d.cross_method_delta !== null && d.cross_method_delta !== undefined) ? d.cross_method_delta.toFixed(2) : '—';
         const obs = window.escapeHtml(d.observed_behavior || '—');
 
         return `
@@ -185,11 +188,14 @@ async function loadSessionDetail(sessionId) {
                 <div>${safeName}</div>
                 <div class="text-[10px] text-[var(--text-secondary)] mt-0.5">${obs}</div>
             </td>
-            <td class="p-3 text-center font-semibold text-xs">${rankDisp}</td>
-            <td class="p-3 text-center font-serif text-sm font-semibold">${scoreDisp}</td>
-            <td class="p-3 text-center">${levelDisp}</td>
+            <td class="p-3 text-center font-mono text-xs">${sjtRel}</td>
+            <td class="p-3 text-center font-mono text-xs">${gameRel}</td>
+            <td class="p-3 text-center font-mono text-xs font-semibold">${deltaDisp}</td>
             <td class="p-3 text-center text-xs">${relDisp}</td>
-            <td class="p-3 text-center text-[10px] uppercase text-[var(--text-secondary)]">${confDisp}</td>
+            <td class="p-3 text-center text-[10px] uppercase text-[var(--text-secondary)] font-semibold">${confDisp}</td>
+            <td class="p-3 text-center font-serif text-sm font-semibold">${scoreDisp}</td>
+            <td class="p-3 text-center font-semibold text-xs">${rankDisp}</td>
+            <td class="p-3 text-center">${levelDisp}</td>
         </tr>
         `;
     }).join('');
@@ -224,17 +230,23 @@ async function loadSessionDetail(sessionId) {
             <thead class="bg-[#f0eeea] text-xs uppercase tracking-wider text-[var(--text-secondary)]">
               <tr>
                 <th class="p-3">Dimension & Observed Context</th>
-                <th class="p-3 text-center">Relative Rank</th>
-                <th class="p-3 text-center">Score (0–100)</th>
-                <th class="p-3 text-center">Profile Position</th>
-                <th class="p-3 text-center">Cross-Method Relationship</th>
+                <th class="p-3 text-center">SJT Rel</th>
+                <th class="p-3 text-center">Game Rel</th>
+                <th class="p-3 text-center">Delta</th>
+                <th class="p-3 text-center">Relationship</th>
                 <th class="p-3 text-center">Confidence</th>
+                <th class="p-3 text-center">Score (0–100)</th>
+                <th class="p-3 text-center">Rank</th>
+                <th class="p-3 text-center">Profile Position</th>
               </tr>
             </thead>
             <tbody>
               ${dimensionRows}
             </tbody>
           </table>
+        </div>
+        <div class="bg-[#fcfbf9] border border-[var(--grid-border)] border-t-0 p-3 text-xs text-[var(--text-secondary)] leading-relaxed">
+          <strong class="text-[var(--text-primary)]">Delta is the absolute difference between the candidate's SJT-relative evidence and Game-SJT-relative evidence for this dimension.</strong> Larger Delta indicates greater divergence and reduces evidence confidence. Delta is not a measure of honesty, reliability, or validity.
         </div>
       </div>
     `;

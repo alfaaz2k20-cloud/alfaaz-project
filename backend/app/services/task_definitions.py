@@ -188,7 +188,7 @@ def reconstruct_c1_allocation_state(events: list) -> Dict[str, Any]:
         "C1_R2": {"user_initial": 5, "partner_initial": 5, "trial_index": 1},
         "C1_R3": {"user_initial": 3, "partner_initial": 7, "trial_index": 2}
     }
-    
+
     # State tracking per stimulus_id
     transfers = {"C1_R1": 0, "C1_R2": 0, "C1_R3": 0}
     confirmed = {"C1_R1": False, "C1_R2": False, "C1_R3": False}
@@ -332,11 +332,12 @@ def reconstruct_e1_sorting_state(events: list) -> Dict[str, Any]:
             data = {}
 
         action = getattr(ev, "action", None) or (ev.get("action") if isinstance(ev, dict) else None)
-        t_ms = getattr(ev, "t_ms", None) or (ev.get("t_ms") if isinstance(ev, dict) else 0.0)
+        raw_t = getattr(ev, "t_ms", None) if getattr(ev, "t_ms", None) is not None else (ev.get("t_ms") if isinstance(ev, dict) else 0.0)
+        t_ms = float(raw_t) if raw_t is not None else 0.0
         s_id = data.get("stimulus_id")
 
         if action == "trial_presented" and s_id:
-            presented_times[s_id] = float(t_ms)
+            presented_times[s_id] = t_ms
         elif action == "tile_sorted" and s_id:
             choice = data.get("choice")
             if choice:

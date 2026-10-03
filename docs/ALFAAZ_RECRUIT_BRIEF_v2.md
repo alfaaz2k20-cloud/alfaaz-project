@@ -611,3 +611,40 @@ Do not claim validation, predictive validity, or objective personality measureme
 ## 19. THE SHORT VERSION
 
 Do not invent. Use the two locked files. Keep seven parameters, seven worlds, three short mini-games per world. SJT is primary. Games corroborate and are never averaged with it. Missing data is `INSUFFICIENT`, never `LOW`. Record everything raw. Recompute everything from raw. No levels for games until real thresholds exist. No ranking. A human decides. Stop at every gate.
+
+---
+
+## 20. DETERMINISTIC GAME-SJT MEASUREMENT ARCHITECTURE (v3)
+
+### 20.1 Core Principle: Deterministic Behavioral Scoring
+The 21 interactive game tasks are scored as deterministic SJT-style behavioral evidence (`game_sjt_scoring_v1`), not through statistical regression. Predictive Ridge regression (`relative_ridge_v1`) is completely deactivated in live scoring and retained only in historical schema annotations for backwards compatibility.
+
+Both SJT and Game evidence streams are mapped into the identical parameter-relative continuous space $[0.0, 1.0]$:
+- **SJT Relative Evidence:** $sjt\_relative = \frac{raw - min}{span} \in [0.0, 1.0]$ derived from owner-locked scenario keys.
+- **Game Relative Evidence:** $game\_relative = \frac{raw - min}{span} \in [0.0, 1.0]$ computed per game from observable telemetry events against ground-truth trial configurations (`config/task_definitions.json`), then aggregated across usable games for that parameter with renormalized weights.
+
+### 20.2 Cross-Method Delta
+For each parameter where both SJT and Game evidence are usable:
+$$\Delta = |sjt\_relative - game\_relative| \in [0.0, 1.0]$$
+
+$\Delta$ measures the absolute continuous discrepancy between stated judgment and observed behavioral task performance in the common parameter-relative metric.
+
+**Delta Categorization:**
+- $\Delta \le 0.15 \implies$ `ALIGNED`
+- $0.15 < \Delta \le 0.30 \implies$ `PARTLY_ALIGNED`
+- $\Delta > 0.30 \implies$ `DIFFERENT`
+- If SJT missing $\implies$ `NOT_AVAILABLE`
+- If usable games $< 2 \implies$ `NOT_ENOUGH_EVIDENCE`
+
+### 20.3 Confidence Monotonicity Invariant
+Larger Delta must **never** increase evidence confidence across any parameter or condition:
+- Base confidence is evaluated from usable games count ($\ge 2$), within-parameter game consistency, and data quality flags.
+- **Delta Penalty:**
+  - $\Delta > 0.30$ strictly forces confidence to `LIMITED`.
+  - $0.15 < \Delta \le 0.30$ caps confidence at `MODERATE`.
+  - Confidence monotonicity holds across the entire $[0.0, 1.0]$ numeric spectrum.
+
+### 20.4 Measurement Integrity & Research Status
+- **Delta is not reliability:** $\Delta$ is within-person cross-method divergence between self-reported judgment and interactive task behavior. It is not test-retest or internal consistency reliability. True psychometric reliability requires empirical data collection across human cohorts.
+- **Calibration Status:** Remained explicitly `NOT_ESTABLISHED`. No arbitrary normative thresholds or external validity claims are asserted.
+- **Dossier & UI:** The Candidate Evidence Dossier displays both evidence streams, Delta, relationship, and confidence without automated hiring recommendations or candidate rankings.

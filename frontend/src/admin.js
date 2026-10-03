@@ -522,11 +522,11 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const relBadge = (rel) => {
-            if (rel === 'ALIGNED') return '<span style="color:#2e7d32; font-weight:500;">Aligned</span>';
-            if (rel === 'PARTLY_ALIGNED') return '<span style="color:#b5832a; font-weight:500;">Partly Aligned</span>';
-            if (rel === 'DIFFERENT') return '<span style="color:#6a1b9a; font-weight:500;">Divergent</span>';
-            if (rel === 'NOT_ENOUGH_EVIDENCE') return '<span style="color:#777;">Awaiting Data</span>';
-            return '<span style="color:#999;">Not Available</span>';
+            if (rel === 'ALIGNED') return '<span style="color:#2e7d32; font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Aligned</span>';
+            if (rel === 'PARTLY_ALIGNED') return '<span style="color:#b5832a; font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Partly Aligned</span>';
+            if (rel === 'DIFFERENT') return '<span style="color:#6a1b9a; font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Different</span>';
+            if (rel === 'NOT_ENOUGH_EVIDENCE') return '<span style="color:#777; font-size:10px;">Not Enough Evidence</span>';
+            return '<span style="color:#999; font-size:10px;">Not Available</span>';
         };
 
         const dimensionRows = dims.map(d => {
@@ -537,8 +537,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const relDisp = relBadge(d.relationship);
             const confDisp = d.confidence || 'LIMITED';
             const safeName = window.escapeHtml(d.display_name || d.parameter);
-            const sjtBand = (d.sjt && d.sjt.band) ? d.sjt.band : '—';
-            const gameStatus = (d.games && d.games.status) ? d.games.status : 'INSUFFICIENT';
+            const sjtRel = (d.sjt && d.sjt.relative !== null && d.sjt.relative !== undefined) ? d.sjt.relative.toFixed(2) : '—';
+            const gameRel = (d.game_relative !== null && d.game_relative !== undefined) ? d.game_relative.toFixed(2) : ((d.games && d.games.relative !== null && d.games.relative !== undefined) ? d.games.relative.toFixed(2) : '—');
+            const deltaDisp = (d.cross_method_delta !== null && d.cross_method_delta !== undefined) ? d.cross_method_delta.toFixed(2) : '—';
             const obs = window.escapeHtml(d.observed_behavior || '—');
 
             return `
@@ -547,11 +548,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="font-size:12px; color:var(--text-primary);">${safeName}</div>
                     <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">${obs}</div>
                 </td>
-                <td style="padding:0.9rem 0.8rem; font-weight: 600; text-align:center;">${rankDisp}</td>
-                <td style="padding:0.9rem 0.8rem; font-weight: 600; text-align:center; font-family:var(--font-heading); font-size:12px;">${scoreDisp}</td>
-                <td style="padding:0.9rem 0.8rem; text-align:center;">${levelDisp}</td>
+                <td style="padding:0.9rem 0.6rem; text-align:center; font-family:monospace; font-size:11px;">${sjtRel}</td>
+                <td style="padding:0.9rem 0.6rem; text-align:center; font-family:monospace; font-size:11px;">${gameRel}</td>
+                <td style="padding:0.9rem 0.6rem; text-align:center; font-family:monospace; font-size:11px; font-weight:600;">${deltaDisp}</td>
                 <td style="padding:0.9rem 0.8rem; text-align:center;">${relDisp}</td>
-                <td style="padding:0.9rem 0.8rem; text-align:center; font-size:10px; text-transform:uppercase; color:var(--text-secondary);">${confDisp}</td>
+                <td style="padding:0.9rem 0.8rem; text-align:center; font-size:10px; text-transform:uppercase; color:var(--text-secondary); font-weight:600;">${confDisp}</td>
+                <td style="padding:0.9rem 0.6rem; font-weight: 600; text-align:center; font-family:var(--font-heading); font-size:12px;">${scoreDisp}</td>
+                <td style="padding:0.9rem 0.6rem; font-weight: 600; text-align:center;">${rankDisp}</td>
+                <td style="padding:0.9rem 0.8rem; text-align:center;">${levelDisp}</td>
             </tr>
             `;
         }).join('');
@@ -582,17 +586,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 <thead>
                   <tr style="background:#f0eeea; font-size:10px; text-transform:uppercase; color:var(--text-secondary); letter-spacing:0.5px;">
                     <th style="padding:0.8rem;">Dimension & Observed Context</th>
-                    <th style="padding:0.8rem; text-align:center;">Relative Rank</th>
-                    <th style="padding:0.8rem; text-align:center;">Score (0–100)</th>
-                    <th style="padding:0.8rem; text-align:center;">Profile Position</th>
-                    <th style="padding:0.8rem; text-align:center;">Cross-Method Relationship</th>
+                    <th style="padding:0.8rem 0.6rem; text-align:center;">SJT Rel</th>
+                    <th style="padding:0.8rem 0.6rem; text-align:center;">Game Rel</th>
+                    <th style="padding:0.8rem 0.6rem; text-align:center;">Delta</th>
+                    <th style="padding:0.8rem; text-align:center;">Relationship</th>
                     <th style="padding:0.8rem; text-align:center;">Confidence</th>
+                    <th style="padding:0.8rem 0.6rem; text-align:center;">Score (0–100)</th>
+                    <th style="padding:0.8rem 0.6rem; text-align:center;">Rank</th>
+                    <th style="padding:0.8rem; text-align:center;">Profile Position</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${dimensionRows}
                 </tbody>
               </table>
+            </div>
+            <div style="background:#fcfbf9; border:1px solid var(--grid-border); border-top:none; padding:0.75rem 1rem; font-size:11px; color:var(--text-secondary); line-height:1.4;">
+              <strong style="color:var(--text-primary);">Delta is the absolute difference between the candidate's SJT-relative evidence and Game-SJT-relative evidence for this dimension.</strong> Larger Delta indicates greater divergence and reduces evidence confidence. Delta is not a measure of honesty, reliability, or validity.
             </div>
           </div>
         `;

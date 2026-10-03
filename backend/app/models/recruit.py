@@ -127,6 +127,30 @@ class DBFeature(SQLModel, table=True):
     valid: bool = Field(default=True)
     flags_json: str = Field(default="[]")
 
+class DBGameScore(SQLModel, table=True):
+    __tablename__ = "game_scores"
+    __table_args__ = (UniqueConstraint("session_id", "game_id", name="uq_session_game"),)
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    session_id: str = Field(index=True)
+    game_id: str = Field(index=True)
+    parameter: str = Field(index=True)
+    raw_score: Optional[float] = None
+    min_score: Optional[float] = None
+    max_score: Optional[float] = None
+    span: Optional[float] = None
+    num: Optional[float] = None
+    relative_score: Optional[float] = None
+    band: Optional[str] = None
+    status: str = Field(default="INSUFFICIENT")  # USABLE, INSUFFICIENT, INVALID
+    task_def_version: str = Field(default="1.0")
+    scoring_version: str = Field(default="game_sjt_scoring_v1")
+    observation_count: int = Field(default=0)
+    flags_json: str = Field(default="[]")
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+    )
+
 class DBEvidence(SQLModel, table=True):
     __tablename__ = "evidence"
     __table_args__ = (UniqueConstraint("session_id", "parameter", "version", name="uq_session_parameter_version"),)
@@ -138,7 +162,7 @@ class DBEvidence(SQLModel, table=True):
     superseded_at: Optional[datetime] = Field(default=None, sa_column=Column(DateTime(timezone=True)))
     spec_version: str = Field(default="2026-10-v2")
     sjt_version: str = Field(default="2026-09-rev")
-    scoring_version: str = Field(default="1.0-exact-thirds")
+    scoring_version: str = Field(default="game_sjt_scoring_v1")
     feature_version: str = Field(default="1.0")
     config_hash: Optional[str] = None
     created_at: datetime = Field(
@@ -152,9 +176,18 @@ class DBEvidence(SQLModel, table=True):
     sjt_num: Optional[int] = None
     sjt_relative: Optional[float] = None
     sjt_band: Optional[str] = None  # HIGH, MODERATE, LOW
-    predicted_sjt_relative: Optional[float] = None
-    model_version: Optional[str] = None
-    prediction_status: Optional[str] = None
+    predicted_sjt_relative: Optional[float] = None  # Historical/deactivated
+    model_version: Optional[str] = None             # Historical/deactivated
+    prediction_status: Optional[str] = None         # Historical/deactivated
+    game_raw: Optional[float] = None
+    game_min: Optional[float] = None
+    game_max: Optional[float] = None
+    game_span: Optional[float] = None
+    game_num: Optional[float] = None
+    game_relative: Optional[float] = None
+    game_observation_count: Optional[int] = None
+    game_consistency_spread: Optional[float] = None
+    cross_method_delta: Optional[float] = None
     fused_relative: Optional[float] = None
     profile_relative_score: Optional[float] = None  # 0 to 100 within-person scale
     profile_relative_rank: Optional[int] = None     # 1 to 7 within-person rank
