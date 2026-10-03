@@ -389,7 +389,7 @@ export function renderScreen() {
 
 // 1. Consent Screen
 function renderConsent(app) {
-  app.innerHTML = 
+  app.innerHTML = `
     <div class="animate-soft-fade-in max-w-2xl mx-auto py-8 px-4">
       <div class="mb-12 text-center space-y-4">
         <span class="text-[10px] uppercase tracking-widest text-[var(--accent-gold)] font-medium">Prologue &middot; Consent & Compliance</span>
@@ -445,7 +445,7 @@ function renderConsent(app) {
         </div>
       </form>
     </div>
-  ;
+  `;
 
   const ageConfirm = document.getElementById('ageConfirm');
   const consentAgree = document.getElementById('consentAgree');
@@ -474,14 +474,14 @@ function renderConsent(app) {
 
     try {
       const apiBase = window.ALFAAZ_API_URL || '';
-      const res = await fetch(${apiBase}/recruit/session, {
+      const res = await fetch(`${apiBase}/recruit/session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           choices: { research_telemetry: consentAgree?.checked }
         })
       });
-      if (!res.ok) throw new Error(Network error: );
+      if (!res.ok) throw new Error(`Network error: ${res.status}`);
       const data = await res.json();
       state.sessionId = data.session_id;
       sessionStorage.setItem(SESSION_STORAGE_KEY, state.sessionId);
@@ -491,7 +491,7 @@ function renderConsent(app) {
       state.screen = 'identity';
       renderScreen();
     } catch (err) {
-      alert(Unable to initialize session: );
+      alert(`Unable to initialize session: ${err.message || 'Please check connection.'}`);
       console.error(err);
       if (btn) {
         btn.innerHTML = origText;
