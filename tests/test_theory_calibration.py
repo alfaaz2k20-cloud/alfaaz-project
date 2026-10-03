@@ -36,6 +36,17 @@ from app.research.theory_calibration import (
     estimate_latent,
     evaluate_delta,
     link_indicator,
+    COMMON_SCALE_SPECIFICATIONS,
+    DISCRIMINANT_MATRIX,
+    GAME_CALIBRATIONS,
+    IdentifiabilityClass,
+    LATENT_MODEL_SPECIFICATIONS,
+    SIBLING_CONVERGENCE_MODELS,
+    SJT_GAME_CONVERGENCE_MODELS,
+    TheoryPrior,
+    compute_sampling_precision_sensitivity,
+    evaluate_theoretical_delta_sensitivity,
+    get_game_calibration,
 )
 
 
@@ -56,6 +67,13 @@ class TheoryCalibrationTests(unittest.TestCase):
             self.assertIn(f"## R8.{section} ", document)
         for spec in GAME_SPECS:
             self.assertIn(f"| {spec.game_id} |", document)
+
+    def test_r9_specification_is_complete(self):
+        document = (self.ROOT / "docs" / "ALFAAZ_RECRUIT_THEORY_DRIVEN_CALIBRATION_RESULTS.md").read_text(encoding="utf-8")
+        for section in range(1, 22):
+            self.assertIn(f"## R9.{section} ", document)
+        for spec in GAME_SPECS:
+            self.assertIn(f"**{spec.game_id}**", document)
 
     def test_complete_locked_game_catalogue_and_quarantine_boundary(self):
         self.assertEqual(len(GAME_SPECS), 21)
@@ -495,6 +513,172 @@ class TheoryCalibrationTests(unittest.TestCase):
         config = json.loads((self.ROOT / "config" / "feature_bands.json").read_text(encoding="utf-8"))
         self.assertEqual(config["calibration_status"], "UNCALIBRATED")
         self.assertTrue(all(value is None for value in config["bands"].values()))
+
+    def test_stage2_game_calibrations_catalogue_completeness_and_identifiability(self):
+        self.assertEqual(len(GAME_CALIBRATIONS), 21)
+        by_id = {c.game_id: c for c in GAME_CALIBRATIONS}
+
+        # Check coverage across all 21 games and 7 parameters
+        for spec in GAME_SPECS:
+            self.assertIn(spec.game_id, by_id)
+            cal = by_id[spec.game_id]
+            self.assertEqual(cal.parameter, spec.parameter)
+            self.assertEqual(cal.world, spec.world)
+            self.assertEqual(cal.observed_indicator, spec.observed_feature)
+            self.assertTrue(len(cal.missing_empirical_parameters) > 0)
+            self.assertTrue(len(cal.empirical_requirement_to_identify) > 0)
+
+        # Check exact identifiability partitions
+        numerically_estimable = {c.game_id for c in GAME_CALIBRATIONS if c.identifiability == IdentifiabilityClass.MODEL_NUMERICALLY_ESTIMABLE}
+        bound_estimable = {c.game_id for c in GAME_CALIBRATIONS if c.identifiability == IdentifiabilityClass.MODEL_BOUND_ESTIMABLE}
+        empirical_required = {c.game_id for c in GAME_CALIBRATIONS if c.identifiability == IdentifiabilityClass.EMPIRICAL_DATA_REQUIRED}
+
+        self.assertEqual(numerically_estimable, {"F2", "A1", "A2", "C2", "Q1", "Q3", "CR3"})
+        self.assertEqual(bound_estimable, {"A3", "C1", "C3", "E1", "E3", "Q2", "M2", "M3"})
+        self.assertEqual(empirical_required, {"F1", "F3", "E2", "CR1", "CR2", "M1"})
+
+        # Verify numerical properties for numerically estimable models
+        for gid in numerically_estimable:
+            cal = by_id[gid]
+            self.assertIsNotNone(cal.formula)
+            self.assertIsNotNone(cal.worst_case_se)
+            self.assertGreater(cal.worst_case_se, 0.0)
+            self.assertIsNotNone(cal.nominal_se_range)
+            self.assertEqual(cal.theoretical_bounds, (0.0, 1.0))
+
+        # Check helper function
+        self.assertEqual(get_game_calibration("A1").game_id, "A1")
+        with self.assertRaises(KeyError):
+            get_game_calibration("UNKNOWN_GAME")
+
+    def test_theory_prior_validation_and_status_constraints(self):
+        valid_prior = TheoryPrior(
+            component_id="F2_prop",
+            parameter="empathy",
+            lower_bound=0.0,
+            upper_bound=1.0,
+            central_assumption=0.5,
+            rationale="Binomial bounded interval",
+            source_type="TASK_DESIGN_BOUND",
+            status="THEORY_DERIVED",
+        )
+        self.assertEqual(valid_prior.status, "THEORY_DERIVED")
+
+        # Inverted bounds
+        with self.assertRaises(ValueError):
+            TheoryPrior(
+                component_id="invalid",
+                parameter="empathy",
+                lower_bound=10.0,
+                upper_bound=5.0,
+                central_assumption=7.0,
+                rationale="invalid",
+                source_type="BOUND",
+            )
+
+        # Empty fields
+        with self.assertRaises(ValueError):
+            TheoryPrior(
+                component_id="",
+                parameter="empathy",
+                lower_bound=0.0,
+                upper_bound=1.0,
+                central_assumption=None,
+                rationale="invalid",
+                source_type="BOUND",
+            )
+
+        # Non-theory status
+        with self.assertRaises(ValueError):
+            TheoryPrior(
+                component_id="f1_prior",
+                parameter="empathy",
+                lower_bound=0.0,
+                upper_bound=1.0,
+                central_assumption=None,
+                rationale="invalid",
+                source_type="BOUND",
+                status="EMPIRICALLY_ESTIMATED",
+            )
+
+    def test_sampling_precision_sensitivity_computation(self):
+        results = compute_sampling_precision_sensitivity(
+            nominal_n=5,
+            hypothetical_ns=(3, 5, 10),
+            p_values=(0.5, 0.8),
+        )
+        self.assertEqual(len(results), 6)
+
+        # For n=5, p=0.8: SE = sqrt(0.8 * 0.2 / 5) = sqrt(0.032) ~ 0.1789
+        n5_p8 = [r for r in results if r["n"] == 5 and r["p"] == 0.8][0]
+        self.assertTrue(n5_p8["is_nominal"])
+        self.assertAlmostEqual(n5_p8["standard_error"], 0.1789, places=4)
+
+        # For n=10, p=0.5: SE = sqrt(0.5 * 0.5 / 10) = sqrt(0.025) ~ 0.1581
+        n10_p5 = [r for r in results if r["n"] == 10 and r["p"] == 0.5][0]
+        self.assertFalse(n10_p5["is_nominal"])
+        self.assertAlmostEqual(n10_p5["standard_error"], 0.1581, places=4)
+
+    def test_discriminant_validity_matrix_structure(self):
+        self.assertEqual(len(DISCRIMINANT_MATRIX), 21)
+        for spec in GAME_SPECS:
+            self.assertIn(spec.game_id, DISCRIMINANT_MATRIX)
+            entry = DISCRIMINANT_MATRIX[spec.game_id]
+            self.assertEqual(entry["primary_construct"], spec.parameter)
+            self.assertTrue(len(entry["related_constructs"]) >= 1)
+            self.assertTrue(len(entry["unrelated_constructs"]) >= 1)
+            self.assertIn("convergence_hypothesis", entry)
+            self.assertIn("discriminant_hypothesis", entry)
+            # Ensure no arbitrary numerical correlation is stored
+            self.assertNotIn("r=", str(entry))
+            self.assertNotIn("rho=", str(entry))
+
+    def test_sibling_and_sjt_convergence_specifications(self):
+        self.assertEqual(set(SIBLING_CONVERGENCE_MODELS), set(PARAMETERS))
+        self.assertEqual(set(SJT_GAME_CONVERGENCE_MODELS), set(PARAMETERS))
+
+        for param in PARAMETERS:
+            sib = SIBLING_CONVERGENCE_MODELS[param]
+            self.assertEqual(len(sib["sibling_indicators"]), 3)
+            self.assertEqual(sib["convergence_status"], "EXPECTED_RELATIONSHIP")
+            self.assertEqual(sib["numerical_correlation_status"], "NOT_IDENTIFIED_WITHOUT_EMPIRICAL_DATA")
+
+            sjt_conv = SJT_GAME_CONVERGENCE_MODELS[param]
+            self.assertEqual(sjt_conv["sjt_indicator"], f"SJT_{param}")
+            self.assertEqual(len(sjt_conv["game_indicators"]), 3)
+            self.assertEqual(sjt_conv["empirical_correlation_status"], "NOT_IDENTIFIED_WITHOUT_EMPIRICAL_DATA")
+
+    def test_common_scale_and_latent_model_specifications(self):
+        self.assertEqual(set(COMMON_SCALE_SPECIFICATIONS), set(PARAMETERS))
+        self.assertEqual(set(LATENT_MODEL_SPECIFICATIONS), set(PARAMETERS))
+
+        for param in PARAMETERS:
+            scale_spec = COMMON_SCALE_SPECIFICATIONS[param]
+            self.assertEqual(scale_spec["status"], "COMMON_SCALE_MODEL_SPECIFIED")
+            self.assertEqual(scale_spec["parameter_status"], "EMPIRICAL_LINKING_PARAMETERS_REQUIRED")
+
+            latent_spec = LATENT_MODEL_SPECIFICATIONS[param]
+            self.assertEqual(latent_spec["status"], "LATENT_MODEL_SPECIFIED")
+            self.assertEqual(latent_spec["estimate_status"], "ESTIMATE_NOT_IDENTIFIED_WITHOUT_EMPIRICAL_PARAMETERS")
+            self.assertTrue(latent_spec["non_equal_loadings_assumed"])
+            self.assertIn("true_score", latent_spec["prohibited_terms"])
+
+    def test_theoretical_delta_sensitivity_analysis(self):
+        # Case A: difference within standard error of difference
+        res_within = evaluate_theoretical_delta_sensitivity(difference=0.04, se_diff=0.07)
+        self.assertEqual(len(res_within), 3)
+        for r in res_within:
+            self.assertEqual(r["hypothetical_state"], "DELTA_WITHIN_MEASUREMENT_ERROR")
+            self.assertEqual(r["status"], "MODEL_BASED_SENSITIVITY")
+
+        # Case B: difference exceeding SE_diff across hypothetical margins (0.15, 0.35)
+        res_exceeding = evaluate_theoretical_delta_sensitivity(difference=0.25, se_diff=0.05)
+        # Margin 1: (0.15, 0.35) -> 0.25 > 0.15 and <= 0.35 -> DELTA_MATERIAL
+        self.assertEqual(res_exceeding[0]["hypothetical_state"], "DELTA_MATERIAL")
+        # Margin 2: (0.20, 0.50) -> 0.25 > 0.20 and <= 0.50 -> DELTA_MATERIAL
+        self.assertEqual(res_exceeding[1]["hypothetical_state"], "DELTA_MATERIAL")
+        # Margin 3: (0.25, 0.60) -> 0.25 <= 0.25 -> DELTA_SMALL
+        self.assertEqual(res_exceeding[2]["hypothetical_state"], "DELTA_SMALL")
 
 
 if __name__ == "__main__":

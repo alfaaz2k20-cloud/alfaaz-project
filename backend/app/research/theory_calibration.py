@@ -565,3 +565,916 @@ GAME_SPECS: tuple[GameMeasurementSpec, ...] = (
 )
 
 PARAMETERS: tuple[str, ...] = tuple(dict.fromkeys(spec.parameter for spec in GAME_SPECS))
+
+
+# -----------------------------------------------------------------------------
+# Stage 2: Theory-Driven Calibration & Identifiability Architecture
+# -----------------------------------------------------------------------------
+
+class IdentifiabilityClass(str, Enum):
+    MODEL_NUMERICALLY_ESTIMABLE = "MODEL_NUMERICALLY_ESTIMABLE"
+    MODEL_BOUND_ESTIMABLE = "MODEL_BOUND_ESTIMABLE"
+    PRIOR_RANGE_ONLY = "PRIOR_RANGE_ONLY"
+    EMPIRICAL_DATA_REQUIRED = "EMPIRICAL_DATA_REQUIRED"
+
+
+@dataclass(frozen=True)
+class TheoryPrior:
+    component_id: str
+    parameter: str
+    lower_bound: float | None
+    upper_bound: float | None
+    central_assumption: float | None
+    rationale: str
+    source_type: str
+    status: str = "THEORY_DERIVED"
+    sensitivity_class: str = "MODERATE"
+
+    def __post_init__(self) -> None:
+        if not self.component_id.strip() or not self.parameter.strip():
+            raise ValueError("component_id and parameter must not be empty")
+        if self.lower_bound is not None and self.upper_bound is not None:
+            if self.lower_bound > self.upper_bound:
+                raise ValueError("lower_bound cannot exceed upper_bound")
+        if self.status not in {"THEORY_DERIVED", "MODEL_BASED"}:
+            raise ValueError("status must be THEORY_DERIVED or MODEL_BASED")
+
+
+@dataclass(frozen=True)
+class GameMeasurementCalibration:
+    game_id: str
+    parameter: str
+    world: str
+    observed_indicator: str
+    estimand: str
+    identifiability: IdentifiabilityClass
+    observation_count: int
+    formula: str | None
+    worst_case_se: float | None
+    nominal_se_range: tuple[float, float] | None
+    theoretical_bounds: tuple[float, float] | None
+    missing_empirical_parameters: tuple[str, ...]
+    empirical_requirement_to_identify: str
+    priors: tuple[TheoryPrior, ...] = ()
+
+
+GAME_CALIBRATIONS: tuple[GameMeasurementCalibration, ...] = (
+    # W1: The Frequency (empathy)
+    GameMeasurementCalibration(
+        game_id="F1",
+        parameter="empathy",
+        world="W1 The Frequency",
+        observed_indicator="cue_response_latency_ms",
+        estimand="Within-person mean response latency and trial-level latency variance across 6 audio cues",
+        identifiability=IdentifiabilityClass.EMPIRICAL_DATA_REQUIRED,
+        observation_count=6,
+        formula=None,
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(150.0, 10000.0),
+        missing_empirical_parameters=(
+            "population_mean_latency_ms",
+            "between_person_variance",
+            "within_person_trial_variance",
+            "test_retest_icc",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires repeated-measures latency telemetry from consented human participants to separate "
+            "attentional attunement from individual baseline motor speed."
+        ),
+        priors=(
+            TheoryPrior(
+                "F1_latency_bounds", "empathy", 150.0, 10000.0, None,
+                "Physiological motor reaction time limit (150ms) to UI interaction timeout (10000ms)",
+                "PHYSIOLOGICAL_MOTOR_LIMIT",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="F2",
+        parameter="empathy",
+        world="W1 The Frequency",
+        observed_indicator="clarification_vs_assumption_ratio",
+        estimand="Binomial proportion p = clarifications / 4 of clarifying ambiguous interpersonal cues",
+        identifiability=IdentifiabilityClass.MODEL_NUMERICALLY_ESTIMABLE,
+        observation_count=4,
+        formula="SE(p) = sqrt(p * (1 - p) / 4)",
+        worst_case_se=0.2500,
+        nominal_se_range=(0.0, 0.2500),
+        theoretical_bounds=(0.0, 1.0),
+        missing_empirical_parameters=(
+            "population_trait_mean",
+            "true_score_variance",
+            "latent_factor_loading",
+        ),
+        empirical_requirement_to_identify=(
+            "Design identifies sampling standard error SE(p)=sqrt(p(1-p)/4); trait reliability requires "
+            "candidate variance across human participants."
+        ),
+        priors=(
+            TheoryPrior(
+                "F2_proportion_bounds", "empathy", 0.0, 1.0, 0.5,
+                "Binomial proportion range across 4 ambiguity trials", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="F3",
+        parameter="empathy",
+        world="W1 The Frequency",
+        observed_indicator="post_shift_adaptation_latency_ms",
+        estimand="Mean adaptation latency across 3 acoustic context transitions",
+        identifiability=IdentifiabilityClass.EMPIRICAL_DATA_REQUIRED,
+        observation_count=3,
+        formula=None,
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(150.0, 10000.0),
+        missing_empirical_parameters=(
+            "baseline_context_latency",
+            "transition_shift_effect",
+            "transition_variance",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human context-updating distributions to separate cognitive perspective taking "
+            "from general sensory deceleration."
+        ),
+        priors=(
+            TheoryPrior(
+                "F3_transition_bounds", "empathy", 150.0, 10000.0, None,
+                "Physiological motor reaction time limit to task timeout across transitions",
+                "PHYSIOLOGICAL_MOTOR_LIMIT",
+            ),
+        ),
+    ),
+
+    # W2: The Archive (conscientiousness)
+    GameMeasurementCalibration(
+        game_id="A1",
+        parameter="conscientiousness",
+        world="W2 The Archive",
+        observed_indicator="classification_rule_adherence_rate",
+        estimand="Binomial proportion p = k / 5 of rule-guided document classifications",
+        identifiability=IdentifiabilityClass.MODEL_NUMERICALLY_ESTIMABLE,
+        observation_count=5,
+        formula="SE(p) = sqrt(p * (1 - p) / 5)",
+        worst_case_se=round(0.5 / sqrt(5), 4),
+        nominal_se_range=(0.0, round(0.5 / sqrt(5), 4)),
+        theoretical_bounds=(0.0, 1.0),
+        missing_empirical_parameters=(
+            "population_adherence_distribution",
+            "test_retest_stability",
+            "latent_factor_loading",
+        ),
+        empirical_requirement_to_identify=(
+            "Sampling error model SE(p)=sqrt(p(1-p)/5) is fully identified by design; empirical reliability "
+            "requires observed between-person variance."
+        ),
+        priors=(
+            TheoryPrior(
+                "A1_adherence_bounds", "conscientiousness", 0.0, 1.0, 0.8,
+                "Classification proportion bounded in [0, 1] across 5 items", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="A2",
+        parameter="conscientiousness",
+        world="W2 The Archive",
+        observed_indicator="exception_flagging_precision",
+        estimand="Binomial proportion p = k / N_genuine of genuine exceptions flagged (N_genuine >= 3, controls excluded)",
+        identifiability=IdentifiabilityClass.MODEL_NUMERICALLY_ESTIMABLE,
+        observation_count=3,
+        formula="SE(p) = sqrt(p * (1 - p) / N_genuine) for N_genuine >= 3",
+        worst_case_se=round(0.5 / sqrt(3), 4),
+        nominal_se_range=(0.0, round(0.5 / sqrt(3), 4)),
+        theoretical_bounds=(0.0, 1.0),
+        missing_empirical_parameters=(
+            "population_exception_detection_rate",
+            "false_positive_control_rate",
+            "population_trait_variance",
+        ),
+        empirical_requirement_to_identify=(
+            "Locked N>=3 gate enforces minimum sampling stability; empirical human testing is required "
+            "for ROC sensitivity and false alarm rate."
+        ),
+        priors=(
+            TheoryPrior(
+                "A2_genuine_bounds", "conscientiousness", 0.0, 1.0, 0.67,
+                "Genuine exception precision bounded in [0, 1] for N>=3 genuine opportunities",
+                "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="A3",
+        parameter="conscientiousness",
+        world="W2 The Archive",
+        observed_indicator="error_detection_sensitivity",
+        estimand="Signal detection sensitivity d' across 5 QC records (3 error, 2 clean control)",
+        identifiability=IdentifiabilityClass.MODEL_BOUND_ESTIMABLE,
+        observation_count=5,
+        formula="d' = z(H) - z(F) with log-linear boundary correction",
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(-3.0, 3.0),
+        missing_empirical_parameters=(
+            "population_hit_rate",
+            "population_false_alarm_rate",
+            "decision_criterion_c",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human proofreading records to estimate empirical d' and separate vigilance from "
+            "conservative response bias."
+        ),
+        priors=(
+            TheoryPrior(
+                "A3_sensitivity_bounds", "conscientiousness", -3.0, 3.0, 0.0,
+                "Log-linear corrected d' effective observable range across 3 signal and 2 noise records",
+                "SAMPLING_MODEL",
+            ),
+        ),
+    ),
+
+    # W3: The Shared Canvas (collaborative_spirit)
+    GameMeasurementCalibration(
+        game_id="C1",
+        parameter="collaborative_spirit",
+        world="W3 The Shared Canvas",
+        observed_indicator="need_sensitive_sharing_index",
+        estimand="Mean resource allocation proportion conditional on partner need state across 3 rounds",
+        identifiability=IdentifiabilityClass.MODEL_BOUND_ESTIMABLE,
+        observation_count=3,
+        formula=None,
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(0.0, 1.0),
+        missing_empirical_parameters=(
+            "round_to_round_covariance",
+            "partner_need_weighting_parameter",
+            "between_person_sharing_variance",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human multi-round gameplay to estimate intraclass correlation (ICC) across rounds."
+        ),
+        priors=(
+            TheoryPrior(
+                "C1_sharing_bounds", "collaborative_spirit", 0.0, 1.0, 0.5,
+                "Sharing proportion bounded [0, 1] across 3 allocation rounds", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="C2",
+        parameter="collaborative_spirit",
+        world="W3 The Shared Canvas",
+        observed_indicator="coordination_collision_avoidance_rate",
+        estimand="Binomial proportion p = k / 3 of collision-free coordinated placements",
+        identifiability=IdentifiabilityClass.MODEL_NUMERICALLY_ESTIMABLE,
+        observation_count=3,
+        formula="SE(p) = sqrt(p * (1 - p) / 3)",
+        worst_case_se=round(0.5 / sqrt(3), 4),
+        nominal_se_range=(0.0, round(0.5 / sqrt(3), 4)),
+        theoretical_bounds=(0.0, 1.0),
+        missing_empirical_parameters=(
+            "coordination_learning_slope",
+            "motor_trajectory_confound",
+            "population_coordination_variance",
+        ),
+        empirical_requirement_to_identify=(
+            "Sampling error is identified by N=3; empirical data required to disentangle motor trajectory "
+            "slips from genuine social coordination."
+        ),
+        priors=(
+            TheoryPrior(
+                "C2_collision_bounds", "collaborative_spirit", 0.0, 1.0, 0.67,
+                "Avoidance rate bounded [0, 1] across 3 placement rounds", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="C3",
+        parameter="collaborative_spirit",
+        world="W3 The Shared Canvas",
+        observed_indicator="constructive_repair_score",
+        estimand="Mean constructive repair index across 3 breakdown episodes",
+        identifiability=IdentifiabilityClass.MODEL_BOUND_ESTIMABLE,
+        observation_count=3,
+        formula=None,
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(0.0, 1.0),
+        missing_empirical_parameters=(
+            "breakdown_response_covariance",
+            "repair_strategy_frequencies",
+            "test_retest_reliability",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human breakdown recovery logs to evaluate inter-episode consistency and repair persistence."
+        ),
+        priors=(
+            TheoryPrior(
+                "C3_repair_bounds", "collaborative_spirit", 0.0, 1.0, 0.5,
+                "Repair score bounded [0, 1] across 3 breakdown episodes", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+
+    # W4: The Shifting Grid (emotional_agility)
+    GameMeasurementCalibration(
+        game_id="E1",
+        parameter="emotional_agility",
+        world="W4 The Shifting Grid",
+        observed_indicator="perseverative_error_count",
+        estimand="Integer count of perseverative errors k in {0..5} on recovery trials T5-T9 after rule shift T4",
+        identifiability=IdentifiabilityClass.MODEL_BOUND_ESTIMABLE,
+        observation_count=9,
+        formula="k in {0..5}; for error proportion p=k/5, SE(p) = sqrt(p * (1 - p) / 5)",
+        worst_case_se=round(0.5 / sqrt(5), 4),
+        nominal_se_range=(0.0, round(0.5 / sqrt(5), 4)),
+        theoretical_bounds=(0.0, 5.0),
+        missing_empirical_parameters=(
+            "baseline_reinforcement_strength",
+            "hazard_of_rule_adaptation",
+            "population_error_distribution",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human set-shifting trials to fit change-point recovery curves and estimate perseveration rate."
+        ),
+        priors=(
+            TheoryPrior(
+                "E1_error_bounds", "emotional_agility", 0.0, 5.0, 1.0,
+                "Integer perseverative error count bounded [0, 5] on trials T5-T9", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="E2",
+        parameter="emotional_agility",
+        world="W4 The Shifting Grid",
+        observed_indicator="cadence_stability_ratio",
+        estimand="Ratio of cadence variance in 3 disrupted sequences relative to 1 control baseline sequence",
+        identifiability=IdentifiabilityClass.EMPIRICAL_DATA_REQUIRED,
+        observation_count=4,
+        formula=None,
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(0.0, 10.0),
+        missing_empirical_parameters=(
+            "baseline_cadence_std",
+            "disruption_shock_variance",
+            "recovery_half_life",
+        ),
+        empirical_requirement_to_identify=(
+            "Variance ratio requires empirical baseline timing distributions from human gameplay."
+        ),
+        priors=(
+            TheoryPrior(
+                "E2_ratio_bounds", "emotional_agility", 0.0, 10.0, 1.0,
+                "Cadence variance ratio relative to baseline control", "THEORETICAL_CONJECTURE",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="E3",
+        parameter="emotional_agility",
+        world="W4 The Shifting Grid",
+        observed_indicator="strategy_shift_efficiency",
+        estimand="Mean strategy adjustment efficiency across 3 modality-stable condition transitions",
+        identifiability=IdentifiabilityClass.MODEL_BOUND_ESTIMABLE,
+        observation_count=3,
+        formula=None,
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(0.0, 1.0),
+        missing_empirical_parameters=(
+            "transition_efficiency_distribution",
+            "learning_curve_parameters",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human strategy selection data across consecutive rule shifts."
+        ),
+        priors=(
+            TheoryPrior(
+                "E3_efficiency_bounds", "emotional_agility", 0.0, 1.0, 0.5,
+                "Efficiency index bounded [0, 1] across 3 condition transitions", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+
+    # W5: The Hidden Gallery (curiosity)
+    GameMeasurementCalibration(
+        game_id="Q1",
+        parameter="curiosity",
+        world="W5 The Hidden Gallery",
+        observed_indicator="optional_alcove_exploration_rate",
+        estimand="Binomial proportion p = k / 4 of useful optional resources inspected (N_useful = 4)",
+        identifiability=IdentifiabilityClass.MODEL_NUMERICALLY_ESTIMABLE,
+        observation_count=4,
+        formula="SE(p) = sqrt(p * (1 - p) / 4)",
+        worst_case_se=0.2500,
+        nominal_se_range=(0.0, 0.2500),
+        theoretical_bounds=(0.0, 1.0),
+        missing_empirical_parameters=(
+            "curiosity_utility_weighting",
+            "low_value_control_click_rate",
+            "between_person_variance",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human data to calibrate the discrete choice model separating informational "
+            "exploration from random clicking."
+        ),
+        priors=(
+            TheoryPrior(
+                "Q1_exploration_bounds", "curiosity", 0.0, 1.0, 0.5,
+                "Exploration proportion bounded [0, 1] across 4 useful optional resources",
+                "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="Q2",
+        parameter="curiosity",
+        world="W5 The Hidden Gallery",
+        observed_indicator="anomaly_investigation_depth",
+        estimand="Mean multi-stage inspection depth across 4 exploration opportunities",
+        identifiability=IdentifiabilityClass.MODEL_BOUND_ESTIMABLE,
+        observation_count=4,
+        formula=None,
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(0.0, 3.0),
+        missing_empirical_parameters=(
+            "investigation_stopping_hazard",
+            "depth_scale_properties",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human clickstream logs to estimate ordinal transition probabilities across investigation stages."
+        ),
+        priors=(
+            TheoryPrior(
+                "Q2_depth_bounds", "curiosity", 0.0, 3.0, 1.5,
+                "Investigation depth stages bounded [0, 3] across 4 opportunities", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="Q3",
+        parameter="curiosity",
+        world="W5 The Hidden Gallery",
+        observed_indicator="integrated_insight_utilization",
+        estimand="Binomial proportion p = k / 3 of downstream decisions utilizing discovered contextual clues",
+        identifiability=IdentifiabilityClass.MODEL_NUMERICALLY_ESTIMABLE,
+        observation_count=3,
+        formula="SE(p) = sqrt(p * (1 - p) / 3)",
+        worst_case_se=round(0.5 / sqrt(3), 4),
+        nominal_se_range=(0.0, round(0.5 / sqrt(3), 4)),
+        theoretical_bounds=(0.0, 1.0),
+        missing_empirical_parameters=(
+            "baseline_uninformed_choice_rate",
+            "context_retention_decay",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human trials to verify that downstream accuracy is causally attributable to alcove inspection."
+        ),
+        priors=(
+            TheoryPrior(
+                "Q3_utilization_bounds", "curiosity", 0.0, 1.0, 0.67,
+                "Context integration proportion bounded [0, 1] across 3 episodes", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+
+    # W6: The Broken Tool (creative_initiative)
+    GameMeasurementCalibration(
+        game_id="CR1",
+        parameter="creative_initiative",
+        world="W6 The Broken Tool",
+        observed_indicator="solution_uniqueness_index",
+        estimand="Statistical rarity index of chosen structural assembly configuration across 2 stages",
+        identifiability=IdentifiabilityClass.EMPIRICAL_DATA_REQUIRED,
+        observation_count=2,
+        formula=None,
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(0.0, 1.0),
+        missing_empirical_parameters=(
+            "population_solution_frequencies",
+            "inter_rater_agreement_kappa",
+        ),
+        empirical_requirement_to_identify=(
+            "Solution uniqueness cannot be computed without a normative reference sample of assembly choices."
+        ),
+        priors=(
+            TheoryPrior(
+                "CR1_uniqueness_bounds", "creative_initiative", 0.0, 1.0, 0.5,
+                "Uniqueness index bounded [0, 1] across 2 open construction stages", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="CR2",
+        parameter="creative_initiative",
+        world="W6 The Broken Tool",
+        observed_indicator="creative_pivot_latency_ms",
+        estimand="Mean cognitive reframing latency following 3 constraint-shift episodes",
+        identifiability=IdentifiabilityClass.EMPIRICAL_DATA_REQUIRED,
+        observation_count=3,
+        formula=None,
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(200.0, 15000.0),
+        missing_empirical_parameters=(
+            "baseline_assembly_speed",
+            "post_constraint_hesitation_distribution",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human latency distributions to distinguish creative reframing from hesitation or confusion."
+        ),
+        priors=(
+            TheoryPrior(
+                "CR2_pivot_bounds", "creative_initiative", 200.0, 15000.0, None,
+                "Cognitive pivot reaction time bounds across constraint changes", "PHYSIOLOGICAL_MOTOR_LIMIT",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="CR3",
+        parameter="creative_initiative",
+        world="W6 The Broken Tool",
+        observed_indicator="functional_fixedness_overcome_rate",
+        estimand="Binomial proportion p = k / 3 of non-standard affordance adaptations",
+        identifiability=IdentifiabilityClass.MODEL_NUMERICALLY_ESTIMABLE,
+        observation_count=3,
+        formula="SE(p) = sqrt(p * (1 - p) / 3)",
+        worst_case_se=round(0.5 / sqrt(3), 4),
+        nominal_se_range=(0.0, round(0.5 / sqrt(3), 4)),
+        theoretical_bounds=(0.0, 1.0),
+        missing_empirical_parameters=(
+            "affordance_salience_hierarchy",
+            "population_adaptation_rate",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires empirical testing to verify that tool adaptation reflects creative flexibility rather than guessing."
+        ),
+        priors=(
+            TheoryPrior(
+                "CR3_adaptation_bounds", "creative_initiative", 0.0, 1.0, 0.5,
+                "Affordance adaptation proportion bounded [0, 1] across 3 tool opportunities",
+                "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+
+    # W7: The Repetition (motivation)
+    GameMeasurementCalibration(
+        game_id="M1",
+        parameter="motivation",
+        world="W7 The Repetition",
+        observed_indicator="mandatory_cadence_consistency",
+        estimand="Coefficient of variation CV = sigma_t / mu_t of unit completion times across 3 mandatory units",
+        identifiability=IdentifiabilityClass.EMPIRICAL_DATA_REQUIRED,
+        observation_count=3,
+        formula=None,
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(0.0, 5.0),
+        missing_empirical_parameters=(
+            "unit_completion_mean_ms",
+            "unit_completion_std_ms",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human completion time distributions across mandatory repetitive units."
+        ),
+        priors=(
+            TheoryPrior(
+                "M1_cadence_bounds", "motivation", 0.0, 5.0, 0.2,
+                "Rhythmic coefficient of variation across 3 mandatory units", "THEORETICAL_CONJECTURE",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="M2",
+        parameter="motivation",
+        world="W7 The Repetition",
+        observed_indicator="optional_units_completed",
+        estimand="Right-censored count k in {0..3} of optional units completed following mandatory work",
+        identifiability=IdentifiabilityClass.MODEL_BOUND_ESTIMABLE,
+        observation_count=6,
+        formula="k in {0..3}; right-censored at k=3",
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(0.0, 3.0),
+        missing_empirical_parameters=(
+            "continuation_hazard_rate",
+            "time_investment_cost_function",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires human persistence data to fit survival models and estimate baseline continuation probability."
+        ),
+        priors=(
+            TheoryPrior(
+                "M2_continuation_bounds", "motivation", 0.0, 3.0, 1.0,
+                "Voluntary continuation unit count bounded [0, 3]", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+    GameMeasurementCalibration(
+        game_id="M3",
+        parameter="motivation",
+        world="W7 The Repetition",
+        observed_indicator="reduced_feedback_persistence_count",
+        estimand="Right-censored count k in {0..3} of persistence units completed under attenuated feedback",
+        identifiability=IdentifiabilityClass.MODEL_BOUND_ESTIMABLE,
+        observation_count=6,
+        formula="k in {0..3}; right-censored at k=3",
+        worst_case_se=None,
+        nominal_se_range=None,
+        theoretical_bounds=(0.0, 3.0),
+        missing_empirical_parameters=(
+            "feedback_attenuation_decay",
+            "intrinsic_persistence_hazard",
+        ),
+        empirical_requirement_to_identify=(
+            "Requires empirical persistence logs to distinguish intrinsic motivation from accidental clicks."
+        ),
+        priors=(
+            TheoryPrior(
+                "M3_persistence_bounds", "motivation", 0.0, 3.0, 1.0,
+                "Persistence unit count bounded [0, 3] under reduced feedback", "TASK_DESIGN_BOUND",
+            ),
+        ),
+    ),
+)
+
+
+def get_game_calibration(game_id: str) -> GameMeasurementCalibration:
+    for cal in GAME_CALIBRATIONS:
+        if cal.game_id == game_id:
+            return cal
+    raise KeyError(f"Unknown game_id: {game_id}")
+
+
+# -----------------------------------------------------------------------------
+# Sensitivity Analysis: Sampling Precision Scaling by Observation Count
+# -----------------------------------------------------------------------------
+
+def compute_sampling_precision_sensitivity(
+    nominal_n: int,
+    hypothetical_ns: Sequence[int] = (3, 4, 5, 8, 12, 20),
+    p_values: Sequence[float] = (0.5, 0.7, 0.8, 0.9),
+) -> list[dict[str, float | int]]:
+    results = []
+    for n in hypothetical_ns:
+        for p in p_values:
+            se = sqrt(p * (1.0 - p) / n)
+            results.append({
+                "n": n,
+                "p": p,
+                "standard_error": round(se, 4),
+                "is_nominal": (n == nominal_n),
+            })
+    return results
+
+
+# -----------------------------------------------------------------------------
+# A-Priori Discriminant Validity Matrix
+# -----------------------------------------------------------------------------
+
+DISCRIMINANT_MATRIX: Mapping[str, dict[str, str | tuple[str, ...]]] = {
+    "F1": {
+        "primary_construct": "empathy",
+        "related_constructs": ("collaborative_spirit",),
+        "unrelated_constructs": ("conscientiousness", "motivation"),
+        "convergence_hypothesis": "Positive covariance expected with F2, F3, and SJT empathy.",
+        "discriminant_hypothesis": "Weaker covariance expected with A1, A2, M1, M2.",
+    },
+    "F2": {
+        "primary_construct": "empathy",
+        "related_constructs": ("collaborative_spirit", "curiosity"),
+        "unrelated_constructs": ("conscientiousness", "motivation"),
+        "convergence_hypothesis": "Positive covariance expected with F1, F3, and SJT empathy.",
+        "discriminant_hypothesis": "Weaker covariance expected with A1, A3, M1.",
+    },
+    "F3": {
+        "primary_construct": "empathy",
+        "related_constructs": ("emotional_agility",),
+        "unrelated_constructs": ("conscientiousness", "creative_initiative"),
+        "convergence_hypothesis": "Positive covariance expected with F1, F2, and SJT empathy.",
+        "discriminant_hypothesis": "Weaker covariance expected with A1, CR1, M1.",
+    },
+    "A1": {
+        "primary_construct": "conscientiousness",
+        "related_constructs": ("emotional_agility",),
+        "unrelated_constructs": ("empathy", "creative_initiative"),
+        "convergence_hypothesis": "Positive covariance expected with A2, A3, and SJT conscientiousness.",
+        "discriminant_hypothesis": "Weaker covariance expected with F1, F2, CR1, CR3.",
+    },
+    "A2": {
+        "primary_construct": "conscientiousness",
+        "related_constructs": ("curiosity",),
+        "unrelated_constructs": ("empathy", "collaborative_spirit"),
+        "convergence_hypothesis": "Positive covariance expected with A1, A3, and SJT conscientiousness.",
+        "discriminant_hypothesis": "Weaker covariance expected with F1, C1, C2.",
+    },
+    "A3": {
+        "primary_construct": "conscientiousness",
+        "related_constructs": ("motivation",),
+        "unrelated_constructs": ("creative_initiative", "collaborative_spirit"),
+        "convergence_hypothesis": "Positive covariance expected with A1, A2, and SJT conscientiousness.",
+        "discriminant_hypothesis": "Weaker covariance expected with CR1, C1, C3.",
+    },
+    "C1": {
+        "primary_construct": "collaborative_spirit",
+        "related_constructs": ("empathy",),
+        "unrelated_constructs": ("conscientiousness", "curiosity"),
+        "convergence_hypothesis": "Positive covariance expected with C2, C3, and SJT collaborative spirit.",
+        "discriminant_hypothesis": "Weaker covariance expected with A1, Q1, Q2.",
+    },
+    "C2": {
+        "primary_construct": "collaborative_spirit",
+        "related_constructs": ("empathy",),
+        "unrelated_constructs": ("curiosity", "creative_initiative"),
+        "convergence_hypothesis": "Positive covariance expected with C1, C3, and SJT collaborative spirit.",
+        "discriminant_hypothesis": "Weaker covariance expected with Q1, CR1.",
+    },
+    "C3": {
+        "primary_construct": "collaborative_spirit",
+        "related_constructs": ("emotional_agility",),
+        "unrelated_constructs": ("conscientiousness", "curiosity"),
+        "convergence_hypothesis": "Positive covariance expected with C1, C2, and SJT collaborative spirit.",
+        "discriminant_hypothesis": "Weaker covariance expected with A1, A3, Q2.",
+    },
+    "E1": {
+        "primary_construct": "emotional_agility",
+        "related_constructs": ("conscientiousness",),
+        "unrelated_constructs": ("empathy", "collaborative_spirit"),
+        "convergence_hypothesis": "Positive covariance (fewer perseverative errors) expected with E2, E3, and SJT emotional agility.",
+        "discriminant_hypothesis": "Weaker covariance expected with F1, C1, C2.",
+    },
+    "E2": {
+        "primary_construct": "emotional_agility",
+        "related_constructs": ("motivation",),
+        "unrelated_constructs": ("curiosity", "creative_initiative"),
+        "convergence_hypothesis": "Positive covariance expected with E1, E3, and SJT emotional agility.",
+        "discriminant_hypothesis": "Weaker covariance expected with Q1, CR1.",
+    },
+    "E3": {
+        "primary_construct": "emotional_agility",
+        "related_constructs": ("creative_initiative",),
+        "unrelated_constructs": ("collaborative_spirit", "motivation"),
+        "convergence_hypothesis": "Positive covariance expected with E1, E2, and SJT emotional agility.",
+        "discriminant_hypothesis": "Weaker covariance expected with C1, M1.",
+    },
+    "Q1": {
+        "primary_construct": "curiosity",
+        "related_constructs": ("creative_initiative",),
+        "unrelated_constructs": ("conscientiousness", "motivation"),
+        "convergence_hypothesis": "Positive covariance expected with Q2, Q3, and SJT curiosity.",
+        "discriminant_hypothesis": "Weaker covariance expected with A1, A3, M1.",
+    },
+    "Q2": {
+        "primary_construct": "curiosity",
+        "related_constructs": ("creative_initiative", "conscientiousness"),
+        "unrelated_constructs": ("collaborative_spirit", "empathy"),
+        "convergence_hypothesis": "Positive covariance expected with Q1, Q3, and SJT curiosity.",
+        "discriminant_hypothesis": "Weaker covariance expected with C1, F1.",
+    },
+    "Q3": {
+        "primary_construct": "curiosity",
+        "related_constructs": ("emotional_agility",),
+        "unrelated_constructs": ("collaborative_spirit", "motivation"),
+        "convergence_hypothesis": "Positive covariance expected with Q1, Q2, and SJT curiosity.",
+        "discriminant_hypothesis": "Weaker covariance expected with C2, M1.",
+    },
+    "CR1": {
+        "primary_construct": "creative_initiative",
+        "related_constructs": ("curiosity",),
+        "unrelated_constructs": ("conscientiousness", "motivation"),
+        "convergence_hypothesis": "Positive covariance expected with CR2, CR3, and SJT creative initiative.",
+        "discriminant_hypothesis": "Weaker covariance expected with A1, A3, M1.",
+    },
+    "CR2": {
+        "primary_construct": "creative_initiative",
+        "related_constructs": ("emotional_agility",),
+        "unrelated_constructs": ("collaborative_spirit", "conscientiousness"),
+        "convergence_hypothesis": "Positive covariance expected with CR1, CR3, and SJT creative initiative.",
+        "discriminant_hypothesis": "Weaker covariance expected with C1, A1.",
+    },
+    "CR3": {
+        "primary_construct": "creative_initiative",
+        "related_constructs": ("curiosity",),
+        "unrelated_constructs": ("empathy", "collaborative_spirit"),
+        "convergence_hypothesis": "Positive covariance expected with CR1, CR2, and SJT creative initiative.",
+        "discriminant_hypothesis": "Weaker covariance expected with F1, C1.",
+    },
+    "M1": {
+        "primary_construct": "motivation",
+        "related_constructs": ("conscientiousness",),
+        "unrelated_constructs": ("curiosity", "creative_initiative"),
+        "convergence_hypothesis": "Positive covariance expected with M2, M3, and SJT motivation.",
+        "discriminant_hypothesis": "Weaker covariance expected with Q1, CR1.",
+    },
+    "M2": {
+        "primary_construct": "motivation",
+        "related_constructs": ("conscientiousness",),
+        "unrelated_constructs": ("curiosity", "creative_initiative"),
+        "convergence_hypothesis": "Positive covariance expected with M1, M3, and SJT motivation.",
+        "discriminant_hypothesis": "Weaker covariance expected with Q1, CR1.",
+    },
+    "M3": {
+        "primary_construct": "motivation",
+        "related_constructs": ("emotional_agility",),
+        "unrelated_constructs": ("empathy", "creative_initiative"),
+        "convergence_hypothesis": "Positive covariance expected with M1, M2, and SJT motivation.",
+        "discriminant_hypothesis": "Weaker covariance expected with F1, CR1.",
+    },
+}
+
+
+# -----------------------------------------------------------------------------
+# Sibling & SJT Convergence Structural Models
+# -----------------------------------------------------------------------------
+
+SIBLING_CONVERGENCE_MODELS: Mapping[str, dict] = {
+    param: {
+        "parameter": param,
+        "shared_latent_construct": f"theta_{param}",
+        "sibling_indicators": tuple(spec.game_id for spec in GAME_SPECS if spec.parameter == param),
+        "expected_direction": "POSITIVE",
+        "method_variance_sources": "Distinct micro-task interaction affordances (latency vs proportion vs count)",
+        "alternative_explanations": "Device form factor, motor response speed, reading comprehension",
+        "convergence_status": "EXPECTED_RELATIONSHIP",
+        "numerical_correlation_status": "NOT_IDENTIFIED_WITHOUT_EMPIRICAL_DATA",
+    }
+    for param in PARAMETERS
+}
+
+SJT_GAME_CONVERGENCE_MODELS: Mapping[str, dict] = {
+    param: {
+        "parameter": param,
+        "sjt_indicator": f"SJT_{param}",
+        "game_indicators": tuple(spec.game_id for spec in GAME_SPECS if spec.parameter == param),
+        "shared_construct": f"theta_{param}",
+        "method_contrast": "Explicit scenario-based narrative dilemma vs implicit behavioral execution",
+        "expected_direction": "POSITIVE",
+        "empirical_correlation_status": "NOT_IDENTIFIED_WITHOUT_EMPIRICAL_DATA",
+    }
+    for param in PARAMETERS
+}
+
+
+# -----------------------------------------------------------------------------
+# Common Scale Linking & Latent Specifications
+# -----------------------------------------------------------------------------
+
+COMMON_SCALE_SPECIFICATIONS: Mapping[str, dict] = {
+    param: {
+        "parameter": param,
+        "target_scale": f"theta_{param} ~ N(0, 1)",
+        "required_constraints": "Mean=0, Variance=1 identification, marker variable loading=1.0 or standardized factor",
+        "status": "COMMON_SCALE_MODEL_SPECIFIED",
+        "parameter_status": "EMPIRICAL_LINKING_PARAMETERS_REQUIRED",
+    }
+    for param in PARAMETERS
+}
+
+LATENT_MODEL_SPECIFICATIONS: Mapping[str, dict] = {
+    param: {
+        "parameter": param,
+        "structural_form": "Y_ij = alpha_j + lambda_j * theta_i + epsilon_ij",
+        "indicators": (f"SJT_{param}",) + tuple(spec.game_id for spec in GAME_SPECS if spec.parameter == param),
+        "non_equal_loadings_assumed": True,
+        "status": "LATENT_MODEL_SPECIFIED",
+        "estimate_status": "ESTIMATE_NOT_IDENTIFIED_WITHOUT_EMPIRICAL_PARAMETERS",
+        "prohibited_terms": ("true_score",),
+    }
+    for param in PARAMETERS
+}
+
+
+def evaluate_theoretical_delta_sensitivity(
+    difference: float,
+    se_diff: float,
+    hypothetical_margins: Sequence[tuple[float, float]] = ((0.15, 0.35), (0.20, 0.50), (0.25, 0.60)),
+) -> list[dict[str, float | str]]:
+    """Evaluates where an observed difference would fall across theoretical margins."""
+    results = []
+    for small_max, material_max in hypothetical_margins:
+        if difference <= se_diff:
+            state = "DELTA_WITHIN_MEASUREMENT_ERROR"
+        elif difference <= small_max:
+            state = "DELTA_SMALL"
+        elif difference <= material_max:
+            state = "DELTA_MATERIAL"
+        else:
+            state = "DELTA_LARGE"
+        results.append({
+            "small_max": small_max,
+            "material_max": material_max,
+            "difference": difference,
+            "se_difference": se_diff,
+            "hypothetical_state": state,
+            "status": "MODEL_BASED_SENSITIVITY",
+        })
+    return results

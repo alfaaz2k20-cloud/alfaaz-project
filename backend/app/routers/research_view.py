@@ -36,6 +36,23 @@ RANDOM_RESPONDER_REFERENCE = {
     "motivation": {"LOW": "34.7%", "MODERATE": "59.6%", "HIGH": "5.7%"}
 }
 
+@router.get("", include_in_schema=True)
+@router.get("/", include_in_schema=True)
+def get_research_root():
+    """Returns high-level status and endpoint discovery for the recruit research subsystem."""
+    return {
+        "status": "ACTIVE",
+        "service": "Alfaaz Recruit Research & Recruiter Dossier API",
+        "quarantine_status": "19_QUARANTINED_2_ACTIVE",
+        "calibration_status": "UNCALIBRATED",
+        "endpoints": {
+            "sessions": "/recruit/research/sessions",
+            "session_dossier": "/recruit/research/sessions/{session_id}",
+            "config": "/recruit/research/config"
+        }
+    }
+
+
 @router.get("/sessions")
 def list_research_sessions(
     request: Request,
@@ -329,4 +346,3 @@ def get_session_research_view(
             {"scope": fl.scope, "flag": fl.flag, "detail": fl.detail} for fl in flags
         ]
     }
-
