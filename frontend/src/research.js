@@ -149,93 +149,90 @@ async function loadSessionDetail(sessionId) {
     const candidatePhone = window.escapeHtml(applicant.phone_or_contact || '—');
     const durationMin = meta.duration_minutes !== null ? `${meta.duration_minutes} min` : 'In progress';
 
-    const bandOrder = { "LOW": 0, "MODERATE": 1, "HIGH": 2 };
-    let totalScore = 0;
-    let paramCount = 0;
-    
-    const traits = {'empathy': 'Ability to understand and adjust to others', 'conscientiousness': 'Diligence and attention to detail', 'collaborative_spirit': 'Teamwork and resource sharing', 'emotional_agility': 'Adaptability to sudden changes', 'curiosity': 'Desire to explore and learn', 'creative_initiative': 'Problem-solving with limited tools', 'motivation': 'Persistence in repetitive tasks'};
-        const paramRows = Object.entries(comparisons).map(([parameter, comp]) => {
-        const sjtBand = comp.sjt_band || 'MODERATE';
-        const gameBand = comp.game_band || 'MODERATE';
-        
-        const sjtVal = bandOrder[sjtBand] !== undefined ? bandOrder[sjtBand] : 1;
-        const gameVal = bandOrder[gameBand] !== undefined ? bandOrder[gameBand] : 1;
-        
-        totalScore += (sjtVal + gameVal);
-        paramCount += 2;
-        
-        const delta = Math.abs(sjtVal - gameVal);
-        let interpretation = "Strong Reliability - Consistent across methods.";
-        let color = "#2e7d32";
-        
-        if (delta === 1) {
-            interpretation = "Moderate Divergence - Acceptable variation in context.";
-            color = "#b5832a";
-        } else if (delta > 1) {
-            interpretation = "High Divergence - Requires deeper interview probing.";
-            color = "#c62828";
-        }
-        
+    const dims = data.dimensions || [];
+    const summary = data.profile_summary || {};
+    const completeness = summary.completeness || 'INSUFFICIENT';
+
+    const levelBadge = (lvl) => {
+        if (lvl === 'RELATIVELY_STRONG') return '<span class="px-2 py-0.5 bg-[#f5efe6] text-[#8c651e] border border-[#d4be98] text-[10px] font-semibold uppercase tracking-wider">Relatively Strong</span>';
+        if (lvl === 'RELATIVELY_LOWER') return '<span class="px-2 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 text-[10px] uppercase tracking-wider">Relatively Lower</span>';
+        if (lvl === 'ABOUT_EQUAL') return '<span class="px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-300 text-[10px] uppercase tracking-wider">About Equal</span>';
+        if (lvl === 'RELATIVELY_MIDDLE') return '<span class="px-2 py-0.5 bg-gray-50 text-gray-700 border border-gray-300 text-[10px] uppercase tracking-wider">Relatively Middle</span>';
+        return '<span class="px-2 py-0.5 bg-gray-50 text-gray-400 border border-gray-200 text-[10px] uppercase tracking-wider">Insufficient</span>';
+    };
+
+    const relBadge = (rel) => {
+        if (rel === 'ALIGNED') return '<span class="text-green-700 font-medium">Aligned</span>';
+        if (rel === 'PARTLY_ALIGNED') return '<span class="text-amber-700 font-medium">Partly Aligned</span>';
+        if (rel === 'DIFFERENT') return '<span class="text-purple-700 font-medium">Divergent</span>';
+        if (rel === 'NOT_ENOUGH_EVIDENCE') return '<span class="text-gray-500">Awaiting Data</span>';
+        return '<span class="text-gray-400">Not Available</span>';
+    };
+
+    const dimensionRows = dims.map(d => {
+        const p = d.profile || {};
+        const scoreDisp = p.relative_score !== null && p.relative_score !== undefined ? `${p.relative_score} / 100` : '—';
+        const rankDisp = p.relative_rank !== null && p.relative_rank !== undefined ? `#${p.relative_rank}` : '—';
+        const levelDisp = levelBadge(p.relative_level);
+        const relDisp = relBadge(d.relationship);
+        const confDisp = d.confidence || 'LIMITED';
+        const safeName = window.escapeHtml(d.display_name || d.parameter);
+        const obs = window.escapeHtml(d.observed_behavior || '—');
+
         return `
         <tr class="border-b border-[var(--grid-border)]">
-            <td class="p-3 font-medium capitalize text-[var(--text-primary)]">${parameter.replace(/_/g, ' ')}</td>
-            <td class="p-3 text-[var(--text-secondary)]">${sjtBand}</td>
-            <td class="p-3 text-[var(--text-secondary)]">${gameBand}</td>
-            <td class="p-3 font-bold" style="color: ${color};">${delta}</td>
-            <td class="p-3" style="color: ${color};">${interpretation}</td>
+            <td class="p-3 font-medium text-[var(--text-primary)]">
+                <div>${safeName}</div>
+                <div class="text-[10px] text-[var(--text-secondary)] mt-0.5">${obs}</div>
+            </td>
+            <td class="p-3 text-center font-semibold text-xs">${rankDisp}</td>
+            <td class="p-3 text-center font-serif text-sm font-semibold">${scoreDisp}</td>
+            <td class="p-3 text-center">${levelDisp}</td>
+            <td class="p-3 text-center text-xs">${relDisp}</td>
+            <td class="p-3 text-center text-[10px] uppercase text-[var(--text-secondary)]">${confDisp}</td>
         </tr>
         `;
     }).join('');
-    
-    const maxPossible = paramCount * 2;
-    let finalScorePercent = 0;
-    if (maxPossible > 0) {
-        finalScorePercent = Math.round((totalScore / maxPossible) * 100);
-    }
-    
-    let overallLabel = "Developing Candidate";
-    if (finalScorePercent >= 75) overallLabel = "Highly Recommended";
-    else if (finalScorePercent >= 50) overallLabel = "Recommended";
 
     container.innerHTML = `
       <div class="mb-4">
         <button onclick="loadSessionsList()" class="text-xs uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--accent-gold)]">&larr; Back to Registry</button>
       </div>
       
-      <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-6 mb-6">
-        <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)] mb-4">1. Candidate Overview</h3>
+      <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-6 mb-4">
+        <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)] mb-4">1. Candidate & Session Overview</h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Name</strong>${candidateName}</div>
           <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Email</strong>${candidateEmail}</div>
           <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Contact</strong>${candidatePhone}</div>
-          <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Duration</strong>${durationMin}</div>
+          <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Session Duration</strong>${durationMin}</div>
         </div>
       </div>
-      
-      <div class="bg-white border border-[var(--grid-border)] p-8 mb-6 text-center">
-        <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)] mb-2">Overall Assessment Score</h3>
-        <div class="text-5xl font-serif text-[var(--text-primary)] mb-2">${finalScorePercent}/100</div>
-        <div class="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">${overallLabel}</div>
+
+      <div class="bg-white border-l-4 border-[var(--accent-gold)] border-t border-r border-b border-[var(--grid-border)] p-4 mb-6 text-xs text-[var(--text-secondary)] leading-relaxed">
+        <strong class="text-[var(--text-primary)] uppercase tracking-wider">Psychometric Safeguard Notice:</strong>
+        This dossier provides a <em>provisional within-person relative profile</em> for exploratory human review only. It reflects the relative emphasis among dimensions for this candidate, NOT normative trait scores, clinical evaluation, or automated hiring recommendations. Cross-method convergence is exploratory; empirical normative calibration is pending.
       </div>
 
       <div class="mb-6">
-        <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)] mb-3">2. Parameter Construct Analysis & Deltas</h3>
-        <p class="text-xs text-[var(--text-secondary)] mb-4 leading-relaxed">
-          This table compares the candidate's self-reported Situational Judgment (SJT) with their actual performative tasks (Games). The Delta measures reliability between what they said and what they did.
-        </p>
+        <div class="flex justify-between items-baseline mb-3">
+          <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)]">2. Within-Person Relative Dimension Profile</h3>
+          <span class="text-xs uppercase tracking-wider text-[var(--text-secondary)]">Profile Completeness: <strong class="text-[var(--text-primary)]">${completeness}</strong></span>
+        </div>
         <div class="overflow-x-auto border border-[var(--grid-border)] bg-white">
           <table class="w-full text-left text-sm">
             <thead class="bg-[#f0eeea] text-xs uppercase tracking-wider text-[var(--text-secondary)]">
               <tr>
-                <th class="p-3">Parameter</th>
-                <th class="p-3">SJT Score</th>
-                <th class="p-3">Games Score</th>
-                <th class="p-3">Delta</th>
-                <th class="p-3">Interpretation</th>
+                <th class="p-3">Dimension & Observed Context</th>
+                <th class="p-3 text-center">Relative Rank</th>
+                <th class="p-3 text-center">Score (0–100)</th>
+                <th class="p-3 text-center">Profile Position</th>
+                <th class="p-3 text-center">Cross-Method Relationship</th>
+                <th class="p-3 text-center">Confidence</th>
               </tr>
             </thead>
             <tbody>
-              ${paramRows}
+              ${dimensionRows}
             </tbody>
           </table>
         </div>

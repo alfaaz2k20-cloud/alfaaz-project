@@ -149,11 +149,21 @@ class DBEvidence(SQLModel, table=True):
     sjt_min: Optional[int] = None
     sjt_max: Optional[int] = None
     sjt_span: Optional[int] = None
+    sjt_num: Optional[int] = None
+    sjt_relative: Optional[float] = None
     sjt_band: Optional[str] = None  # HIGH, MODERATE, LOW
+    predicted_sjt_relative: Optional[float] = None
+    model_version: Optional[str] = None
+    prediction_status: Optional[str] = None
+    fused_relative: Optional[float] = None
+    profile_relative_score: Optional[float] = None  # 0 to 100 within-person scale
+    profile_relative_rank: Optional[int] = None     # 1 to 7 within-person rank
+    profile_relative_level: Optional[str] = None    # RELATIVELY_STRONG, RELATIVELY_MIDDLE, RELATIVELY_LOWER, ABOUT_EQUAL
+    profile_completeness: Optional[str] = None      # COMPLETE, SJT_ONLY, PARTIAL, INSUFFICIENT
     game_status: str = Field(default="INSUFFICIENT") # USABLE, INSUFFICIENT, INVALID
-    game_band: Optional[str] = None # HIGH, MODERATE, LOW, UNCALIBRATED, or None
+    game_band: Optional[str] = None # UNCALIBRATED or None
     consistency: str = Field(default="NOT_COMPUTED") # CONSISTENT, VARIED, INSUFFICIENT, NOT_COMPUTED
-    relationship: str = Field(default="NOT_COMPUTED") # ALIGNED, PARTLY_ALIGNED, DIFFERENT, SJT_ONLY, INSUFFICIENT, NOT_COMPUTED
+    relationship: str = Field(default="NOT_COMPUTED") # ALIGNED, PARTLY_ALIGNED, DIFFERENT, NOT_ENOUGH_EVIDENCE, NOT_AVAILABLE
     confidence: str = Field(default="LIMITED") # LIMITED, MODERATE, SUBSTANTIAL
     observed_behavior_summary: Optional[str] = None
     data_quality_flags_json: str = Field(default="[]")

@@ -7,8 +7,9 @@ from app.models.recruit import (
     DBEvidence, DBFeature, DBSession, DBDataQualityFlag, DBSJTResponse
 )
 from app.services.sjt_engine import score_sjt_responses, resolve_config_path
+from app.services.regression_engine import predict_parameter_relative, load_model_artifact
 
-# Parameter to mini-games mapping
+# Locked seven parameters and mini-game mapping
 PARAM_MINIGAMES = {
     "empathy": ["F1", "F2", "F3"],
     "conscientiousness": ["A1", "A2", "A3"],
@@ -53,7 +54,7 @@ def load_feature_bands_config() -> Dict[str, Any]:
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
-    return {"calibration_status": "UNCALIBRATED", "bands": {}}
+    return {"calibration_status": "NOT_ESTABLISHED", "bands": {}}
 
 
 def load_config_hash() -> str:
@@ -82,8 +83,6 @@ def evaluate_minigame_status(
 
     feature_flags = set()
     for f in mg_feats:
-        if not f.valid:
-            return "INVALID"
         if f.flags_json:
             try:
                 fl = json.loads(f.flags_json)
@@ -92,20 +91,25 @@ def evaluate_minigame_status(
             except Exception:
                 pass
 
-    if "invalid_timing" in feature_flags:
-        return "INVALID"
-
     mg_scoped_flags = [qf.flag for qf in quality_flags if qf.scope == mg]
-    if any(fl in ["seq_gap", "seq_conflict", "invalid_timing"] for fl in mg_scoped_flags):
+
+    # 1. Integrity violations make the game INVALID
+    integrity_flags = {"seq_gap", "seq_conflict", "invalid_timing", "events_cap_reached"}
+    if any(fl in integrity_flags for fl in feature_flags) or any(fl in integrity_flags for fl in mg_scoped_flags):
         return "INVALID"
 
+    # 2. Check for insufficiency (not implemented, interrupted, insufficient observations)
     if "feature_not_implemented" in feature_flags:
         return "INSUFFICIENT"
 
     if "interrupted" in feature_flags or any(fl == "interrupted" for fl in mg_scoped_flags):
         return "INSUFFICIENT"
 
-    if any(f.value_raw is None for f in mg_feats):
+    if any(fl.lower().startswith("insufficient") for fl in feature_flags):
+        return "INSUFFICIENT"
+
+    # Check validity and presence of values
+    if any(not f.valid or f.value_raw is None for f in mg_feats):
         return "INSUFFICIENT"
 
     return "USABLE"
@@ -114,14 +118,13 @@ def evaluate_minigame_status(
 def classify_minigame_band(mg: str, feat_val: Optional[float], band_def: Any) -> Optional[str]:
     """
     Evaluates a mini-game feature value against a calibrated band definition.
-    Only called when calibrated.
+    Only called when empirical calibration is established.
     """
     if feat_val is None or band_def is None:
         return None
     if isinstance(band_def, str) and band_def in BAND_ORDINALS:
         return band_def
     if isinstance(band_def, dict):
-        # Case 1: thresholds {"LOW": <float>, "HIGH": <float>}
         if "LOW" in band_def and "HIGH" in band_def and not isinstance(band_def["LOW"], list):
             low_cutoff = band_def["LOW"]
             high_cutoff = band_def["HIGH"]
@@ -131,7 +134,6 @@ def classify_minigame_band(mg: str, feat_val: Optional[float], band_def: Any) ->
                 return "HIGH"
             else:
                 return "MODERATE"
-        # Case 2: range bounds {"LOW": [min, max], "MODERATE": [min, max], "HIGH": [min, max]}
         for b_name in ["LOW", "MODERATE", "HIGH"]:
             bounds = band_def.get(b_name)
             if isinstance(bounds, (list, tuple)) and len(bounds) == 2:
@@ -171,7 +173,8 @@ def integrate_session_evidence(
     session_id: str,
     force_recompute: bool = False,
     feature_bands_override: Optional[Dict[str, Any]] = None,
-    integration_override: Optional[Dict[str, Any]] = None
+    integration_override: Optional[Dict[str, Any]] = None,
+    model_artifact_override: Optional[Dict[str, Any]] = None
 ) -> List[DBEvidence]:
     """
     Computes integrated evidence records per parameter from SJT responses and extracted game features.
@@ -181,7 +184,6 @@ def integrate_session_evidence(
     - Each recompute inserts new records and marks previous records as superseded.
     - Exactly one current non-superseded result per derivation scope (session_id, parameter).
     """
-    # Check existing non-superseded records
     existing_records = db.exec(
         select(DBEvidence).where(
             DBEvidence.session_id == session_id,
@@ -190,13 +192,13 @@ def integrate_session_evidence(
     ).all()
     existing_by_param = {rec.parameter: rec for rec in existing_records}
 
-    # If not forcing recompute and all 7 parameters exist, return current non-superseded records
     if not force_recompute and len(existing_by_param) == len(PARAM_MINIGAMES):
         return [existing_by_param[p] for p in PARAM_MINIGAMES.keys() if p in existing_by_param]
 
     # Load configurations
     integration_cfg = integration_override or load_integration_config()
     feature_bands_cfg = feature_bands_override or load_feature_bands_config()
+    model_artifact = model_artifact_override or load_model_artifact()
     cfg_hash = load_config_hash()
 
     min_usable = integration_cfg.get("min_usable_minigames", 2)
@@ -232,7 +234,6 @@ def integrate_session_evidence(
             sjt_scores = {}
 
     if not sjt_scores:
-        # SJT is missing or incomplete; record informational flag sjt_missing if not present
         if not any(qf.flag == "sjt_missing" for qf in quality_flags):
             sjt_missing_flag = DBDataQualityFlag(
                 session_id=session_id,
@@ -243,17 +244,18 @@ def integrate_session_evidence(
             db.add(sjt_missing_flag)
 
     now_utc = datetime.now(timezone.utc)
-    updated_records: List[DBEvidence] = []
+
+    # Pass 1: Parameter-level preliminary evidence & regression predictions
+    preliminary: Dict[str, Dict[str, Any]] = {}
 
     for param_name, mgs in PARAM_MINIGAMES.items():
-        # Evaluate each mini-game's status
         usable_mgs = [
             mg for mg in mgs
             if evaluate_minigame_status(mg, mg_features.get(mg, []), quality_flags) == "USABLE"
         ]
         n_usable = len(usable_mgs)
 
-        # 1. Game Status
+        # Game status
         if n_usable >= min_usable:
             game_status = "USABLE"
         else:
@@ -266,37 +268,51 @@ def integrate_session_evidence(
             sjt_min = param_sjt["min"]
             sjt_max = param_sjt["max"]
             sjt_span = param_sjt["span"]
+            sjt_num = param_sjt.get("num", sjt_raw - sjt_min)
+            sjt_relative = param_sjt.get("sjt_relative", round(sjt_num / sjt_span, 6) if sjt_span > 0 else 0.5)
             sjt_band = param_sjt["band"]
         else:
             sjt_raw = None
             sjt_min = None
             sjt_max = None
             sjt_span = None
+            sjt_num = None
+            sjt_relative = None
             sjt_band = None
 
-        # 2. Calibration check
+        # Regression Model Prediction
+        pred_val, pred_status, meta = predict_parameter_relative(
+            param_name, features, model_artifact=model_artifact
+        )
+        predicted_sjt_relative = pred_val if pred_status == "AVAILABLE" else None
+        model_version = meta.get("model_version", "none")
+        prediction_status = pred_status
+
+        # Calibration check
         calibrated = is_calibrated(usable_mgs, feature_bands_cfg, min_usable)
 
         if not calibrated:
-            # Uncalibrated game evidence
             game_band = "UNCALIBRATED" if game_status == "USABLE" else None
+            consistency = "INSUFFICIENT" if n_usable < min_usable else "NOT_COMPUTED"
 
-            # Consistency
-            if n_usable < min_usable:
-                consistency = "INSUFFICIENT"
-            else:
-                consistency = "NOT_COMPUTED"
-
-            # Relationship
-            if sjt_band is None:
-                relationship = "INSUFFICIENT"
+            if pred_status == "AVAILABLE" and sjt_relative is not None and predicted_sjt_relative is not None:
+                delta = abs(sjt_relative - predicted_sjt_relative)
+                if delta <= 0.15:
+                    relationship = "ALIGNED"
+                elif delta <= 0.30:
+                    relationship = "PARTLY_ALIGNED"
+                else:
+                    relationship = "DIFFERENT"
+            elif sjt_band is None:
+                relationship = "NOT_AVAILABLE"
             elif game_status == "INSUFFICIENT":
-                relationship = "SJT_ONLY"
+                relationship = "NOT_ENOUGH_EVIDENCE"
             else:
-                relationship = "NOT_COMPUTED"
+                relationship = "NOT_AVAILABLE"
 
-            # Confidence: uncalibrated game evidence cannot exceed MODERATE
-            if sjt_band is None or n_usable <= 1 or has_critical_flag:
+            # Issue 3: In the current system (model = UNTRAINED_REFERENCE_MODEL, calibration = NOT_ESTABLISHED),
+            # SUBSTANTIAL is strictly unavailable. Practical states are LIMITED and MODERATE.
+            if has_critical_flag or sjt_raw is None:
                 confidence = "LIMITED"
             else:
                 confidence = "MODERATE"
@@ -312,7 +328,6 @@ def integrate_session_evidence(
 
             game_band = aggregate_game_bands(usable_mgs, mg_bands, weights)
 
-            # Consistency
             if n_usable < min_usable:
                 consistency = "INSUFFICIENT"
             else:
@@ -320,11 +335,10 @@ def integrate_session_evidence(
                 r = (max(ords) - min(ords)) if ords else 0
                 consistency = "CONSISTENT" if r <= consistency_max_range else "VARIED"
 
-            # Relationship
             if sjt_band is None:
-                relationship = "INSUFFICIENT"
+                relationship = "NOT_AVAILABLE"
             elif game_status == "INSUFFICIENT":
-                relationship = "SJT_ONLY"
+                relationship = "NOT_ENOUGH_EVIDENCE"
             else:
                 d = abs(BAND_ORDINALS[sjt_band] - BAND_ORDINALS[game_band])
                 if d == 0:
@@ -334,15 +348,31 @@ def integrate_session_evidence(
                 else:
                     relationship = "DIFFERENT"
 
-            # Confidence
+            # Issue 3: SUBSTANTIAL is unavailable unless empirical calibration is established AND model is genuinely active
+            model_active = (model_artifact.get("status") == "ACTIVE")
             if sjt_band is None or n_usable <= 1 or has_critical_flag:
                 confidence = "LIMITED"
-            elif n_usable == 3 and consistency == "CONSISTENT" and not has_critical_flag:
+            elif (
+                calibrated
+                and model_active
+                and n_usable == 3
+                and consistency == "CONSISTENT"
+                and not has_critical_flag
+            ):
                 confidence = "SUBSTANTIAL"
             else:
                 confidence = "MODERATE"
 
-        # Observed behavior summary
+        # Common-space fusion
+        if predicted_sjt_relative is not None and sjt_relative is not None:
+            fused_relative = round((sjt_relative + predicted_sjt_relative) / 2.0, 6)
+        elif sjt_relative is not None:
+            fused_relative = sjt_relative
+        elif predicted_sjt_relative is not None:
+            fused_relative = predicted_sjt_relative
+        else:
+            fused_relative = None
+
         if game_status == "USABLE":
             obs_summary = OBSERVED_BEHAVIOR_SUMMARIES.get(
                 param_name, "Completed experimental interactive mini-game tasks."
@@ -350,7 +380,96 @@ def integrate_session_evidence(
         else:
             obs_summary = "Insufficient behavioral observations."
 
-        # Insert-Only Versioning: supersede old record without rewriting historical content
+        preliminary[param_name] = {
+            "sjt_raw": sjt_raw,
+            "sjt_min": sjt_min,
+            "sjt_max": sjt_max,
+            "sjt_span": sjt_span,
+            "sjt_num": sjt_num,
+            "sjt_relative": sjt_relative,
+            "sjt_band": sjt_band,
+            "predicted_sjt_relative": predicted_sjt_relative,
+            "model_version": model_version,
+            "prediction_status": prediction_status,
+            "fused_relative": fused_relative,
+            "game_status": game_status,
+            "game_band": game_band,
+            "consistency": consistency,
+            "relationship": relationship,
+            "confidence": confidence,
+            "observed_behavior_summary": obs_summary,
+            "n_usable": n_usable
+        }
+
+    # Pass 2: Profile Completeness and Within-Person 0-100 Relative Profile
+    n_sjt_present = sum(1 for p in PARAM_MINIGAMES if preliminary[p]["sjt_relative"] is not None)
+    n_pred_present = sum(1 for p in PARAM_MINIGAMES if preliminary[p]["prediction_status"] == "AVAILABLE")
+
+    if n_sjt_present == 7 and n_pred_present == 7:
+        profile_completeness = "COMPLETE"
+    elif n_sjt_present == 7 and n_pred_present > 0:
+        profile_completeness = "PARTIAL"
+    elif n_sjt_present == 7:
+        profile_completeness = "SJT_ONLY"
+    else:
+        profile_completeness = "INSUFFICIENT"
+
+    valid_fused = [preliminary[p]["fused_relative"] for p in PARAM_MINIGAMES if preliminary[p]["fused_relative"] is not None]
+
+    profile_scores: Dict[str, Optional[float]] = {}
+    profile_ranks: Dict[str, Optional[int]] = {}
+    profile_levels: Dict[str, Optional[str]] = {}
+
+    if len(valid_fused) < 2:
+        for p in PARAM_MINIGAMES:
+            profile_scores[p] = None
+            profile_ranks[p] = None
+            profile_levels[p] = "INSUFFICIENT"
+    else:
+        f_min = min(valid_fused)
+        f_max = max(valid_fused)
+        f_span = f_max - f_min
+
+        if f_span < 1e-9:
+            # Edge case: All values identical across parameters
+            for p in PARAM_MINIGAMES:
+                if preliminary[p]["fused_relative"] is not None:
+                    profile_scores[p] = 50.0
+                    profile_ranks[p] = 1
+                    profile_levels[p] = "ABOUT_EQUAL"
+                else:
+                    profile_scores[p] = None
+                    profile_ranks[p] = None
+                    profile_levels[p] = "INSUFFICIENT"
+        else:
+            for p in PARAM_MINIGAMES:
+                v = preliminary[p]["fused_relative"]
+                if v is not None:
+                    sc = round(100.0 * (v - f_min) / f_span, 2)
+                    profile_scores[p] = sc
+
+                    if sc >= 67.0:
+                        lvl = "RELATIVELY_STRONG"
+                    elif sc <= 33.0:
+                        lvl = "RELATIVELY_LOWER"
+                    else:
+                        lvl = "RELATIVELY_MIDDLE"
+                    profile_levels[p] = lvl
+
+                    # Standard competition ranking (1 = highest score; ties share rank)
+                    rank = 1 + sum(1 for other_v in valid_fused if other_v > v + 1e-9)
+                    profile_ranks[p] = rank
+                else:
+                    profile_scores[p] = None
+                    profile_ranks[p] = None
+                    profile_levels[p] = "INSUFFICIENT"
+
+    # Pass 3: Insert-Only Evidence Persistence
+    updated_records: List[DBEvidence] = []
+
+    for param_name in PARAM_MINIGAMES.keys():
+        p_data = preliminary[param_name]
+
         curr = existing_by_param.get(param_name)
         next_version = 1
         if curr is not None:
@@ -370,17 +489,27 @@ def integrate_session_evidence(
             scoring_version="1.0-exact-thirds",
             feature_version="1.0",
             config_hash=cfg_hash,
-            sjt_raw=sjt_raw,
-            sjt_min=sjt_min,
-            sjt_max=sjt_max,
-            sjt_span=sjt_span,
-            sjt_band=sjt_band,
-            game_status=game_status,
-            game_band=game_band,
-            consistency=consistency,
-            relationship=relationship,
-            confidence=confidence,
-            observed_behavior_summary=obs_summary
+            sjt_raw=p_data["sjt_raw"],
+            sjt_min=p_data["sjt_min"],
+            sjt_max=p_data["sjt_max"],
+            sjt_span=p_data["sjt_span"],
+            sjt_num=p_data["sjt_num"],
+            sjt_relative=p_data["sjt_relative"],
+            sjt_band=p_data["sjt_band"],
+            predicted_sjt_relative=p_data["predicted_sjt_relative"],
+            model_version=p_data["model_version"],
+            prediction_status=p_data["prediction_status"],
+            fused_relative=p_data["fused_relative"],
+            profile_relative_score=profile_scores.get(param_name),
+            profile_relative_rank=profile_ranks.get(param_name),
+            profile_relative_level=profile_levels.get(param_name),
+            profile_completeness=profile_completeness,
+            game_status=p_data["game_status"],
+            game_band=p_data["game_band"],
+            consistency=p_data["consistency"],
+            relationship=p_data["relationship"],
+            confidence=p_data["confidence"],
+            observed_behavior_summary=p_data["observed_behavior_summary"]
         )
         db.add(new_ev)
         updated_records.append(new_ev)

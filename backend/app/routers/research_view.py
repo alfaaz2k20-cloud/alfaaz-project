@@ -186,8 +186,18 @@ def get_session_research_view(
             "sjt_min": ev.sjt_min,
             "sjt_max": ev.sjt_max,
             "sjt_span": ev.sjt_span,
+            "sjt_num": ev.sjt_num,
+            "sjt_relative": ev.sjt_relative,
             "sjt_band": ev.sjt_band,
             "random_responder_reference": RANDOM_RESPONDER_REFERENCE.get(ev.parameter, {}),
+            "predicted_sjt_relative": ev.predicted_sjt_relative,
+            "model_version": ev.model_version,
+            "prediction_status": ev.prediction_status,
+            "fused_relative": ev.fused_relative,
+            "profile_relative_score": ev.profile_relative_score,
+            "profile_relative_rank": ev.profile_relative_rank,
+            "profile_relative_level": ev.profile_relative_level,
+            "profile_completeness": ev.profile_completeness,
             "game_status": ev.game_status,
             "game_band": ev.game_band,
             "consistency": ev.consistency,
@@ -195,6 +205,58 @@ def get_session_research_view(
             "confidence": ev.confidence,
             "observed_behavior": ev.observed_behavior_summary
         }
+
+    PARAM_DISPLAY_NAMES = {
+        "empathy": "Empathy",
+        "conscientiousness": "Conscientiousness",
+        "collaborative_spirit": "Collaborative Spirit",
+        "emotional_agility": "Emotional Agility",
+        "curiosity": "Curiosity",
+        "creative_initiative": "Creative Initiative",
+        "motivation": "Motivation"
+    }
+
+    dimensions = []
+    for param_name in PARAM_MINIGAMES.keys():
+        ev = next((e for e in evidence_list if e.parameter == param_name), None)
+        game_ids = PARAM_MINIGAMES[param_name]
+        usable_count = sum(
+            1 for gid in game_ids
+            if evaluate_minigame_status(gid, features_by_game.get(gid, []), flags) == "USABLE"
+        )
+        dimensions.append({
+            "parameter": param_name,
+            "display_name": PARAM_DISPLAY_NAMES.get(param_name, param_name.replace('_', ' ').title()),
+            "sjt": {
+                "raw": ev.sjt_raw if ev else None,
+                "min": ev.sjt_min if ev else None,
+                "max": ev.sjt_max if ev else None,
+                "span": ev.sjt_span if ev else None,
+                "num": ev.sjt_num if ev else None,
+                "relative": ev.sjt_relative if ev else None,
+                "band": ev.sjt_band if ev else None,
+            },
+            "games": {
+                "status": ev.game_status if ev else "INSUFFICIENT",
+                "band": ev.game_band if ev else None,
+                "usable_count": usable_count,
+                "total_count": len(game_ids)
+            },
+            "model": {
+                "status": ev.prediction_status if ev else "NOT_AVAILABLE",
+                "predicted_relative": ev.predicted_sjt_relative if ev else None,
+                "model_version": ev.model_version if ev else "none"
+            },
+            "profile": {
+                "fused_relative": ev.fused_relative if ev else None,
+                "relative_score": ev.profile_relative_score if ev else None,
+                "relative_rank": ev.profile_relative_rank if ev else None,
+                "relative_level": ev.profile_relative_level if ev else "INSUFFICIENT"
+            },
+            "relationship": ev.relationship if ev else "NOT_AVAILABLE",
+            "confidence": ev.confidence if ev else "LIMITED",
+            "observed_behavior": ev.observed_behavior_summary if ev else "No data."
+        })
 
     feature_bands_cfg = load_feature_bands_config()
     integration_cfg = load_integration_config()
@@ -300,6 +362,20 @@ def get_session_research_view(
     if sess.created_at and sess.completed_at:
         duration_minutes = round((sess.completed_at - sess.created_at).total_seconds() / 60.0, 1)
 
+    profile_completeness = evidence_list[0].profile_completeness if evidence_list else "INSUFFICIENT"
+    profile_summary = {
+        "model_id": "relative_ridge_v1",
+        "model_version": evidence_list[0].model_version if evidence_list else "1.0.0",
+        "completeness": profile_completeness,
+        "calibration_status": calibration_status,
+        "interpretation_type": "WITHIN_PERSON_RELATIVE_PROFILE",
+        "safeguards": {
+            "statement": "Provisional within-person relative profile for exploratory human review only. Not validated for selection, hiring, or comparative ranking.",
+            "overall_score_allowed": False,
+            "normative_ranking_allowed": False
+        }
+    }
+
     return {
         "metadata": {
             "session_id": sess.session_id,
@@ -322,23 +398,26 @@ def get_session_research_view(
             },
             "safeguards": {
                 "banner": "Research evidence view. Not validated. Not for selection decisions.",
-                "ipsative_note": "Parameters are derived from Situational Judgment responses. These are provisional ipsative indicators, NOT standardized scores.",
-                "sjt_emphasis_note": "Relative emphasis in this SJT's trade-offs: higher / middle / lower."
+                "ipsative_note": "Parameters are derived from Situational Judgment responses and interactive behavioral tasks. These are provisional within-person relative indicators, NOT standardized trait scores.",
+                "sjt_emphasis_note": "Relative emphasis in this candidate's profile: relatively strong / relatively middle / relatively lower."
             }
         },
+        "profile_summary": profile_summary,
+        "dimensions": dimensions,
         "evidence_by_parameter": evidence_dict,
         "measurement_comparisons": measurement_comparisons,
         "psychometric_status": {
             "calibration_status": calibration_status,
             "reliability": "NOT_ESTIMATED",
             "validity": "NOT_ESTIMATED",
-            "regression": "NOT_RUN",
+            "regression": "UNTRAINED_REFERENCE_MODEL",
             "reliability_method": None,
             "validity_method": None,
-            "reliability_note": "Requires a task-appropriate empirical study; inter-rater reliability also requires independent human ratings.",
-            "validity_note": "Criterion validity and regression require linked outcome data and a reviewed study design.",
-            "single_score_status": "NOT_AVAILABLE_UNCALIBRATED",
-            "single_score": None
+            "reliability_note": "Requires task-appropriate empirical normative study; cross-method delta does NOT establish reliability.",
+            "validity_note": "Criterion validity and regression require linked external outcome data.",
+            "single_score_status": "PROHIBITED",
+            "single_score": None,
+            "safeguard": "Alfaaz Recruit does not compute a single overall score, suitability score, or normative candidate ranking."
         },
         "features": formatted_features,
         "task_records": get_session_task_records(db, session_id),

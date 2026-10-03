@@ -1,7 +1,8 @@
 {
-  "calibration_status": "UNCALIBRATED",
-  "calibration_source": null,
+  "calibration_status": "NOT_ESTABLISHED",
   "calibration_timestamp": null,
+  "calibration_source": "none",
+  "note": "Empirical calibration pending normative sample. Arbitrary fixed thresholds prohibited.",
   "bands": {
     "F1": null,
     "F2": null,

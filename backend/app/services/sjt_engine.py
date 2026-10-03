@@ -175,6 +175,7 @@ def score_sjt_responses(responses: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
         p_max = ranges[p]["max"]
         span = ranges[p]["span"]
         num = raw - p_min
+        sjt_relative = round(num / span, 6) if span > 0 else 0.0
 
         if span == 0:
             band = "UNAVAILABLE"
@@ -190,6 +191,8 @@ def score_sjt_responses(responses: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
             "min": p_min,
             "max": p_max,
             "span": span,
+            "num": num,
+            "sjt_relative": sjt_relative,
             "band": band
         }
 

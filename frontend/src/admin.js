@@ -486,101 +486,95 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await window.globalApiFetch(`/recruit/research/session/${sessionId}`);
         if (!res || !res.ok) throw new Error("Failed to load dossier");
         const data = await res.json();
-        
+        const dims = data.dimensions || [];
+        const summary = data.profile_summary || {};
         const meta = data.metadata || {};
         const applicant = meta.applicant || {};
-        const ev = data.evidence_by_parameter || {};
-        const comparisons = data.measurement_comparisons || {};
         
         const candidateName = window.escapeHtml(applicant.full_name || 'Candidate');
         const candidateEmail = window.escapeHtml(applicant.email || '—');
         const candidatePhone = window.escapeHtml(applicant.phone_or_contact || '—');
         const durationMin = meta.duration_minutes !== null ? `${meta.duration_minutes} min` : 'In progress';
-  
-        // Calculate single overall score based on SJT & Game bands
-        const bandOrder = { "LOW": 0, "MODERATE": 1, "HIGH": 2 };
-        let totalScore = 0;
-        let paramCount = 0;
-        
-        const traits = {'empathy': 'Ability to understand and adjust to others', 'conscientiousness': 'Diligence and attention to detail', 'collaborative_spirit': 'Teamwork and resource sharing', 'emotional_agility': 'Adaptability to sudden changes', 'curiosity': 'Desire to explore and learn', 'creative_initiative': 'Problem-solving with limited tools', 'motivation': 'Persistence in repetitive tasks'};
-        const paramRows = Object.entries(comparisons).map(([parameter, comp]) => {
-            const sjtBand = comp.sjt_band || 'MODERATE';
-            const gameBand = comp.game_band || 'MODERATE';
-            
-            const sjtVal = bandOrder[sjtBand] !== undefined ? bandOrder[sjtBand] : 1;
-            const gameVal = bandOrder[gameBand] !== undefined ? bandOrder[gameBand] : 1;
-            
-            totalScore += (sjtVal + gameVal);
-            paramCount += 2;
-            
-            const delta = Math.abs(sjtVal - gameVal);
-            let interpretation = "Strong Reliability - Consistent across methods.";
-            let color = "#2e7d32";
-            
-            if (delta === 1) {
-                interpretation = "Moderate Divergence - Acceptable variation in context.";
-                color = "#b5832a";
-            } else if (delta > 1) {
-                interpretation = "High Divergence - Requires deeper interview probing.";
-                color = "#c62828";
-            }
-            
+        const completeness = summary.completeness || 'INSUFFICIENT';
+
+        const levelBadge = (lvl) => {
+            if (lvl === 'RELATIVELY_STRONG') return '<span style="font-size:10px; font-weight:600; padding:3px 8px; background:#f5efe6; color:#8c651e; border:1px solid #d4be98; border-radius:2px; text-transform:uppercase; letter-spacing:0.5px;">Relatively Strong</span>';
+            if (lvl === 'RELATIVELY_LOWER') return '<span style="font-size:10px; padding:3px 8px; background:#f9f9f9; color:#777; border:1px solid #ddd; border-radius:2px; text-transform:uppercase; letter-spacing:0.5px;">Relatively Lower</span>';
+            if (lvl === 'ABOUT_EQUAL') return '<span style="font-size:10px; padding:3px 8px; background:#f0f0f0; color:#555; border:1px solid #ccc; border-radius:2px; text-transform:uppercase; letter-spacing:0.5px;">About Equal</span>';
+            if (lvl === 'RELATIVELY_MIDDLE') return '<span style="font-size:10px; padding:3px 8px; background:#f5f5f5; color:#444; border:1px solid #ddd; border-radius:2px; text-transform:uppercase; letter-spacing:0.5px;">Relatively Middle</span>';
+            return '<span style="font-size:10px; padding:3px 8px; background:#fafafa; color:#999; border:1px solid #eee; border-radius:2px; text-transform:uppercase; letter-spacing:0.5px;">Insufficient</span>';
+        };
+
+        const relBadge = (rel) => {
+            if (rel === 'ALIGNED') return '<span style="color:#2e7d32; font-weight:500;">Aligned</span>';
+            if (rel === 'PARTLY_ALIGNED') return '<span style="color:#b5832a; font-weight:500;">Partly Aligned</span>';
+            if (rel === 'DIFFERENT') return '<span style="color:#6a1b9a; font-weight:500;">Divergent</span>';
+            if (rel === 'NOT_ENOUGH_EVIDENCE') return '<span style="color:#777;">Awaiting Data</span>';
+            return '<span style="color:#999;">Not Available</span>';
+        };
+
+        const dimensionRows = dims.map(d => {
+            const p = d.profile || {};
+            const scoreDisp = p.relative_score !== null && p.relative_score !== undefined ? `${p.relative_score} / 100` : '—';
+            const rankDisp = p.relative_rank !== null && p.relative_rank !== undefined ? `#${p.relative_rank}` : '—';
+            const levelDisp = levelBadge(p.relative_level);
+            const relDisp = relBadge(d.relationship);
+            const confDisp = d.confidence || 'LIMITED';
+            const safeName = window.escapeHtml(d.display_name || d.parameter);
+            const sjtBand = (d.sjt && d.sjt.band) ? d.sjt.band : '—';
+            const gameStatus = (d.games && d.games.status) ? d.games.status : 'INSUFFICIENT';
+            const obs = window.escapeHtml(d.observed_behavior || '—');
+
             return `
             <tr style="border-bottom:1px solid var(--grid-border); font-size:11px;">
-                <td style="padding:0.8rem; font-weight: 500; text-transform: capitalize;">${parameter.replace(/_/g, ' ')}</td>
-                <td style="padding:0.8rem;">${sjtBand}</td>
-                <td style="padding:0.8rem;">${gameBand}</td>
-                <td style="padding:0.8rem; font-weight: bold; color: ${color};">${delta}</td>
-                <td style="padding:0.8rem; color: ${color};">${interpretation}</td>
+                <td style="padding:0.9rem 0.8rem; font-weight: 500;">
+                    <div style="font-size:12px; color:var(--text-primary);">${safeName}</div>
+                    <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">${obs}</div>
+                </td>
+                <td style="padding:0.9rem 0.8rem; font-weight: 600; text-align:center;">${rankDisp}</td>
+                <td style="padding:0.9rem 0.8rem; font-weight: 600; text-align:center; font-family:var(--font-heading); font-size:12px;">${scoreDisp}</td>
+                <td style="padding:0.9rem 0.8rem; text-align:center;">${levelDisp}</td>
+                <td style="padding:0.9rem 0.8rem; text-align:center;">${relDisp}</td>
+                <td style="padding:0.9rem 0.8rem; text-align:center; font-size:10px; text-transform:uppercase; color:var(--text-secondary);">${confDisp}</td>
             </tr>
             `;
         }).join('');
-        
-        const maxPossible = paramCount * 2;
-        let finalScorePercent = 0;
-        if (maxPossible > 0) {
-            finalScorePercent = Math.round((totalScore / maxPossible) * 100);
-        }
-        
-        let overallLabel = "Developing Candidate";
-        if (finalScorePercent >= 75) overallLabel = "Highly Recommended";
-        else if (finalScorePercent >= 50) overallLabel = "Recommended";
-  
+
         body.innerHTML = `
-          <div style="background:#faf8f5; border:1px solid var(--grid-border); padding:1.25rem; margin-bottom:1.5rem;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.75rem;">1. Candidate Overview</div>
+          <div style="background:#faf8f5; border:1px solid var(--grid-border); padding:1.25rem; margin-bottom:1.25rem;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.75rem;">1. Candidate & Session Overview</div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; font-size:12px;">
               <div><strong>Name:</strong> ${candidateName}</div>
               <div><strong>Email:</strong> ${candidateEmail}</div>
               <div><strong>Contact:</strong> ${candidatePhone}</div>
-              <div><strong>Duration:</strong> ${durationMin}</div>
+              <div><strong>Session Duration:</strong> ${durationMin}</div>
             </div>
           </div>
-          
-          <div style="background:#fff; border:1px solid var(--grid-border); padding:2rem; margin-bottom:1.5rem; text-align:center;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:1rem;">Overall Assessment Score</div>
-            <div style="font-size:3rem; font-family:var(--font-heading); color:var(--text-primary);">${finalScorePercent}/100</div>
-            <div style="font-size:13px; font-weight:500; color:var(--text-secondary); margin-top:0.5rem; letter-spacing: 1px; text-transform: uppercase;">${overallLabel}</div>
+
+          <div style="background:#fff; border-left:3px solid var(--accent-gold); border-top:1px solid var(--grid-border); border-right:1px solid var(--grid-border); border-bottom:1px solid var(--grid-border); padding:1rem 1.25rem; margin-bottom:1.5rem; font-size:11px; color:var(--text-secondary); line-height:1.5;">
+            <strong style="color:var(--text-primary); text-transform:uppercase; letter-spacing:0.5px;">Psychometric Safeguard Notice:</strong>
+            This dossier provides a <em>provisional within-person relative profile</em> for exploratory human review only. It reflects the relative emphasis among dimensions for this candidate, NOT normative trait scores, clinical evaluation, or automated hiring recommendations. Cross-method convergence is exploratory; empirical normative calibration is pending.
           </div>
-  
+
           <div style="margin-bottom:1.5rem;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.75rem;">2. Parameter Construct Analysis & Deltas</div>
-            <p style="font-size:11px; color:var(--text-secondary); margin-bottom:1rem;">
-              This table compares the candidate's self-reported Situational Judgment (SJT) with their actual performative tasks (Games). The Delta measures reliability between what they said and what they did.
-            </p>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.75rem;">
+              <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold);">2. Within-Person Relative Dimension Profile</div>
+              <div style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px;">Profile Completeness: <strong style="color:var(--text-primary);">${completeness}</strong></div>
+            </div>
             <div style="overflow-x:auto; border:1px solid var(--grid-border); background:#fff;">
               <table style="width:100%; border-collapse:collapse; text-align:left;">
                 <thead>
-                  <tr style="background:#f0eeea; font-size:10px; text-transform:uppercase; color:var(--text-secondary);">
-                    <th style="padding:0.8rem;">Parameter</th>
-                    <th style="padding:0.8rem;">SJT Score</th>
-                    <th style="padding:0.8rem;">Games Score</th>
-                    <th style="padding:0.8rem;">Delta</th>
-                    <th style="padding:0.8rem;">Interpretation</th>
+                  <tr style="background:#f0eeea; font-size:10px; text-transform:uppercase; color:var(--text-secondary); letter-spacing:0.5px;">
+                    <th style="padding:0.8rem;">Dimension & Observed Context</th>
+                    <th style="padding:0.8rem; text-align:center;">Relative Rank</th>
+                    <th style="padding:0.8rem; text-align:center;">Score (0–100)</th>
+                    <th style="padding:0.8rem; text-align:center;">Profile Position</th>
+                    <th style="padding:0.8rem; text-align:center;">Cross-Method Relationship</th>
+                    <th style="padding:0.8rem; text-align:center;">Confidence</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${paramRows}
+                  ${dimensionRows}
                 </tbody>
               </table>
             </div>
