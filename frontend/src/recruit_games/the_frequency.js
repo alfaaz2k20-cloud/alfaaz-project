@@ -109,7 +109,7 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
     const t = trials[currentTrial];
 
     app.innerHTML = `
-      <div class="animate-fadeIn max-w-2xl mx-auto">
+      <div class="animate-soft-fade-in max-w-2xl mx-auto">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
@@ -432,7 +432,7 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
     const t = trials[currentTrial];
 
     app.innerHTML = `
-      <div class="animate-fadeIn max-w-2xl mx-auto">
+      <div class="animate-soft-fade-in max-w-2xl mx-auto">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
@@ -660,7 +660,7 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
     if (phase === 'baseline') {
       const activeOpt = tr.baseline_options.find(o => o.id === selectedBaselineChoice);
       app.innerHTML = `
-        <div class="animate-fadeIn max-w-2xl mx-auto">
+        <div class="animate-soft-fade-in max-w-2xl mx-auto">
           <!-- TOP BAR -->
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
             <div class="flex items-center gap-2">
@@ -765,7 +765,7 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
       // phase === 'shifted'
       const activeShiftedOpt = tr.shifted_options.find(o => o.id === selectedUpdatedChoice);
       app.innerHTML = `
-        <div class="animate-fadeIn max-w-2xl mx-auto">
+        <div class="animate-soft-fade-in max-w-2xl mx-auto">
           <!-- TOP BAR -->
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
             <div class="flex items-center gap-2">

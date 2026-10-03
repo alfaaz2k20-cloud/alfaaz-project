@@ -129,7 +129,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
     const d = decisions[currentDecision];
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
+      <div class="animate-soft-fade-in">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
@@ -179,7 +179,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
                   </span>
                   <span class="text-[9px] font-sans uppercase text-[var(--text-secondary)]">${viewedResources[res.id] ? 'Opened' : 'Inspect'}</span>
                 </div>
-                ${viewedResources[res.id] ? `<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-fadeIn">${res.summary}</p>` : ''}
+                ${viewedResources[res.id] ? `<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-soft-fade-in">${res.summary}</p>` : ''}
               </div>
             `).join('')}
           </div>
@@ -404,7 +404,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
     const r = relics[currentTrial];
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
+      <div class="animate-soft-fade-in">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
@@ -451,7 +451,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
                   <span>${c.label}</span>
                   <span class="text-[9px] font-sans uppercase text-[var(--text-secondary)]">${inspectedClues[c.id] ? 'Inspected' : 'Inspect'}</span>
                 </div>
-                ${inspectedClues[c.id] ? `<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-fadeIn">${c.detail}</p>` : ''}
+                ${inspectedClues[c.id] ? `<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-soft-fade-in">${c.detail}</p>` : ''}
               </div>
             `).join('')}
           </div>
@@ -662,7 +662,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
     const ep = episodes[currentEpisode];
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
+      <div class="animate-soft-fade-in">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
@@ -708,7 +708,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
           </div>
 
           ${contextRetrieved ? `
-            <div class="p-3.5 bg-white border border-emerald-600/40 rounded-xs text-xs text-[var(--text-primary)] leading-relaxed animate-fadeIn">
+            <div class="p-3.5 bg-white border border-emerald-600/40 rounded-xs text-xs text-[var(--text-primary)] leading-relaxed animate-soft-fade-in">
               <div class="text-[10px] font-sans uppercase tracking-wider text-emerald-800 font-semibold mb-1">${ep.context_title}</div>
               <div>${ep.context_text}</div>
             </div>

@@ -109,7 +109,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
     const st = stages[currentStageIdx];
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
+      <div class="animate-soft-fade-in">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
@@ -175,7 +175,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
           </div>
 
           ${testFeedback ? `
-            <div class="mt-3 p-3 bg-white border ${testFeedback.valid ? 'border-emerald-600/40 text-emerald-900' : 'border-amber-600/40 text-amber-900'} text-xs rounded-xs leading-relaxed animate-fadeIn">
+            <div class="mt-3 p-3 bg-white border ${testFeedback.valid ? 'border-emerald-600/40 text-emerald-900' : 'border-amber-600/40 text-amber-900'} text-xs rounded-xs leading-relaxed animate-soft-fade-in">
               <span class="font-sans text-[10px] uppercase font-semibold block mb-0.5">${testFeedback.valid ? 'Assembly Test: Passed' : 'Assembly Test: Note'}</span>
               ${testFeedback.message}
             </div>
@@ -386,7 +386,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 
     if (phase === 'pre_shift') {
       app.innerHTML = `
-        <div class="animate-fadeIn">
+        <div class="animate-soft-fade-in">
           <!-- TOP BAR -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
@@ -491,7 +491,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
     } else {
       // post_shift
       app.innerHTML = `
-        <div class="animate-fadeIn">
+        <div class="animate-soft-fade-in">
           <!-- TOP BAR -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
@@ -508,7 +508,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           </div>
 
           <!-- Constraint Shift Notification Banner -->
-          <div class="p-4 bg-amber-50 border border-amber-300/80 mb-4 rounded-xs animate-fadeIn candidate-content-protected">
+          <div class="p-4 bg-amber-50 border border-amber-300/80 mb-4 rounded-xs animate-soft-fade-in candidate-content-protected">
             <div class="flex items-center gap-2 mb-1">
               <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse"></span>
               <span class="text-[10px] font-sans uppercase tracking-wider text-amber-900 font-bold">New Room Condition Detected</span>
@@ -739,7 +739,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
     const tr = trials[currentTrial];
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
+      <div class="animate-soft-fade-in">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
@@ -819,7 +819,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
         </div>
 
         ${feedbackText ? `
-          <div class="p-4 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-emerald-950' : 'border-amber-600/40 text-amber-950'} mb-4 rounded-xs text-xs leading-relaxed animate-fadeIn candidate-content-protected">
+          <div class="p-4 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-emerald-950' : 'border-amber-600/40 text-amber-950'} mb-4 rounded-xs text-xs leading-relaxed animate-soft-fade-in candidate-content-protected">
             <div class="font-sans text-[10px] uppercase font-semibold mb-1 ${feedbackText.success ? 'text-emerald-800' : 'text-amber-800'}">Material Outcome Observation</div>
             <div>${feedbackText.text}</div>
           </div>

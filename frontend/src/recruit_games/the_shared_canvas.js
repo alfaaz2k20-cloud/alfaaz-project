@@ -94,7 +94,7 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
     const userTotal = r.user_initial - transferCount;
 
     app.innerHTML = `
-      <div class="animate-fadeIn max-w-2xl mx-auto">
+      <div class="animate-soft-fade-in max-w-2xl mx-auto">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
@@ -309,7 +309,7 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
     const activeSlot = r.slots.find(s => s.id === chosenSlot);
 
     app.innerHTML = `
-      <div class="animate-fadeIn max-w-2xl mx-auto">
+      <div class="animate-soft-fade-in max-w-2xl mx-auto">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
@@ -525,7 +525,7 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
     const activeRepair = opp.repair_options.find(r => r.id === selectedRepair);
 
     app.innerHTML = `
-      <div class="animate-fadeIn max-w-2xl mx-auto">
+      <div class="animate-soft-fade-in max-w-2xl mx-auto">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
@@ -576,7 +576,7 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
 
           <!-- Step 2: Perform Constructive Repair -->
           ${selectedFault ? `
-            <div class="pt-4 border-t border-[var(--grid-border)] animate-fadeIn">
+            <div class="pt-4 border-t border-[var(--grid-border)] animate-soft-fade-in">
               <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2 font-sans">
                 Step 2: Choose a constructive fix:
               </div>

@@ -317,3 +317,40 @@ h3.ur-hover {
   }
   .vitrine-item { width: 82vw; }
 }
+/* --- New Animations --- */
+@keyframes softFadeIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gentlePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(0.98); }
+}
+
+@keyframes floatElement {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-soft-fade-in {
+  animation: softFadeIn 0.5s ease-out forwards;
+}
+
+.animate-gentle-pulse {
+  animation: gentlePulse 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: floatElement 4s ease-in-out infinite;
+}
+
+.waiting-spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(189, 111, 93, 0.2);
+  border-top-color: var(--accent-gold);
+  animation: spin 1s linear infinite, gentlePulse 2s ease-in-out infinite;
+  margin: 0 auto;
+}

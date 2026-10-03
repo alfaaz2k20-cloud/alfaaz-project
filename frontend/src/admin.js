@@ -502,6 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let totalScore = 0;
         let paramCount = 0;
         
+        const traits = {'empathy': 'Ability to understand and adjust to others', 'conscientiousness': 'Diligence and attention to detail', 'collaborative_spirit': 'Teamwork and resource sharing', 'emotional_agility': 'Adaptability to sudden changes', 'curiosity': 'Desire to explore and learn', 'creative_initiative': 'Problem-solving with limited tools', 'motivation': 'Persistence in repetitive tasks'};
         const paramRows = Object.entries(comparisons).map(([parameter, comp]) => {
             const sjtBand = comp.sjt_band || 'MODERATE';
             const gameBand = comp.game_band || 'MODERATE';

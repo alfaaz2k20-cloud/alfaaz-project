@@ -74,7 +74,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
     const t = trials[currentIdx];
 
     app.innerHTML = `
-      <div class="animate-fadeIn max-w-2xl mx-auto">
+      <div class="animate-soft-fade-in max-w-2xl mx-auto">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
@@ -267,7 +267,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
     const activeOpt = s.options.find(o => o.id === selectedAction);
 
     app.innerHTML = `
-      <div class="animate-fadeIn max-w-2xl mx-auto">
+      <div class="animate-soft-fade-in max-w-2xl mx-auto">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
@@ -465,7 +465,7 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
     const activeLayout = c.options.find(o => o.id === selectedLayout);
 
     app.innerHTML = `
-      <div class="animate-fadeIn max-w-2xl mx-auto">
+      <div class="animate-soft-fade-in max-w-2xl mx-auto">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">

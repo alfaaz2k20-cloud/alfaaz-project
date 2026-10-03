@@ -74,7 +74,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
     const u = units[currentIdx];
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
+      <div class="animate-soft-fade-in">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
@@ -227,7 +227,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
     if (phase === 'mandatory') {
       const u = mandatoryUnits[mandatoryIdx];
       app.innerHTML = `
-        <div class="animate-fadeIn">
+        <div class="animate-soft-fade-in">
           <!-- TOP BAR -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
@@ -308,7 +308,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
 
     } else if (phase === 'choice') {
       app.innerHTML = `
-        <div class="animate-fadeIn">
+        <div class="animate-soft-fade-in">
           <!-- TOP BAR -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
@@ -386,7 +386,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
     } else if (phase === 'optional') {
       const u = optionalUnits[optionalIdx];
       app.innerHTML = `
-        <div class="animate-fadeIn">
+        <div class="animate-soft-fade-in">
           <!-- TOP BAR -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
@@ -554,7 +554,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
     const hasMetMinimum = currentIdx >= mandatoryCount;
 
     app.innerHTML = `
-      <div class="animate-fadeIn">
+      <div class="animate-soft-fade-in">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">

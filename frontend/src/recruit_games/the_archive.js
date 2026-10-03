@@ -112,7 +112,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
     docStartTime = performance.now();
 
     app.innerHTML = `
-      <div class="animate-fadeIn max-w-2xl mx-auto">
+      <div class="animate-soft-fade-in max-w-2xl mx-auto">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
@@ -314,7 +314,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
     const activeAct = actions.find(a => a.id === chosenAction);
 
     app.innerHTML = `
-      <div class="animate-fadeIn max-w-2xl mx-auto">
+      <div class="animate-soft-fade-in max-w-2xl mx-auto">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
@@ -499,7 +499,7 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
     }
 
     app.innerHTML = `
-      <div class="animate-fadeIn max-w-2xl mx-auto">
+      <div class="animate-soft-fade-in max-w-2xl mx-auto">
         <!-- TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">

@@ -622,7 +622,7 @@ function renderWarmup(app) {
   let warmupStartTime = performance.now();
 
   app.innerHTML = `
-    <div class="space-y-6 text-center py-4 animate-fadeIn">
+    <div class="space-y-6 text-center py-4 animate-soft-fade-in">
       <span class="act-badge">Device Check · رہنمائی</span>
       <h2 class="text-2xl font-serif text-[var(--text-primary)]">Screen & Rhythm Check</h2>
       <p class="text-xs text-[var(--text-secondary)] max-w-md mx-auto leading-relaxed">
@@ -678,8 +678,8 @@ function renderWarmup(app) {
       // Load Public SJT payload with clear loading state and retry resilience
       async function loadSjtWithRetry() {
         app.innerHTML = `
-          <div class="space-y-6 text-center py-16 animate-fadeIn">
-            <div class="w-8 h-8 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-3" style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
+          <div class="space-y-6 text-center py-16 animate-soft-fade-in">
+            <div class="waiting-spinner"></div>
             <h2 class="text-xl font-serif text-[var(--text-primary)]">Loading Scenarios...</h2>
             <p class="text-xs text-[var(--text-secondary)] max-w-sm mx-auto leading-relaxed">
               Connecting to the assessment server. This may take a few moments if starting from cold.
@@ -701,7 +701,7 @@ function renderWarmup(app) {
         } catch (err) {
           console.warn('Failed to load SJT payload:', err);
           app.innerHTML = `
-            <div class="space-y-6 text-center py-12 animate-fadeIn">
+            <div class="space-y-6 text-center py-12 animate-soft-fade-in">
               <div class="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto text-xl font-serif">!</div>
               <h2 class="text-xl font-serif text-[var(--text-primary)]">Connection Notice</h2>
               <p class="text-xs text-[var(--text-secondary)] max-w-sm mx-auto leading-relaxed">
@@ -752,7 +752,7 @@ function renderSJT(app, progressBarFill) {
   `).join('');
 
   app.innerHTML = `
-    <div class="space-y-5 animate-fadeIn">
+    <div class="space-y-5 animate-soft-fade-in">
       <!-- Top Context and Step -->
       <div class="border-b border-[var(--grid-border)] pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-1">
         <div>
@@ -830,8 +830,8 @@ async function submitSjtAndProceed() {
   const app = document.getElementById('recruitApp');
   if (app) {
     app.innerHTML = `
-      <div class="space-y-6 text-center py-16 animate-fadeIn">
-        <div class="w-8 h-8 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-3" style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
+      <div class="space-y-6 text-center py-16 animate-soft-fade-in">
+        <div class="waiting-spinner"></div>
         <h2 class="text-xl font-serif text-[var(--text-primary)]">Saving Judgments...</h2>
         <p class="text-xs text-[var(--text-secondary)]">Recording your situation judgments to your session profile.</p>
       </div>
@@ -859,7 +859,7 @@ async function submitSjtAndProceed() {
     console.warn('SJT submit error:', err);
     if (app) {
       app.innerHTML = `
-        <div class="space-y-6 text-center py-12 animate-fadeIn">
+        <div class="space-y-6 text-center py-12 animate-soft-fade-in">
           <div class="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto text-xl font-serif">!</div>
           <h2 class="text-xl font-serif text-[var(--text-primary)]">Submission Notice</h2>
           <p class="text-xs text-[var(--text-secondary)] max-w-sm mx-auto leading-relaxed">
@@ -944,7 +944,7 @@ let isFinishingAssessment = false;
 function renderFinalizationRetry(app, message) {
   if (!app) return;
   app.innerHTML = `
-    <div class="space-y-6 text-center py-16 animate-fadeIn">
+    <div class="space-y-6 text-center py-16 animate-soft-fade-in">
       <div class="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto text-xl font-serif">!</div>
       <h2 class="text-2xl font-serif text-[var(--text-primary)]">Connection Notice</h2>
       <p class="text-xs text-[var(--text-secondary)] max-w-md mx-auto leading-relaxed">${message}</p>
@@ -965,8 +965,8 @@ async function finishAssessment() {
   const app = document.getElementById('recruitApp');
   if (app) {
     app.innerHTML = `
-      <div class="space-y-6 text-center py-16 animate-fadeIn">
-        <div class="w-10 h-10 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <div class="space-y-6 text-center py-16 animate-soft-fade-in">
+        <div class="waiting-spinner"></div>
         <h2 class="text-2xl font-serif text-[var(--text-primary)]">Finalizing Assessment...</h2>
         <p class="text-xs text-[var(--text-secondary)]">Safely recording research telemetry and saving your session profile.</p>
       </div>
@@ -1036,10 +1036,19 @@ function renderComplete(app) {
         <p class="text-xs text-[var(--text-secondary)] mb-4">
           Please schedule a Google Meet call with us to discuss your application. Select a date <strong>other than today</strong>.
         </p>
-        <a href="mailto:alfaaz2k20@gmail.com?subject=Volunteer%20Interview%20Call%20Request&body=Hi%20Alfaaz%20Team%2C%0D%0A%0D%0AI%20have%20completed%20the%20volunteer%20assessment.%20I%20would%20like%20to%20schedule%20a%20Google%20Meet%20call%20for%20my%20interview.%0D%0A%0D%0AProposed%20Date%20%28Please%20choose%20a%20future%20date%2C%20not%20today%29%3A%20%5BInsert%20Date%5D%0D%0AProposed%20Time%3A%20%5BInsert%20Time%5D%0D%0A%0D%0AThank%20you%2C%0D%0A%5BYour%20Name%5D" 
-           class="inline-block w-full min-h-[44px] px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs">
-          Schedule via Email
-        </a>
+        <div class="flex flex-col gap-2">
+          <a href="mailto:alfaaz2k20@gmail.com?subject=Volunteer%20Interview%20Call%20Request&body=Hi%20Alfaaz%20Team%2C%0D%0A%0D%0AI%20have%20completed%20the%20volunteer%20assessment.%20I%20would%20like%20to%20schedule%20a%20Google%20Meet%20call%20for%20my%20interview.%0D%0A%0D%0AProposed%20Date%20%28Please%20choose%20a%20future%20date%2C%20not%20today%29%3A%20%5BInsert%20Date%5D%0D%0AProposed%20Time%3A%20%5BInsert%20Time%5D%0D%0A%0D%0AThank%20you%2C%0D%0A%5BYour%20Name%5D" 
+             class="inline-block w-full min-h-[44px] px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs">
+            Open Email App
+          </a>
+          <a href="https://mail.google.com/mail/?view=cm&fs=1&to=alfaaz2k20@gmail.com&su=Volunteer+Interview+Call+Request&body=Hi+Alfaaz+Team,%0A%0AI+have+completed+the+volunteer+assessment.+I+would+like+to+schedule+a+Google+Meet+call+for+my+interview.%0A%0AProposed+Date+(Please+choose+a+future+date,+not+today):+[Insert+Date]%0AProposed+Time:+[Insert+Time]%0A%0AThank+you,%0A[Your+Name]" target="_blank"
+             class="inline-block w-full min-h-[44px] px-6 py-2.5 border border-[var(--grid-border)] text-[var(--text-primary)] bg-white text-xs uppercase tracking-widest hover:border-[var(--accent-gold)] transition shadow-sm rounded-xs">
+            Open Gmail in Browser
+          </a>
+          <p class="text-[10px] text-[var(--text-secondary)] mt-2">
+            Or manually email <strong class="select-all cursor-pointer text-[var(--text-primary)]">alfaaz2k20@gmail.com</strong>
+          </p>
+        </div>
       </div>
 
       <div class="pt-6">
