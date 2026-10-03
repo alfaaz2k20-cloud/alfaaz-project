@@ -28,9 +28,8 @@ def check_launch_blockers(is_production: bool = False):
         with open(brand_path, "r", encoding="utf-8") as f:
             brand_data = json.load(f)
         blockers.extend(find_copy_blockers(brand_data, "config/brand.json"))
-        retention_days = brand_data.get("data_retention_days")
-        if not isinstance(retention_days, int) or isinstance(retention_days, bool) or retention_days <= 0:
-            blockers.append("config/brand.json.data_retention_days must be a positive integer.")
+        if "data_retention_days" in brand_data:
+            blockers.append("config/brand.json must NOT define data_retention_days (retention is permanent).")
 
     # 2. Check config/copy/
     copy_dir = os.path.join("config", "copy")

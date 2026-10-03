@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="data-label">Evidence & Extractor Calibration</div>
               <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
                 <span class="badge" style="font-size:10px; background:#e8f4f8; color:#1e5066; border:1px solid #bce0ed; align-self:flex-start;">Active Extractors: 2 / 2 (A1, A2)</span>
-                <span style="font-size:10px; color:var(--text-secondary); font-style:italic;">19 extractors quarantined (Design Freeze v1.1)</span>
+                <span style="font-size:10px; color:var(--text-secondary); font-style:italic;">19 extractors pending derivation (Design Freeze v1.1)</span>
               </div>
               <div style="font-size:11px; color:var(--text-secondary); margin-top:6px;">Submitted: ${dateStr}</div>
             </div>
@@ -601,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="margin-bottom:1.5rem;">
             <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.5rem;">3. Active Feature Extractors (2 of 21)</div>
             <div style="font-size:11px; background:#eef7f9; border-left:3px solid #3182ce; padding:0.75rem 1rem; margin-bottom:1rem; line-height:1.5; color:#1a365d;">
-              <strong>Notice:</strong> Only A1 and A2 are active. The remaining 19 extractors are quarantined under Design Freeze v1.1 pending empirical calibration.
+              <strong>Notice:</strong> Only A1 and A2 are active. The remaining 19 extractors are pending derivation under Design Freeze v1.1 pending empirical calibration.
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
               <div style="background:#ffffff; border:1px solid var(--grid-border); padding:1rem;">
@@ -620,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         `;
 
-        // 4. Quarantined Feature Extractors (19 of 21)
+        // 4. Pending Feature Extractors (19 of 21)
         const quarantinedFeats = feats.filter(f => f.is_quarantined);
         let qTableRows = '';
         if (quarantinedFeats.length > 0) {
@@ -629,7 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <td style="padding:0.5rem; color:var(--text-primary); font-weight:500;">${q.world_name}</td>
               <td style="padding:0.5rem; font-family:monospace; color:var(--text-secondary);">${q.mini_game}</td>
               <td style="padding:0.5rem; color:var(--text-primary);">${q.label || q.feature_name}</td>
-              <td style="padding:0.5rem; text-align:center;"><span style="font-size:9px; background:#f0eeea; color:#666; padding:2px 6px; border:1px solid var(--grid-border); font-weight:600; letter-spacing:0.5px;">QUARANTINED</span></td>
+              <td style="padding:0.5rem; text-align:center;"><span style="font-size:9px; background:#f0eeea; color:#666; padding:2px 6px; border:1px solid var(--grid-border); font-weight:600; letter-spacing:0.5px;">NOT YET DERIVED</span></td>
               <td style="padding:0.5rem; font-size:10px; color:var(--text-secondary); font-style:italic;">Awaiting calibration data (Design Freeze v1.1)</td>
             </tr>
           `).join('');
@@ -637,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const section4Html = `
           <div style="margin-bottom:1.5rem;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.5rem;">4. Quarantined Feature Extractors (19 of 21)</div>
+            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.5rem;">4. Pending Feature Extractors (19 of 21)</div>
             <div style="overflow-x:auto; border:1px solid var(--grid-border); background:#ffffff;">
               <table style="width:100%; border-collapse:collapse; text-align:left;">
                 <thead>
@@ -723,7 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const measure = entry?.game;
           const gameFeatures = measure?.features || [];
           const value = measure?.feature_status === 'QUARANTINED'
-            ? 'Withheld while extractor is quarantined'
+            ? 'Evidence not yet derived'
             : gameFeatures.length
             ? gameFeatures.map(feature => `${window.escapeHtml(feature.name)}: ${window.escapeHtml(formatRaw(feature.value))}`).join('<br>')
             : 'No feature derived';

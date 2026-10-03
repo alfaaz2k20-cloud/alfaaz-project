@@ -1,6 +1,24 @@
 import json
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
+
+import json
+import os
+from pathlib import Path
+
+_task_definitions = None
+def _get_task_definitions():
+    global _task_definitions
+    if _task_definitions is None:
+        # Resolve deterministically from __file__ to point to backend/config/task_definitions.json
+        config_path = Path(__file__).resolve().parents[2] / "config" / "task_definitions.json"
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                _task_definitions = json.load(f)
+        except Exception as e:
+            raise RuntimeError(f"FAIL CLOSED: Configuration failure. Could not load task_definitions.json from {config_path}") from e
+    return _task_definitions
+
 from sqlmodel import Session, select
 from app.models.recruit import DBTelemetryEvent, DBSession, DBDataQualityFlag
 
@@ -41,10 +59,38 @@ def ingest_telemetry_batch(db: Session, session_id: str, events: List[Dict[str, 
     # 0. Defensive Backstop: Discard continuous pointer stream events BEFORE ANY accounting
     # (prevents pointer events from consuming sequence numbers, batch limits, event cap, or causing gaps/conflicts)
     filtered_events = []
+    task_defs = _get_task_definitions().get("games", {})
     for ev in events:
         action = ev.get("action", "unknown")
         if action in ["mousemove", "pointermove", "touchmove", "continuous_drag"]:
             continue
+
+        world_game = ev.get("world", "")
+        if world_game:
+            # Enforce explicit allowlist
+            if world_game not in task_defs:
+                raise RuntimeError(f"FAIL CLOSED: Missing game definition for {world_game}")
+            
+            game_def = task_defs[world_game]
+            if not isinstance(game_def, dict):
+                raise RuntimeError(f"FAIL CLOSED: Invalid game definition for {world_game}")
+            
+            if "event_allowlist" not in game_def:
+                raise RuntimeError(f"FAIL CLOSED: Missing event_allowlist for {world_game}")
+                
+            allowlist = game_def["event_allowlist"]
+            if not isinstance(allowlist, list) or len(allowlist) == 0:
+                raise RuntimeError(f"FAIL CLOSED: Empty or invalid event_allowlist for {world_game}")
+                
+            if action not in allowlist:
+                # Record undeclared_event flag and ignore event
+                db.add(DBDataQualityFlag(
+                    session_id=session_id,
+                    scope=f"event_seq_{ev.get('seq', 'unknown')}",
+                    flag=f"undeclared_event_{action}"
+                ))
+                continue
+
         filtered_events.append(ev)
     events = filtered_events
 

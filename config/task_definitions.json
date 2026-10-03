@@ -51,6 +51,15 @@
           "partner_state": "vocal_projection_peaking",
           "expected_action": "dampen_harshness"
         }
+      ],
+      "event_allowlist": [
+        "baseline_response_selected",
+        "context_shifted",
+        "slider_input",
+        "transition_completed",
+        "transition_presented",
+        "trial_submit",
+        "updated_response_selected"
       ]
     },
     "F2": {
@@ -88,6 +97,15 @@
           "partner_state": "tempo_misalignment_seeking_synchrony",
           "expected_action": "realign_tempo"
         }
+      ],
+      "event_allowlist": [
+        "baseline_response_selected",
+        "context_shifted",
+        "slider_input",
+        "transition_completed",
+        "transition_presented",
+        "trial_submit",
+        "updated_response_selected"
       ]
     },
     "F3": {
@@ -129,7 +147,7 @@
             },
             {
               "id": "support_volume",
-              "label": "Support Volume (Maintain baseline studio boost — causes severe echo clash)",
+              "label": "Support Volume (Maintain baseline studio boost \u2014 causes severe echo clash)",
               "is_appropriate": false
             },
             {
@@ -170,7 +188,7 @@
             },
             {
               "id": "preserve_natural_intimacy",
-              "label": "Preserve Natural Intimacy (Leave whisper unboosted — completely drowned out)",
+              "label": "Preserve Natural Intimacy (Leave whisper unboosted \u2014 completely drowned out)",
               "is_appropriate": false
             },
             {
@@ -221,6 +239,15 @@
             }
           ]
         }
+      ],
+      "event_allowlist": [
+        "baseline_response_selected",
+        "context_shifted",
+        "slider_input",
+        "transition_completed",
+        "transition_presented",
+        "trial_submit",
+        "updated_response_selected"
       ]
     },
     "A1": {
@@ -255,6 +282,15 @@
           "rule": "GENRE",
           "target_folder": "chronicle"
         }
+      ],
+      "event_allowlist": [
+        "decision_logged",
+        "discrepancy_toggled",
+        "guide_viewed",
+        "item_presented",
+        "item_sorted",
+        "record_inspected",
+        "verification_finalized"
       ]
     },
     "A2": {
@@ -288,6 +324,15 @@
           "condition_type": "true_exception",
           "expected_action": "flag_exception"
         }
+      ],
+      "event_allowlist": [
+        "decision_logged",
+        "discrepancy_toggled",
+        "guide_viewed",
+        "item_presented",
+        "item_sorted",
+        "record_inspected",
+        "verification_finalized"
       ]
     },
     "A3": {
@@ -322,6 +367,15 @@
           "has_error": true,
           "error_type": "factual_error"
         }
+      ],
+      "event_allowlist": [
+        "decision_logged",
+        "discrepancy_toggled",
+        "guide_viewed",
+        "item_presented",
+        "item_sorted",
+        "record_inspected",
+        "verification_finalized"
       ]
     },
     "C1": {
@@ -352,6 +406,17 @@
           "partner_state": "partner_holding_ample_tiles_user_critical_shortage",
           "expected_action": "retain_resources"
         }
+      ],
+      "event_allowlist": [
+        "allocation_confirmed",
+        "breakdown_identified",
+        "placement_attempted",
+        "placement_confirmed",
+        "repair_action_performed",
+        "repair_presented",
+        "repaired_action_executed",
+        "resource_transferred",
+        "round_presented"
       ]
     },
     "C2": {
@@ -379,6 +444,17 @@
           "partner_state": "partner_shifted_composition_south",
           "expected_action": "align_composition"
         }
+      ],
+      "event_allowlist": [
+        "allocation_confirmed",
+        "breakdown_identified",
+        "placement_attempted",
+        "placement_confirmed",
+        "repair_action_performed",
+        "repair_presented",
+        "repaired_action_executed",
+        "resource_transferred",
+        "round_presented"
       ]
     },
     "C3": {
@@ -421,6 +497,17 @@
             "illuminate_path"
           ]
         }
+      ],
+      "event_allowlist": [
+        "allocation_confirmed",
+        "breakdown_identified",
+        "placement_attempted",
+        "placement_confirmed",
+        "repair_action_performed",
+        "repair_presented",
+        "repaired_action_executed",
+        "resource_transferred",
+        "round_presented"
       ]
     },
     "E1": {
@@ -495,6 +582,16 @@
           "tile_shape": "Circle",
           "target_container": "container_1"
         }
+      ],
+      "event_allowlist": [
+        "action_selected",
+        "composition_action_attempted",
+        "composition_confirmed",
+        "condition_presented",
+        "sequence_completed",
+        "sequence_presented",
+        "tile_sorted",
+        "trial_presented"
       ]
     },
     "E2": {
@@ -528,6 +625,16 @@
           "disruption_type": "misplaced_pigment_tray",
           "target_action": "reposition_tray"
         }
+      ],
+      "event_allowlist": [
+        "action_selected",
+        "composition_action_attempted",
+        "composition_confirmed",
+        "condition_presented",
+        "sequence_completed",
+        "sequence_presented",
+        "tile_sorted",
+        "trial_presented"
       ]
     },
     "E3": {
@@ -552,6 +659,16 @@
           "constraint_state": "boundary_constricted_half_grid",
           "target_action": "compact_adaptation"
         }
+      ],
+      "event_allowlist": [
+        "action_selected",
+        "composition_action_attempted",
+        "composition_confirmed",
+        "condition_presented",
+        "sequence_completed",
+        "sequence_presented",
+        "tile_sorted",
+        "trial_presented"
       ]
     },
     "Q1": {
@@ -635,6 +752,16 @@
           "info_value": "low",
           "topic": "storage_cabinet_hinge_repairs"
         }
+      ],
+      "event_allowlist": [
+        "artifact_presented",
+        "clue_inspected",
+        "context_requested",
+        "decision_presented",
+        "decision_submitted",
+        "episode_presented",
+        "investigation_finalized",
+        "optional_resource_viewed"
       ]
     },
     "Q2": {
@@ -668,6 +795,16 @@
           "expected_value": "moderate",
           "artifact_id": "unknown_crest_impression_4"
         }
+      ],
+      "event_allowlist": [
+        "artifact_presented",
+        "clue_inspected",
+        "context_requested",
+        "decision_presented",
+        "decision_submitted",
+        "episode_presented",
+        "investigation_finalized",
+        "optional_resource_viewed"
       ]
     },
     "Q3": {
@@ -695,6 +832,16 @@
           "optional_context_available": true,
           "context_id": "provenance_context_3"
         }
+      ],
+      "event_allowlist": [
+        "artifact_presented",
+        "clue_inspected",
+        "context_requested",
+        "decision_presented",
+        "decision_submitted",
+        "episode_presented",
+        "investigation_finalized",
+        "optional_resource_viewed"
       ]
     },
     "CR1": {
@@ -740,6 +887,21 @@
             ]
           ]
         }
+      ],
+      "event_allowlist": [
+        "action_applied",
+        "assembly_tested",
+        "constraint_shifted",
+        "episode_presented",
+        "feedback_observed",
+        "initial_strategy_selected",
+        "part_toggled",
+        "stage_completed",
+        "stage_presented",
+        "strategy_adapted",
+        "strategy_revised",
+        "tool_selected",
+        "trial_presented"
       ]
     },
     "CR2": {
@@ -794,6 +956,21 @@
             "staggered_alcoves"
           ]
         }
+      ],
+      "event_allowlist": [
+        "action_applied",
+        "assembly_tested",
+        "constraint_shifted",
+        "episode_presented",
+        "feedback_observed",
+        "initial_strategy_selected",
+        "part_toggled",
+        "stage_completed",
+        "stage_presented",
+        "strategy_adapted",
+        "strategy_revised",
+        "tool_selected",
+        "trial_presented"
       ]
     },
     "CR3": {
@@ -830,6 +1007,21 @@
           ],
           "target_motif": "gold_leaf_seal"
         }
+      ],
+      "event_allowlist": [
+        "action_applied",
+        "assembly_tested",
+        "constraint_shifted",
+        "episode_presented",
+        "feedback_observed",
+        "initial_strategy_selected",
+        "part_toggled",
+        "stage_completed",
+        "stage_presented",
+        "strategy_adapted",
+        "strategy_revised",
+        "tool_selected",
+        "trial_presented"
       ]
     },
     "M1": {
@@ -855,6 +1047,15 @@
           "unit_index": 2,
           "title": "Invitation Folio 3"
         }
+      ],
+      "event_allowlist": [
+        "choice_presented",
+        "conclude_selected",
+        "continuation_choice_selected",
+        "trial_presented",
+        "unit_action_performed",
+        "unit_completed",
+        "unit_presented"
       ]
     },
     "M2": {
@@ -897,6 +1098,15 @@
           "optional_index": 2,
           "title": "Voluntary Courtesy Sleeve 3"
         }
+      ],
+      "event_allowlist": [
+        "choice_presented",
+        "conclude_selected",
+        "continuation_choice_selected",
+        "trial_presented",
+        "unit_action_performed",
+        "unit_completed",
+        "unit_presented"
       ]
     },
     "M3": {
@@ -945,6 +1155,15 @@
           "is_mandatory": false,
           "title": "Voluntary Register Verification 6"
         }
+      ],
+      "event_allowlist": [
+        "choice_presented",
+        "conclude_selected",
+        "continuation_choice_selected",
+        "trial_presented",
+        "unit_action_performed",
+        "unit_completed",
+        "unit_presented"
       ]
     }
   }

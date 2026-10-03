@@ -91,7 +91,7 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
             steps: [
               'Read the sound note from the hall.',
               'Pick your response: Adjust, Keep, or Check.',
-              'Move the sound slider if needed, then confirm.'
+              'Use the volume dial if needed, then confirm.'
             ]
           })}
         </div>

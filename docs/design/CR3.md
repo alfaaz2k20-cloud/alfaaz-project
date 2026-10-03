@@ -1,65 +1,60 @@
-# Mini-Game Design Sheet: CR3 — Unspecified Tool Use (The Printed Motif)
+# Mini-Game Design Sheet: CR3 — Unspecified Tool Use
 **World:** The Broken Tool (`W6`)  
 **Target Parameter:** `creative_initiative`  
-**Behavioral Facet:** `novel_tool_application`  
-**Measurement Status:** `MISSING DESIGN DECISION — STOPPED`
+**Behavioral Facet:** `functional_flexibility`  
 
 ---
 
 ## 1. Target Parameter & Behavioral Facet
-- **Target Parameter:** `creative_initiative`
-- **Behavioral Facet:** `novel_tool_application`
-- **Authoritative Definition Reference:** Bound to `config/parameters.json` (`creative_initiative`).
+- **Parameter Key:** `creative_initiative`
+- **Facet:** `functional_flexibility`
+- **Definition Reference:** Bound to authoritative definition in `config/parameters.json` for `creative_initiative`.
 
-## 2. Nearest Established Research Construct & Honest Match Note
-- **Nearest Construct:** Alternative Uses, Non-Standard Tool Affordance, & Heuristic Problem Solving.
-- **Honesty Match Note:** Selecting an improvised non-standard printing implement (e.g. edge of a wooden ruler, carved comb) to replicate a border motif when the primary stamp is cracked.
-- **Claim Boundary:** Selecting an alternative implement on screen does not measure manual artisanal ingenuity.
+## 2. Nearest Researched Construct & Honest Match Note
+- **Nearest Construct:** Overcoming Functional Fixedness
+- **Honesty Note:** Evaluates repurposing an object with a conventional label for an unconventional utilitarian purpose.
 
-## 3. Research Citation(s)
-- Benedek, M., & Fink, A. (2019). *Toward a cognitive neuroscience of creative cognition...* Current Opinion in Behavioral Sciences, 27, 116–122.
-- Zhang, W., et al. (2020). *Metacontrol of human creativity...* NeuroImage, 210, 116572.
+## 3. Task Description & Trial Structure
+- **Description:** Candidate is provided items with conventional labels (e.g. 'bookend', 'ruler', 'ribbon') and must solve a mechanical alignment challenge requiring non-standard affordances.
+- **Trial Structure:** 3 distinct challenge stages.
 
-## 4. Mechanistic Rationale
-Creative initiative involves recognizing structural affordances in everyday objects when the dedicated tool fails, allowing work to proceed without halting the entire collective effort.
+## 4. Nuisance Demands & Sibling Differentiation
+- **Nuisance Demands:** Object manipulation interface; sibling CR1 tests open build, CR2 tests resource breakage.
 
-## 5. Exact Observable Behavior
-- Selection and testing of alternative printing tools.
-- Number of test impressions before finding a viable pattern.
+## 5. Control / Decoy Conditions
+- **Controls:** One challenge where the conventional use of the tool is optimal (prevents over-complication bias).
 
-## 6. Candidate Raw Telemetry Requirements
-- `broken_tool_presented` (timestamp, primary_tool: "cracked stamp")
-- `alternative_tested` (timestamp, tool_id, test_result)
-- `motif_completed` (timestamp, final_tool_used)
+## 6. Raw Events Logged
+- `challenge_initiated`
+- `tool_affordance_tested`
+- `unconventional_use_applied`
+- `objective_met`
 
-## 7. Candidate Feature(s), Formula, and Direction
-- **Feature 1:** `affordance_discovery_efficiency`
-  - *Formula:* Ratio mapping of viable tool selection.
-  - *Units:* Score (0.0 to 1.0)
-  - *Direction:* Higher indicates quick recognition of geometric affordance in non-standard tools.
+## 7. Extracted Behavioral Features
+### Feature: `functional_fixedness_overcome_rate`
+- **Formula:** count(unconventional affordances successfully applied) / total_novel_challenges
+- **Units:** ratio
+- **Direction of Interpretation:** Capacity to perceive novel utilitarian utility in everyday items.
+- **Construct Distinction (Why not click count):** Binary success on affordance transfer.
 
-## 8. Important Construct Boundary
-- **Creative Initiative $\neq$ Random Thrashing:** Trying tools indiscriminately without observing their edges is not creative; first-try recognition of the correct affordance is optimal and must not be penalized.
 
-## 9. Nuisance Demands & Alternative Explanations
-- **Visual Pattern Matching:** Matching geometric stamp teeth to border lines.
 
-## 10. Required Control / Decoy Conditions
-- Decoy implements with completely unsuitable shapes (e.g. rounded sponge for sharp geometric border).
+## 8. Data Sufficiency (`min_observations`)
+- **Minimum Observations for `USABLE` Status:** `2`
+- **Expected Observations:** `3`
 
-## 11. Accessibility Implications
-- Textual description of tool edges and physical shapes.
+## 9. Time Ceiling (`ceiling_ms`) & Censoring
+- **Ceiling:** `30000 ms`
+- **Behavior on Ceiling:** Task gracefully concludes; logged with `stop_reason: "ceiling"`; observations are marked right-censored.
 
-## 12. Expected Relationship with SJT
-- **SJT $\leftrightarrow$ CR3 Convergence Hypothesis:** Low-to-moderate positive correlation.
+## 10. Validity Rules (`INVALID` Criteria)
+- **Invalidation Condition:** Zero tools tested.
 
-## 13. Expected Relationship with Sibling Mini-Games (CR1, CR2)
-- High conceptual alignment with CR1 (both test non-standard physical affordances).
+## 11. Accessibility Alternative & Feature Exclusion
+- **Interaction Alternative:** Keyboard selection of tool pairing and applied orientation.
 
-## 14. What the Task Cannot Establish
-- Cannot measure artistic drawing skill or fine craft mastery.
+## 12. Insufficient Evidence Manifestation
+- **Insufficient Condition:** Less than 2 challenges attempted. Result marked `INSUFFICIENT` (never `LOW`).
 
-## 15. Pre-Implementation Validity Check & Decision
-- **Opportunities:** 1 single tool choice in current client.
-- **Status:** `MISSING DESIGN DECISION — STOPPED`.
-- **Blocker:** Requires owner design decision specifying multi-tool testing sequence and feedback display.
+## 13. Proposed Elements
+- **PROPOSED (needs owner approval):** All heuristic features and thresholds are uncalibrated (`null` thresholds in `config/feature_bands.json`) pending empirical normative volunteer data.

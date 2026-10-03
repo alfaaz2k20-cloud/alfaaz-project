@@ -8,10 +8,9 @@ import shutil
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ("sjt_items.json", "parameters.json")
-
+# Sync all JSON files
+FILES = [str(f.relative_to(ROOT / "config")) for f in (ROOT / "config").rglob("*.json")]
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -27,7 +26,11 @@ def main() -> int:
     for filename in FILES:
         source = ROOT / "config" / filename
         target = backend_config / filename
-        if source.read_bytes() != target.read_bytes():
+        
+        # Ensure parent dirs exist
+        target.parent.mkdir(parents=True, exist_ok=True)
+        
+        if not target.exists() or source.read_bytes() != target.read_bytes():
             mismatches.append(filename)
             if args.write:
                 shutil.copyfile(source, target)
@@ -40,7 +43,6 @@ def main() -> int:
     if not mismatches:
         print("Recruit config copies are byte-identical.")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
