@@ -286,11 +286,11 @@ def submit_telemetry(req: TelemetryBatchRequest, request: Request, db: Session =
     if request is not None:
         recruit_telemetry_limiter.check(request, req.session_id)
 
-    # Session eligibility: accept only while status is ACTIVE per Addendum 5.1
-    if session_obj.status != "ACTIVE":
+    # Session eligibility: accept while session is in any active assessment phase
+    if session_obj.status not in ("CONSENTED", "SJT", "ACTIVE"):
         raise HTTPException(
             status_code=403,
-            detail=f"Telemetry rejected: session status is '{session_obj.status}', must be ACTIVE"
+            detail=f"Telemetry rejected: session status is '{session_obj.status}', must be CONSENTED/SJT/ACTIVE"
         )
 
     # 24-hour expiration check

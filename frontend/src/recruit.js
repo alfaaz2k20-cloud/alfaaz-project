@@ -483,10 +483,8 @@ function renderConsent(app) {
     }
 
     try {
-      const apiBase = window.ALFAAZ_API_URL || '';
-      const res = await fetch(`${apiBase}/recruit/consent`, {
+      const res = await apiFetch('/recruit/consent', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           choices: { research_telemetry: consentAgree?.checked }
         })
@@ -494,6 +492,9 @@ function renderConsent(app) {
       if (!res.ok) throw new Error(`Network error: ${res.status}`);
       const data = await res.json();
       state.sessionId = data.session_id;
+      state.configHash = data.config_hash || null;
+      state.worldSequence = data.world_sequence || [];
+      state.seeds = data.seeds || {};
       saveLocalState({ immediate: true });
       
       flushTelemetry();
