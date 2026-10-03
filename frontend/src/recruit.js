@@ -494,7 +494,7 @@ function renderConsent(app) {
       if (!res.ok) throw new Error(`Network error: ${res.status}`);
       const data = await res.json();
       state.sessionId = data.session_id;
-      sessionStorage.setItem(SESSION_STORAGE_KEY, state.sessionId);
+      saveLocalState({ immediate: true });
       
       flushTelemetry();
       
