@@ -357,8 +357,8 @@ h3.ur-hover {
 
 /* --- Soothing Animations --- */
 @keyframes soothingFade {
-  0% { opacity: 0; transform: translateY(6px); filter: blur(2px); }
-  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes soothingEntry {
@@ -367,18 +367,96 @@ h3.ur-hover {
 }
 
 .animate-soft-fade-in {
-  animation: soothingFade 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: soothingFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .animate-soothing-entry {
-  animation: soothingEntry 1.5s ease-out forwards;
+  animation: soothingEntry 0.8s ease-out forwards;
 }
 
-/* Fix flickering on touch options */
-.interactive-option {
-  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+/* Touch responsiveness without tap flickering or accidental zooming */
+button,
+.action-btn,
+.interactive-option,
+.folder-btn,
+.a2-opt,
+.record-card,
+input[type="button"],
+input[type="submit"],
+label.cursor-pointer {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
+
+.interactive-option {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .interactive-option:hover {
+    background-color: #faf8f5;
+    border-color: var(--accent-gold);
+  }
+}
+
 .interactive-option:active {
-  transform: scale(0.99);
-  background-color: var(--bg-primary) !important;
+  background-color: #f4efe8 !important;
+}
+
+/* Prevent auto-zooming on focus in mobile browsers */
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* --- Accessibility Accommodations --- */
+.a11y-high-contrast {
+  --text-primary: #000000 !important;
+  --text-secondary: #222222 !important;
+  --grid-border: rgba(0, 0, 0, 0.45) !important;
+  --bg-primary: #ffffff !important;
+}
+
+.a11y-high-contrast .interactive-option,
+.a11y-high-contrast button,
+.a11y-high-contrast .data-card,
+.a11y-high-contrast .act-badge {
+  border-width: 2px !important;
+  border-color: #000000 !important;
+}
+
+.a11y-dyslexia-font {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
+  letter-spacing: 0.04em !important;
+  line-height: 1.8 !important;
+}
+
+.a11y-dyslexia-font h1,
+.a11y-dyslexia-font h2,
+.a11y-dyslexia-font h3,
+.a11y-dyslexia-font p,
+.a11y-dyslexia-font div,
+.a11y-dyslexia-font span,
+.a11y-dyslexia-font button,
+.a11y-dyslexia-font label {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
+}
+
+.a11y-reduced-motion *,
+.a11y-reduced-motion *::before,
+.a11y-reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

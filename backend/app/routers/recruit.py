@@ -231,6 +231,10 @@ def submit_sjt(req: SJTSubmitRequest, request: Request, db: Session = Depends(ge
     if existing_responses:
         existing_map = {r.scenario_id: r.option_id for r in existing_responses}
         if existing_map == req.responses:
+            if session_obj.status == "SJT":
+                session_obj.status = "ACTIVE"
+                session_obj.current_screen = "games"
+                db.commit()
             return {
                 "status": "SUCCESS",
                 "message": "Idempotent SJT resubmission accepted."
@@ -286,6 +290,14 @@ def submit_telemetry(req: TelemetryBatchRequest, request: Request, db: Session =
     if request is not None:
         recruit_telemetry_limiter.check(request, req.session_id)
 
+    # If session is already COMPLETE, acknowledge telemetry idempotently
+    if session_obj.status == "COMPLETE":
+        return {
+            "status": "SUCCESS",
+            "message": "Session already completed; telemetry acknowledged.",
+            "result": {"accepted_count": 0, "session_status": "COMPLETE"}
+        }
+
     # Session eligibility: accept while session is in any active assessment phase
     if session_obj.status not in ("CONSENTED", "SJT", "ACTIVE"):
         raise HTTPException(
@@ -323,6 +335,13 @@ def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db))
 
     if session_obj.status not in ["ACTIVE", "COMPLETE"]:
         raise HTTPException(status_code=400, detail="Cannot complete session that is not in active game status")
+
+    if session_obj.status == "COMPLETE":
+        return {
+            "status": "SUCCESS",
+            "message": "Assessment already completed.",
+            "is_already_completed": True
+        }
 
     session_obj.status = "COMPLETE"
     session_obj.current_screen = "complete"

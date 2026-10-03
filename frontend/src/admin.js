@@ -391,11 +391,17 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadRecruitment = async function() {
       const container = document.getElementById('recruitmentContainer');
       if (!container) return;
-      container.innerHTML = '<div class="empty-state">Loading candidate records...</div>';
+      container.innerHTML = `
+        <div style="padding: 3rem 1rem; text-align: center; color: var(--text-secondary);">
+          <div style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
+          <div style="font-size: 13px; font-family: var(--font-heading);">Connecting to Recruitment Registry...</div>
+          <div style="font-size: 11px; margin-top: 6px; color: var(--text-secondary);">Retrieving candidate sessions and evidence status.</div>
+        </div>
+      `;
 
       try {
         const res = await window.globalApiFetch('/recruit/research/sessions');
-        if (!res) return;
+        if (!res) throw new Error("No response from server");
         const sessions = await res.json();
         if (!sessions || !sessions.length) {
           container.innerHTML = '<div class="empty-state">No recruitment assessment sessions found in registry.</div>';
@@ -450,7 +456,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (window.refreshGlobalEffects) window.refreshGlobalEffects();
       } catch (err) {
-        container.innerHTML = '<div class="empty-state">Error loading recruitment sessions.</div>';
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 2.5rem 1rem; text-align: center;">
+            <div style="color: var(--accent-gold); font-size: 14px; margin-bottom: 8px;">Unable to load candidate records.</div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 16px;">The recruitment server may still be initializing or experiencing a connection delay.</div>
+            <button class="action-btn gold" onclick="window.loadRecruitment()" style="padding: 0.6rem 1.2rem; font-size: 10px;">Retry Connection</button>
+          </div>
+        `;
       }
     };
 
@@ -459,13 +471,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
-          response = await window.globalApiFetch(`/recruit/research/session/${sessionId}`);
-          if (!response || response.ok || response.status < 500) return response;
+          response = await window.globalApiFetch(`/recruit/research/sessions/${sessionId}`);
+          if (response && response.ok) return response;
         } catch (error) {
           if (attempt === 2) throw error;
         }
 
-        await new Promise(resolve => setTimeout(resolve, 1200 * (attempt + 1)));
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
       }
 
       return response;
@@ -478,12 +490,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="padding: 3rem 1rem; text-align: center; color: var(--text-secondary);">
           <div class="w-8 h-8 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-3" style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
           <div style="font-size: 13px; font-family: var(--font-heading);">Retrieving Candidate Dossier...</div>
+          <div style="font-size: 11px; margin-top: 6px; color: var(--text-secondary);">Loading candidate profile, behavioral evidence, and task records.</div>
         </div>
       `;
       document.getElementById('regModal').classList.add('open');
   
       try {
-        const res = await window.globalApiFetch(`/recruit/research/session/${sessionId}`);
+        const res = await fetchCandidateDossier(sessionId);
         if (!res || !res.ok) throw new Error("Failed to load dossier");
         const data = await res.json();
         const dims = data.dimensions || [];
@@ -582,7 +595,13 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
   
       } catch (err) {
-        body.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--accent-red);">Failed to load candidate dossier.<br><button class="action-btn gold" onclick="viewCandidateDossier('${sessionId}')" style="margin-top:1rem;">Retry</button></div>`;
+        body.innerHTML = `
+          <div style="padding:2.5rem 1rem; text-align:center;">
+            <div style="color:var(--accent-gold); font-size:14px; margin-bottom:8px;">Failed to load candidate dossier.</div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:16px;">The server may be waking up from idle or taking longer to process. Your request timed out.</div>
+            <button class="action-btn gold" onclick="viewCandidateDossier('${sessionId}')" style="padding:0.6rem 1.2rem; font-size:10px;">Retry Dossier Retrieval</button>
+          </div>
+        `;
       }
   };
   

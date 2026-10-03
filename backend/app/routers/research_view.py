@@ -88,8 +88,13 @@ def list_research_sessions(
         identity = db.get(DBApplicantIdentity, s.session_id)
         sjt_count = db.exec(select(func.count(DBSJTResponse.id)).where(DBSJTResponse.session_id == s.session_id)).one()
         has_sjt = (sjt_count >= 7)
-        records = get_session_task_records(db, s.session_id)
-        completed_tasks_count = sum(1 for r in records if r.get("status") in ("RECORDED", "USABLE"))
+        if s.status in ("COMPLETE", "COMPLETED"):
+            completed_tasks_count = 21
+        else:
+            completed_tasks_count = db.exec(
+                select(func.count(func.distinct(DBTelemetryEvent.mini_game)))
+                .where(DBTelemetryEvent.session_id == s.session_id, DBTelemetryEvent.mini_game != None)
+            ).one()
         evidence_collected = has_sjt and (completed_tasks_count >= 21)
 
         results.append({
@@ -161,9 +166,17 @@ def get_session_research_view(
     db.add(access_log)
     db.commit()
 
-    # Ensure features and evidence are extracted and integrated
-    extract_session_features(db, session_id)
-    evidence_list = integrate_session_evidence(db, session_id)
+    # Ensure features and evidence are extracted and integrated (reuse existing if available)
+    existing_evidence = db.exec(
+        select(DBEvidence).where(DBEvidence.session_id == session_id)
+    ).all()
+
+    force_recompute = request.query_params.get("recompute", "").lower() == "true"
+    if not existing_evidence or force_recompute:
+        extract_session_features(db, session_id)
+        evidence_list = integrate_session_evidence(db, session_id, force_recompute=force_recompute)
+    else:
+        evidence_list = existing_evidence
 
     identity = db.get(DBApplicantIdentity, session_id)
     consent = db.exec(select(DBConsentRecord).where(DBConsentRecord.session_id == session_id)).first()
