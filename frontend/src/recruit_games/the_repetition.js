@@ -48,7 +48,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3</span>
+            
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>`,
@@ -79,7 +79,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Envelope ${currentIdx + 1} of ${units.length}</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
@@ -113,7 +113,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end mb-4">
-          <button type="button" id="stampBtn" class="px-8 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm flex items-center justify-center gap-2 rounded-xs w-full sm:w-auto min-h-[44px]">
+          <button type="button" id="stampBtn" class="px-8 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm flex items-center justify-center gap-2 rounded-xs w-full sm:w-auto min-h-[44px]">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
             Press Wax Seal &rarr;
           </button>
@@ -199,7 +199,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3</span>
+            
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`,
@@ -232,7 +232,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 7: The Repetition</span>
-              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Folder ${mandatoryIdx + 1} of ${mandatoryUnits.length}</span>
+              
             </div>
             <div class="text-[11px] text-amber-800 font-sans font-medium">Required Phase (${mandatoryIdx + 1}/3)</div>
           </div>
@@ -261,7 +261,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
 
           <!-- PRIMARY ACTION BUTTON -->
           <div class="flex justify-end mb-4">
-            <button type="button" id="foldSleeveBtn" class="px-8 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+            <button type="button" id="foldSleeveBtn" class="px-8 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
               Assemble Required Folder &rarr;
             </button>
           </div>
@@ -313,7 +313,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 7: The Repetition</span>
-              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Choice Point</span>
+              
             </div>
             <div class="text-[11px] text-emerald-800 font-sans font-medium">Requirement Completed</div>
           </div>
@@ -336,11 +336,11 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
             </p>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button type="button" id="concludeBtn" class="px-6 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+              <button type="button" id="concludeBtn" class="px-6 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
                 Conclude Activity Now &rarr;
               </button>
               ${optionalIdx < optionalUnits.length ? `
-                <button type="button" id="continueOptionalBtn" class="px-6 py-3.5 bg-white border border-[var(--accent-gold)] text-[var(--accent-gold)] text-xs uppercase tracking-widest hover:bg-amber-50 transition shadow-xs rounded-xs w-full sm:w-auto min-h-[44px]">
+                <button type="button" id="continueOptionalBtn" class="px-6 py-3.5 bg-white border border-[var(--accent-gold)] text-[var(--accent-gold)] text-xs uppercase tracking-widest hover:bg-amber-50 interactive-option shadow-xs rounded-xs w-full sm:w-auto min-h-[44px]">
                   + Prepare Extra Folder (${optionalIdx + 1}/${optionalUnits.length})
                 </button>
               ` : ''}
@@ -391,7 +391,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 7: The Repetition</span>
-              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Extra Folder ${optionalIdx + 1} of ${optionalUnits.length}</span>
+              
             </div>
             <div class="text-[11px] text-emerald-800 font-sans font-medium">Voluntary Extra</div>
           </div>
@@ -420,10 +420,10 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
 
           <!-- PRIMARY ACTION BUTTONS -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <button type="button" id="stopOptionalEarlyBtn" class="px-5 py-3 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-700 text-xs uppercase tracking-wider transition rounded-xs w-full sm:w-auto min-h-[44px]">
+            <button type="button" id="stopOptionalEarlyBtn" class="px-5 py-3 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-700 text-xs uppercase tracking-wider interactive-option rounded-xs w-full sm:w-auto min-h-[44px]">
               Conclude Now
             </button>
-            <button type="button" id="foldOptionalSleeveBtn" class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+            <button type="button" id="foldOptionalSleeveBtn" class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
               Assemble Extra Folder &rarr;
             </button>
           </div>
@@ -527,7 +527,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3</span>
+            
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>`,
@@ -559,7 +559,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 7: The Repetition</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Row ${currentIdx + 1} of ${allUnits.length}</span>
+            
           </div>
           <div class="text-[11px] ${hasMetMinimum ? 'text-emerald-800' : 'text-amber-800'} font-sans font-medium">
             ${hasMetMinimum ? 'Optional Continuation' : 'Required Minimum (3)'}
@@ -606,12 +606,12 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             ${hasMetMinimum ? `
-              <button type="button" id="concludeM3Btn" class="px-6 py-3 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-800 text-xs uppercase tracking-wider transition rounded-xs w-full sm:w-auto min-h-[44px]">
+              <button type="button" id="concludeM3Btn" class="px-6 py-3 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-800 text-xs uppercase tracking-wider interactive-option rounded-xs w-full sm:w-auto min-h-[44px]">
                 Conclude Activity &rarr;
               </button>
             ` : '<span></span>'}
           </div>
-          <button type="button" id="verifyRowBtn" class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+          <button type="button" id="verifyRowBtn" class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
             Verify Row &rarr;
           </button>
         </div>

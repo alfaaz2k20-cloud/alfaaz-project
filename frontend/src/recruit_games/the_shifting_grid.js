@@ -79,7 +79,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 4: The Shifting Grid</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Tile ${currentIdx + 1} of ${trials.length}</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
@@ -109,12 +109,12 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
 
         <!-- INTERACTION AREA -->
         <div class="grid grid-cols-2 gap-4 mb-4 candidate-content-protected">
-          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 active:scale-98 transition text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_1" tabindex="0">
+          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)]  hover:bg-amber-50/40  interactive-option text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_1" tabindex="0">
             <span class="text-2xl text-[var(--accent-gold)] block mb-1">&#9679;</span>
             <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 1</span>
             <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Gold Circle</span>
           </button>
-          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] hover:bg-amber-50/40 active:scale-98 transition text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
+          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)]  hover:bg-amber-50/40  interactive-option text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
             <span class="text-2xl text-emerald-800 block mb-1">&#9632;</span>
             <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 2</span>
             <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Sage Square</span>
@@ -272,7 +272,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 4: The Shifting Grid</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Event ${currentSeq + 1} of ${sequences.length}</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
@@ -304,7 +304,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
           <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Available Responses:</div>
           <div class="space-y-2.5">
             ${s.options.map(opt => `
-              <div class="e2-opt p-3.5 bg-white border ${selectedAction === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-action="${opt.id}" tabindex="0" role="button">
+              <div class="e2-opt p-3.5 bg-white border ${selectedAction === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-action="${opt.id}" tabindex="0" role="button">
                 <span class="flex items-center gap-2">
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedAction === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAction === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
@@ -323,7 +323,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button type="button" id="confirmE2Btn" ${selectedAction ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs min-h-[44px]">
+          <button type="button" id="confirmE2Btn" ${selectedAction ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
             ${currentSeq < sequences.length - 1 ? 'Confirm Choice &rarr;' : 'Finish Setup Sequences &rarr;'}
           </button>
         </div>
@@ -470,7 +470,7 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 4: The Shifting Grid</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Condition ${currentCondition + 1} of ${conditions.length}</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
@@ -502,7 +502,7 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
           <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Layout Options:</div>
           <div class="space-y-2.5">
             ${c.options.map(opt => `
-              <div class="e3-opt p-3.5 bg-white border ${selectedLayout === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-layout="${opt.id}" tabindex="0" role="button">
+              <div class="e3-opt p-3.5 bg-white border ${selectedLayout === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-layout="${opt.id}" tabindex="0" role="button">
                 <span class="flex items-center gap-2">
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedLayout === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedLayout === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
@@ -521,7 +521,7 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button type="button" id="confirmE3Btn" ${selectedLayout ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs min-h-[44px]">
+          <button type="button" id="confirmE3Btn" ${selectedLayout ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
             ${currentCondition < conditions.length - 1 ? 'Confirm Layout &rarr;' : 'Finish World 4 &rarr;'}
           </button>
         </div>

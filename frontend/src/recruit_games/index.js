@@ -22,9 +22,9 @@ const WORLD_METADATA = {
 
 export function renderTutorialCard({ icon, goal, steps }) {
   return `
-    <div class="tutorial-card cursor-pointer p-6 border border-[var(--accent-gold)] bg-gradient-to-br from-[#faf8f5] to-[#f5efe8] space-y-4 mb-6 transition-all duration-300" tabindex="0" role="button" aria-label="Begin Activity Guide">
+    <div class="tutorial-card cursor-pointer p-6 border border-[var(--accent-gold)] bg-gradient-to-br from-[#faf8f5] to-[#f5efe8] space-y-4 mb-6 interactive-option duration-300" tabindex="0" role="button" aria-label="Begin Activity Guide">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-amber-100/80 border border-[var(--accent-gold)] flex items-center justify-center text-[var(--accent-gold)] shrink-0 animate-float">
+        <div class="w-10 h-10 rounded-full bg-amber-100/80 border border-[var(--accent-gold)] flex items-center justify-center text-[var(--accent-gold)] shrink-0">
           ${icon || '<i data-lucide="compass" class="w-5 h-5"></i>'}
         </div>
         <div>
@@ -44,7 +44,7 @@ export function renderTutorialCard({ icon, goal, steps }) {
 
       <div class="pt-2 flex justify-between items-center">
         <span class="text-[11px] text-[var(--text-secondary)] italic">Click anywhere or press Enter to begin</span>
-        <button id="startActivityBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition flex items-center gap-2">
+        <button id="startActivityBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option flex items-center gap-2">
           Begin Activity &rarr;
         </button>
       </div>
@@ -98,9 +98,7 @@ export function runMiniGame(context) {
         <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">${mgTitle}</h2>
         <p class="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">${mgDesc}</p>
       </div>
-      <div class="text-left sm:text-right shrink-0 animate-float">
-        <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-sans">Part ${miniGameIndex + 1} of 3</span>
-      </div>
+      
     </div>
   `;
 

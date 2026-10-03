@@ -354,3 +354,31 @@ h3.ur-hover {
   animation: spin 1s linear infinite, gentlePulse 2s ease-in-out infinite;
   margin: 0 auto;
 }
+
+/* --- Soothing Animations --- */
+@keyframes soothingFade {
+  0% { opacity: 0; transform: translateY(6px); filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes soothingEntry {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.animate-soft-fade-in {
+  animation: soothingFade 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-soothing-entry {
+  animation: soothingEntry 1.5s ease-out forwards;
+}
+
+/* Fix flickering on touch options */
+.interactive-option {
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.interactive-option:active {
+  transform: scale(0.99);
+  background-color: var(--bg-primary) !important;
+}

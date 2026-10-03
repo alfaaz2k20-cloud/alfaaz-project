@@ -117,7 +117,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 2: The Archive</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Item ${currentDocIdx + 1} of ${documents.length}</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
@@ -143,7 +143,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
         <div class="p-5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected">
           <div class="flex justify-between items-start mb-2">
             <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase font-medium">Folio ${currentDocIdx + 1} of ${documents.length}</span>
-            <button id="guideBtn" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1 hover:bg-amber-50 transition flex items-center gap-1.5 rounded-xs min-h-[32px]" tabindex="0">
+            <button id="guideBtn" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1 hover:bg-amber-50 interactive-option flex items-center gap-1.5 rounded-xs min-h-[32px]" tabindex="0">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               ${guideOpened ? 'Close Guide' : 'Shelf Guide'}
             </button>
@@ -166,7 +166,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
           <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Select Destination Shelf:</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             ${folders.map(f => `
-              <button type="button" class="folder-btn p-3.5 bg-white border border-[var(--grid-border)] text-xs font-semibold hover:border-[var(--accent-gold)] hover:bg-amber-50/40 transition text-left shadow-xs flex items-center gap-2.5 rounded-xs min-h-[48px]" data-folder="${f.id}" tabindex="0">
+              <button type="button" class="folder-btn p-3.5 bg-white border border-[var(--grid-border)] text-xs font-semibold  hover:bg-amber-50/40 interactive-option text-left shadow-xs flex items-center gap-2.5 rounded-xs min-h-[48px]" data-folder="${f.id}" tabindex="0">
                 <svg class="w-4 h-4 text-[var(--accent-gold)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${f.icon}"></path></svg>
                 <span class="text-[var(--text-primary)]">${f.label}</span>
               </button>
@@ -319,7 +319,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 2: The Archive</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Page ${currentTrial + 1} of 4</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
@@ -354,7 +354,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
         <div class="space-y-2.5 mb-4 candidate-content-protected">
           <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose handling action:</div>
           ${actions.map(a => `
-            <div class="a2-opt p-3.5 bg-white border ${chosenAction === a.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition rounded-xs min-h-[52px]" data-action="${a.id}" tabindex="0" role="button">
+            <div class="a2-opt p-3.5 bg-white border ${chosenAction === a.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer  interactive-option rounded-xs min-h-[52px]" data-action="${a.id}" tabindex="0" role="button">
               <div class="flex justify-between items-center mb-0.5">
                 <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${chosenAction === a.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
@@ -374,7 +374,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button id="a2ConfirmBtn" ${chosenAction ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs min-h-[44px]">
+          <button id="a2ConfirmBtn" ${chosenAction ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
             ${currentTrial < 3 ? 'Confirm Handling Decision &rarr;' : 'Finish Page Evaluation &rarr;'}
           </button>
         </div>
@@ -504,7 +504,7 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 2: The Archive</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; 5 Cards</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
@@ -528,7 +528,7 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
           ${records.map((r, idx) => {
             const isFlagged = flaggedRecords.has(r.id);
             return `
-              <div class="record-card p-4 bg-white border ${isFlagged ? 'border-[#bd6f5d] bg-amber-50/20' : 'border-[var(--grid-border)]'} rounded-xs transition shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" data-id="${r.id}" tabindex="0">
+              <div class="record-card p-4 bg-white border ${isFlagged ? 'border-[#bd6f5d] bg-amber-50/20' : 'border-[var(--grid-border)]'} rounded-xs interactive-option shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" data-id="${r.id}" tabindex="0">
                 <div class="space-y-1 flex-1">
                   <div class="flex items-center gap-2">
                     <span class="text-[10px] text-[var(--accent-gold)] uppercase tracking-wider font-semibold">Ledger Card ${idx + 1} of 5</span>
@@ -539,7 +539,7 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
                   </div>
                 </div>
 
-                <button type="button" class="toggle-flag-btn px-4 py-2.5 border text-xs font-sans uppercase tracking-wider shrink-0 transition rounded-xs min-h-[44px] w-full sm:w-auto ${isFlagged ? 'bg-[#bd6f5d] text-white border-[#bd6f5d]' : 'bg-white text-[var(--text-secondary)] border-[var(--grid-border)] hover:border-[var(--accent-gold)]'}" data-id="${r.id}">
+                <button type="button" class="toggle-flag-btn px-4 py-2.5 border text-xs font-sans uppercase tracking-wider shrink-0 interactive-option rounded-xs min-h-[44px] w-full sm:w-auto ${isFlagged ? 'bg-[#bd6f5d] text-white border-[#bd6f5d]' : 'bg-white text-[var(--text-secondary)] border-[var(--grid-border)] '}" data-id="${r.id}">
                   ${isFlagged ? 'Mistake Flagged ✓' : 'Flag Mistake'}
                 </button>
               </div>
@@ -555,7 +555,7 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button id="a3SubmitBtn" class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs min-h-[44px]">
+          <button id="a3SubmitBtn" class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs min-h-[44px]">
             Verify and Complete World 2 &rarr;
           </button>
         </div>

@@ -114,7 +114,7 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 1: The Frequency</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Round ${currentTrial + 1} of 6</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
@@ -150,21 +150,21 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
         <div class="mb-5 candidate-content-protected">
           <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">1. Choose your response:</div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs transition min-h-[56px] ${selectedAction === 'accommodate' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)] bg-white hover:border-[var(--accent-gold)]'}" data-action="accommodate">
+            <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'accommodate' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)] bg-white '}" data-action="accommodate">
               <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full ${selectedAction === 'accommodate' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                 Adjust Sound
               </div>
               <div class="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">Change the sound setting to help the speaker.</div>
             </button>
-            <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs transition min-h-[56px] ${selectedAction === 'maintain_objective' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)] bg-white hover:border-[var(--accent-gold)]'}" data-action="maintain_objective">
+            <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'maintain_objective' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)] bg-white '}" data-action="maintain_objective">
               <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full ${selectedAction === 'maintain_objective' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                 Keep Baseline
               </div>
               <div class="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">Leave the current sound setting as it is.</div>
             </button>
-            <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs transition min-h-[56px] ${selectedAction === 'clarify' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)] bg-white hover:border-[var(--accent-gold)]'}" data-action="clarify">
+            <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'clarify' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)] bg-white '}" data-action="clarify">
               <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full ${selectedAction === 'clarify' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                 Check Channel
@@ -197,7 +197,7 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button id="lockFreqBtn" class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs flex items-center justify-center gap-2 min-h-[44px]">
+          <button id="lockFreqBtn" class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs flex items-center justify-center gap-2 min-h-[44px]">
             ${currentTrial < 5 ? 'Confirm Setting &rarr;' : 'Finish Sound Setup &rarr;'}
           </button>
         </div>
@@ -437,7 +437,7 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 1: The Frequency</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Round ${currentTrial + 1} of 4</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
@@ -474,7 +474,7 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
           <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Pick your response:</div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             ${choices.map(c => `
-              <div class="f2-card p-4 bg-white border ${selectedAction === c.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition space-y-1.5 rounded-xs min-h-[56px]" data-action="${c.id}" tabindex="0" role="button">
+              <div class="f2-card p-4 bg-white border ${selectedAction === c.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer  interactive-option space-y-1.5 rounded-xs min-h-[56px]" data-action="${c.id}" tabindex="0" role="button">
                 <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${selectedAction === c.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                   ${c.title}
@@ -493,7 +493,7 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button id="f2ConfirmBtn" ${selectedAction ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs min-h-[44px]">
+          <button id="f2ConfirmBtn" ${selectedAction ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
             ${currentTrial < 3 ? 'Confirm Choice &rarr;' : 'Finish Team Coordination &rarr;'}
           </button>
         </div>
@@ -665,7 +665,7 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 1: The Frequency</span>
-              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Transition ${currentTransition + 1} of 3 (Step 1)</span>
+              
             </div>
             <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
           </div>
@@ -700,7 +700,7 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
           <div class="space-y-2.5 mb-4 candidate-content-protected">
             <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose your response:</div>
             ${tr.baseline_options.map(opt => `
-              <div class="f3-opt p-3.5 bg-white border ${selectedBaselineChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition rounded-xs min-h-[50px]" data-choice="${opt.id}" tabindex="0" role="button">
+              <div class="f3-opt p-3.5 bg-white border ${selectedBaselineChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer  interactive-option rounded-xs min-h-[50px]" data-choice="${opt.id}" tabindex="0" role="button">
                 <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${selectedBaselineChoice === opt.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                   ${opt.label}
@@ -718,7 +718,7 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
 
           <!-- PRIMARY ACTION BUTTON -->
           <div class="flex justify-end">
-            <button id="f3BaselineBtn" ${selectedBaselineChoice ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs min-h-[44px]">
+            <button id="f3BaselineBtn" ${selectedBaselineChoice ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
               Confirm and See Room Shift &rarr;
             </button>
           </div>
@@ -770,7 +770,7 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 1: The Frequency</span>
-              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Transition ${currentTransition + 1} of 3 (Step 2)</span>
+              
             </div>
             <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
           </div>
@@ -805,7 +805,7 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
           <div class="space-y-2.5 mb-4 candidate-content-protected">
             <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose your updated response:</div>
             ${tr.shifted_options.map(opt => `
-              <div class="f3-updated-opt p-3.5 bg-white border ${selectedUpdatedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer hover:border-[var(--accent-gold)] transition rounded-xs min-h-[50px]" data-choice="${opt.id}" tabindex="0" role="button">
+              <div class="f3-updated-opt p-3.5 bg-white border ${selectedUpdatedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer  interactive-option rounded-xs min-h-[50px]" data-choice="${opt.id}" tabindex="0" role="button">
                 <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${selectedUpdatedChoice === opt.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                   ${opt.label}
@@ -823,7 +823,7 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
 
           <!-- PRIMARY ACTION BUTTON -->
           <div class="flex justify-end">
-            <button id="f3UpdatedBtn" ${selectedUpdatedChoice ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs min-h-[44px]">
+            <button id="f3UpdatedBtn" ${selectedUpdatedChoice ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
               ${currentTransition < 2 ? 'Save Updated Setting & Next Round &rarr;' : 'Finish World 1 &rarr;'}
             </button>
           </div>

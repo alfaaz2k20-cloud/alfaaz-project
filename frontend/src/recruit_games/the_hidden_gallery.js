@@ -40,7 +40,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
   const decisions = [
     {
       stimulus_id: 'Q1_D1',
-      title: 'Item 1: Antique Gold-Leaf Manuscript Leaf',
+      title: 'Antique Gold-Leaf Manuscript Leaf',
       scenario: 'Choose the binding method for a fragile 19th-century manuscript page.',
       options: [
         { id: 'flexible_cord_binding', label: 'Sewn Flexible Cord (Allows spine to bend safely)' },
@@ -54,7 +54,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
     },
     {
       stimulus_id: 'Q1_D2',
-      title: 'Item 2: Papier-Mâché Pen Case (Qalamdan)',
+      title: 'Papier-Mâché Pen Case (Qalamdan)',
       scenario: 'Select a protective surface coating for this painted lacquer case.',
       options: [
         { id: 'curing_linseed_glaze', label: 'Linseed Oil & Amber Varnish (Traditional slow curing glaze)' },
@@ -68,7 +68,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
     },
     {
       stimulus_id: 'Q1_D3',
-      title: 'Item 3: Workshop Artisan Register',
+      title: 'Workshop Artisan Register',
       scenario: 'Identify the origin of this undated Persian artisan register.',
       options: [
         { id: 'guild_ledger_verified', label: 'Official Guild Register (Bears official guildmaster seal)' },
@@ -82,7 +82,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
     },
     {
       stimulus_id: 'Q1_D4',
-      title: 'Item 4: Natural Pigment Jars',
+      title: 'Natural Pigment Jars',
       scenario: 'Select storage conditions for delicate saffron and indigo pigments.',
       options: [
         { id: 'dark_vented_cedar_chest', label: 'Dark Cedar Chest (Controlled humidity and shade)' },
@@ -102,7 +102,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3</span>
+            
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`,
@@ -134,7 +134,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Item ${currentDecision + 1} of ${decisions.length}</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
@@ -171,7 +171,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             ${d.optional_resources.map(res => `
-              <div class="opt-res-card p-3 bg-white border ${viewedResources[res.id] ? 'border-[var(--accent-gold)] bg-amber-50/30' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[48px] flex flex-col justify-center" data-res="${res.id}">
+              <div class="opt-res-card p-3 bg-white border ${viewedResources[res.id] ? 'border-[var(--accent-gold)] bg-amber-50/30' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs min-h-[48px] flex flex-col justify-center" data-res="${res.id}">
                 <div class="flex items-center justify-between">
                   <span class="font-medium text-[var(--text-primary)] flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5 text-[var(--accent-gold)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -190,7 +190,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
           <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Choose Preservation Action:</div>
           <div class="space-y-2.5">
             ${d.options.map(opt => `
-              <div class="q1-opt p-3.5 bg-white border ${selectedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-choice="${opt.id}" tabindex="0" role="button">
+              <div class="q1-opt p-3.5 bg-white border ${selectedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-choice="${opt.id}" tabindex="0" role="button">
                 <span class="flex items-center gap-2.5">
                   <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedChoice === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedChoice === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
@@ -203,14 +203,14 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end mb-4">
-          <button type="button" id="confirmQ1Btn" ${selectedChoice ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+          <button type="button" id="confirmQ1Btn" ${selectedChoice ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
             ${currentDecision < decisions.length - 1 ? 'Confirm Decision &rarr;' : 'Finish Curatorial Decisions &rarr;'}
           </button>
         </div>
 
         <!-- Progress Footer -->
         <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
-          Item ${currentDecision + 1} of ${decisions.length}
+          
         </div>
       </div>
     `;
@@ -376,7 +376,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3</span>
+            
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>`,
@@ -409,7 +409,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Relic ${currentTrial + 1} of ${relics.length}</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
@@ -446,7 +446,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             ${r.clues.map(c => `
-              <div class="clue-btn p-3.5 bg-white border ${inspectedClues[c.id] ? 'border-[var(--accent-gold)] bg-amber-50/40 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[48px] flex flex-col justify-between" data-clue="${c.id}" tabindex="0" role="button">
+              <div class="clue-btn p-3.5 bg-white border ${inspectedClues[c.id] ? 'border-[var(--accent-gold)] bg-amber-50/40 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs min-h-[48px] flex flex-col justify-between" data-clue="${c.id}" tabindex="0" role="button">
                 <div class="font-medium text-[var(--text-primary)] flex items-center justify-between">
                   <span>${c.label}</span>
                   <span class="text-[9px] font-sans uppercase text-[var(--text-secondary)]">${inspectedClues[c.id] ? 'Inspected' : 'Inspect'}</span>
@@ -462,7 +462,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
           <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Conclude Historical Origin:</div>
           <div class="space-y-2.5">
             ${r.attributions.map(attr => `
-              <div class="q2-attr p-3.5 bg-white border ${selectedAttribution === attr.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-attr="${attr.id}" tabindex="0" role="button">
+              <div class="q2-attr p-3.5 bg-white border ${selectedAttribution === attr.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-attr="${attr.id}" tabindex="0" role="button">
                 <span class="flex items-center gap-2.5">
                   <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedAttribution === attr.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAttribution === attr.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${attr.label}</span>
@@ -475,7 +475,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end mb-4">
-          <button type="button" id="confirmQ2Btn" ${selectedAttribution ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+          <button type="button" id="confirmQ2Btn" ${selectedAttribution ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
             ${currentTrial < relics.length - 1 ? 'Finalize Investigation &rarr;' : 'Finish Antiquarian Bench &rarr;'}
           </button>
         </div>
@@ -634,7 +634,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3</span>
+            
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`,
@@ -667,7 +667,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 5: The Hidden Gallery</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Episode ${currentEpisode + 1} of ${episodes.length}</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
@@ -701,7 +701,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
             <span class="text-[10px] uppercase font-sans text-[var(--accent-gold)] font-semibold tracking-wider">Archival Research Note</span>
             ${!contextRetrieved ? `
-              <button type="button" id="retrieveContextBtn" class="px-4 py-2 bg-white border border-[var(--grid-border)] hover:border-[var(--accent-gold)] text-[10px] font-sans uppercase tracking-wider text-[var(--text-primary)] hover:bg-amber-50 transition rounded-xs shadow-xs min-h-[44px] flex items-center justify-center gap-1.5" tabindex="0">
+              <button type="button" id="retrieveContextBtn" class="px-4 py-2 bg-white border border-[var(--grid-border)]  text-[10px] font-sans uppercase tracking-wider text-[var(--text-primary)] hover:bg-amber-50 interactive-option rounded-xs shadow-xs min-h-[44px] flex items-center justify-center gap-1.5" tabindex="0">
                 <span>Open Research Note</span> &rarr;
               </button>
             ` : '<span class="text-[10px] font-sans text-emerald-700 font-semibold uppercase">Note Opened</span>'}
@@ -724,7 +724,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
           <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">${ep.decision_question}</div>
           <div class="space-y-2.5">
             ${ep.choices.map(c => `
-              <div class="q3-choice p-3.5 bg-white border ${selectedIntegrationChoice === c.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-choice="${c.id}" tabindex="0" role="button">
+              <div class="q3-choice p-3.5 bg-white border ${selectedIntegrationChoice === c.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-choice="${c.id}" tabindex="0" role="button">
                 <span class="flex items-center gap-2.5">
                   <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedIntegrationChoice === c.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedIntegrationChoice === c.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${c.label}</span>
@@ -737,7 +737,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end mb-4">
-          <button type="button" id="confirmQ3Btn" ${selectedIntegrationChoice ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+          <button type="button" id="confirmQ3Btn" ${selectedIntegrationChoice ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
             ${currentEpisode < episodes.length - 1 ? 'Confirm Choice &rarr;' : 'Finish World 5 &rarr;'}
           </button>
         </div>

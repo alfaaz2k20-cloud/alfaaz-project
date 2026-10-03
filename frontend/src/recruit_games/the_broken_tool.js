@@ -81,7 +81,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3</span>
+            
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`,
@@ -114,7 +114,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 1 of 3 &middot; Stage ${currentStageIdx + 1} of ${stages.length}</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
@@ -150,7 +150,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
             ${st.materials.map(m => {
               const isSelected = selectedParts.includes(m.id);
               return `
-                <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex flex-col justify-between min-h-[72px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+                <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex flex-col justify-between min-h-[72px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
                   <div>
                     <div class="text-lg mb-1 text-stone-700">${m.icon}</div>
                     <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
@@ -169,7 +169,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
             <div class="text-xs text-[var(--text-secondary)]">
               Equipped: <strong class="text-[var(--text-primary)]">${selectedParts.length > 0 ? selectedParts.map(id => st.materials.find(m => m.id === id)?.name).join(' + ') : 'None selected'}</strong>
             </div>
-            <button type="button" id="testAssemblyBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-4 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 transition rounded-xs min-h-[44px]">
+            <button type="button" id="testAssemblyBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-4 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px]">
               Test Assembly
             </button>
           </div>
@@ -184,7 +184,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end mb-4">
-          <button type="button" id="confirmStageBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+          <button type="button" id="confirmStageBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
             ${currentStageIdx < stages.length - 1 ? 'Confirm Assembly & Next Stage &rarr;' : 'Finish Part 1 &rarr;'}
           </button>
         </div>
@@ -356,7 +356,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3</span>
+            
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`,
@@ -391,7 +391,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 6: The Broken Tool</span>
-              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Episode ${currentEpisode + 1} of ${episodes.length}</span>
+              
             </div>
             <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
           </div>
@@ -426,7 +426,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
             ${ep.pre_strategies.map(s => {
               const isSelected = initialStrategy === s.id;
               return `
-                <div class="pre-strat-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
+                <div class="pre-strat-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
                   <div>
                     <div class="font-medium text-[var(--text-primary)]">${s.label}</div>
                     <div class="text-[11px] text-[var(--text-secondary)] mt-0.5">${s.desc}</div>
@@ -439,7 +439,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 
           <!-- PRIMARY ACTION BUTTON -->
           <div class="flex justify-end mb-4">
-            <button type="button" id="confirmPreShiftBtn" ${initialStrategy ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+            <button type="button" id="confirmPreShiftBtn" ${initialStrategy ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
               Set Plan & Proceed &rarr;
             </button>
           </div>
@@ -496,7 +496,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div class="flex items-center gap-2">
               <span class="act-badge">World 6: The Broken Tool</span>
-              <span class="text-xs text-[var(--text-secondary)] font-sans">Part 2 of 3 &middot; Episode ${currentEpisode + 1} of ${episodes.length}</span>
+              
             </div>
             <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Condition Shift</div>
           </div>
@@ -510,7 +510,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           <!-- Constraint Shift Notification Banner -->
           <div class="p-4 bg-amber-50 border border-amber-300/80 mb-4 rounded-xs animate-soft-fade-in candidate-content-protected">
             <div class="flex items-center gap-2 mb-1">
-              <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse"></span>
+              <span class="w-2 h-2 rounded-full bg-amber-600 "></span>
               <span class="text-[10px] font-sans uppercase tracking-wider text-amber-900 font-bold">New Room Condition Detected</span>
             </div>
             <div class="text-xs text-amber-950 leading-relaxed font-serif">${ep.shift_description}</div>
@@ -525,7 +525,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
             ${ep.post_strategies.map(s => {
               const isSelected = revisedStrategy === s.id;
               return `
-                <div class="post-strat-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs flex items-center justify-between min-h-[48px]" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
+                <div class="post-strat-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
                   <div>
                     <div class="font-medium text-[var(--text-primary)]">${s.label}</div>
                     <div class="text-[10px] font-sans text-[var(--text-secondary)] mt-0.5">${s.note}</div>
@@ -538,7 +538,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 
           <!-- PRIMARY ACTION BUTTON -->
           <div class="flex justify-end mb-4">
-            <button type="button" id="confirmPostShiftBtn" ${revisedStrategy ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+            <button type="button" id="confirmPostShiftBtn" ${revisedStrategy ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
               ${currentEpisode < episodes.length - 1 ? 'Confirm Plan & Next Episode &rarr;' : 'Finish Part 2 &rarr;'}
             </button>
           </div>
@@ -709,7 +709,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
         <div class="candidate-content-protected">
           <div class="flex items-center gap-2 mb-3">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3</span>
+            
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>`,
@@ -744,7 +744,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div class="flex items-center gap-2">
             <span class="act-badge">World 6: The Broken Tool</span>
-            <span class="text-xs text-[var(--text-secondary)] font-sans">Part 3 of 3 &middot; Trial ${currentTrial + 1} of ${trials.length}</span>
+            
           </div>
           <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
@@ -780,7 +780,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
             ${tr.tools.map(t => {
               const isSelected = selectedTool === t.id;
               return `
-                <div class="cr3-tool-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[64px]" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
+                <div class="cr3-tool-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs min-h-[64px]" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
                   <div class="flex items-center gap-2 mb-1">
                     <span class="text-lg">${t.icon}</span>
                     <span class="font-medium text-[var(--text-primary)]">${t.name}</span>
@@ -799,7 +799,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
             ${tr.methods.map(m => {
               const isSelected = selectedMethod === m.id;
               return `
-                <div class="cr3-method-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer hover:border-[var(--accent-gold)] transition text-xs min-h-[64px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+                <div class="cr3-method-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs min-h-[64px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
                   <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
                   <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${m.desc}</div>
                 </div>
@@ -813,7 +813,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
           <div class="text-xs text-[var(--text-secondary)]">
             Active Pairing: <strong class="text-[var(--text-primary)]">${selectedTool ? tr.tools.find(t => t.id === selectedTool)?.name : 'None'} + ${selectedMethod ? tr.methods.find(m => m.id === selectedMethod)?.name : 'None'}</strong>
           </div>
-          <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 transition rounded-xs min-h-[44px]">
+          <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px]">
             Apply Technique
           </button>
         </div>
@@ -827,7 +827,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end mb-4">
-          <button type="button" id="confirmTrialBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 transition shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+          <button type="button" id="confirmTrialBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
             ${currentTrial < trials.length - 1 ? 'Confirm Technique & Next Trial &rarr;' : 'Finish World 6 &rarr;'}
           </button>
         </div>

@@ -5,6 +5,14 @@
 import consentCopy from '../../config/copy/consent.json';
 import './recruit-utilities.css';
 
+// KEEP-ALIVE PING FOR RENDER FREE TIER
+function startKeepAlivePing() {
+  const apiBase = window.ALFAAZ_API_URL || '';
+  if (!apiBase) return;
+  fetch(apiBase + '/ping').catch(() => {});
+  setInterval(() => fetch(apiBase + '/ping').catch(() => {}), 4 * 60 * 1000);
+}
+
 let state = {
   sessionId: null,
   configHash: null,
@@ -299,6 +307,7 @@ window.addEventListener('focus', () => {
 
 // Initialization
 document.addEventListener('DOMContentLoaded', async () => {
+  startKeepAlivePing();
   restoreLocalState();
   renderScreen();
   setupGlobalControls();
@@ -380,44 +389,74 @@ export function renderScreen() {
 
 // 1. Consent Screen
 function renderConsent(app) {
-  app.innerHTML = `
-    <div class="space-y-6">
-      <div class="border-b border-[var(--grid-border)] pb-4 text-center">
-        <span class="act-badge">Onboarding & Research</span>
-        <h1 class="text-3xl font-serif text-[var(--text-primary)]">Volunteer Exploratory Assessment</h1>
+  app.innerHTML = 
+    <div class="animate-soft-fade-in max-w-2xl mx-auto py-8 px-4">
+      <div class="mb-12 text-center space-y-4">
+        <span class="text-[10px] uppercase tracking-widest text-[var(--accent-gold)] font-medium">Prologue &middot; Consent & Compliance</span>
+        <h1 class="text-3xl font-serif text-[var(--text-primary)]">The Studio Assessment</h1>
+        <p class="text-sm text-[var(--text-secondary)] italic max-w-lg mx-auto leading-relaxed">
+          Before we begin our creative exchange, we require your explicit consent to ensure a safe and transparent environment.
+        </p>
       </div>
 
-      <div class="space-y-4 text-sm text-[var(--text-primary)] leading-relaxed bg-[#faf8f5] p-5 border border-[var(--grid-border)]">
-        ${consentCopy.candidate_notice.lines.map(line => `<p>${line}</p>`).join('')}
+      <div class="space-y-10">
+        <!-- Section 1: The Experience -->
+        <div class="relative pl-6 border-l border-[var(--grid-border)]">
+          <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--bg-primary)] border border-[var(--accent-gold)]"></div>
+          <h2 class="text-lg font-serif text-[var(--text-primary)] mb-2">The Experience</h2>
+          <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
+            This is a 20-25 minute exploratory journey. You will encounter situational judgments and creative micro-tasks. 
+            There are no right or wrong answers—only different perspectives. You may pause, skip, or withdraw at any time without penalty.
+          </p>
+        </div>
+
+        <!-- Section 2: Why We Collect Data -->
+        <div class="relative pl-6 border-l border-[var(--grid-border)]">
+          <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--bg-primary)] border border-[var(--accent-green)]"></div>
+          <h2 class="text-lg font-serif text-[var(--text-primary)] mb-2">Why We Observe</h2>
+          <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
+            As you interact with the tasks, we collect behavioral telemetry (where you click, how long you pause). 
+            <strong>Why do we do this?</strong> To understand your intuitive working style. It helps us match you to the right 
+            creative roles within the collective by measuring traits like empathy, curiosity, and emotional agility. 
+            Your raw data is pseudonymous and will never be used for automated rejection or sold to third parties.
+          </p>
+        </div>
       </div>
 
-      <form id="consentForm" class="space-y-4 pt-2">
-        <div class="flex items-center gap-2 pt-2">
-          <input type="checkbox" id="ageConfirm" required class="w-4 h-4 accent-[#bd6f5d]">
-          <label for="ageConfirm" class="text-xs text-[var(--text-primary)]">${consentCopy.age_confirmation.label}</label>
+      <form id="consentForm" class="mt-16 pt-8 border-t border-[var(--grid-border)] space-y-6">
+        <div class="flex items-start gap-3">
+          <input type="checkbox" id="ageConfirm" required class="mt-1 w-4 h-4 accent-[#bd6f5d] cursor-pointer">
+          <label for="ageConfirm" class="text-sm text-[var(--text-primary)] cursor-pointer">
+            I confirm that I am 18 years of age or older, and I am participating voluntarily.
+          </label>
         </div>
-        <div class="flex items-center gap-2">
-          <input type="checkbox" id="consentAgree" required class="w-4 h-4 accent-[#bd6f5d]">
-          <label for="consentAgree" class="text-xs text-[var(--text-primary)]">${consentCopy.research_participation.label}</label>
+        
+        <div class="flex items-start gap-3">
+          <input type="checkbox" id="consentAgree" required class="mt-1 w-4 h-4 accent-[#bd6f5d] cursor-pointer">
+          <label for="consentAgree" class="text-sm text-[var(--text-primary)] cursor-pointer">
+            I explicitly consent to the collection of my behavioral telemetry during this session to help the collective understand my creative profile.
+          </label>
         </div>
 
-        <div class="pt-4 flex justify-end">
-          <button type="submit" aria-disabled="true" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition opacity-40">
-            Continue &rarr;
+        <div class="pt-8 flex justify-center sm:justify-end">
+          <button type="submit" aria-disabled="true" class="interactive-option px-8 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] opacity-40">
+            Enter the Studio &rarr;
           </button>
         </div>
       </form>
     </div>
-  `;
+  ;
 
   const ageConfirm = document.getElementById('ageConfirm');
   const consentAgree = document.getElementById('consentAgree');
   const consentSubmit = document.querySelector('#consentForm button[type="submit"]');
+
   const updateConsentSubmitState = () => {
     const ready = Boolean(ageConfirm?.checked && consentAgree?.checked);
     consentSubmit?.setAttribute('aria-disabled', String(!ready));
     consentSubmit?.classList.toggle('opacity-40', !ready);
   };
+
   ageConfirm?.addEventListener('change', updateConsentSubmitState);
   consentAgree?.addEventListener('change', updateConsentSubmitState);
   updateConsentSubmitState();
@@ -426,50 +465,37 @@ function renderConsent(app) {
     e.preventDefault();
     const btn = e.target.querySelector('button[type="submit"]');
     if (btn?.getAttribute('aria-disabled') === 'true') return;
-    const origText = btn ? btn.innerHTML : 'Continue &rarr;';
+    
+    const origText = btn ? btn.innerHTML : 'Enter the Studio &rarr;';
     if (btn) {
       btn.setAttribute('aria-disabled', 'true');
-      btn.innerHTML = 'Connecting...';
+      btn.innerHTML = 'Preparing Workspace...';
     }
 
     try {
-      const ageConfirmed = ageConfirm.checked;
-      const researchParticipationConsent = consentAgree.checked;
-      const resp = await apiFetch('/recruit/consent', {
+      const apiBase = window.ALFAAZ_API_URL || '';
+      const res = await fetch(${apiBase}/recruit/session, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          choices: { research_telemetry: researchParticipationConsent },
-          confirmed_18_plus: ageConfirmed,
-          device_class: window.innerWidth < 768 ? 'mobile' : 'desktop',
-          input_modality: 'ontouchstart' in window ? 'touch' : 'mouse'
+          choices: { research_telemetry: consentAgree?.checked }
         })
       });
-
-      if (!resp || !resp.ok) {
-        const errData = resp ? await resp.json().catch(() => ({})) : {};
-        throw new Error(errData.detail || (resp ? `Server returned ${resp.status}` : 'No response from server'));
-      }
-
-      const data = await resp.json();
-      if (data.session_id) {
-        state.sessionId = data.session_id;
-        state.configHash = data.config_hash;
-        state.worldSequence = data.world_sequence;
-        state.seeds = data.seeds;
-
-        state.screen = 'identity';
-        logEvent('consent', 'consent_accepted');
-        saveLocalState({ immediate: true });
-        renderScreen();
-      } else {
-        throw new Error('Missing session ID');
-      }
+      if (!res.ok) throw new Error(Network error: );
+      const data = await res.json();
+      state.sessionId = data.session_id;
+      sessionStorage.setItem(SESSION_STORAGE_KEY, state.sessionId);
+      
+      flushTelemetry();
+      
+      state.screen = 'identity';
+      renderScreen();
     } catch (err) {
-      alert(`Unable to initialize session: ${err.message || 'Please check connection.'}`);
+      alert(Unable to initialize session: );
       console.error(err);
       if (btn) {
-        updateConsentSubmitState();
         btn.innerHTML = origText;
+        btn.setAttribute('aria-disabled', 'false');
       }
     }
   });
