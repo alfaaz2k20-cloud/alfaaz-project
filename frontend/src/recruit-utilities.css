@@ -302,6 +302,9 @@
   .hover\:text-\[var\(--text-primary\)\]:hover {
     color: var(--text-primary);
   }
+  .hover\:underline:hover {
+    text-decoration-line: underline;
+  }
 }
 .focus\:border-\[var\(--accent-gold\)\]:focus {
   border-color: var(--accent-gold);
