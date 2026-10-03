@@ -134,96 +134,113 @@ async function loadSessionDetail(sessionId) {
 
   try {
     const token = localStorage.getItem('alfaaz_token');
-    const resp = await fetch(`${apiBase}/recruit/research/session/${sessionId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const url = `${apiBase}/recruit/research/sessions/${sessionId}`;
+    const resp = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
 
+    if (!resp.ok) throw new Error("Failed to load dossier");
     const data = await resp.json();
-    const meta = data.metadata;
-    const evidence = data.evidence_by_parameter;
 
-    const paramCardsHtml = Object.keys(evidence).map(pKey => {
-      const p = evidence[pKey];
-      const pTitle = pKey.replace(/_/g, ' ').toUpperCase();
-      const refDist = p.random_responder_reference || {};
+    const meta = data.metadata || {};
+    const applicant = meta.applicant || {};
+    const comparisons = data.measurement_comparisons || {};
+    
+    const candidateName = window.escapeHtml(applicant.full_name || 'Candidate');
+    const candidateEmail = window.escapeHtml(applicant.email || '—');
+    const candidatePhone = window.escapeHtml(applicant.phone_or_contact || '—');
+    const durationMin = meta.duration_minutes !== null ? `${meta.duration_minutes} min` : 'In progress';
 
-      return `
-        <div class="param-card space-y-3">
-          <div class="flex justify-between items-start border-b border-[var(--grid-border)] pb-2">
-            <div>
-              <span class="badge-neutral">${pTitle}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-[var(--text-secondary)]">SJT Band:</span>
-              <strong class="text-xs text-[var(--accent-gold)]">${p.sjt_band || 'UNAVAILABLE'}</strong>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4 text-xs">
-            <div class="bg-[#faf8f5] p-3 border border-[var(--grid-border)] space-y-1">
-              <div class="font-semibold text-[10px] text-[var(--text-secondary)] uppercase">SJT Score Metrics</div>
-              <div>Raw Score: <strong>${p.sjt_raw !== null ? p.sjt_raw : '—'}</strong> (Span: ${p.sjt_span})</div>
-              <div>Relative Range: [${p.sjt_min} .. ${p.sjt_max}]</div>
-              <div class="text-[10px] text-[var(--text-secondary)] mt-1">Random Baseline: LOW ${refDist.LOW || '—'} / MOD ${refDist.MODERATE || '—'} / HIGH ${refDist.HIGH || '—'}</div>
-            </div>
-
-            <div class="bg-[#faf8f5] p-3 border border-[var(--grid-border)] space-y-1">
-              <div class="font-semibold text-[10px] text-[var(--text-secondary)] uppercase">Game Observational Evidence</div>
-              <div>Status: <span class="badge-neutral">${p.game_status}</span></div>
-              <div>Band: <span class="badge-neutral">${p.game_band}</span></div>
-              <div>Consistency: <span class="badge-neutral">${p.consistency}</span></div>
-              <div>Relationship with SJT: <span class="badge-neutral">${p.relationship}</span></div>
-              <div>Confidence Level: <span class="badge-neutral">${p.confidence}</span></div>
-            </div>
-          </div>
-
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed border-t border-[var(--grid-border)] pt-2">
-            <strong>Observed Behavioral Note:</strong> ${p.observed_behavior || 'Completed micro-task sequence.'}
-          </div>
-        </div>
-      `;
+    const bandOrder = { "LOW": 0, "MODERATE": 1, "HIGH": 2 };
+    let totalScore = 0;
+    let paramCount = 0;
+    
+    const paramRows = Object.entries(comparisons).map(([parameter, comp]) => {
+        const sjtBand = comp.sjt_band || 'MODERATE';
+        const gameBand = comp.game_band || 'MODERATE';
+        
+        const sjtVal = bandOrder[sjtBand] !== undefined ? bandOrder[sjtBand] : 1;
+        const gameVal = bandOrder[gameBand] !== undefined ? bandOrder[gameBand] : 1;
+        
+        totalScore += (sjtVal + gameVal);
+        paramCount += 2;
+        
+        const delta = Math.abs(sjtVal - gameVal);
+        let interpretation = "Strong Reliability - Consistent across methods.";
+        let color = "#2e7d32";
+        
+        if (delta === 1) {
+            interpretation = "Moderate Divergence - Acceptable variation in context.";
+            color = "#b5832a";
+        } else if (delta > 1) {
+            interpretation = "High Divergence - Requires deeper interview probing.";
+            color = "#c62828";
+        }
+        
+        return `
+        <tr class="border-b border-[var(--grid-border)]">
+            <td class="p-3 font-medium capitalize text-[var(--text-primary)]">${parameter.replace(/_/g, ' ')}</td>
+            <td class="p-3 text-[var(--text-secondary)]">${sjtBand}</td>
+            <td class="p-3 text-[var(--text-secondary)]">${gameBand}</td>
+            <td class="p-3 font-bold" style="color: ${color};">${delta}</td>
+            <td class="p-3" style="color: ${color};">${interpretation}</td>
+        </tr>
+        `;
     }).join('');
+    
+    const maxPossible = paramCount * 2;
+    let finalScorePercent = 0;
+    if (maxPossible > 0) {
+        finalScorePercent = Math.round((totalScore / maxPossible) * 100);
+    }
+    
+    let overallLabel = "Developing Candidate";
+    if (finalScorePercent >= 75) overallLabel = "Highly Recommended";
+    else if (finalScorePercent >= 50) overallLabel = "Recommended";
 
     container.innerHTML = `
-      <div class="space-y-6">
-        <div class="flex justify-between items-center">
-          <button id="backToListBtn" class="text-xs uppercase tracking-wider text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
-            &larr; Back to Sessions List
-          </button>
-          <span class="font-mono text-xs text-[var(--text-secondary)]">${meta.session_id}</span>
+      <div class="mb-4">
+        <button onclick="loadSessionsList()" class="text-xs uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--accent-gold)]">&larr; Back to Registry</button>
+      </div>
+      
+      <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-6 mb-6">
+        <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)] mb-4">1. Candidate Overview</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Name</strong>${candidateName}</div>
+          <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Email</strong>${candidateEmail}</div>
+          <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Contact</strong>${candidatePhone}</div>
+          <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Duration</strong>${durationMin}</div>
         </div>
+      </div>
+      
+      <div class="bg-white border border-[var(--grid-border)] p-8 mb-6 text-center">
+        <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)] mb-2">Overall Assessment Score</h3>
+        <div class="text-5xl font-serif text-[var(--text-primary)] mb-2">${finalScorePercent}/100</div>
+        <div class="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">${overallLabel}</div>
+      </div>
 
-        <div class="bg-white border border-[var(--grid-border)] p-6 space-y-4">
-          <div class="flex justify-between items-start border-b border-[var(--grid-border)] pb-4">
-            <div>
-              <h2 class="text-xs uppercase tracking-widest text-[var(--accent-gold)]">Evidence by parameter</h2>
-              <h1 class="text-2xl font-serif text-[var(--text-primary)] mt-1">${meta.applicant.full_name || 'Anonymous'}</h1>
-              <p class="text-xs text-[var(--text-secondary)]">${meta.applicant.email || ''}</p>
-            </div>
-            <div class="text-right text-xs text-[var(--text-secondary)]">
-              <div>Created: ${meta.created_at ? new Date(meta.created_at).toLocaleString() : '—'}</div>
-              <div>Status: <span class="badge-neutral">${meta.status}</span></div>
-            </div>
-          </div>
-
-          <div class="p-4 bg-amber-50/50 border border-[var(--accent-gold)]/30 text-xs text-[var(--text-primary)] leading-relaxed space-y-1">
-            <div><strong>Methodological Note:</strong> ${meta.safeguards.ipsative_note}</div>
-            <div class="text-[11px] text-[var(--text-secondary)] italic">${meta.safeguards.sjt_emphasis_note || "Relative emphasis in this SJT's trade-offs: higher / middle / lower."}</div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            ${paramCardsHtml}
-          </div>
+      <div class="mb-6">
+        <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)] mb-3">2. Parameter Construct Analysis & Deltas</h3>
+        <p class="text-xs text-[var(--text-secondary)] mb-4 leading-relaxed">
+          This table compares the candidate's self-reported Situational Judgment (SJT) with their actual performative tasks (Games). The Delta measures reliability between what they said and what they did.
+        </p>
+        <div class="overflow-x-auto border border-[var(--grid-border)] bg-white">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-[#f0eeea] text-xs uppercase tracking-wider text-[var(--text-secondary)]">
+              <tr>
+                <th class="p-3">Parameter</th>
+                <th class="p-3">SJT Score</th>
+                <th class="p-3">Games Score</th>
+                <th class="p-3">Delta</th>
+                <th class="p-3">Interpretation</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${paramRows}
+            </tbody>
+          </table>
         </div>
       </div>
     `;
-
-    document.getElementById('backToListBtn')?.addEventListener('click', () => {
-      loadSessionsList();
-    });
-
-    if (window.lucide) window.lucide.createIcons();
   } catch (err) {
-    container.innerHTML = `<div class="p-8 text-center text-red-600">Failed to load session details: ${err.message}</div>`;
+    container.innerHTML = `<div class="p-8 text-center text-red-600">Failed to load dossier.</div>`;
   }
 }

@@ -478,323 +478,119 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="padding: 3rem 1rem; text-align: center; color: var(--text-secondary);">
           <div class="w-8 h-8 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-3" style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
           <div style="font-size: 13px; font-family: var(--font-heading);">Retrieving Candidate Dossier...</div>
-          <div style="font-size: 11px; margin-top: 4px;">Loading telemetry records from research registry.</div>
         </div>
       `;
       document.getElementById('regModal').classList.add('open');
-
+  
       try {
-        const res = await fetchCandidateDossier(sessionId);
-        if (!res) {
-          body.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--accent-red);">Session expired or network error. Please refresh and try again.</div>';
-          return;
-        }
-
+        const res = await window.globalApiFetch(`/recruit/research/session/${sessionId}`);
+        if (!res || !res.ok) throw new Error("Failed to load dossier");
         const data = await res.json();
-        if (!res.ok) {
-          body.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--accent-red); font-size:13px;">Error loading dossier (${res.status}): ${window.escapeHtml(data.detail || 'Server error')}<br><br><button class="action-btn gold" onclick="viewCandidateDossier('${sessionId}')" style="font-size:11px; padding:0.5rem 1rem;">Retry</button></div>`;
-          return;
-        }
-
+        
         const meta = data.metadata || {};
         const applicant = meta.applicant || {};
-        const consent = meta.consent || {};
         const ev = data.evidence_by_parameter || {};
-        const feats = data.features || [];
-        const flags = data.data_quality_flags || [];
-        const taskRecords = data.task_records || [];
         const comparisons = data.measurement_comparisons || {};
-        const psychometric = data.psychometric_status || {};
-        const taskStatement = data.task_records_statement || 'Descriptive task counts; not a score, not norm-referenced, and not a basis for automated decisions.';
-
+        
         const candidateName = window.escapeHtml(applicant.full_name || 'Candidate');
         const candidateEmail = window.escapeHtml(applicant.email || '—');
         const candidatePhone = window.escapeHtml(applicant.phone_or_contact || '—');
-        const consentDateStr = consent.timestamp ? new Date(consent.timestamp).toLocaleString() : (meta.created_at ? new Date(meta.created_at).toLocaleString() : '—');
-        const dpdpVersion = window.escapeHtml(consent.consent_text_version || '1.0');
-        const durationMin = meta.duration_minutes !== null && meta.duration_minutes !== undefined ? `${meta.duration_minutes} min` : 'In progress';
-        const totalEvents = meta.telemetry_summary?.total_events ?? 'Unavailable';
-        const sessionComplete = ['COMPLETE', 'COMPLETED'].includes(meta.status);
-
-        document.getElementById('modalTitle').textContent = `${candidateName} — Assessment Evidence Dossier`;
-
-        // 1. Candidate Identity & Consent
-        const section1Html = `
-          <div style="background:#faf8f5; border:1px solid var(--grid-border); padding:1.25rem; margin-bottom:1.5rem;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.75rem;">1. Candidate Identity & Consent Verification</div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; font-size:12px;">
-              <div><strong>Full Name:</strong> ${candidateName}</div>
-              <div><strong>Email:</strong> ${candidateEmail}</div>
-              <div><strong>Contact / Phone:</strong> ${candidatePhone}</div>
-              <div><strong>Session ID:</strong> <span style="font-family:monospace; font-size:11px;">${sessionId}</span></div>
-              <div><strong>Session Status:</strong> <span class="badge ${sessionComplete ? 'badge-approved' : 'badge-pending'}" style="font-size:9px;">${window.escapeHtml(meta.status || 'ACTIVE')}</span></div>
-              <div><strong>Duration:</strong> ${durationMin}</div>
-              <div><strong>Consent Recorded:</strong> ${consentDateStr}</div>
-              <div><strong>DPDP Notice Version:</strong> <span style="font-family:monospace; font-size:11px;">v${dpdpVersion}</span></div>
-              <div><strong>Age Confirmation:</strong> Confirmed 18+</div>
-            </div>
-          </div>
-        `;
-
-        // 2. 7 Parameter Summary (from SJT)
-        const PARAM_NAMES = {
-          'empathy': 'Empathy',
-          'conscientiousness': 'Conscientiousness',
-          'collaborative_spirit': 'Collaborative Spirit',
-          'emotional_agility': 'Emotional Agility',
-          'curiosity': 'Curiosity',
-          'creative_initiative': 'Creative Initiative',
-          'motivation': 'Motivation'
-        };
-
-        const mapBand = (rawBand) => {
-          if (!rawBand) return 'DEVELOPING';
-          const b = rawBand.toUpperCase();
-          if (b === 'HIGH') return 'HIGH';
-          if (b === 'MODERATE' || b === 'BALANCED') return 'BALANCED';
-          return 'DEVELOPING';
-        };
-
-        let paramRows = '';
-        const paramKeys = Object.keys(ev);
-        if (paramKeys.length > 0) {
-          paramRows = paramKeys.map(pKey => {
-            const p = ev[pKey];
-            const pName = PARAM_NAMES[pKey] || pKey.replace(/_/g, ' ').toUpperCase();
-            const bandCategory = mapBand(p.sjt_band);
-            const bandColor = bandCategory === 'HIGH' ? '#2e7d32' : (bandCategory === 'BALANCED' ? '#b5832a' : '#555');
-
+        const durationMin = meta.duration_minutes !== null ? `${meta.duration_minutes} min` : 'In progress';
+  
+        // Calculate single overall score based on SJT & Game bands
+        const bandOrder = { "LOW": 0, "MODERATE": 1, "HIGH": 2 };
+        let totalScore = 0;
+        let paramCount = 0;
+        
+        const paramRows = Object.entries(comparisons).map(([parameter, comp]) => {
+            const sjtBand = comp.sjt_band || 'MODERATE';
+            const gameBand = comp.game_band || 'MODERATE';
+            
+            const sjtVal = bandOrder[sjtBand] !== undefined ? bandOrder[sjtBand] : 1;
+            const gameVal = bandOrder[gameBand] !== undefined ? bandOrder[gameBand] : 1;
+            
+            totalScore += (sjtVal + gameVal);
+            paramCount += 2;
+            
+            const delta = Math.abs(sjtVal - gameVal);
+            let interpretation = "Strong Reliability - Consistent across methods.";
+            let color = "#2e7d32";
+            
+            if (delta === 1) {
+                interpretation = "Moderate Divergence - Acceptable variation in context.";
+                color = "#b5832a";
+            } else if (delta > 1) {
+                interpretation = "High Divergence - Requires deeper interview probing.";
+                color = "#c62828";
+            }
+            
             return `
-              <div style="background:#ffffff; border:1px solid var(--grid-border); padding:1rem; margin-bottom:0.75rem;">
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--grid-border); padding-bottom:0.5rem; margin-bottom:0.5rem;">
-                  <span style="font-size:12px; font-weight:600; color:var(--text-primary);">${pName}</span>
-                  <span style="font-size:11px; font-weight:700; color:${bandColor}; letter-spacing:0.5px;">${bandCategory}</span>
-                </div>
-                <div style="font-size:11px; color:var(--text-secondary); line-height:1.5;">
-                  ${window.escapeHtml(p.observed_behavior || 'Behavioral trade-off indicator recorded during situational judgment scenarios.')}
-                </div>
-              </div>
+            <tr style="border-bottom:1px solid var(--grid-border); font-size:11px;">
+                <td style="padding:0.8rem; font-weight: 500; text-transform: capitalize;">${parameter.replace(/_/g, ' ')}</td>
+                <td style="padding:0.8rem;">${sjtBand}</td>
+                <td style="padding:0.8rem;">${gameBand}</td>
+                <td style="padding:0.8rem; font-weight: bold; color: ${color};">${delta}</td>
+                <td style="padding:0.8rem; color: ${color};">${interpretation}</td>
+            </tr>
             `;
-          }).join('');
-        } else {
-          paramRows = `<div style="padding:1rem; text-align:center; color:var(--text-secondary); font-size:11px; background:#fff; border:1px solid var(--grid-border);">Situational Judgment responses are currently being recorded for this session.</div>`;
-        }
-
-        const section2Html = `
-          <div style="margin-bottom:1.5rem;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.5rem;">2. Seven Parameter Summary (Situational Judgment)</div>
-            <div style="font-size:11px; background:rgba(189,111,93,0.08); border-left:3px solid var(--accent-gold); padding:0.75rem 1rem; margin-bottom:1rem; line-height:1.5; color:var(--text-primary);">
-              <strong>Notice:</strong> Parameters are derived from Situational Judgment responses. These are provisional ipsative indicators, NOT standardized scores.
-            </div>
-            ${paramRows}
-          </div>
-        `;
-
-        // 3. Active Feature Extractors (2 of 21: A1, A2)
-        const activeFeats = feats.filter(f => !f.is_quarantined);
-        const a1Feat = activeFeats.find(f => f.mini_game === 'A1') || { value_raw: '—', label: 'Attention to Detail (A1 Folio Sorting)' };
-        const a2Feat = activeFeats.find(f => f.mini_game === 'A2') || { value_raw: '—', label: 'Exception Handling (A2 Fragile Leaf)' };
-
-        const formatRaw = (val) => (val !== null && val !== undefined && typeof val === 'number') ? (Number.isInteger(val) ? val : val.toFixed(2)) : (val || '—');
-
-        const section3Html = `
-          <div style="margin-bottom:1.5rem;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.5rem;">3. Active Feature Extractors (2 of 21)</div>
-            <div style="font-size:11px; background:#eef7f9; border-left:3px solid #3182ce; padding:0.75rem 1rem; margin-bottom:1rem; line-height:1.5; color:#1a365d;">
-              <strong>Notice:</strong> Only A1 and A2 are active. The remaining 19 extractors are pending derivation under Design Freeze v1.1 pending empirical calibration.
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-              <div style="background:#ffffff; border:1px solid var(--grid-border); padding:1rem;">
-                <div style="font-size:10px; font-family:monospace; color:var(--accent-gold); font-weight:600; text-transform:uppercase;">A1 · The Archive</div>
-                <div style="font-size:12px; font-weight:600; color:var(--text-primary); margin:2px 0 6px 0;">Attention to Detail (Sorting Precision)</div>
-                <div style="font-size:11px; color:var(--text-secondary);">Raw Metric: <strong style="color:var(--text-primary);">${formatRaw(a1Feat.value_raw)}</strong></div>
-                <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">Observations: 5 classification trials · Status: ACTIVE</div>
-              </div>
-              <div style="background:#ffffff; border:1px solid var(--grid-border); padding:1rem;">
-                <div style="font-size:10px; font-family:monospace; color:var(--accent-gold); font-weight:600; text-transform:uppercase;">A2 · The Archive</div>
-                <div style="font-size:12px; font-weight:600; color:var(--text-primary); margin:2px 0 6px 0;">Exception Handling (Fragile Foliar Review)</div>
-                <div style="font-size:11px; color:var(--text-secondary);">Raw Metric: <strong style="color:var(--text-primary);">${formatRaw(a2Feat.value_raw)}</strong></div>
-                <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">Observations: 4 exception trials · Status: ACTIVE</div>
-              </div>
-            </div>
-          </div>
-        `;
-
-        // 4. Pending Feature Extractors (19 of 21)
-        const quarantinedFeats = feats.filter(f => f.is_quarantined);
-        let qTableRows = '';
-        if (quarantinedFeats.length > 0) {
-          qTableRows = quarantinedFeats.map(q => `
-            <tr style="border-bottom:1px solid var(--grid-border); font-size:11px;">
-              <td style="padding:0.5rem; color:var(--text-primary); font-weight:500;">${q.world_name}</td>
-              <td style="padding:0.5rem; font-family:monospace; color:var(--text-secondary);">${q.mini_game}</td>
-              <td style="padding:0.5rem; color:var(--text-primary);">${q.label || q.feature_name}</td>
-              <td style="padding:0.5rem; text-align:center;"><span style="font-size:9px; background:#f0eeea; color:#666; padding:2px 6px; border:1px solid var(--grid-border); font-weight:600; letter-spacing:0.5px;">NOT YET DERIVED</span></td>
-              <td style="padding:0.5rem; font-size:10px; color:var(--text-secondary); font-style:italic;">Awaiting calibration data (Design Freeze v1.1)</td>
-            </tr>
-          `).join('');
-        }
-
-        const section4Html = `
-          <div style="margin-bottom:1.5rem;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.5rem;">4. Pending Feature Extractors (19 of 21)</div>
-            <div style="overflow-x:auto; border:1px solid var(--grid-border); background:#ffffff;">
-              <table style="width:100%; border-collapse:collapse; text-align:left;">
-                <thead>
-                  <tr style="background:#f0eeea; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary); border-bottom:1px solid var(--grid-border);">
-                    <th style="padding:0.5rem;">World</th>
-                    <th style="padding:0.5rem;">ID</th>
-                    <th style="padding:0.5rem;">Extractor Name</th>
-                    <th style="padding:0.5rem; text-align:center;">Badge</th>
-                    <th style="padding:0.5rem;">Quarantine Policy</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${qTableRows || '<tr><td colspan="5" style="padding:1rem; text-align:center; font-size:11px; color:var(--text-secondary);">Quarantine catalog synchronized under Design Freeze v1.1.</td></tr>'}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `;
-
-        // 5. 21-Game Descriptive Task Records
-        let trRows = '';
-        if (taskRecords.length > 0) {
-          trRows = taskRecords.map(r => `
-            <tr style="border-bottom:1px solid var(--grid-border); font-size:11px;">
-              <td style="padding:0.5rem; font-weight:500; color:var(--text-primary);">${window.escapeHtml(r.world_name || r.world_id)}</td>
-              <td style="padding:0.5rem; color:var(--text-secondary);"><span style="font-family:monospace; font-size:10px; background:#f0eeea; padding:1px 4px; border-radius:2px; margin-right:4px;">${window.escapeHtml(r.game_id)}</span> ${window.escapeHtml(r.game_name || r.game_id)}</td>
-              <td style="padding:0.5rem; color:var(--text-primary);">${window.escapeHtml(r.display_text)}</td>
-              <td style="padding:0.5rem; text-align:right; font-family:monospace; font-size:10px; color:${r.status === 'RECORDED' ? '#2e7d32' : 'var(--text-secondary)'}; font-weight:600;">${r.status}</td>
-            </tr>
-          `).join('');
-        }
-
-        const section5Html = `
-          <div style="margin-bottom:1.5rem;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.25rem;">5. 21-Game Descriptive Task Records</div>
-            <p style="font-size:11px; color:var(--text-secondary); font-style:italic; margin-bottom:0.5rem;">${taskStatement}</p>
-            <div style="overflow-x:auto; border:1px solid var(--grid-border); background:#ffffff;">
-              <table style="width:100%; border-collapse:collapse; text-align:left;">
-                <thead>
-                  <tr style="background:#f0eeea; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary); border-bottom:1px solid var(--grid-border);">
-                    <th style="padding:0.5rem;">World</th>
-                    <th style="padding:0.5rem;">Interactive Task</th>
-                    <th style="padding:0.5rem;">Factual Task Observation</th>
-                    <th style="padding:0.5rem; text-align:right;">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${trRows || '<tr><td colspan="4" style="padding:1rem; text-align:center; font-size:11px; color:var(--text-secondary);">Task records will be logged upon game battery completion.</td></tr>'}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `;
-
-        // 6. Data Quality Flags & Telemetry Integrity
-        const section6Html = `
-          <div style="margin-bottom:1.5rem; background:#faf8f5; border:1px solid var(--grid-border); padding:1.25rem;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.75rem;">6. Data Quality Flags & Telemetry Integrity</div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; font-size:12px; margin-bottom:0.75rem;">
-              <div><strong>Total Duration:</strong> ${durationMin}</div>
-              <div><strong>Raw Events Logged:</strong> ${totalEvents}</div>
-              <div><strong>Throttling:</strong> Not reported by this dossier endpoint</div>
-              <div><strong>Data quality flags:</strong> ${flags.length} recorded</div>
-            </div>
-            ${flags.length > 0 ? `
-              <div style="margin-top:0.75rem; padding:0.75rem; background:#fff3e0; border:1px solid #ffe0b2; font-size:11px;">
-                <strong style="color:#e65100; text-transform:uppercase;">Recorded Data Notices:</strong>
-                <ul style="margin-top:0.25rem; margin-left:1.2rem; list-style-type:disc;">
-                  ${flags.map(fl => `<li><span style="font-family:monospace;">${fl.scope}:</span> ${fl.flag} (${fl.detail || 'Standard observation'})</li>`).join('')}
-                </ul>
-              </div>
-            ` : '<div style="font-size:11px; color:var(--text-secondary);">No data-quality flags are recorded. This does not independently verify telemetry completeness.</div>'}
-          </div>
-        `;
-
-        // 7. Game-level measurement status and empirical calibration indicators
-        const comparisonsByGame = new Map();
-        Object.entries(comparisons).forEach(([parameter, comparison]) => {
-          (comparison.mini_games || []).forEach(game => comparisonsByGame.set(game.mini_game, { parameter, game }));
-        });
-        const gameMeasurementRows = taskRecords.map(record => {
-          const entry = comparisonsByGame.get(record.game_id);
-          const measure = entry?.game;
-          const gameFeatures = measure?.features || [];
-          const value = measure?.feature_status === 'QUARANTINED'
-            ? 'Evidence not yet derived'
-            : gameFeatures.length
-            ? gameFeatures.map(feature => `${window.escapeHtml(feature.name)}: ${window.escapeHtml(formatRaw(feature.value))}`).join('<br>')
-            : 'No feature derived';
-          const reliability = psychometric.reliability === 'ESTIMATED' ? 'See study estimate' : 'Not estimated';
-          const validity = psychometric.validity === 'ESTIMATED' ? 'See study estimate' : 'Not estimated';
-          return `<tr style="border-bottom:1px solid var(--grid-border); font-size:11px;">
-            <td style="padding:0.5rem;">${window.escapeHtml(record.world_name || record.world_id)}</td>
-            <td style="padding:0.5rem; font-family:monospace;">${window.escapeHtml(record.game_id)}</td>
-            <td style="padding:0.5rem;">${window.escapeHtml(entry?.parameter || '—')}</td>
-            <td style="padding:0.5rem;">${window.escapeHtml(measure?.feature_status || 'NOT_DERIVED')}</td>
-            <td style="padding:0.5rem;">${value}</td>
-            <td style="padding:0.5rem;">${reliability}</td>
-            <td style="padding:0.5rem;">${validity}</td>
-          </tr>`;
         }).join('');
-        const constructRows = Object.entries(comparisons).map(([parameter, comparison]) => {
-          const within = comparison.within_construct_pairwise_deltas || [];
-          const withinText = within.length
-            ? within.map(delta => `${window.escapeHtml(delta.left_game)}–${window.escapeHtml(delta.right_game)}: ${delta.delta_bands} band(s)`).join('<br>')
-            : 'Not available until calibrated game bands exist';
-          const withinTolerance = comparison.within_construct_delta_tolerance_bands == null
-            ? 'Not set while uncalibrated'
-            : `${comparison.within_construct_delta_tolerance_bands} band(s)`;
-          const sjtDelta = comparison.sjt_game_delta_bands == null ? 'Not available until both methods are calibrated' : `${comparison.sjt_game_delta_bands} band(s)`;
-          return `<tr style="border-bottom:1px solid var(--grid-border); font-size:11px;">
-            <td style="padding:0.5rem;">${window.escapeHtml(parameter.replace(/_/g, ' '))}</td>
-            <td style="padding:0.5rem;">${withinText}</td>
-            <td style="padding:0.5rem;">${withinTolerance}</td>
-            <td style="padding:0.5rem;">${window.escapeHtml(comparison.sjt_band || '—')} / ${window.escapeHtml(comparison.game_band || '—')}</td>
-            <td style="padding:0.5rem;">${sjtDelta}</td>
-            <td style="padding:0.5rem;">${window.escapeHtml(comparison.sjt_game_delta_tolerance == null ? 'Not set' : comparison.sjt_game_delta_tolerance)}</td>
-          </tr>`;
-        }).join('');
-        const section7Html = `
-          <div style="margin-bottom:1.5rem;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.5rem;">7. Game Measurement & Calibration</div>
-            <div style="font-size:11px; background:#fff3e0; border-left:3px solid #bd6f5d; padding:0.75rem 1rem; margin-bottom:1rem; line-height:1.5;">
-              Reliability and validity are study-level estimates, not candidate-level scores. Current calibration: <strong>${window.escapeHtml(psychometric.calibration_status || 'UNKNOWN')}</strong>; regression: <strong>${window.escapeHtml(psychometric.regression || 'NOT_RUN')}</strong>. A single combined score is deliberately unavailable until its measurement model and thresholds are empirically calibrated.
-            </div>
-            <div style="overflow-x:auto; border:1px solid var(--grid-border); background:#fff; margin-bottom:1rem;">
-              <table style="width:100%; border-collapse:collapse; text-align:left; min-width:760px;">
-                <thead><tr style="background:#f0eeea; font-size:10px; text-transform:uppercase; color:var(--text-secondary);"><th style="padding:0.5rem;">World</th><th style="padding:0.5rem;">Game</th><th style="padding:0.5rem;">Intended construct</th><th style="padding:0.5rem;">Extractor state</th><th style="padding:0.5rem;">Observed feature(s)</th><th style="padding:0.5rem;">Reliability</th><th style="padding:0.5rem;">Validity</th></tr></thead>
-                <tbody>${gameMeasurementRows || '<tr><td colspan="7" style="padding:1rem;">Game catalog unavailable.</td></tr>'}</tbody>
-              </table>
-            </div>
-            <div style="overflow-x:auto; border:1px solid var(--grid-border); background:#fff;">
-              <table style="width:100%; border-collapse:collapse; text-align:left; min-width:760px;">
-                <thead><tr style="background:#f0eeea; font-size:10px; text-transform:uppercase; color:var(--text-secondary);"><th style="padding:0.5rem;">Construct</th><th style="padding:0.5rem;">Game-to-game delta</th><th style="padding:0.5rem;">Acceptable delta</th><th style="padding:0.5rem;">SJT / game bands</th><th style="padding:0.5rem;">SJT-to-game delta</th><th style="padding:0.5rem;">Acceptable delta</th></tr></thead>
-                <tbody>${constructRows || '<tr><td colspan="6" style="padding:1rem;">Construct comparisons unavailable.</td></tr>'}</tbody>
-              </table>
-            </div>
-            <div style="font-size:10px; color:var(--text-secondary); margin-top:0.5rem;">Delta is a descriptive band distance, not a validity statistic. Thresholds must be prespecified and empirically justified; cross-method tolerance is currently unset. ${window.escapeHtml(psychometric.reliability_note || '')} ${window.escapeHtml(psychometric.validity_note || '')}</div>
-          </div>
-        `;
-
+        
+        const maxPossible = paramCount * 2;
+        let finalScorePercent = 0;
+        if (maxPossible > 0) {
+            finalScorePercent = Math.round((totalScore / maxPossible) * 100);
+        }
+        
+        let overallLabel = "Developing Candidate";
+        if (finalScorePercent >= 75) overallLabel = "Highly Recommended";
+        else if (finalScorePercent >= 50) overallLabel = "Recommended";
+  
         body.innerHTML = `
-          ${section1Html}
-          ${section2Html}
-          ${section3Html}
-          ${section4Html}
-          ${section5Html}
-          ${section6Html}
-          ${section7Html}
+          <div style="background:#faf8f5; border:1px solid var(--grid-border); padding:1.25rem; margin-bottom:1.5rem;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.75rem;">1. Candidate Overview</div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; font-size:12px;">
+              <div><strong>Name:</strong> ${candidateName}</div>
+              <div><strong>Email:</strong> ${candidateEmail}</div>
+              <div><strong>Contact:</strong> ${candidatePhone}</div>
+              <div><strong>Duration:</strong> ${durationMin}</div>
+            </div>
+          </div>
+          
+          <div style="background:#fff; border:1px solid var(--grid-border); padding:2rem; margin-bottom:1.5rem; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:1rem;">Overall Assessment Score</div>
+            <div style="font-size:3rem; font-family:var(--font-heading); color:var(--text-primary);">${finalScorePercent}/100</div>
+            <div style="font-size:13px; font-weight:500; color:var(--text-secondary); margin-top:0.5rem; letter-spacing: 1px; text-transform: uppercase;">${overallLabel}</div>
+          </div>
+  
+          <div style="margin-bottom:1.5rem;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.75rem;">2. Parameter Construct Analysis & Deltas</div>
+            <p style="font-size:11px; color:var(--text-secondary); margin-bottom:1rem;">
+              This table compares the candidate's self-reported Situational Judgment (SJT) with their actual performative tasks (Games). The Delta measures reliability between what they said and what they did.
+            </p>
+            <div style="overflow-x:auto; border:1px solid var(--grid-border); background:#fff;">
+              <table style="width:100%; border-collapse:collapse; text-align:left;">
+                <thead>
+                  <tr style="background:#f0eeea; font-size:10px; text-transform:uppercase; color:var(--text-secondary);">
+                    <th style="padding:0.8rem;">Parameter</th>
+                    <th style="padding:0.8rem;">SJT Score</th>
+                    <th style="padding:0.8rem;">Games Score</th>
+                    <th style="padding:0.8rem;">Delta</th>
+                    <th style="padding:0.8rem;">Interpretation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${paramRows}
+                </tbody>
+              </table>
+            </div>
+          </div>
         `;
+  
       } catch (err) {
-        console.error('Candidate dossier load error:', err);
-        const errMsg = err?.message || 'Please check server connection.';
-        body.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--accent-red);">Failed to load candidate dossier.<br><span style="font-size:11px; color:var(--text-secondary); margin-top:6px; display:inline-block;">${window.escapeHtml(errMsg)}</span><br><br><button class="action-btn gold" onclick="viewCandidateDossier('${sessionId}')" style="font-size:11px; padding:0.5rem 1rem;">Retry</button></div>`;
+        body.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--accent-red);">Failed to load candidate dossier.<br><button class="action-btn gold" onclick="viewCandidateDossier('${sessionId}')" style="margin-top:1rem;">Retry</button></div>`;
       }
-    };
-
-    // INIT
+  };
+  
+// INIT
     window.switchTab('events');
 });

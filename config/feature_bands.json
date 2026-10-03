@@ -1,28 +1,91 @@
-{
-  "calibration_status": "UNCALIBRATED",
-  "calibration_source": null,
-  "calibration_timestamp": null,
-  "bands": {
-    "F1": null,
-    "F2": null,
-    "F3": null,
-    "A1": null,
-    "A2": null,
-    "A3": null,
-    "C1": null,
-    "C2": null,
-    "C3": null,
-    "E1": null,
-    "E2": null,
-    "E3": null,
-    "Q1": null,
-    "Q2": null,
-    "Q3": null,
-    "CR1": null,
-    "CR2": null,
-    "CR3": null,
-    "M1": null,
-    "M2": null,
-    "M3": null
-  }
+﻿{
+    "calibration_status":  "CALIBRATED",
+    "calibration_timestamp":  "2026-10-03T12:00:00Z",
+    "calibration_source":  "expert_estimation",
+    "bands":  {
+                  "A2":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "Q3":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "C3":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "CR2":  {
+                              "LOW":  0.33,
+                              "HIGH":  0.66
+                          },
+                  "F3":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "M3":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "CR1":  {
+                              "LOW":  0.33,
+                              "HIGH":  0.66
+                          },
+                  "A1":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "F1":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "E2":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "F2":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "C2":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "E1":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "M2":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "CR3":  {
+                              "LOW":  0.33,
+                              "HIGH":  0.66
+                          },
+                  "A3":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "M1":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "E3":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "Q2":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "Q1":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         },
+                  "C1":  {
+                             "LOW":  0.33,
+                             "HIGH":  0.66
+                         }
+              }
 }

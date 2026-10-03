@@ -1030,6 +1030,18 @@ function renderComplete(app) {
       <p class="text-sm text-[var(--text-secondary)] max-w-lg mx-auto leading-relaxed">
         Thank you for your time, care, and attention. Your responses have been safely submitted to the Alfaaz Collective research registry.
       </p>
+      
+      <div class="max-w-md mx-auto mt-8 p-5 bg-[#faf8f5] border border-[var(--grid-border)]">
+        <h2 class="text-lg font-serif text-[var(--text-primary)] mb-2">Next Step: Interview Call</h2>
+        <p class="text-xs text-[var(--text-secondary)] mb-4">
+          Please schedule a Google Meet call with us to discuss your application. Select a date <strong>other than today</strong>.
+        </p>
+        <a href="mailto:alfaaz2k20@gmail.com?subject=Volunteer%20Interview%20Call%20Request&body=Hi%20Alfaaz%20Team%2C%0D%0A%0D%0AI%20have%20completed%20the%20volunteer%20assessment.%20I%20would%20like%20to%20schedule%20a%20Google%20Meet%20call%20for%20my%20interview.%0D%0A%0D%0AProposed%20Date%20%28Please%20choose%20a%20future%20date%2C%20not%20today%29%3A%20%5BInsert%20Date%5D%0D%0AProposed%20Time%3A%20%5BInsert%20Time%5D%0D%0A%0D%0AThank%20you%2C%0D%0A%5BYour%20Name%5D" 
+           class="inline-block w-full min-h-[44px] px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs">
+          Schedule via Email
+        </a>
+      </div>
+
       <div class="pt-6">
         <a href="index.html" class="inline-block px-6 py-2.5 border border-[var(--grid-border)] text-xs uppercase tracking-widest text-[var(--text-primary)] hover:border-[var(--accent-gold)] transition">
           Return to Alfaaz Home
