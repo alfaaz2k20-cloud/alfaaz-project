@@ -481,7 +481,7 @@ function renderConsent(app) {
 
     try {
       const apiBase = window.ALFAAZ_API_URL || '';
-      const res = await fetch(`${apiBase}/recruit/session`, {
+      const res = await fetch(`${apiBase}/recruit/consent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
