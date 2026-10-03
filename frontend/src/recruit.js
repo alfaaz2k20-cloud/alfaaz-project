@@ -593,7 +593,7 @@ function renderAccessibility(app) {
         <span class="act-badge">Preferences · رہنمائی</span>
         <h2 class="text-2xl font-serif text-[var(--text-primary)]">Interaction & Accessibility</h2>
         <p class="text-xs text-[var(--text-secondary)] mt-2 max-w-lg mx-auto leading-relaxed">
-          Accessibility & how you prefer to interact. Alfaaz Recruit measures thoughtful engagement, not visual conformity or motor speed. These options adapt the visual environment and input mechanisms to suit your eyes, screen, and device.
+          This section is here to make the assessment easier and more comfortable to use. Alfaaz Recruit measures thoughtful engagement, not visual conformity or motor speed. These options adjust the visual environment and presentation to suit your eyes, screen, and device.
         </p>
       </div>
 
@@ -602,41 +602,27 @@ function renderAccessibility(app) {
           <input type="checkbox" id="a11y_contrast" class="mt-1 accent-[#bd6f5d]" ${modes.includes('high_contrast') ? 'checked' : ''}>
           <div>
             <div class="text-sm font-medium text-[var(--text-primary)]">High Contrast Display</div>
-            <div class="text-xs text-[var(--text-secondary)] mt-0.5">Increases stroke density, text contrast, and foreground-background separation across all interfaces.</div>
+            <div class="text-xs text-[var(--text-secondary)] mt-0.5">Increases text contrast, element borders, and background separation for clearer visibility.</div>
           </div>
         </label>
         <label class="flex items-start gap-3 p-3 bg-[#faf8f5] border border-[var(--grid-border)] cursor-pointer">
           <input type="checkbox" id="a11y_dyslexia" class="mt-1 accent-[#bd6f5d]" ${modes.includes('dyslexia_font') ? 'checked' : ''}>
           <div>
             <div class="text-sm font-medium text-[var(--text-primary)]">Dyslexia-Friendly Typography</div>
-            <div class="text-xs text-[var(--text-secondary)] mt-0.5">Applies a high-legibility sans-serif typeface with increased letter and line spacing.</div>
+            <div class="text-xs text-[var(--text-secondary)] mt-0.5">Applies a high-legibility sans-serif typeface with enhanced letter and line spacing.</div>
           </div>
         </label>
         <label class="flex items-start gap-3 p-3 bg-[#faf8f5] border border-[var(--grid-border)] cursor-pointer">
           <input type="checkbox" id="a11y_motion" class="mt-1 accent-[#bd6f5d]" ${modes.includes('reduced_motion') ? 'checked' : ''}>
           <div>
             <div class="text-sm font-medium text-[var(--text-primary)]">Reduced Motion</div>
-            <div class="text-xs text-[var(--text-secondary)] mt-0.5">Removes non-essential animations, pulsing transitions, and rapid symbol movements.</div>
-          </div>
-        </label>
-        <label class="flex items-start gap-3 p-3 bg-[#faf8f5] border border-[var(--grid-border)] cursor-pointer">
-          <input type="checkbox" id="a11y_keyboard" class="mt-1 accent-[#bd6f5d]" ${modes.includes('keyboard_navigation') ? 'checked' : ''}>
-          <div>
-            <div class="text-sm font-medium text-[var(--text-primary)]">Keyboard / Non-Pointer Navigation</div>
-            <div class="text-xs text-[var(--text-secondary)] mt-0.5">Optimizes interaction for tab, arrow keys, and keyboard shortcuts.</div>
-          </div>
-        </label>
-        <label class="flex items-start gap-3 p-3 bg-[#faf8f5] border border-[var(--grid-border)] cursor-pointer">
-          <input type="checkbox" id="a11y_time" class="mt-1 accent-[#bd6f5d]" ${modes.includes('extended_time') ? 'checked' : ''}>
-          <div>
-            <div class="text-sm font-medium text-[var(--text-primary)]">Extended Time Allowance</div>
-            <div class="text-xs text-[var(--text-secondary)] mt-0.5">Expands trial observation windows (timing metrics are automatically excluded from comparison).</div>
+            <div class="text-xs text-[var(--text-secondary)] mt-0.5">Removes non-essential animations, pulsing transitions, and rapid movement.</div>
           </div>
         </label>
       </div>
 
       <div class="pt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <span class="text-xs text-[var(--text-secondary)] italic">Accessibility settings do not lower your result or count against you in any way.</span>
+        <span class="text-xs text-[var(--text-secondary)] italic">Accessibility settings do not lower your result or count against you in any way. Settings change interaction and presentation conditions, not candidate evaluation or suitability.</span>
         <button id="saveA11yBtn" class="min-h-[44px] px-8 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition shadow-sm rounded-xs">
           Continue &rarr;
         </button>
@@ -654,8 +640,6 @@ function renderAccessibility(app) {
     if (document.getElementById('a11y_contrast')?.checked) selectedModes.push('high_contrast');
     if (document.getElementById('a11y_dyslexia')?.checked) selectedModes.push('dyslexia_font');
     if (document.getElementById('a11y_motion')?.checked) selectedModes.push('reduced_motion');
-    if (document.getElementById('a11y_keyboard')?.checked) selectedModes.push('keyboard_navigation');
-    if (document.getElementById('a11y_time')?.checked) selectedModes.push('extended_time');
 
     state.accessibilityModes = selectedModes;
     applyAccessibility(selectedModes);
@@ -888,7 +872,10 @@ function renderSJT(app, progressBarFill) {
   window.onkeydown = keyHandler;
 }
 
+let isSubmittingSjt = false;
 async function submitSjtAndProceed() {
+  if (isSubmittingSjt) return;
+  isSubmittingSjt = true;
   window.onkeydown = null;
   const app = document.getElementById('recruitApp');
   if (app) {
@@ -944,6 +931,8 @@ async function submitSjtAndProceed() {
         });
       }
     }
+  } finally {
+    isSubmittingSjt = false;
   }
 }
 
@@ -1042,26 +1031,35 @@ async function finishAssessment() {
     app.innerHTML = `
       <div class="space-y-6 text-center py-16 animate-soft-fade-in">
         <div class="waiting-spinner"></div>
-        <h2 id="finalizingHeading" class="text-2xl font-serif text-[var(--text-primary)]">Synchronizing Activity...</h2>
-        <p id="finalizingSubtext" class="text-xs text-[var(--text-secondary)]">Safely confirming research telemetry with the server.</p>
+        <h2 id="finalizingHeading" class="text-2xl font-serif text-[var(--text-primary)]">Synchronizing activity...</h2>
+        <p id="finalizingSubtext" class="text-xs text-[var(--text-secondary)]">Saving your completed activity... Please keep this page open.</p>
       </div>
     `;
   }
 
-  // Completion is only valid after every remaining telemetry batch is acknowledged.
-  const telemetryFlushed = await flushAllTelemetry();
-  if (!telemetryFlushed) {
-    isFinishingAssessment = false;
-    renderFinalizationRetry(app, 'Connection could not be confirmed. Your saved activity has not been discarded. You can retry.');
-    return;
-  }
-
-  const head = document.getElementById('finalizingHeading');
-  const sub = document.getElementById('finalizingSubtext');
-  if (head) head.textContent = 'Finalizing Assessment...';
-  if (sub) sub.textContent = 'Recording completion and saving your profile.';
+  // Guard against Enter/Space duplicate triggers during finalization
+  const keyGuard = (e) => {
+    if (['Enter', ' ', 'Spacebar'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+  window.addEventListener('keydown', keyGuard, { capture: true });
 
   try {
+    // Completion is only valid after every remaining telemetry batch is acknowledged.
+    const telemetryFlushed = await flushAllTelemetry();
+    if (!telemetryFlushed) {
+      window.removeEventListener('keydown', keyGuard, { capture: true });
+      isFinishingAssessment = false;
+      renderFinalizationRetry(app, 'Connection could not be confirmed. Your saved activity has not been discarded. You can retry.');
+      return;
+    }
+
+    const head = document.getElementById('finalizingHeading');
+    const sub = document.getElementById('finalizingSubtext');
+    if (head) head.textContent = 'Finalizing assessment...';
+    if (sub) sub.textContent = 'Saving your completed activity... Please keep this page open.';
+
     const response = await apiFetch('/recruit/complete', {
       method: 'POST',
       body: JSON.stringify({ session_id: state.sessionId })
@@ -1070,13 +1068,16 @@ async function finishAssessment() {
       throw new Error(response ? `Server returned HTTP ${response.status}` : 'No response from server');
     }
 
+    window.removeEventListener('keydown', keyGuard, { capture: true });
     state.screen = 'complete';
     saveLocalState({ immediate: true });
     renderScreen();
   } catch (err) {
+    window.removeEventListener('keydown', keyGuard, { capture: true });
     console.warn('Session complete submission error:', err);
     renderFinalizationRetry(app, 'The final session confirmation was not received. Your saved activity has not been discarded. You can retry.');
   } finally {
+    window.removeEventListener('keydown', keyGuard, { capture: true });
     isFinishingAssessment = false;
   }
 }

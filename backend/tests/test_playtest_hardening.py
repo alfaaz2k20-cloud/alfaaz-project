@@ -126,26 +126,62 @@ def run_tests():
         assert_eq(res_comp_2["status"], "SUCCESS", "Second complete call returns SUCCESS")
         assert_eq(res_comp_2.get("is_already_completed"), True, "is_already_completed flag is True")
 
-        # 4. Test Telemetry Acknowledgment for Completed Session
-        print("\n--- Test 4: Completed Session Telemetry Acknowledgment ---")
-        dummy_event = {
-            "seq": 1,
-            "segment_id": 1,
-            "t_ms": 500.0,
-            "screen": "complete",
-            "game_world": None,
-            "mini_game": None,
-            "trial": None,
-            "action": "pagehide_flush",
-            "input_type": "system",
-            "task_def_version": "1.0",
-            "state": {},
-            "data": {}
-        }
-        telem_req = TelemetryBatchRequest(session_id=s_id, events=[dummy_event])
-        res_telem = submit_telemetry(telem_req, request=DummyRequest(), db=db)
-        assert_eq(res_telem["status"], "SUCCESS", "Telemetry to COMPLETE session returns SUCCESS (no 403 error)")
-        assert_true("already completed" in res_telem["message"], "Friendly already-completed message returned")
+        # 4. Test Telemetry Invariants for Completed Session (Cases A, B, C)
+        print("\n--- Test 4: Completed Session Telemetry Invariants (Cases A, B, C) ---")
+        from fastapi import HTTPException
+
+        # Pre-seed one accepted event seq=1 before completion checks
+        db.add(DBTelemetryEvent(
+            session_id=s_id,
+            seq=1,
+            segment_id=1,
+            t_ms=500.0,
+            screen="games",
+            mini_game="F1",
+            action="card_select",
+            data_json="{}",
+            state_json="{}"
+        ))
+        db.commit()
+        db_count_before = len(db.exec(select(DBTelemetryEvent).where(DBTelemetryEvent.session_id == s_id)).all())
+
+        # Test 4A: Case A - Resend previously accepted event seq=1
+        telem_req_a = TelemetryBatchRequest(session_id=s_id, events=[{"seq": 1, "action": "card_select"}])
+        res_telem_a = submit_telemetry(telem_req_a, request=DummyRequest(), db=db)
+        assert_eq(res_telem_a["status"], "SUCCESS", "Case A: Telemetry replay to COMPLETE session returns SUCCESS")
+        assert_eq(res_telem_a["result"]["accepted_count"], 1, "Case A: Accepted count is 1")
+        assert_eq(res_telem_a["result"]["new_rejected_count"], 0, "Case A: New rejected count is 0")
+        db_count_after_a = len(db.exec(select(DBTelemetryEvent).where(DBTelemetryEvent.session_id == s_id)).all())
+        assert_eq(db_count_after_a, db_count_before, "Case A: Zero new rows added to DB")
+
+        # Test 4B: Case B - Send brand-new event seq=2 after COMPLETE
+        telem_req_b = TelemetryBatchRequest(session_id=s_id, events=[{"seq": 2, "action": "card_select"}])
+        case_b_threw_403 = False
+        try:
+            submit_telemetry(telem_req_b, request=DummyRequest(), db=db)
+        except HTTPException as e:
+            if e.status_code == 403:
+                case_b_threw_403 = True
+        assert_true(case_b_threw_403, "Case B: Brand-new telemetry after COMPLETE rejected with HTTP 403")
+        db_count_after_b = len(db.exec(select(DBTelemetryEvent).where(DBTelemetryEvent.session_id == s_id)).all())
+        assert_eq(db_count_after_b, db_count_before, "Case B: Zero new rows added to DB")
+
+        # Test 4C: Case C - Mixed batch containing old seq=1 and new seq=3
+        telem_req_c = TelemetryBatchRequest(
+            session_id=s_id,
+            events=[{"seq": 1, "action": "card_select"}, {"seq": 3, "action": "card_select"}]
+        )
+        res_telem_c = submit_telemetry(telem_req_c, request=DummyRequest(), db=db)
+        assert_eq(res_telem_c["status"], "SUCCESS", "Case C: Mixed telemetry to COMPLETE session returns SUCCESS")
+        assert_eq(res_telem_c["result"]["accepted_count"], 1, "Case C: Acknowledged old event count is 1")
+        assert_eq(res_telem_c["result"]["new_rejected_count"], 1, "Case C: New rejected count is 1")
+        db_count_after_c = len(db.exec(select(DBTelemetryEvent).where(DBTelemetryEvent.session_id == s_id)).all())
+        assert_eq(db_count_after_c, db_count_before, "Case C: Zero new rows added to DB, new event discarded")
+
+        # Test 4D: Empty batch on COMPLETE
+        telem_req_empty = TelemetryBatchRequest(session_id=s_id, events=[])
+        res_telem_empty = submit_telemetry(telem_req_empty, request=DummyRequest(), db=db)
+        assert_eq(res_telem_empty["status"], "SUCCESS", "Case D: Empty telemetry batch to COMPLETE session returns SUCCESS")
 
         # 5. Test Research View Optimization
         print("\n--- Test 5: Research View Dossier & Session Listing ---")

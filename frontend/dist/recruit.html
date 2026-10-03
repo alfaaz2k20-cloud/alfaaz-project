@@ -80,22 +80,31 @@
       border: 1px solid var(--grid-border);
       padding: 1.25rem 1.5rem;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: background-color 0.15s ease, border-color 0.15s ease;
       display: flex;
       align-items: flex-start;
       gap: 1rem;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
-    .option-card:hover, .option-card:focus-visible {
+    @media (hover: hover) and (pointer: fine) {
+      .option-card:hover {
+        border-color: var(--accent-gold);
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      }
+    }
+    .option-card:focus-visible {
       border-color: var(--accent-gold);
-      background: #fff;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-      outline: none;
+      outline: 2px solid var(--accent-gold);
+      outline-offset: 2px;
     }
     .option-card.selected {
       border-color: var(--accent-gold);
       background: rgba(189, 111, 93, 0.08);
-      transform: translateY(-1px);
+    }
+    .option-card:active {
+      background: #f4efe8;
     }
     .progress-bar-inner {
       height: 2px;
@@ -141,7 +150,7 @@
       background: var(--accent-gold);
     }
   </style>
-  <script type="module" crossorigin src="/assets/recruit-BJpG1dko.js"></script>
+  <script type="module" crossorigin src="/assets/recruit-CVZ96FEY.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/global-DxYxv3W5.js">
   <link rel="stylesheet" crossorigin href="/assets/recruit-D624isjP.css">
   <link rel="stylesheet" crossorigin href="/assets/global-DWnYecN2.css">

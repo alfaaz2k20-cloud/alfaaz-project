@@ -10,7 +10,8 @@ from app.db.session import get_db
 from app.core.config import RECRUIT_CONSENT_COPY
 from app.models.recruit import (
     DBApplicantIdentity, DBSession, DBConsentRecord, DBAccessibilityProfile,
-    DBWarmupBaseline, DBTaskAssignment, DBSJTResponse, DBEvidence, DBDataQualityFlag
+    DBWarmupBaseline, DBTaskAssignment, DBSJTResponse, DBEvidence, DBDataQualityFlag,
+    DBTelemetryEvent
 )
 from app.services.sjt_engine import (
     get_public_sjt_payload, score_sjt_responses, get_config_hash
@@ -290,12 +291,43 @@ def submit_telemetry(req: TelemetryBatchRequest, request: Request, db: Session =
     if request is not None:
         recruit_telemetry_limiter.check(request, req.session_id)
 
-    # If session is already COMPLETE, acknowledge telemetry idempotently
+    # If session is already COMPLETE, enforce post-completion telemetry invariants:
     if session_obj.status == "COMPLETE":
+        events = req.events or []
+        if not events:
+            return {
+                "status": "SUCCESS",
+                "message": "Session already completed; telemetry acknowledged.",
+                "result": {"accepted_count": 0, "new_rejected_count": 0, "session_status": "COMPLETE"}
+            }
+
+        # Query existing event sequence numbers for this session
+        existing_seqs = set(
+            db.exec(
+                select(DBTelemetryEvent.seq).where(DBTelemetryEvent.session_id == req.session_id)
+            ).all()
+        )
+
+        already_accepted = [ev for ev in events if ev.get("seq") in existing_seqs]
+        new_events = [ev for ev in events if ev.get("seq") not in existing_seqs]
+
+        # Case B: All events are brand-new after session is COMPLETE -> Reject
+        if not already_accepted and new_events:
+            raise HTTPException(
+                status_code=403,
+                detail="Telemetry rejected: session is already COMPLETE and event was not previously accepted"
+            )
+
+        # Case A: All events previously accepted (or Case C: mixture of old and new)
+        # Safe idempotent acknowledgement of previously accepted events; new events are NEVER persisted.
         return {
             "status": "SUCCESS",
-            "message": "Session already completed; telemetry acknowledged.",
-            "result": {"accepted_count": 0, "session_status": "COMPLETE"}
+            "message": "Session already completed; previously accepted telemetry acknowledged.",
+            "result": {
+                "accepted_count": len(already_accepted),
+                "new_rejected_count": len(new_events),
+                "session_status": "COMPLETE"
+            }
         }
 
     # Session eligibility: accept while session is in any active assessment phase

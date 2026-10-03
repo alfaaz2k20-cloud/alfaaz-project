@@ -483,13 +483,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return response;
     }
 
+    let isDossierLoading = false;
     window.viewCandidateDossier = async function(sessionId) {
+      if (isDossierLoading) return;
+      isDossierLoading = true;
       document.getElementById('modalTitle').textContent = 'Candidate Evidence Dossier';
       const body = document.getElementById('modalBody');
       body.innerHTML = `
         <div style="padding: 3rem 1rem; text-align: center; color: var(--text-secondary);">
           <div class="w-8 h-8 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-3" style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
-          <div style="font-size: 13px; font-family: var(--font-heading);">Retrieving Candidate Dossier...</div>
+          <div style="font-size: 13px; font-family: var(--font-heading);">Loading candidate details...</div>
           <div style="font-size: 11px; margin-top: 6px; color: var(--text-secondary);">Loading candidate profile, behavioral evidence, and task records.</div>
         </div>
       `;
@@ -602,6 +605,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="action-btn gold" onclick="viewCandidateDossier('${sessionId}')" style="padding:0.6rem 1.2rem; font-size:10px;">Retry Dossier Retrieval</button>
           </div>
         `;
+      } finally {
+        isDossierLoading = false;
       }
   };
   
