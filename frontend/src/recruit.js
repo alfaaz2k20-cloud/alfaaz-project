@@ -254,6 +254,13 @@ async function flushTelemetry() {
 }
 
 async function flushAllTelemetry() {
+  // Wait for any active flush to finish to avoid lock collisions
+  let retries = 0;
+  while (isFlushing && retries < 10) {
+    await new Promise(r => setTimeout(r, 500));
+    retries++;
+  }
+
   while (!state.telemetryTerminal && state.telemetryQueue.length > 0) {
     const queuedBeforeFlush = state.telemetryQueue.length;
     const sent = await flushTelemetry();
