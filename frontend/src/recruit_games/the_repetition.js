@@ -8,7 +8,7 @@
    and scoped candidate content protection.
    ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
 
 export function runTheRepetition(context, renderHeader) {
   const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
@@ -69,33 +69,15 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
 
     const u = units[currentIdx];
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 7: The Repetition</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
-        </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Ceremonial Seal</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Apply wax seals to event invitations.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Review the recipient below. Click Press Wax Seal. Completing all 3 fulfills this activity.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS: Envelope Preview -->
-        <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 text-center shadow-xs rounded-xs candidate-content-protected">
+    app.innerHTML = renderGameShell({
+      worldCode: 'W7',
+      worldIndex: 6,
+      title: 'The Ceremonial Seal',
+      subtitle: 'Apply wax seals to event invitations.',
+      instructionPrompt: 'Your Task',
+      instruction: 'Review the recipient below. Click Apply Wax Seal. Completing all 3 fulfills this activity.',
+      stimulusContent: `
+        <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] text-center shadow-xs rounded-xs">
           <div class="w-full max-w-sm mx-auto min-h-[140px] bg-amber-50/70 border border-[var(--grid-border)] flex flex-col items-center justify-center p-5 relative shadow-sm rounded-xs">
             <span class="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-sans">Ceremonial Invitation</span>
             <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1.5">${u.recipient}</div>
@@ -106,21 +88,11 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
             </div>
           </div>
         </div>
-
-        <!-- PRIMARY ACTION BUTTON -->
-        <div class="flex justify-end mb-4">
-          <button type="button" id="stampBtn" class="px-8 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm flex items-center justify-center gap-2 rounded-xs w-full sm:w-auto min-h-[44px]">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-            Press Wax Seal &rarr;
-          </button>
-        </div>
-
-        <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
-          Envelope ${currentIdx + 1} of ${units.length} (Required Minimum: 3)
-        </div>
-      </div>
-    `;
+      `,
+      actionButtonId: 'stampBtn',
+      actionButtonText: (currentIdx === units.length - 1) ? 'Confirm & Finish &rarr;' : 'Apply Wax Seal &rarr;',
+      progressText: `Envelope ${currentIdx + 1} of ${units.length} (Required Minimum: 3)`
+    });
 
     document.getElementById('stampBtn')?.addEventListener('click', () => {
       lastInputModality = 'mouse';
@@ -221,52 +193,26 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
 
     if (phase === 'mandatory') {
       const u = mandatoryUnits[mandatoryIdx];
-      app.innerHTML = `
-        <div class="animate-soft-fade-in">
-          <!-- TOP BAR -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
-            <div class="flex items-center gap-2">
-              <span class="act-badge">World 7: The Repetition</span>
-              
-            </div>
-            <div class="text-[11px] text-amber-800 font-sans font-medium">Required Phase (${mandatoryIdx + 1}/3)</div>
-          </div>
-
-          <!-- TASK HEADER -->
-          <div class="mb-4">
-            <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Courtesy Sleeves</h2>
-            <p class="text-xs text-[var(--text-secondary)] mt-0.5">Prepare courtesy sleeves for event attendees.</p>
-          </div>
-
-          <!-- YOUR TASK -->
-          <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-            <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-              Assemble the required folder below. Three required folders are needed to satisfy this activity.
-            </div>
-          </div>
-
-          <!-- LOOK AT THIS: Folder Card -->
-          <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 text-center shadow-xs rounded-xs candidate-content-protected">
+      app.innerHTML = renderGameShell({
+        worldCode: 'W7',
+        worldIndex: 6,
+        stepBadge: `Required Phase (${mandatoryIdx + 1}/3)`,
+        title: 'The Courtesy Sleeves',
+        subtitle: 'Prepare courtesy sleeves for event attendees.',
+        instructionPrompt: 'Your Task',
+        instruction: 'Assemble the required folder below. Three required folders are needed to satisfy this activity.',
+        stimulusContent: `
+          <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] text-center shadow-xs rounded-xs">
             <div class="max-w-sm mx-auto p-4 bg-white border border-[var(--grid-border)] rounded-xs">
               <span class="text-[10px] uppercase tracking-wider text-stone-500 font-sans">Required Courtesy Folder</span>
               <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1">${u.label}</div>
             </div>
           </div>
-
-          <!-- PRIMARY ACTION BUTTON -->
-          <div class="flex justify-end mb-4">
-            <button type="button" id="foldSleeveBtn" class="px-8 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
-              Assemble Required Folder &rarr;
-            </button>
-          </div>
-
-          <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
-            Required Folder ${mandatoryIdx + 1} of ${mandatoryUnits.length}
-          </div>
-        </div>
-      `;
+        `,
+        actionButtonId: 'foldSleeveBtn',
+        actionButtonText: 'Assemble Required Folder &rarr;',
+        progressText: `Required Folder ${mandatoryIdx + 1} of ${mandatoryUnits.length}`
+      });
 
       document.getElementById('foldSleeveBtn')?.addEventListener('click', () => {
         lastInputModality = 'mouse';
@@ -302,25 +248,14 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
       });
 
     } else if (phase === 'choice') {
-      app.innerHTML = `
-        <div class="animate-soft-fade-in">
-          <!-- TOP BAR -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
-            <div class="flex items-center gap-2">
-              <span class="act-badge">World 7: The Repetition</span>
-              
-            </div>
-            <div class="text-[11px] text-emerald-800 font-sans font-medium">Requirement Completed</div>
-          </div>
-
-          <!-- TASK HEADER -->
-          <div class="mb-4">
-            <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Courtesy Sleeves</h2>
-            <p class="text-xs text-[var(--text-secondary)] mt-0.5">Required minimum completed.</p>
-          </div>
-
-          <!-- LOOK AT THIS: Choice Card -->
-          <div class="p-6 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs text-center candidate-content-protected">
+      app.innerHTML = renderGameShell({
+        worldCode: 'W7',
+        worldIndex: 6,
+        stepBadge: 'Requirement Completed',
+        title: 'The Courtesy Sleeves',
+        subtitle: 'Required minimum completed.',
+        stimulusContent: `
+          <div class="p-6 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs text-center">
             <div class="w-10 h-10 mx-auto rounded-full bg-emerald-50 border border-emerald-300 flex items-center justify-center text-emerald-700 text-lg mb-2">
               &#10003;
             </div>
@@ -331,23 +266,19 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
             </p>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button type="button" id="concludeBtn" class="px-6 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+              <button type="button" id="concludeBtn" class="px-6 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition-colors duration-150 font-sans interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px] cursor-pointer">
                 Conclude Activity Now &rarr;
               </button>
               ${optionalIdx < optionalUnits.length ? `
-                <button type="button" id="continueOptionalBtn" class="px-6 py-3.5 bg-white border border-[var(--accent-gold)] text-[var(--accent-gold)] text-xs uppercase tracking-widest hover:bg-amber-50 interactive-option shadow-xs rounded-xs w-full sm:w-auto min-h-[44px]">
+                <button type="button" id="continueOptionalBtn" class="px-6 py-3.5 bg-white border border-[var(--accent-gold)] text-[var(--accent-gold)] text-xs uppercase tracking-widest hover:bg-amber-50 transition-colors duration-150 font-sans interactive-option shadow-xs rounded-xs w-full sm:w-auto min-h-[44px] cursor-pointer">
                   + Prepare Extra Folder (${optionalIdx + 1}/${optionalUnits.length})
                 </button>
               ` : ''}
             </div>
           </div>
-
-          <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
-            Choice Point &middot; Stopping is neutral
-          </div>
-        </div>
-      `;
+        `,
+        progressText: 'Choice Point &middot; Stopping is neutral'
+      });
 
       document.getElementById('concludeBtn')?.addEventListener('click', () => {
         lastInputModality = 'mouse';
@@ -380,55 +311,31 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
 
     } else if (phase === 'optional') {
       const u = optionalUnits[optionalIdx];
-      app.innerHTML = `
-        <div class="animate-soft-fade-in">
-          <!-- TOP BAR -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
-            <div class="flex items-center gap-2">
-              <span class="act-badge">World 7: The Repetition</span>
-              
-            </div>
-            <div class="text-[11px] text-emerald-800 font-sans font-medium">Voluntary Extra</div>
-          </div>
-
-          <!-- TASK HEADER -->
-          <div class="mb-4">
-            <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Courtesy Sleeves</h2>
-            <p class="text-xs text-[var(--text-secondary)] mt-0.5">Voluntary extra folder preparation.</p>
-          </div>
-
-          <!-- YOUR TASK -->
-          <div class="p-3 sm:p-4 bg-emerald-50/70 border border-emerald-400/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-sans text-emerald-800 font-semibold mb-1">Voluntary Extra</div>
-            <div class="text-xs text-emerald-950 leading-relaxed">
-              You may assemble this extra folder or finish at any time. Stopping is completely neutral.
-            </div>
-          </div>
-
-          <!-- LOOK AT THIS: Folder Card -->
-          <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 text-center shadow-xs rounded-xs candidate-content-protected">
+      app.innerHTML = renderGameShell({
+        worldCode: 'W7',
+        worldIndex: 6,
+        stepBadge: 'Voluntary Extra',
+        title: 'The Courtesy Sleeves',
+        subtitle: 'Voluntary extra folder preparation.',
+        instructionPrompt: 'Voluntary Extra',
+        instruction: 'You may assemble this extra folder or finish at any time. Stopping is completely neutral.',
+        stimulusContent: `
+          <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] text-center shadow-xs rounded-xs">
             <div class="max-w-sm mx-auto p-4 bg-white border border-[var(--grid-border)] rounded-xs">
               <span class="text-[10px] uppercase tracking-wider text-stone-500 font-sans">Voluntary Courtesy Folder</span>
               <div class="font-serif text-sm font-semibold text-[var(--text-primary)] mt-1">${u.label}</div>
             </div>
           </div>
-
-          <!-- PRIMARY ACTION BUTTONS -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <button type="button" id="stopOptionalEarlyBtn" class="px-5 py-3 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-700 text-xs uppercase tracking-wider interactive-option rounded-xs w-full sm:w-auto min-h-[44px]">
-              Conclude Now
-            </button>
-            <button type="button" id="foldOptionalSleeveBtn" class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
-              Assemble Extra Folder &rarr;
-            </button>
-          </div>
-
-          <!-- Progress Footer -->
-          <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
-            Extra Folder ${optionalIdx + 1} of ${optionalUnits.length}
-          </div>
-        </div>
-      `;
+        `,
+        secondaryActionHtml: `
+          <button type="button" id="stopOptionalEarlyBtn" class="px-5 py-3 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-700 text-xs uppercase tracking-wider font-sans interactive-option rounded-xs w-full sm:w-auto min-h-[44px] cursor-pointer">
+            Conclude Now
+          </button>
+        `,
+        actionButtonId: 'foldOptionalSleeveBtn',
+        actionButtonText: (optionalIdx === optionalUnits.length - 1) ? 'Confirm & Finish &rarr;' : 'Assemble Extra Folder &rarr;',
+        progressText: `Extra Folder ${optionalIdx + 1} of ${optionalUnits.length}`
+      });
 
       document.getElementById('stopOptionalEarlyBtn')?.addEventListener('click', () => {
         lastInputModality = 'mouse';

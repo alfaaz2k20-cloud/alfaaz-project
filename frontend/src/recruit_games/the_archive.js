@@ -6,28 +6,29 @@
    Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
    ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
 
 export function runTheArchive(context, renderHeader) {
-  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
+  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete, worldIndex } = context;
 
   const targetGame = gameId || (miniGameIndex === 0 ? 'A1' : (miniGameIndex === 1 ? 'A2' : 'A3'));
   if (targetGame === 'A1') {
-    runA1Classification(appContainer, renderHeader, logEvent, onMiniGameComplete);
+    runA1Classification(appContainer, renderHeader, logEvent, onMiniGameComplete, worldIndex);
   } else if (targetGame === 'A2') {
-    runA2ExceptionHandling(appContainer, renderHeader, logEvent, onMiniGameComplete);
+    runA2ExceptionHandling(appContainer, renderHeader, logEvent, onMiniGameComplete, worldIndex);
   } else {
-    runA3QualityControl(appContainer, renderHeader, logEvent, onMiniGameComplete);
+    runA3QualityControl(appContainer, renderHeader, logEvent, onMiniGameComplete, worldIndex);
   }
 }
 
 // --------------------------------------------------------------------------
 // A1: The Manuscript Folios (5 rule-governed classification items)
 // --------------------------------------------------------------------------
-function runA1Classification(app, renderHeader, logEvent, onComplete) {
+function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex = 1) {
   let inTutorial = true;
   let currentDocIdx = 0;
   let guideOpened = false;
+  let selectedFolder = null;
   let docStartTime = 0;
   let lastInputModality = 'mouse';
 
@@ -91,6 +92,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
       bindTutorialCard(app, () => {
         inTutorial = false;
         currentDocIdx = 0;
+        selectedFolder = null;
         docStartTime = performance.now();
         render();
       });
@@ -108,75 +110,71 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
     const doc = documents[currentDocIdx];
     docStartTime = performance.now();
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in max-w-2xl mx-auto">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 2: The Archive</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
+    const stimulusContent = `
+      <div class="p-5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-[10px] tracking-widest text-[var(--accent-gold)] uppercase font-semibold">Folio ${currentDocIdx + 1} of ${documents.length}</span>
+          <button id="guideBtn" type="button" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1 hover:bg-amber-50 interactive-option flex items-center gap-1.5 rounded-xs min-h-[32px]" tabindex="0">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            ${guideOpened ? 'Close Guide' : 'Shelf Guide'}
+          </button>
         </div>
 
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Manuscript Folios</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Sort each historical page onto its proper shelf.</p>
+        <div id="guideModal" class="${guideOpened ? '' : 'hidden'} p-3 mb-3 bg-amber-50/80 border border-[var(--accent-gold)]/40 text-xs text-[var(--text-primary)] space-y-1 rounded-xs">
+          <div>&bull; <strong>Century Rule:</strong> Sort by century made (19th vs 20th Century).</div>
+          <div>&bull; <strong>Type Rule:</strong> Sort by content type (Poetry vs History).</div>
+          <div>&bull; <strong>Language Rule:</strong> Sort by language (Kashmiri).</div>
         </div>
 
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="flex justify-between items-center mb-1">
-            <span class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold">Your Task</span>
-            <span class="text-xs text-[var(--accent-gold)] font-sans font-medium">${doc.rule_prompt}</span>
-          </div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Examine this page. Pick the shelf that matches the active sorting rule.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS -->
-        <div class="p-5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected">
-          <div class="flex justify-between items-start mb-2">
-            <span class="text-[10px] tracking-widest text-[var(--text-secondary)] uppercase font-medium">Folio ${currentDocIdx + 1} of ${documents.length}</span>
-            <button id="guideBtn" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1 hover:bg-amber-50 interactive-option flex items-center gap-1.5 rounded-xs min-h-[32px]" tabindex="0">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              ${guideOpened ? 'Close Guide' : 'Shelf Guide'}
-            </button>
-          </div>
-
-          <div id="guideModal" class="${guideOpened ? '' : 'hidden'} p-3 mb-3 bg-amber-50/80 border border-[var(--accent-gold)]/40 text-xs text-[var(--text-primary)] space-y-1 rounded-xs">
-            <div>• <strong>Century Rule:</strong> Sort by century made (19th vs 20th Century).</div>
-            <div>• <strong>Type Rule:</strong> Sort by content type (Poetry vs History).</div>
-            <div>• <strong>Language Rule:</strong> Sort by language (Kashmiri).</div>
-          </div>
-
-          <h3 class="text-base sm:text-lg font-serif text-[var(--text-primary)] font-medium mt-1 mb-2.5">${doc.title}</h3>
-          <div class="flex flex-wrap gap-2">
-            ${doc.tags.map(t => `<span class="px-2.5 py-1 bg-[#faf8f5] border border-[var(--grid-border)] text-xs text-[var(--text-secondary)] rounded-xs">${t}</span>`).join('')}
-          </div>
-        </div>
-
-        <!-- INTERACTION AREA -->
-        <div class="mb-4 candidate-content-protected">
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Select Destination Shelf:</div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-            ${folders.map(f => `
-              <button type="button" class="folder-btn p-3.5 bg-white border border-[var(--grid-border)] text-xs font-semibold  hover:bg-amber-50/40 interactive-option text-left shadow-xs flex items-center gap-2.5 rounded-xs min-h-[48px]" data-folder="${f.id}" tabindex="0">
-                <svg class="w-4 h-4 text-[var(--accent-gold)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${f.icon}"></path></svg>
-                <span class="text-[var(--text-primary)]">${f.label}</span>
-              </button>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
-          Page ${currentDocIdx + 1} of ${documents.length}
+        <h3 class="text-base sm:text-lg font-serif text-[var(--text-primary)] font-medium mt-1 mb-2.5">${doc.title}</h3>
+        <div class="flex flex-wrap gap-2">
+          ${doc.tags.map(t => `<span class="px-2.5 py-1 bg-[#faf8f5] border border-[var(--grid-border)] text-xs text-[var(--text-secondary)] rounded-xs">${t}</span>`).join('')}
         </div>
       </div>
     `;
+
+    const activeFolder = folders.find(f => f.id === selectedFolder);
+
+    const interactionContent = `
+      <div>
+        <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Select Destination Shelf:</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+          ${folders.map(f => {
+            const isSelected = selectedFolder === f.id;
+            return `
+              <button type="button" class="folder-btn p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} text-xs font-semibold hover:bg-amber-50/40 interactive-option text-left flex items-center justify-between rounded-xs min-h-[48px]" data-folder="${f.id}" tabindex="0">
+                <span class="flex items-center gap-2.5">
+                  <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '✓' : ''}</span>
+                  <span class="text-[var(--text-primary)]">${f.label}</span>
+                </span>
+                <svg class="w-4 h-4 text-[var(--accent-gold)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${f.icon}"></path></svg>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+
+    const summaryContent = `
+      <span>${selectedFolder ? `Selected shelf: <strong class="text-[var(--text-primary)]">${activeFolder?.label}</strong>` : 'Select a shelf above, then click Confirm.'}</span>
+      <span class="text-[10px] text-stone-400 font-sans">${currentDocIdx + 1} / ${documents.length}</span>
+    `;
+
+    app.innerHTML = renderGameShell({
+      worldCode: 'W2',
+      worldIndex,
+      title: 'The Manuscript Folios',
+      subtitle: 'Sort each historical page onto its proper shelf.',
+      instruction: 'Examine this page. Pick the shelf that matches the active sorting rule.',
+      instructionPrompt: doc.rule_prompt,
+      stimulusContent,
+      interactionContent,
+      summaryContent,
+      actionButtonId: 'confirmShelfBtn',
+      actionButtonText: currentDocIdx < documents.length - 1 ? 'Confirm Shelf &rarr;' : 'Confirm & Finish &rarr;',
+      actionButtonDisabled: !selectedFolder,
+      progressText: `Page ${currentDocIdx + 1} of ${documents.length}`
+    });
 
     logEvent('item_presented', {
       trial_index: currentDocIdx,
@@ -197,17 +195,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
     app.querySelectorAll('.folder-btn').forEach(btn => {
       const handleSelect = (modality) => {
         lastInputModality = modality;
-        const folder = btn.getAttribute('data-folder');
-
-        logEvent('item_sorted', {
-          trial_index: currentDocIdx,
-          stimulus_id: doc.id,
-          choice: folder,
-          input_modality: lastInputModality,
-          task_def_version: '1.0'
-        });
-
-        currentDocIdx++;
+        selectedFolder = btn.getAttribute('data-folder');
         render();
       };
 
@@ -219,6 +207,21 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
         }
       });
     });
+
+    document.getElementById('confirmShelfBtn')?.addEventListener('click', () => {
+      if (!selectedFolder) return;
+      logEvent('item_sorted', {
+        trial_index: currentDocIdx,
+        stimulus_id: doc.id,
+        choice: selectedFolder,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
+      });
+
+      currentDocIdx++;
+      selectedFolder = null;
+      render();
+    });
   }
 
   render();
@@ -228,7 +231,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
 // A2: The Fragile Leaf (>= 3 genuine exception decisions)
 // Conditions: true_exception, clean_control, true_exception
 // --------------------------------------------------------------------------
-function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
+function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIndex = 1) {
   let inTutorial = true;
   let currentTrial = 0;
   let chosenAction = null;
@@ -310,73 +313,55 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
     const t = trials[currentTrial];
     const activeAct = actions.find(a => a.id === chosenAction);
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in max-w-2xl mx-auto">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 2: The Archive</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
+    const stimulusContent = `
+      <div class="p-5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] tracking-widest text-[#bd6f5d] uppercase font-semibold">Manuscript Folio ${currentTrial + 1} of 4</span>
+          <span class="text-[10px] text-[var(--text-secondary)] uppercase bg-[#faf8f5] px-2 py-0.5 border border-[var(--grid-border)] rounded-xs font-medium">${t.type_note}</span>
         </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Fragile Leaf</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Examine page condition and choose a handling step.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Read the page condition notes below. Choose the best handling option.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS -->
-        <div class="p-5 bg-white border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-[10px] tracking-widest text-[#bd6f5d] uppercase font-semibold">Manuscript Folio ${currentTrial + 1} of 4</span>
-            <span class="text-[10px] text-[var(--text-secondary)] uppercase bg-[#faf8f5] px-2 py-0.5 border border-[var(--grid-border)] rounded-xs font-medium">${t.type_note}</span>
-          </div>
-          <h3 class="text-base font-serif text-[var(--text-primary)] font-medium mb-1.5">${t.title}</h3>
-          <p class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[#faf8f5] p-3 border border-[var(--grid-border)]/60 rounded-xs">
-            ${t.anomaly_description}
-          </p>
-        </div>
-
-        <!-- INTERACTION AREA -->
-        <div class="space-y-2.5 mb-4 candidate-content-protected">
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose handling action:</div>
-          ${actions.map(a => `
-            <div class="a2-opt p-3.5 bg-white border ${chosenAction === a.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer  interactive-option rounded-xs min-h-[52px]" data-action="${a.id}" tabindex="0" role="button">
-              <div class="flex justify-between items-center mb-0.5">
-                <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full ${chosenAction === a.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
-                  ${a.title}
-                </div>
-              </div>
-              <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed pl-3.5">${a.desc}</div>
-            </div>
-          `).join('')}
-        </div>
-
-        <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
-          <span>${chosenAction ? `You selected: <strong class="text-[var(--text-primary)]">${activeAct?.title}</strong>` : 'Select an option above to continue.'}</span>
-          <span class="text-[10px] text-stone-400 font-sans">${currentTrial + 1} / 4</span>
-        </div>
-
-        <!-- PRIMARY ACTION BUTTON -->
-        <div class="flex justify-end">
-          <button id="a2ConfirmBtn" ${chosenAction ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
-            ${currentTrial < 3 ? 'Confirm Handling Decision &rarr;' : 'Finish Page Evaluation &rarr;'}
-          </button>
-        </div>
+        <h3 class="text-base font-serif text-[var(--text-primary)] font-medium mb-1.5">${t.title}</h3>
+        <p class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[#faf8f5] p-3 border border-[var(--grid-border)]/60 rounded-xs">
+          ${t.anomaly_description}
+        </p>
       </div>
     `;
+
+    const interactionContent = `
+      <div class="space-y-2.5">
+        <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose handling action:</div>
+        ${actions.map(a => `
+          <div class="a2-opt p-3.5 bg-white border ${chosenAction === a.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} cursor-pointer interactive-option rounded-xs min-h-[52px]" data-action="${a.id}" tabindex="0" role="button">
+            <div class="flex justify-between items-center mb-0.5">
+              <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full ${chosenAction === a.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
+                ${a.title}
+              </div>
+            </div>
+            <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed pl-3.5">${a.desc}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    const summaryContent = `
+      <span>${chosenAction ? `You selected: <strong class="text-[var(--text-primary)]">${activeAct?.title}</strong>` : 'Select an option above to continue.'}</span>
+      <span class="text-[10px] text-stone-400 font-sans">${currentTrial + 1} / 4</span>
+    `;
+
+    app.innerHTML = renderGameShell({
+      worldCode: 'W2',
+      worldIndex,
+      title: 'The Fragile Leaf',
+      subtitle: 'Examine page condition and choose a handling step.',
+      instruction: 'Read the page condition notes below. Choose the best handling option.',
+      stimulusContent,
+      interactionContent,
+      summaryContent,
+      actionButtonId: 'a2ConfirmBtn',
+      actionButtonText: currentTrial < 3 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
+      actionButtonDisabled: !chosenAction,
+      progressText: `Folio ${currentTrial + 1} of 4`
+    });
 
     logEvent('item_presented', {
       trial_index: currentTrial,
@@ -503,7 +488,6 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
             <span class="act-badge">World 2: The Archive</span>
             
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->

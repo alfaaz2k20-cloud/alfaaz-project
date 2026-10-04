@@ -91,6 +91,33 @@ def get_research_bank_games(by_world: bool = False) -> Dict[str, List[str]]:
     cfg = get_battery_config()
     return cfg.get("research_bank_games_by_world" if by_world else "research_bank_games", {})
 
+def get_expected_candidate_game_count(battery_version: str = "2.0") -> int:
+    ver = (battery_version or "").lower()
+    if "1.0" in ver or "v1" in ver or "2026-05" in ver or "historical" in ver:
+        return 21
+    return 14
+
+def is_candidate_core_game(game_id: str) -> bool:
+    core = get_candidate_core_games(by_world=False)
+    for games in core.values():
+        if game_id in games:
+            return True
+    return False
+
+def is_research_bank_game(game_id: str) -> bool:
+    bank = get_research_bank_games(by_world=False)
+    for games in bank.values():
+        if game_id in games:
+            return True
+    return False
+
+def get_game_role(game_id: str) -> str:
+    if is_candidate_core_game(game_id):
+        return "candidate_core"
+    if is_research_bank_game(game_id):
+        return "research_bank"
+    return "unknown"
+
 def get_game_definition(game_id: str, version: str = "1.0") -> Optional[Dict[str, Any]]:
     defs = get_task_definitions()
     if defs.get("task_def_version") != version:

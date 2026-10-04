@@ -6,7 +6,7 @@
    Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
    ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
 
 export function runTheSharedCanvas(context, renderHeader) {
   const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
@@ -90,41 +90,23 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
     const partnerTotal = r.partner_initial + transferCount;
     const userTotal = r.user_initial - transferCount;
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in max-w-2xl mx-auto">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 3: The Shared Canvas</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
-        </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Artisan's Basket</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Coordinate ceramic tiles with your workshop partner.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Check tile counts below. Move tiles to your partner if needed.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS -->
-        <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected flex items-center justify-between">
+    app.innerHTML = renderGameShell({
+      worldCode: 'W3',
+      worldIndex: 2,
+      title: "The Artisan's Basket",
+      subtitle: 'Coordinate ceramic tiles with your workshop partner.',
+      instructionPrompt: 'Your Task',
+      instruction: 'Check tile counts below. Move tiles to your partner if needed.',
+      stimulusContent: `
+        <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs flex items-center justify-between">
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${r.title}:</strong> ${r.description}
           </span>
           <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--text-secondary)]">${r.context_note}</span>
         </div>
-
-        <!-- INTERACTION AREA -->
-        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
+      `,
+      interactionContent: `
+        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
           <div class="grid grid-cols-2 gap-4 text-center mb-5">
             <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
               <span class="text-[10px] text-[var(--accent-gold)] uppercase font-semibold font-sans">Partner Basket</span>
@@ -145,27 +127,21 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
           <div class="text-center pt-3 border-t border-[var(--grid-border)]">
             <div class="text-xs text-[var(--text-secondary)] mb-2 font-sans">Tiles to share with partner:</div>
             <div class="flex justify-center items-center gap-4">
-              <button type="button" id="minusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold  hover:bg-amber-50  interactive-option shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">-</button>
+              <button type="button" id="minusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold hover:bg-amber-50 interactive-option shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">-</button>
               <span id="transferCount" class="font-serif text-3xl font-semibold text-[var(--accent-gold)] w-12 text-center">${transferCount}</span>
-              <button type="button" id="plusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold  hover:bg-amber-50  interactive-option shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">+</button>
+              <button type="button" id="plusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold hover:bg-amber-50 interactive-option shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">+</button>
             </div>
           </div>
         </div>
-
-        <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
-          <span>Sharing: <strong class="text-[var(--text-primary)]">${transferCount} tiles</strong> (You keep ${userTotal})</span>
-          <span class="text-[10px] text-stone-400 font-sans">Round ${currentRound + 1} of 3</span>
-        </div>
-
-        <!-- PRIMARY ACTION BUTTON -->
-        <div class="flex justify-end">
-          <button type="button" id="confirmTransferBtn" class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs min-h-[44px]">
-            ${currentRound < 2 ? 'Confirm Tile Sharing &rarr;' : 'Finish Tile Allocation &rarr;'}
-          </button>
-        </div>
-      </div>
-    `;
+      `,
+      summaryContent: `
+        <span>Sharing: <strong class="text-[var(--text-primary)]">${transferCount} tiles</strong> (You keep ${userTotal})</span>
+        <span class="text-[10px] text-stone-400 font-sans">Round ${currentRound + 1} of 3</span>
+      `,
+      actionButtonId: 'confirmTransferBtn',
+      actionButtonText: currentRound < 2 ? 'Confirm Allocation &rarr;' : 'Confirm & Finish &rarr;',
+      progressText: `Round ${currentRound + 1} of 3`
+    });
 
     document.getElementById('minusTileBtn')?.addEventListener('click', () => {
       lastInputModality = 'mouse';
@@ -305,45 +281,27 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
     const r = rounds[currentRound];
     const activeSlot = r.slots.find(s => s.id === chosenSlot);
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in max-w-2xl mx-auto">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 3: The Shared Canvas</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
-        </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Gallery Wall</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Coordinate artwork placement with your partner.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Check your partner's position. Choose an open spot that balances the wall.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS -->
-        <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected flex items-center justify-between">
+    app.innerHTML = renderGameShell({
+      worldCode: 'W3',
+      worldIndex: 2,
+      title: 'The Gallery Wall',
+      subtitle: 'Coordinate artwork placement with your partner.',
+      instructionPrompt: 'Your Task',
+      instruction: "Check your partner's position. Choose an open spot that balances the wall.",
+      stimulusContent: `
+        <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs flex items-center justify-between">
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${r.title}:</strong> ${r.partner_desc}
           </span>
           <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Round ${currentRound + 1} of 3</span>
         </div>
-
-        <!-- INTERACTION AREA -->
-        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
+      `,
+      interactionContent: `
+        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
           <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Available Wall Placement Slots:</div>
           <div class="flex flex-col gap-2.5">
             ${r.slots.map(s => `
-              <button type="button" class="slot-btn px-4 py-3 text-xs border rounded-xs ${chosenSlot === s.id ? 'border-[var(--accent-gold)] bg-amber-50/70 font-semibold shadow-xs' : 'border-[var(--grid-border)] bg-white '} interactive-option flex items-center justify-between min-h-[48px]" data-slot="${s.id}" tabindex="0">
+              <button type="button" class="slot-btn px-4 py-3 text-xs border rounded-xs ${chosenSlot === s.id ? 'border-[var(--accent-gold)] bg-amber-50/70 font-semibold shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'} interactive-option flex items-center justify-between min-h-[48px]" data-slot="${s.id}" tabindex="0">
                 <span class="flex items-center gap-2">
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${chosenSlot === s.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-400'}">${chosenSlot === s.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)]">${s.label}</span>
@@ -353,21 +311,16 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
             `).join('')}
           </div>
         </div>
-
-        <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
-          <span>${chosenSlot ? `You selected: <strong class="text-[var(--text-primary)]">${activeSlot?.label}</strong>` : 'Select a spot above to continue.'}</span>
-          <span class="text-[10px] text-stone-400 font-sans">Round ${currentRound + 1} of 3</span>
-        </div>
-
-        <!-- PRIMARY ACTION BUTTON -->
-        <div class="flex justify-end">
-          <button type="button" id="confirmWallBtn" ${chosenSlot ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
-            ${currentRound < 2 ? 'Confirm Placement &rarr;' : 'Finish Wall Coordination &rarr;'}
-          </button>
-        </div>
-      </div>
-    `;
+      `,
+      summaryContent: `
+        <span>${chosenSlot ? `You selected: <strong class="text-[var(--text-primary)]">${activeSlot?.label}</strong>` : 'Select a spot above to continue.'}</span>
+        <span class="text-[10px] text-stone-400 font-sans">Round ${currentRound + 1} of 3</span>
+      `,
+      actionButtonId: 'confirmWallBtn',
+      actionButtonText: currentRound < 2 ? 'Confirm Placement &rarr;' : 'Confirm & Finish &rarr;',
+      actionButtonDisabled: !chosenSlot,
+      progressText: `Round ${currentRound + 1} of 3`
+    });
 
     app.querySelectorAll('.slot-btn').forEach(btn => {
       const selectSlot = (modality) => {
@@ -529,7 +482,6 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
             <span class="act-badge">World 3: The Shared Canvas</span>
             
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->

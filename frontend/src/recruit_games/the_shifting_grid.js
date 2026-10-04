@@ -6,7 +6,7 @@
    Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
    ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
 
 export function runTheShiftingGrid(context, renderHeader) {
   const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
@@ -70,60 +70,38 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
 
     const t = trials[currentIdx];
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in max-w-2xl mx-auto">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 4: The Shifting Grid</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
-        </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Ceramic Mosaic</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Sort each ceramic tile into the matching container.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Examine the tile below. Click Container 1 or 2 to file it.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS -->
-        <div class="p-6 bg-white border border-[var(--grid-border)] mb-4 text-center shadow-xs rounded-xs candidate-content-protected">
+    app.innerHTML = renderGameShell({
+      worldCode: 'W4',
+      worldIndex: 3,
+      title: 'The Ceramic Mosaic',
+      subtitle: 'Sort each ceramic tile into the matching container.',
+      instructionPrompt: 'Your Task',
+      instruction: 'Examine the tile below. Click Container 1 or 2 to file it.',
+      stimulusContent: `
+        <div class="p-6 bg-white border border-[var(--grid-border)] text-center shadow-xs rounded-xs">
           <div class="text-5xl mb-2 ${t.color === 'Gold' ? 'text-[var(--accent-gold)]' : 'text-emerald-700'}">
             ${t.icon}
           </div>
           <div class="text-sm font-serif font-semibold text-[var(--text-primary)]">${t.label}</div>
           <div class="text-[11px] text-[var(--text-secondary)] mt-0.5 font-sans uppercase">${t.color} &bull; ${t.shape}</div>
         </div>
-
-        <!-- INTERACTION AREA -->
-        <div class="grid grid-cols-2 gap-4 mb-4 candidate-content-protected">
-          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)]  hover:bg-amber-50/40  interactive-option text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_1" tabindex="0">
+      `,
+      interactionContent: `
+        <div class="grid grid-cols-2 gap-4">
+          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:bg-amber-50/40 interactive-option text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_1" tabindex="0">
             <span class="text-2xl text-[var(--accent-gold)] block mb-1">&#9679;</span>
             <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 1</span>
             <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Gold Circle</span>
           </button>
-          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)]  hover:bg-amber-50/40  interactive-option text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
+          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:bg-amber-50/40 interactive-option text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
             <span class="text-2xl text-emerald-800 block mb-1">&#9632;</span>
             <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 2</span>
             <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Sage Square</span>
           </button>
         </div>
-
-        <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
-          Tile ${currentIdx + 1} of ${trials.length}
-        </div>
-      </div>
-    `;
+      `,
+      progressText: `Tile ${currentIdx + 1} of ${trials.length}`
+    });
 
     app.querySelectorAll('.bin-btn').forEach(btn => {
       const handleSort = (modality) => {
@@ -263,45 +241,27 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
     const s = sequences[currentSeq];
     const activeOpt = s.options.find(o => o.id === selectedAction);
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in max-w-2xl mx-auto">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 4: The Shifting Grid</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
-        </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Courtyard Setup</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Choose the best response when unexpected studio events happen.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Read the situation below. Pick the most practical next step.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS -->
-        <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected flex items-center justify-between">
+    app.innerHTML = renderGameShell({
+      worldCode: 'W4',
+      worldIndex: 3,
+      title: 'The Courtyard Setup',
+      subtitle: 'Choose the best response when unexpected studio events happen.',
+      instructionPrompt: 'Your Task',
+      instruction: 'Read the situation below. Pick the most practical next step.',
+      stimulusContent: `
+        <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs flex items-center justify-between">
           <span class="text-xs font-serif text-[var(--text-primary)]">
             <strong>${s.title}:</strong> ${s.situation}
           </span>
           <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${currentSeq + 1} of 4</span>
         </div>
-
-        <!-- INTERACTION AREA -->
-        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
+      `,
+      interactionContent: `
+        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
           <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Available Responses:</div>
           <div class="space-y-2.5">
             ${s.options.map(opt => `
-              <div class="e2-opt p-3.5 bg-white border ${selectedAction === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-action="${opt.id}" tabindex="0" role="button">
+              <div class="e2-opt p-3.5 bg-white border ${selectedAction === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs flex items-center justify-between min-h-[48px]" data-action="${opt.id}" tabindex="0" role="button">
                 <span class="flex items-center gap-2">
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedAction === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAction === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
@@ -311,21 +271,16 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
             `).join('')}
           </div>
         </div>
-
-        <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
-          <span>${selectedAction ? `You selected: <strong class="text-[var(--text-primary)]">${activeOpt?.label}</strong>` : 'Select an option above to continue.'}</span>
-          <span class="text-[10px] text-stone-400 font-sans">${currentSeq + 1} / ${sequences.length}</span>
-        </div>
-
-        <!-- PRIMARY ACTION BUTTON -->
-        <div class="flex justify-end">
-          <button type="button" id="confirmE2Btn" ${selectedAction ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
-            ${currentSeq < sequences.length - 1 ? 'Confirm Choice &rarr;' : 'Finish Setup Sequences &rarr;'}
-          </button>
-        </div>
-      </div>
-    `;
+      `,
+      summaryContent: `
+        <span>${selectedAction ? `You selected: <strong class="text-[var(--text-primary)]">${activeOpt?.label}</strong>` : 'Select an option above to continue.'}</span>
+        <span class="text-[10px] text-stone-400 font-sans">${currentSeq + 1} / ${sequences.length}</span>
+      `,
+      actionButtonId: 'confirmE2Btn',
+      actionButtonText: currentSeq < sequences.length - 1 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
+      actionButtonDisabled: !selectedAction,
+      progressText: `Scenario ${currentSeq + 1} of ${sequences.length}`
+    });
 
     app.querySelectorAll('.e2-opt').forEach(opt => {
       const chooseAction = (modality) => {
@@ -469,7 +424,6 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
             <span class="act-badge">World 4: The Shifting Grid</span>
             
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
         </div>
 
         <!-- TASK HEADER -->

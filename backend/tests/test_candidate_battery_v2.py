@@ -17,8 +17,11 @@ from app.models.recruit import (
 from app.services.sjt_engine import score_sjt_responses, verify_and_load_configs
 from app.services.task_definitions import (
     get_task_definitions, get_battery_config,
-    get_candidate_core_games, get_research_bank_games
+    get_candidate_core_games, get_research_bank_games,
+    get_expected_candidate_game_count, is_candidate_core_game,
+    is_research_bank_game, get_game_role
 )
+from app.services.descriptive_task_record import get_session_task_records
 from app.services.game_scoring_engine import (
     score_game, SCORING_VERSION,
     GAME_PARAMETERS, GAME_BOUNDS
@@ -448,17 +451,112 @@ def run_tests():
     assert_true(total_min <= 14.0, f"Modeled time {total_min:.2f} min fits design ceiling (<= 14.0 min)")
 
     # ----------------------------------------------------
-    # SECTION G: ACCESSIBILITY & CONTRAST INVARIANTS
+    # SECTION H: SYSTEM-WIDE BATTERY PROPAGATION & UI SHELL
     # ----------------------------------------------------
-    print("\n--- G. Accessibility Invariants ---")
+    print("\n--- H. System-Wide Battery Propagation & UI Shell ---")
 
+    # 1. Canonical query helpers
+    assert_eq(get_expected_candidate_game_count("2.0"), 14, "Canonical count for V2 battery is 14")
+    assert_eq(get_expected_candidate_game_count("1.0"), 21, "Canonical count for V1 battery is 21")
+    assert_eq(get_expected_candidate_game_count("historical"), 21, "Canonical count for historical battery is 21")
+
+    candidate_core_ids = [g for games in candidate_games.values() for g in games]
+    research_bank_ids = [g for games in research_games.values() for g in games]
+
+    for cg in candidate_core_ids:
+        assert_true(is_candidate_core_game(cg), f"is_candidate_core_game({cg}) is True")
+        assert_true(not is_research_bank_game(cg), f"is_research_bank_game({cg}) is False")
+        assert_eq(get_game_role(cg), "candidate_core", f"get_game_role({cg}) is 'candidate_core'")
+
+    for rg in research_bank_ids:
+        assert_true(not is_candidate_core_game(rg), f"is_candidate_core_game({rg}) is False")
+        assert_true(is_research_bank_game(rg), f"is_research_bank_game({rg}) is True")
+        assert_eq(get_game_role(rg), "research_bank", f"get_game_role({rg}) is 'research_bank'")
+
+    with Session(engine) as db:
+        # 2. Task records battery_role annotation
+        task_records = get_session_task_records(db, sid)
+        assert_eq(len(task_records), 21, "21 total task records (core + research bank) returned")
+        core_records = [tr for tr in task_records if tr.get("battery_role") == "candidate_core"]
+        bank_records = [tr for tr in task_records if tr.get("battery_role") == "research_bank"]
+        assert_eq(len(core_records), 14, "14 candidate core task records returned")
+        assert_eq(len(bank_records), 7, "7 research bank task records returned")
+        for tr in core_records:
+            assert_eq(tr.get("status"), "RECORDED", f"Candidate core task record {tr.get('game_id')} is RECORDED")
+        for tr in bank_records:
+            assert_eq(tr.get("status"), "NOT_DERIVED", f"Research bank task record {tr.get('game_id')} is NOT_DERIVED")
+
+        # 3. Research view and session listing propagation
+        from app.routers.research_view import list_research_sessions, get_session_research_view
+        class DummyRequest:
+            client = None
+            query_params = {}
+        admin_user = {"email": "admin@example.com", "status": "ADMIN"}
+        sessions_listing = list_research_sessions(request=DummyRequest(), admin_user=admin_user, db=db)
+        found_sess = next((s for s in sessions_listing if s.get("session_id") == sid), None)
+        assert_true(found_sess is not None, "Test session found in research sessions listing")
+        assert_eq(found_sess.get("battery_expected_tasks"), 14, "Research listing reports battery_expected_tasks=14 for V2")
+        assert_eq(found_sess.get("completed_tasks_count"), 14, "Research listing reports completed_tasks_count=14")
+
+        detail_view = get_session_research_view(sid, request=DummyRequest(), admin_user=admin_user, db=db)
+        meta = detail_view.get("metadata", {})
+        assert_eq(meta.get("battery_version"), "2.0", "Research view metadata reports battery_version='2.0'")
+        assert_eq(meta.get("expected_candidate_game_count"), 14, "Research view metadata reports expected_candidate_game_count=14")
+        assert_eq(len(meta.get("candidate_core_games", [])), 14, "Research view metadata includes 14 candidate_core_games")
+        assert_eq(len(meta.get("research_bank_games", [])), 7, "Research view metadata includes 7 research_bank_games")
+
+    # 4. Standardized Recruit Game Shell across all 7 world files
     index_js_path = os.path.join(games_dir, "index.js")
     with open(index_js_path, "r", encoding="utf-8") as f:
         index_js_content = f.read()
 
-    assert_true('tabindex="0"' in index_js_content, "Tutorial card specifies tabindex='0'")
-    assert_true('role="button"' in index_js_content, "Tutorial card specifies role='button'")
-    assert_true('aria-label=' in index_js_content, "Tutorial card specifies aria-label")
+    assert_true('export function renderGameShell' in index_js_content, "renderGameShell exported in index.js")
+    assert_true('export const WORLD_METADATA' in index_js_content, "WORLD_METADATA exported in index.js")
+
+    world_files = [
+        "the_archive.js",
+        "the_frequency.js",
+        "the_shared_canvas.js",
+        "the_shifting_grid.js",
+        "the_hidden_gallery.js",
+        "the_broken_tool.js",
+        "the_repetition.js"
+    ]
+    for wf in world_files:
+        wf_path = os.path.join(games_dir, wf)
+        with open(wf_path, "r", encoding="utf-8") as f:
+            wf_content = f.read()
+        assert_true('renderGameShell' in wf_content, f"{wf} imports and calls renderGameShell")
+        assert_true('min-h-[44px]' in wf_content, f"{wf} enforces >= 44px touch targets on primary actions")
+
+    # 5. Timer badge purge: Zero 'takes about' in any game files
+    for wf in world_files:
+        wf_path = os.path.join(games_dir, wf)
+        with open(wf_path, "r", encoding="utf-8") as f:
+            wf_content = f.read()
+        assert_true("takes about" not in wf_content.lower(), f"{wf} has zero 'takes about' timer badges")
+
+    # 6. Interaction grammar: explicit primary confirmation actions on discrete tasks
+    expected_confirmations = [
+        ("the_archive.js", ["Confirm Shelf", "Confirm Choice", "Confirm & Finish"]),
+        ("the_frequency.js", ["Confirm Setting", "Confirm Choice", "Confirm & Finish"]),
+        ("the_shared_canvas.js", ["Confirm Allocation", "Confirm Placement", "Confirm & Finish"]),
+        ("the_shifting_grid.js", ["Confirm Choice", "Confirm & Finish"]),
+        ("the_hidden_gallery.js", ["Confirm Decision", "Confirm Origin", "Confirm & Finish"]),
+        ("the_broken_tool.js", ["Confirm Assembly", "Confirm Technique", "Confirm & Finish"]),
+        ("the_repetition.js", ["Apply Wax Seal", "Assemble Required Folder", "Confirm & Finish"])
+    ]
+    for wf, actions in expected_confirmations:
+        wf_path = os.path.join(games_dir, wf)
+        with open(wf_path, "r", encoding="utf-8") as f:
+            wf_content = f.read()
+        for act in actions:
+            assert_true(act in wf_content, f"{wf} contains standardized action text '{act}'")
+
+    # 7. renderGameShell API supports feedbackContent and standardized button region
+    assert_true('feedbackContent = \'\'' in index_js_content, "renderGameShell supports feedbackContent")
+    assert_true('FEEDBACK REGION' in index_js_content, "renderGameShell has dedicated FEEDBACK REGION")
+    assert_true('PRIMARY ACTION BAR' in index_js_content, "renderGameShell has dedicated PRIMARY ACTION BAR")
 
     print("\n" + "=" * 70)
     print(f"CANDIDATE BATTERY V2 VERIFICATION PASSED: {passed}/{total} CHECKS SUCCEEDED")

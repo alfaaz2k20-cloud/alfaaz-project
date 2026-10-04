@@ -18,7 +18,8 @@ from app.services.task_definitions import (
     reconstruct_m1_diligence_state,
     reconstruct_m2_continuation_state,
     reconstruct_m3_persistence_state,
-    get_stimulus_ground_truth
+    get_stimulus_ground_truth,
+    get_game_role
 )
 
 # Canonical 21 games metadata
@@ -96,6 +97,7 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
                 "world_id": g["world_id"],
                 "world_name": g["world_name"],
                 "game_name": g["game_name"],
+                "battery_role": get_game_role(gid),
                 "status": "NOT_DERIVED",
                 "display_text": "not derived yet",
                 "is_neutral_record": g["is_neutral"],
@@ -110,6 +112,7 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
                 "world_id": g["world_id"],
                 "world_name": g["world_name"],
                 "game_name": g["game_name"],
+                "battery_role": get_game_role(gid),
                 "status": "INVALID",
                 "display_text": "INVALID",
                 "is_neutral_record": g["is_neutral"],
@@ -125,6 +128,7 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
                 "world_id": g["world_id"],
                 "world_name": g["world_name"],
                 "game_name": g["game_name"],
+                "battery_role": get_game_role(gid),
                 "status": "INSUFFICIENT",
                 "display_text": "INSUFFICIENT",
                 "is_neutral_record": g["is_neutral"],
@@ -265,6 +269,7 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
             "world_id": g["world_id"],
             "world_name": g["world_name"],
             "game_name": g["game_name"],
+            "battery_role": get_game_role(gid),
             "status": gate_status,
             "display_text": desc_text if desc_text else "not derived yet",
             "is_neutral_record": g["is_neutral"],

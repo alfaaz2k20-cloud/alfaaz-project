@@ -418,9 +418,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const dateStr = s.created_at ? new Date(s.created_at).toLocaleString() : '—';
           const sjtBadgeText = s.has_sjt ? 'SJT: Completed' : 'SJT: In Progress';
           const sjtBadgeClass = s.has_sjt ? 'badge-approved' : 'badge-pending';
+          const totalExpected = s.battery_expected_tasks || (s.battery_version === '1.0' ? 21 : 14);
           const tasksCount = s.completed_tasks_count || 0;
-          const tasksText = `Tasks: ${tasksCount} / 21 completed`;
-          const evidenceStatus = s.evidence_status || (tasksCount >= 21 && s.has_sjt ? 'Evidence Collected' : 'In Progress');
+          const tasksText = `Tasks: ${tasksCount} / ${totalExpected} completed`;
+          const evidenceStatus = s.evidence_status || (tasksCount >= totalExpected && s.has_sjt ? 'Evidence Collected' : 'In Progress');
           const evidenceBadgeClass = evidenceStatus === 'Evidence Collected' ? 'badge-approved' : 'badge-pending';
           const sessionStatus = s.status || 'ACTIVE';
           const isSessionComplete = ['COMPLETE', 'COMPLETED'].includes(sessionStatus);

@@ -6,7 +6,7 @@
    Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
    ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
 
 export function runTheFrequency(context, renderHeader) {
   const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
@@ -105,33 +105,15 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
 
     const t = trials[currentTrial];
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in max-w-2xl mx-auto">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 1: The Frequency</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
-        </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">Tuning the Hall</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Adjust the hall sound to support the poetry reading.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Read the sound note below. Pick your response and move the slider.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS -->
-        <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected">
+    app.innerHTML = renderGameShell({
+      worldCode: 'W1',
+      worldIndex: 0,
+      title: 'Tuning the Hall',
+      subtitle: 'Adjust the hall sound to support the poetry reading.',
+      instructionPrompt: 'Your Task',
+      instruction: 'Read the sound note below. Pick your response and move the slider.',
+      stimulusContent: `
+        <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-full bg-[var(--accent-gold)] text-white flex items-center justify-center font-serif text-sm font-semibold shrink-0">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
@@ -142,64 +124,59 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
             </div>
           </div>
         </div>
-
-        <!-- INTERACTION AREA -->
-        <div class="mb-5 candidate-content-protected">
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">1. Choose your response:</div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'accommodate' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)] bg-white '}" data-action="accommodate">
-              <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full ${selectedAction === 'accommodate' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
-                Adjust Sound
-              </div>
-              <div class="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">Change the sound setting to help the speaker.</div>
-            </button>
-            <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'maintain_objective' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)] bg-white '}" data-action="maintain_objective">
-              <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full ${selectedAction === 'maintain_objective' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
-                Keep Baseline
-              </div>
-              <div class="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">Leave the current sound setting as it is.</div>
-            </button>
-            <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'clarify' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)] bg-white '}" data-action="clarify">
-              <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full ${selectedAction === 'clarify' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
-                Check Channel
-              </div>
-              <div class="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">Check the audio signal before changing settings.</div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Slider Area -->
-        <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-5 rounded-xs shadow-inner candidate-content-protected">
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans text-center">2. Adjust sound level:</div>
-          <canvas id="waveCanvas" width="600" height="80" class="w-full h-20 bg-white border border-[var(--grid-border)] mb-4 rounded-xs"></canvas>
-
-          <div class="w-full max-w-md mx-auto">
-            <div class="flex justify-between items-center text-xs text-[var(--text-secondary)] mb-2">
-              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-600 inline-block"></span> Soft (0)</span>
-              <span class="font-sans text-sm font-semibold text-[var(--accent-gold)] bg-white px-3 py-1 border border-[var(--grid-border)] rounded-xs" id="sliderValDisplay">${sliderVal}</span>
-              <span class="flex items-center gap-1">Bright (100) <span class="w-2 h-2 rounded-full bg-orange-500 inline-block"></span></span>
+      `,
+      interactionContent: `
+        <div class="space-y-4">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">1. Choose your response:</div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'accommodate' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="accommodate">
+                <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full ${selectedAction === 'accommodate' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
+                  Adjust Sound
+                </div>
+                <div class="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">Change the sound setting to help the speaker.</div>
+              </button>
+              <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'maintain_objective' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="maintain_objective">
+                <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full ${selectedAction === 'maintain_objective' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
+                  Keep Baseline
+                </div>
+                <div class="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">Leave the current sound setting as it is.</div>
+              </button>
+              <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'clarify' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="clarify">
+                <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full ${selectedAction === 'clarify' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
+                  Check Channel
+                </div>
+                <div class="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">Check the audio signal before changing settings.</div>
+              </button>
             </div>
-            <input type="range" id="freqSlider" min="0" max="100" step="5" value="${sliderVal}" class="w-full accent-[#bd6f5d] cursor-pointer h-2 bg-stone-200 rounded-lg min-h-[44px]">
+          </div>
+
+          <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-inner">
+            <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans text-center">2. Adjust sound level:</div>
+            <canvas id="waveCanvas" width="600" height="80" class="w-full h-20 bg-white border border-[var(--grid-border)] mb-3 rounded-xs"></canvas>
+
+            <div class="w-full max-w-md mx-auto">
+              <div class="flex justify-between items-center text-xs text-[var(--text-secondary)] mb-2">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-600 inline-block"></span> Soft (0)</span>
+                <span class="font-sans text-sm font-semibold text-[var(--accent-gold)] bg-white px-3 py-1 border border-[var(--grid-border)] rounded-xs" id="sliderValDisplay">${sliderVal}</span>
+                <span class="flex items-center gap-1">Bright (100) <span class="w-2 h-2 rounded-full bg-orange-500 inline-block"></span></span>
+              </div>
+              <input type="range" id="freqSlider" min="0" max="100" step="5" value="${sliderVal}" class="w-full accent-[#bd6f5d] cursor-pointer h-2 bg-stone-200 rounded-lg min-h-[44px]">
+            </div>
           </div>
         </div>
-
-        <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
-          <span>Your setting: <strong class="text-[var(--text-primary)]" id="choiceSummary">${selectedAction === 'accommodate' ? 'Adjust Sound' : (selectedAction === 'maintain_objective' ? 'Keep Baseline' : 'Check Channel')} (Level: ${sliderVal})</strong></span>
-          <span class="text-[10px] text-stone-400 font-sans">${currentTrial + 1} / 6</span>
-        </div>
-
-        <!-- PRIMARY ACTION BUTTON -->
-        <div class="flex justify-end">
-          <button id="lockFreqBtn" class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs flex items-center justify-center gap-2 min-h-[44px]">
-            ${currentTrial < 5 ? 'Confirm Setting &rarr;' : 'Finish Sound Setup &rarr;'}
-          </button>
-        </div>
-      </div>
-    `;
+      `,
+      summaryContent: `
+        <span>Your setting: <strong class="text-[var(--text-primary)]" id="choiceSummary">${selectedAction === 'accommodate' ? 'Adjust Sound' : (selectedAction === 'maintain_objective' ? 'Keep Baseline' : 'Check Channel')} (Level: ${sliderVal})</strong></span>
+        <span class="text-[10px] text-stone-400 font-sans">${currentTrial + 1} / 6</span>
+      `,
+      actionButtonId: 'lockFreqBtn',
+      actionButtonText: currentTrial < 5 ? 'Confirm Setting &rarr;' : 'Confirm & Finish &rarr;',
+      progressText: `Sound Note ${currentTrial + 1} of 6`
+    });
 
     const canvas = document.getElementById('waveCanvas');
     const ctx = canvas?.getContext('2d');
@@ -428,33 +405,16 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
 
     const t = trials[currentTrial];
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in max-w-2xl mx-auto">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-[var(--grid-border)]">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 1: The Frequency</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
-        </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Gathering Voices</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Coordinate sound with your hall team.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Read the message from your teammate. Pick the best response below.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS -->
-        <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected">
+    const selectedChoice = choices.find(c => c.id === selectedAction);
+    app.innerHTML = renderGameShell({
+      worldCode: 'W1',
+      worldIndex: 0,
+      title: 'The Gathering Voices',
+      subtitle: 'Coordinate sound with your hall team.',
+      instructionPrompt: 'Your Task',
+      instruction: 'Read the message from your teammate. Pick the best response below.',
+      stimulusContent: `
+        <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-full bg-[var(--accent-gold)] text-white flex items-center justify-center font-serif text-sm font-semibold shrink-0">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
@@ -465,13 +425,13 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
             </div>
           </div>
         </div>
-
-        <!-- INTERACTION AREA -->
-        <div class="mb-4 candidate-content-protected">
+      `,
+      interactionContent: `
+        <div>
           <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Pick your response:</div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             ${choices.map(c => `
-              <div class="f2-card p-4 bg-white border ${selectedAction === c.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer  interactive-option space-y-1.5 rounded-xs min-h-[56px]" data-action="${c.id}" tabindex="0" role="button">
+              <div class="f2-card p-4 bg-white border ${selectedAction === c.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} cursor-pointer interactive-option space-y-1.5 rounded-xs min-h-[56px]" data-action="${c.id}" tabindex="0" role="button">
                 <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${selectedAction === c.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                   ${c.title}
@@ -481,21 +441,16 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
             `).join('')}
           </div>
         </div>
-
-        <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
-          <span id="f2ChoiceText">${selectedAction ? `You selected: <strong class="text-[var(--text-primary)]">${choices.find(c => c.id === selectedAction)?.title}</strong>` : 'Select an option above to continue.'}</span>
-          <span class="text-[10px] text-stone-400 font-sans">${currentTrial + 1} / 4</span>
-        </div>
-
-        <!-- PRIMARY ACTION BUTTON -->
-        <div class="flex justify-end">
-          <button id="f2ConfirmBtn" ${selectedAction ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
-            ${currentTrial < 3 ? 'Confirm Choice &rarr;' : 'Finish Team Coordination &rarr;'}
-          </button>
-        </div>
-      </div>
-    `;
+      `,
+      summaryContent: `
+        <span id="f2ChoiceText">${selectedAction ? `You selected: <strong class="text-[var(--text-primary)]">${selectedChoice?.title}</strong>` : 'Select an option above to continue.'}</span>
+        <span class="text-[10px] text-stone-400 font-sans">${currentTrial + 1} / 4</span>
+      `,
+      actionButtonId: 'f2ConfirmBtn',
+      actionButtonText: currentTrial < 3 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
+      actionButtonDisabled: !selectedAction,
+      progressText: `Message ${currentTrial + 1} of 4`
+    });
 
     const confirmBtn = document.getElementById('f2ConfirmBtn');
     const choiceText = document.getElementById('f2ChoiceText');
@@ -664,7 +619,6 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
               <span class="act-badge">World 1: The Frequency</span>
               
             </div>
-            <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -769,7 +723,6 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
               <span class="act-badge">World 1: The Frequency</span>
               
             </div>
-            <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 1 minute</div>
           </div>
 
           <!-- TASK HEADER -->

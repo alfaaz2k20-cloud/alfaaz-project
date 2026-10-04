@@ -7,7 +7,7 @@
    and scoped candidate content protection.
    ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
 
 export function runTheHiddenGallery(context, renderHeader) {
   const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
@@ -124,33 +124,15 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
 
     const d = decisions[currentDecision];
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 5: The Hidden Gallery</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
-        </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Curatorial Dossier</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Choose the best way to care for each historic item.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Review the artifact below. Choose an action. Optional reference notes are available if you want them.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS -->
-        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
+    app.innerHTML = renderGameShell({
+      worldCode: 'W5',
+      worldIndex: 4,
+      title: 'The Curatorial Dossier',
+      subtitle: 'Choose the best way to care for each historic item.',
+      instructionPrompt: 'Your Task',
+      instruction: 'Review the artifact below. Choose an action. Optional reference notes are available if you want them.',
+      stimulusContent: `
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Artifact Record</span>
             <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Record ${currentDecision + 1} of 4</span>
@@ -158,58 +140,53 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${d.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${d.scenario}</div>
         </div>
-
-        <!-- INTERACTION AREA: Optional Reference Notes -->
-        <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] uppercase font-sans text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
-            <span>Optional Reference Notes (Click to Open)</span>
-            <span class="text-[9px] text-[var(--text-secondary)] font-normal">Voluntary consultation</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            ${d.optional_resources.map(res => `
-              <div class="opt-res-card p-3 bg-white border ${viewedResources[res.id] ? 'border-[var(--accent-gold)] bg-amber-50/30' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs min-h-[48px] flex flex-col justify-center" data-res="${res.id}">
-                <div class="flex items-center justify-between">
-                  <span class="font-medium text-[var(--text-primary)] flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5 text-[var(--accent-gold)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    ${res.topic}
-                  </span>
-                  <span class="text-[9px] font-sans uppercase text-[var(--text-secondary)]">${viewedResources[res.id] ? 'Opened' : 'Inspect'}</span>
+      `,
+      interactionContent: `
+        <div class="space-y-4">
+          <!-- Optional Reference Notes -->
+          <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
+            <div class="text-[10px] uppercase font-sans text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
+              <span>Optional Reference Notes (Click to Open)</span>
+              <span class="text-[9px] text-[var(--text-secondary)] font-normal">Voluntary consultation</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              ${d.optional_resources.map(res => `
+                <div class="opt-res-card p-3 bg-white border ${viewedResources[res.id] ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs min-h-[48px] flex flex-col justify-center" data-res="${res.id}">
+                  <div class="flex items-center justify-between">
+                    <span class="font-medium text-[var(--text-primary)] flex items-center gap-1.5">
+                      <svg class="w-3.5 h-3.5 text-[var(--accent-gold)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                      ${res.topic}
+                    </span>
+                    <span class="text-[9px] font-sans uppercase text-[var(--text-secondary)]">${viewedResources[res.id] ? 'Opened' : 'Inspect'}</span>
+                  </div>
+                  ${viewedResources[res.id] ? `<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-soft-fade-in">${res.summary}</p>` : ''}
                 </div>
-                ${viewedResources[res.id] ? `<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-soft-fade-in">${res.summary}</p>` : ''}
-              </div>
-            `).join('')}
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Curatorial Actions -->
+          <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
+            <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Choose Preservation Action:</div>
+            <div class="space-y-2.5">
+              ${d.options.map(opt => `
+                <div class="q1-opt p-3.5 bg-white border ${selectedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs flex items-center justify-between min-h-[48px]" data-choice="${opt.id}" tabindex="0" role="button">
+                  <span class="flex items-center gap-2.5">
+                    <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedChoice === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedChoice === opt.id ? '✓' : ''}</span>
+                    <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
+                  </span>
+                  <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium shrink-0">Action ${String.fromCharCode(65 + d.options.indexOf(opt))}</span>
+                </div>
+              `).join('')}
+            </div>
           </div>
         </div>
-
-        <!-- YOUR CHOICE: Curatorial Actions -->
-        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Choose Preservation Action:</div>
-          <div class="space-y-2.5">
-            ${d.options.map(opt => `
-              <div class="q1-opt p-3.5 bg-white border ${selectedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-choice="${opt.id}" tabindex="0" role="button">
-                <span class="flex items-center gap-2.5">
-                  <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedChoice === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedChoice === opt.id ? '✓' : ''}</span>
-                  <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
-                </span>
-                <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium shrink-0">Action ${String.fromCharCode(65 + d.options.indexOf(opt))}</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- PRIMARY ACTION BUTTON -->
-        <div class="flex justify-end mb-4">
-          <button type="button" id="confirmQ1Btn" ${selectedChoice ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
-            ${currentDecision < decisions.length - 1 ? 'Confirm Decision &rarr;' : 'Finish Curatorial Decisions &rarr;'}
-          </button>
-        </div>
-
-        <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
-          
-        </div>
-      </div>
-    `;
+      `,
+      actionButtonId: 'confirmQ1Btn',
+      actionButtonText: currentDecision < decisions.length - 1 ? 'Confirm Decision &rarr;' : 'Confirm & Finish &rarr;',
+      actionButtonDisabled: !selectedChoice,
+      progressText: `Record ${currentDecision + 1} of ${decisions.length}`
+    });
 
     // Handler for optional resources
     app.querySelectorAll('.opt-res-card').forEach(card => {
@@ -398,89 +375,66 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
 
     const r = relics[currentTrial];
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 5: The Hidden Gallery</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
-        </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Antiquarian’s Bench</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Inspect physical clues to identify each historic object.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Examine the relic below. Inspect any clues you wish. Then choose its origin.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS -->
-        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
+    app.innerHTML = renderGameShell({
+      worldCode: 'W5',
+      worldIndex: 4,
+      title: 'The Antiquarian’s Bench',
+      subtitle: 'Inspect physical clues to identify each historic object.',
+      instructionPrompt: 'Your Task',
+      instruction: 'Examine the relic below. Inspect any clues you wish. Then choose its origin.',
+      stimulusContent: `
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Relic Specimen</span>
-            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Specimen ${currentTrial + 1} of 3</span>
+            <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Specimen ${currentTrial + 1} of ${relics.length}</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)]">${r.title}</div>
           <div class="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">${r.description}</div>
         </div>
-
-        <!-- INTERACTION AREA: Clues Inspection Grid -->
-        <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] uppercase font-sans text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
-            <span>Physical Clues Available for Inspection</span>
-            <span class="text-[9px] text-[var(--text-secondary)] font-normal">Click clue to examine</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-            ${r.clues.map(c => `
-              <div class="clue-btn p-3.5 bg-white border ${inspectedClues[c.id] ? 'border-[var(--accent-gold)] bg-amber-50/40 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs min-h-[48px] flex flex-col justify-between" data-clue="${c.id}" tabindex="0" role="button">
-                <div class="font-medium text-[var(--text-primary)] flex items-center justify-between">
-                  <span>${c.label}</span>
-                  <span class="text-[9px] font-sans uppercase text-[var(--text-secondary)]">${inspectedClues[c.id] ? 'Inspected' : 'Inspect'}</span>
+      `,
+      interactionContent: `
+        <div class="space-y-4">
+          <!-- Clues Inspection Grid -->
+          <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
+            <div class="text-[10px] uppercase font-sans text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
+              <span>Physical Clues Available for Inspection</span>
+              <span class="text-[9px] text-[var(--text-secondary)] font-normal">Click clue to examine</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+              ${r.clues.map(c => `
+                <div class="clue-btn p-3.5 bg-white border ${inspectedClues[c.id] ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs min-h-[48px] flex flex-col justify-between" data-clue="${c.id}" tabindex="0" role="button">
+                  <div class="font-medium text-[var(--text-primary)] flex items-center justify-between">
+                    <span>${c.label}</span>
+                    <span class="text-[9px] font-sans uppercase text-[var(--text-secondary)]">${inspectedClues[c.id] ? 'Inspected' : 'Inspect'}</span>
+                  </div>
+                  ${inspectedClues[c.id] ? `<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-soft-fade-in">${c.detail}</p>` : ''}
                 </div>
-                ${inspectedClues[c.id] ? `<p class="mt-2 text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--grid-border)] pt-2 animate-soft-fade-in">${c.detail}</p>` : ''}
-              </div>
-            `).join('')}
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Attribution Selection -->
+          <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
+            <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Conclude Historical Origin:</div>
+            <div class="space-y-2.5">
+              ${r.attributions.map(attr => `
+                <div class="q2-attr p-3.5 bg-white border ${selectedAttribution === attr.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs flex items-center justify-between min-h-[48px]" data-attr="${attr.id}" tabindex="0" role="button">
+                  <span class="flex items-center gap-2.5">
+                    <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedAttribution === attr.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAttribution === attr.id ? '✓' : ''}</span>
+                    <span class="text-[var(--text-primary)] font-medium">${attr.label}</span>
+                  </span>
+                  <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium shrink-0">Origin ${String.fromCharCode(65 + r.attributions.indexOf(attr))}</span>
+                </div>
+              `).join('')}
+            </div>
           </div>
         </div>
-
-        <!-- YOUR CHOICE: Attribution Selection -->
-        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-5 shadow-xs rounded-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Conclude Historical Origin:</div>
-          <div class="space-y-2.5">
-            ${r.attributions.map(attr => `
-              <div class="q2-attr p-3.5 bg-white border ${selectedAttribution === attr.id ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-attr="${attr.id}" tabindex="0" role="button">
-                <span class="flex items-center gap-2.5">
-                  <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${selectedAttribution === attr.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAttribution === attr.id ? '✓' : ''}</span>
-                  <span class="text-[var(--text-primary)] font-medium">${attr.label}</span>
-                </span>
-                <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium shrink-0">Origin ${String.fromCharCode(65 + r.attributions.indexOf(attr))}</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- PRIMARY ACTION BUTTON -->
-        <div class="flex justify-end mb-4">
-          <button type="button" id="confirmQ2Btn" ${selectedAttribution ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
-            ${currentTrial < relics.length - 1 ? 'Finalize Investigation &rarr;' : 'Finish Antiquarian Bench &rarr;'}
-          </button>
-        </div>
-
-        <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
-          Relic ${currentTrial + 1} of ${relics.length}
-        </div>
-      </div>
-    `;
+      `,
+      actionButtonId: 'confirmQ2Btn',
+      actionButtonText: currentTrial < relics.length - 1 ? 'Confirm Origin &rarr;' : 'Confirm & Finish &rarr;',
+      actionButtonDisabled: !selectedAttribution,
+      progressText: `Relic ${currentTrial + 1} of ${relics.length}`
+    });
 
     app.querySelectorAll('.clue-btn').forEach(btn => {
       const inspect = (modality) => {
@@ -664,7 +618,6 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
             <span class="act-badge">World 5: The Hidden Gallery</span>
             
           </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
         </div>
 
         <!-- TASK HEADER -->

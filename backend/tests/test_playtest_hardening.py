@@ -59,7 +59,8 @@ def run_tests():
             status="ACTIVE",
             current_screen="games",
             order_id="ORD-01",
-            config_hash="cfg-123"
+            config_hash="cfg-123",
+            spec_version="2026-05"
         )
         db.add(sess)
 
@@ -193,6 +194,21 @@ def run_tests():
         assert_true(len(sessions_list) >= 1, "Session list retrieved successfully")
         assert_eq(sessions_list[0]["session_id"], s_id, "Session ID matches")
         assert_eq(sessions_list[0]["completed_tasks_count"], 21, "COMPLETE session reported as 21 completed tasks without event scan")
+
+        # Test 5B: V2 session reported as 14 completed tasks
+        s_id_v2 = "test-session-playtest-v2"
+        sess_v2 = DBSession(
+            session_id=s_id_v2,
+            status="COMPLETE",
+            current_screen="complete",
+            spec_version="2026-10-v2"
+        )
+        db.add(sess_v2)
+        db.commit()
+        sessions_list_v2 = list_research_sessions(request=DummyRequest(), admin_user=admin_user, db=db)
+        v2_entry = next((item for item in sessions_list_v2 if item["session_id"] == s_id_v2), None)
+        assert_true(v2_entry is not None, "V2 session retrieved successfully")
+        assert_eq(v2_entry["completed_tasks_count"], 14, "COMPLETE V2 session reported as 14 completed tasks")
 
         dossier = get_session_research_view(s_id, request=DummyRequest(), admin_user=admin_user, db=db)
         assert_true("metadata" in dossier, "Dossier metadata present")

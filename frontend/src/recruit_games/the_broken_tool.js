@@ -7,7 +7,7 @@
    and scoped candidate content protection.
    ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
 
 export function runTheBrokenTool(context, renderHeader) {
   const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
@@ -104,33 +104,15 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
 
     const st = stages[currentStageIdx];
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 6: The Broken Tool</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
-        </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Artisan's Assembly</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Build a working workshop fixture from available parts.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Review the broken part below. Select one or more workbench items to fix it. Multiple valid combinations exist.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS: Constraint Card -->
-        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
+    app.innerHTML = renderGameShell({
+      worldCode: 'W6',
+      worldIndex: 5,
+      title: "The Artisan's Assembly",
+      subtitle: 'Build a working workshop fixture from available parts.',
+      instructionPrompt: 'Your Task',
+      instruction: 'Review the broken part below. Select one or more workbench items to fix it. Multiple valid combinations exist.',
+      stimulusContent: `
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-[10px] text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Atelier Hardware Need</span>
             <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Stage ${currentStageIdx + 1} of ${stages.length}</span>
@@ -138,15 +120,15 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${st.title}</div>
           <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${st.scenario}</div>
         </div>
-
-        <!-- INTERACTION AREA: Workbench Selection -->
-        <div class="p-4 sm:p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs candidate-content-protected">
+      `,
+      interactionContent: `
+        <div class="p-4 sm:p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs">
           <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-3">Available Workbench Components (Click to Equip)</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 mb-4">
             ${st.materials.map(m => {
               const isSelected = selectedParts.includes(m.id);
               return `
-                <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex flex-col justify-between min-h-[72px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+                <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs flex flex-col justify-between min-h-[72px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
                   <div>
                     <div class="text-lg mb-1 text-stone-700">${m.icon}</div>
                     <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
@@ -177,20 +159,12 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
             </div>
           ` : ''}
         </div>
-
-        <!-- PRIMARY ACTION BUTTON -->
-        <div class="flex justify-end mb-4">
-          <button type="button" id="confirmStageBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
-            ${currentStageIdx < stages.length - 1 ? 'Confirm Assembly & Next Stage &rarr;' : 'Finish Part 1 &rarr;'}
-          </button>
-        </div>
-
-        <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
-          Stage ${currentStageIdx + 1} of ${stages.length}
-        </div>
-      </div>
-    `;
+      `,
+      actionButtonId: 'confirmStageBtn',
+      actionButtonText: currentStageIdx < stages.length - 1 ? 'Confirm Assembly &rarr;' : 'Confirm & Finish &rarr;',
+      actionButtonDisabled: selectedParts.length === 0,
+      progressText: `Stage ${currentStageIdx + 1} of ${stages.length}`
+    });
 
     app.querySelectorAll('.part-card').forEach(card => {
       const toggle = (modality) => {
@@ -389,7 +363,6 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
               <span class="act-badge">World 6: The Broken Tool</span>
               
             </div>
-            <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
           </div>
 
           <!-- TASK HEADER -->
@@ -733,33 +706,15 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
     const tr = trials[currentTrial];
 
-    app.innerHTML = `
-      <div class="animate-soft-fade-in">
-        <!-- TOP BAR -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
-          <div class="flex items-center gap-2">
-            <span class="act-badge">World 6: The Broken Tool</span>
-            
-          </div>
-          <div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">Takes about 2 minutes</div>
-        </div>
-
-        <!-- TASK HEADER -->
-        <div class="mb-4">
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Improvised Tool</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Adapt craft technique from physical feedback.</p>
-        </div>
-
-        <!-- YOUR TASK -->
-        <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
-            Pick a tool and an action method below. Click Apply Technique to test your result. You can change your choice before confirming.
-          </div>
-        </div>
-
-        <!-- LOOK AT THIS: Craft Objective Card -->
-        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
+    app.innerHTML = renderGameShell({
+      worldCode: 'W6',
+      worldIndex: 5,
+      title: 'The Improvised Tool',
+      subtitle: 'Adapt craft technique from physical feedback.',
+      instructionPrompt: 'Your Task',
+      instruction: 'Pick a tool and an action method below. Click Apply Technique to test your result. You can change your choice before confirming.',
+      stimulusContent: `
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-[10px] text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Craft Objective</span>
             <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Trial ${currentTrial + 1} of ${trials.length}</span>
@@ -767,72 +722,67 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${tr.title}</div>
           <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${tr.objective}</div>
         </div>
-
-        <!-- INTERACTION AREA 1: Tool Selection -->
-        <div class="mb-4 candidate-content-protected">
-          <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">1. Select Implement:</div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-            ${tr.tools.map(t => {
-              const isSelected = selectedTool === t.id;
-              return `
-                <div class="cr3-tool-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs min-h-[64px]" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-lg">${t.icon}</span>
-                    <span class="font-medium text-[var(--text-primary)]">${t.name}</span>
+      `,
+      interactionContent: `
+        <div class="space-y-4">
+          <!-- Tool Selection -->
+          <div>
+            <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">1. Select Implement:</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+              ${tr.tools.map(t => {
+                const isSelected = selectedTool === t.id;
+                return `
+                  <div class="cr3-tool-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs min-h-[64px]" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-lg">${t.icon}</span>
+                      <span class="font-medium text-[var(--text-primary)]">${t.name}</span>
+                    </div>
+                    <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${t.affordance}</div>
                   </div>
-                  <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${t.affordance}</div>
-                </div>
-              `;
-            }).join('')}
+                `;
+              }).join('')}
+            </div>
           </div>
-        </div>
 
-        <!-- INTERACTION AREA 2: Method Selection -->
-        <div class="mb-4 candidate-content-protected">
-          <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">2. Choose Action Method:</div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-            ${tr.methods.map(m => {
-              const isSelected = selectedMethod === m.id;
-              return `
-                <div class="cr3-method-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs min-h-[64px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
-                  <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
-                  <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${m.desc}</div>
-                </div>
-              `;
-            }).join('')}
+          <!-- Method Selection -->
+          <div>
+            <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">2. Choose Action Method:</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+              ${tr.methods.map(m => {
+                const isSelected = selectedMethod === m.id;
+                return `
+                  <div class="cr3-method-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs min-h-[64px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+                    <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
+                    <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${m.desc}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
           </div>
-        </div>
 
-        <!-- Apply & Observe Feedback -->
-        <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 candidate-content-protected">
-          <div class="text-xs text-[var(--text-secondary)]">
-            Active Pairing: <strong class="text-[var(--text-primary)]">${selectedTool ? tr.tools.find(t => t.id === selectedTool)?.name : 'None'} + ${selectedMethod ? tr.methods.find(m => m.id === selectedMethod)?.name : 'None'}</strong>
+          <!-- Apply & Observe Feedback -->
+          <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="text-xs text-[var(--text-secondary)]">
+              Active Pairing: <strong class="text-[var(--text-primary)]">${selectedTool ? tr.tools.find(t => t.id === selectedTool)?.name : 'None'} + ${selectedMethod ? tr.methods.find(m => m.id === selectedMethod)?.name : 'None'}</strong>
+            </div>
+            <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px]">
+              Apply Technique
+            </button>
           </div>
-          <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px]">
-            Apply Technique
-          </button>
-        </div>
 
-        ${feedbackText ? `
-          <div class="p-4 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-emerald-950' : 'border-amber-600/40 text-amber-950'} mb-4 rounded-xs text-xs leading-relaxed animate-soft-fade-in candidate-content-protected">
-            <div class="font-sans text-[10px] uppercase font-semibold mb-1 ${feedbackText.success ? 'text-emerald-800' : 'text-amber-800'}">Material Outcome Observation</div>
-            <div>${feedbackText.text}</div>
-          </div>
-        ` : ''}
-
-        <!-- PRIMARY ACTION BUTTON -->
-        <div class="flex justify-end mb-4">
-          <button type="button" id="confirmTrialBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
-            ${currentTrial < trials.length - 1 ? 'Confirm Technique & Next Trial &rarr;' : 'Finish World 6 &rarr;'}
-          </button>
+          ${feedbackText ? `
+            <div class="p-4 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-emerald-950' : 'border-amber-600/40 text-amber-950'} rounded-xs text-xs leading-relaxed animate-soft-fade-in">
+              <div class="font-sans text-[10px] uppercase font-semibold mb-1 ${feedbackText.success ? 'text-emerald-800' : 'text-amber-800'}">Material Outcome Observation</div>
+              <div>${feedbackText.text}</div>
+            </div>
+          ` : ''}
         </div>
-
-        <!-- Progress Footer -->
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans">
-          Trial ${currentTrial + 1} of ${trials.length}
-        </div>
-      </div>
-    `;
+      `,
+      actionButtonId: 'confirmTrialBtn',
+      actionButtonText: currentTrial < trials.length - 1 ? 'Confirm Technique &rarr;' : 'Confirm & Finish &rarr;',
+      actionButtonDisabled: !(selectedTool && selectedMethod),
+      progressText: `Trial ${currentTrial + 1} of ${trials.length}`
+    });
 
     app.querySelectorAll('.cr3-tool-card').forEach(card => {
       const select = (modality) => {

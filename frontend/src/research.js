@@ -200,6 +200,51 @@ async function loadSessionDetail(sessionId) {
         `;
     }).join('');
 
+    const batteryVer = meta.battery_version === '2.0' ? 'V2 (14-Game Candidate Core)' : (meta.battery_version === '1.0' ? 'V1 (21-Game Historical Battery)' : (meta.battery_version || '2.0 (Candidate Core)'));
+    const taskRecords = data.task_records || [];
+    const coreTasks = taskRecords.filter(t => t.battery_role === 'candidate_core' || (!t.battery_role && !['F3','A3','C3','E3','Q3','CR2','M3'].includes(t.game_id)));
+    const bankTasks = taskRecords.filter(t => t.battery_role === 'research_bank' || (t.battery_role !== 'candidate_core' && ['F3','A3','C3','E3','Q3','CR2','M3'].includes(t.game_id)));
+
+    const renderTaskTable = (tasks, roleLabel, badgeStyle) => {
+      if (!tasks || tasks.length === 0) return '';
+      return `
+        <div class="mb-4">
+          <div class="flex justify-between items-baseline mb-2">
+            <h4 class="text-xs font-semibold tracking-wider uppercase text-[var(--text-primary)] flex items-center gap-2">
+              <span class="px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider" style="${badgeStyle}">${roleLabel}</span>
+              <span>Activities (${tasks.length})</span>
+            </h4>
+          </div>
+          <div class="overflow-x-auto border border-[var(--grid-border)] bg-white">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-[#f0eeea] text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">
+                <tr>
+                  <th class="p-3">Activity</th>
+                  <th class="p-3">World</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3">Descriptive Behavioral Observation</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tasks.map(t => {
+                  const statusBg = t.status === 'RECORDED' ? 'background:#eaf5ea; color:#1e6624; border:1px solid #bce0bc;' : (t.status === 'NOT_DERIVED' ? 'background:#f0eeea; color:var(--text-secondary); border:1px solid var(--grid-border);' : 'background:#fdf2e9; color:#9c4221; border:1px solid #f0cdb8;');
+                  const dispText = t.status === 'NOT_DERIVED' ? '<span class="text-stone-400 italic">Unattempted &middot; Reserved in Research Bank</span>' : window.escapeHtml(t.display_text || '—');
+                  return `
+                    <tr class="border-b border-[var(--grid-border)]">
+                      <td class="p-3 font-semibold text-[var(--text-primary)]">${t.game_id}: ${window.escapeHtml(t.game_name || t.game_id)}</td>
+                      <td class="p-3 text-[var(--text-secondary)]">${t.world_id}: ${window.escapeHtml(t.world_name || '')}</td>
+                      <td class="p-3"><span class="badge" style="font-size:10px; ${statusBg}">${t.status}</span></td>
+                      <td class="p-3 text-[var(--text-secondary)] leading-relaxed">${dispText}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    };
+
     container.innerHTML = `
       <div class="mb-4">
         <button onclick="loadSessionsList()" class="text-xs uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--accent-gold)]">&larr; Back to Registry</button>
@@ -207,11 +252,12 @@ async function loadSessionDetail(sessionId) {
       
       <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-6 mb-4">
         <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)] mb-4">1. Candidate & Session Overview</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
           <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Name</strong>${candidateName}</div>
           <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Email</strong>${candidateEmail}</div>
           <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Contact</strong>${candidatePhone}</div>
           <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Session Duration</strong>${durationMin}</div>
+          <div><strong class="block text-[var(--text-secondary)] text-xs uppercase tracking-wider mb-1">Battery Version</strong><span class="badge" style="font-size:10px; background:#f0eeea; color:var(--text-primary); border:1px solid var(--grid-border);">${batteryVer}</span></div>
         </div>
       </div>
 
@@ -248,6 +294,15 @@ async function loadSessionDetail(sessionId) {
         <div class="bg-[#fcfbf9] border border-[var(--grid-border)] border-t-0 p-3 text-xs text-[var(--text-secondary)] leading-relaxed">
           <strong class="text-[var(--text-primary)]">Delta is the absolute difference between the candidate's SJT-relative evidence and Game-SJT-relative evidence for this dimension.</strong> Larger Delta indicates greater divergence and reduces evidence confidence. Delta is not a measure of honesty, reliability, or validity.
         </div>
+      </div>
+
+      <div class="mb-6">
+        <div class="flex justify-between items-baseline mb-3">
+          <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)]">3. Interactive Activity Behavioral Records</h3>
+          <span class="text-xs text-[var(--text-secondary)]">${data.task_records_statement || 'Descriptive task counts; not a score.'}</span>
+        </div>
+        ${renderTaskTable(coreTasks, 'Core Battery', 'background:#eaf5ea; color:#1e6624; border:1px solid #bce0bc;')}
+        ${renderTaskTable(bankTasks, 'Research Bank', 'background:#f0eeea; color:var(--text-secondary); border:1px solid var(--grid-border);')}
       </div>
     `;
   } catch (err) {

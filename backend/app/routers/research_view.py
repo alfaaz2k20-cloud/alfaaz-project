@@ -22,6 +22,11 @@ from app.services.evidence_integrator import (
     load_integration_config
 )
 from app.services.descriptive_task_record import get_session_task_records, DOSSIER_STATEMENT
+from app.services.task_definitions import (
+    get_candidate_core_games,
+    get_research_bank_games,
+    get_expected_candidate_game_count
+)
 
 router = APIRouter(prefix="/recruit/research", tags=["Recruiter Research View"])
 
@@ -88,14 +93,19 @@ def list_research_sessions(
         identity = db.get(DBApplicantIdentity, s.session_id)
         sjt_count = db.exec(select(func.count(DBSJTResponse.id)).where(DBSJTResponse.session_id == s.session_id)).one()
         has_sjt = (sjt_count >= 7)
+        spec_ver = (getattr(s, "spec_version", None) or "").lower()
+        is_historical = ("2026-05" in spec_ver) or ("v1" in spec_ver) or (spec_ver == "1.0")
+        expected_tasks = 21 if is_historical else 14
+        battery_version = "1.0" if is_historical else "2.0"
+
         if s.status in ("COMPLETE", "COMPLETED"):
-            completed_tasks_count = 21
+            completed_tasks_count = expected_tasks
         else:
             completed_tasks_count = db.exec(
                 select(func.count(func.distinct(DBTelemetryEvent.mini_game)))
                 .where(DBTelemetryEvent.session_id == s.session_id, DBTelemetryEvent.mini_game != None)
             ).one()
-        evidence_collected = has_sjt and (completed_tasks_count >= 21)
+        evidence_collected = has_sjt and (completed_tasks_count >= expected_tasks)
 
         results.append({
             "session_id": s.session_id,
@@ -106,6 +116,8 @@ def list_research_sessions(
             "phone_or_contact": identity.phone_or_contact if identity else None,
             "has_sjt": has_sjt,
             "completed_tasks_count": completed_tasks_count,
+            "battery_expected_tasks": expected_tasks,
+            "battery_version": battery_version,
             "evidence_status": "Evidence Collected" if evidence_collected else ("In Progress" if (has_sjt or completed_tasks_count > 0) else "Not Started"),
             "active_extractors_count": 2,
             "active_extractors_total": 2,
@@ -408,11 +420,24 @@ def get_session_research_view(
             "normative_ranking_allowed": False
         }
     }
+    core_games_dict = get_candidate_core_games(by_world=False)
+    candidate_core_games = [g for sub in core_games_dict.values() for g in sub]
+    bank_games_dict = get_research_bank_games(by_world=False)
+    research_bank_games = [g for sub in bank_games_dict.values() for g in sub]
+
+    spec_ver = (getattr(sess, "spec_version", None) or "").lower()
+    is_historical = ("2026-05" in spec_ver) or ("v1" in spec_ver) or (spec_ver == "1.0")
+    battery_version = "1.0" if is_historical else "2.0"
+    expected_tasks = 21 if is_historical else 14
 
     return {
         "metadata": {
             "session_id": sess.session_id,
             "status": sess.status,
+            "battery_version": battery_version,
+            "expected_candidate_game_count": expected_tasks,
+            "candidate_core_games": candidate_core_games,
+            "research_bank_games": research_bank_games,
             "created_at": sess.created_at.isoformat() if sess.created_at else None,
             "completed_at": sess.completed_at.isoformat() if sess.completed_at else None,
             "duration_minutes": duration_minutes,
