@@ -57,7 +57,7 @@ GAME_BOUNDS = {
     "F2": {"min": 0, "max": 4, "min_obs": 2},
     "F3": {"min": 0, "max": 3, "min_obs": 2},
     "A1": {"min": 0, "max": 5, "min_obs": 3},
-    "A2": {"min": 0, "max": 4, "min_obs": 3},
+    "A2": {"min": 0.0, "max": 1.0, "min_obs": 3},
     "A3": {"min": 0, "max": 5, "min_obs": 3},
     "C1": {"min": 0, "max": 3, "min_obs": 2},
     "C2": {"min": 0, "max": 3, "min_obs": 2},
@@ -234,16 +234,18 @@ def score_a1(events: List[Any]) -> Tuple[int, int, List[str]]:
     return raw_score, len(sorted_items), []
 
 
-def score_a2(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_a2(events: List[Any]) -> Tuple[float, int, List[str]]:
     """
     A2 Exception Handling: 4 trials (3 true exceptions, 1 clean control).
-    1 pt per correct decision:
-    - true exception correctly routed to exception
-    - clean control not falsely flagged
+    True Precision: TP / (TP + FP)
+    - TP: true exception correctly flagged as exception
+    - FP: clean control incorrectly flagged as exception
+    - If total_flagged (TP + FP) == 0: precision = 0.0
+    - Requires genuine_evaluated >= 3; otherwise insufficient observations.
     """
     defs = get_task_definitions().get("games", {}).get("A2", {})
     trials = defs.get("trials", [])
-    expected_map = {t["stimulus_id"]: t.get("expected_action") for t in trials}
+    expected_map = {t["stimulus_id"]: t for t in trials}
 
     decisions = {}
     for ev in events:
@@ -251,7 +253,7 @@ def score_a2(events: List[Any]) -> Tuple[int, int, List[str]]:
         if act in ["decision_logged", "exception_resolved", "item_sorted"]:
             data = _parse_ev_data(ev)
             s_id = data.get("stimulus_id")
-            action_id = data.get("action_id")
+            action_id = data.get("action_id") or data.get("action") or data.get("chosen_action")
             is_exc = data.get("is_exception")
             flagged = data.get("flagged")
 
@@ -262,15 +264,38 @@ def score_a2(events: List[Any]) -> Tuple[int, int, List[str]]:
                     chosen = "flag_exception"
                 else:
                     chosen = "file_standard"
-                decisions[s_id] = chosen
+                if s_id not in decisions:
+                    decisions[s_id] = chosen
 
-    raw_score = 0
+    genuine_evaluated = 0
+    true_positives = 0
+    false_positives = 0
+
     for s_id, chosen in decisions.items():
-        exp = expected_map.get(s_id)
-        if exp and chosen == exp:
-            raw_score += 1
+        trial_def = expected_map.get(s_id, {})
+        cond_type = trial_def.get("condition_type")
+        exp = trial_def.get("expected_action")
 
-    return raw_score, len(decisions), []
+        if cond_type == "true_exception" or exp == "flag_exception":
+            genuine_evaluated += 1
+            if chosen == "flag_exception" or (exp and chosen == exp):
+                true_positives += 1
+        elif cond_type == "clean_control" or exp == "file_standard":
+            if chosen == "flag_exception" or (exp and chosen != exp):
+                false_positives += 1
+
+    flags = []
+    if genuine_evaluated < 3:
+        flags.append("insufficient_observations")
+
+    total_flagged = true_positives + false_positives
+    if total_flagged > 0:
+        precision = round(true_positives / total_flagged, 4)
+    else:
+        precision = 0.0
+
+    obs_count = genuine_evaluated if genuine_evaluated < 3 else len(decisions)
+    return precision, obs_count, flags
 
 
 def score_a3(events: List[Any]) -> Tuple[int, int, List[str]]:
@@ -638,8 +663,9 @@ def score_game(
     flags.extend(scorer_flags)
 
     # 5. Check observation sufficiency
-    if obs_count < min_obs or "mandatory_incomplete" in flags:
-        flags.append("insufficient_observations")
+    if obs_count < min_obs or "mandatory_incomplete" in flags or "insufficient_observations" in flags:
+        if "insufficient_observations" not in flags:
+            flags.append("insufficient_observations")
         return ScoredGame(
             game_id=game_id,
             parameter=parameter,
