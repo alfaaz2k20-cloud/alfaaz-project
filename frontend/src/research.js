@@ -134,7 +134,7 @@ async function loadSessionDetail(sessionId) {
 
   try {
     const token = localStorage.getItem('alfaaz_token');
-    const url = `${apiBase}/recruit/research/sessions/${sessionId}`;
+    const url = `${apiBase}/recruit/research/sessions/${sessionId}?recompute=true`;
     const resp = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
 
     if (!resp.ok) throw new Error("Failed to load dossier");

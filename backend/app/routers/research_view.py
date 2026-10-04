@@ -178,15 +178,31 @@ def get_session_research_view(
     db.add(access_log)
     db.commit()
 
-    # Ensure features and evidence are extracted and integrated (reuse existing if available)
+    # Ensure features and evidence are extracted and integrated (reuse existing if valid and complete)
     existing_evidence = db.exec(
-        select(DBEvidence).where(DBEvidence.session_id == session_id)
+        select(DBEvidence).where(
+            DBEvidence.session_id == session_id,
+            DBEvidence.is_superseded == False
+        )
     ).all()
 
     force_recompute = request.query_params.get("recompute", "").lower() == "true"
-    if not existing_evidence or force_recompute:
+
+    # Auto-detect if game telemetry exists that was not yet integrated into evidence
+    has_unintegrated_games = False
+    if existing_evidence and any(e.profile_completeness in ("SJT_ONLY", "PARTIAL") for e in existing_evidence):
+        has_game_events = db.exec(
+            select(DBTelemetryEvent.id).where(
+                DBTelemetryEvent.session_id == session_id,
+                DBTelemetryEvent.mini_game != None
+            )
+        ).first() is not None
+        if has_game_events:
+            has_unintegrated_games = True
+
+    if not existing_evidence or force_recompute or has_unintegrated_games:
         extract_session_features(db, session_id)
-        evidence_list = integrate_session_evidence(db, session_id, force_recompute=force_recompute)
+        evidence_list = integrate_session_evidence(db, session_id, force_recompute=True)
     else:
         evidence_list = existing_evidence
 

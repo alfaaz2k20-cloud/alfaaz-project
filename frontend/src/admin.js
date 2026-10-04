@@ -472,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
-          response = await window.globalApiFetch(`/recruit/research/sessions/${sessionId}`);
+          response = await window.globalApiFetch(`/recruit/research/sessions/${sessionId}?recompute=true`);
           if (response && response.ok) return response;
         } catch (error) {
           if (attempt === 2) throw error;
