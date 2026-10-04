@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime, timezone
 from sqlmodel import Session, SQLModel, create_engine, select
 
@@ -54,9 +55,31 @@ def run_tests():
     print("============================================================\n")
 
     # ------------------------------------------------------------------
+    # 0. Startup & Import Integrity
+    # ------------------------------------------------------------------
+    print("--- 0. Startup & Import Integrity ---")
+    import importlib
+    import inspect
+    import app.main
+    assert_true(app.main.app is not None, "FastAPI application initializes successfully at app.main:app")
+
+    gse = importlib.import_module("app.services.game_scoring_engine")
+    assert_true(gse is not None, "game_scoring_engine module imports successfully")
+
+    # Eagerly evaluate annotations across all functions and classes in game_scoring_engine
+    # to catch any missing typing imports or NameErrors across all Python versions
+    annotated_count = 0
+    for name, obj in inspect.getmembers(gse):
+        if inspect.isfunction(obj) or inspect.isclass(obj):
+            if getattr(obj, "__module__", None) == "app.services.game_scoring_engine":
+                ann = inspect.get_annotations(obj)
+                annotated_count += 1
+    assert_true(annotated_count >= 21, f"All game scoring functions eagerly evaluated annotations ({annotated_count} checked)")
+
+    # ------------------------------------------------------------------
     # 1. SJT Integrity & Owner Locked Hash
     # ------------------------------------------------------------------
-    print("--- 1. SJT Integrity & Owner-Locked State ---")
+    print("\n--- 1. SJT Integrity & Owner-Locked State ---")
     params_data, sjt_data, config_hash, ranges = verify_and_load_configs()
     assert_eq(len(ranges), 7, "7 parameters present in theoretical ranges")
     assert_eq(len(sjt_data["scenarios"]), 7, "7 scenarios in SJT items")
