@@ -9,18 +9,15 @@
 import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheShiftingGrid(context, renderHeader) {
-  const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
+  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
 
-  switch (miniGameIndex) {
-    case 0:
-      runE1RuleShift(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 1:
-      runE2SetbackRecovery(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 2:
-      runE3ChangingConditions(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
+  const targetGame = gameId || (miniGameIndex === 0 ? 'E1' : (miniGameIndex === 1 ? 'E2' : 'E3'));
+  if (targetGame === 'E1') {
+    runE1RuleShift(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else if (targetGame === 'E2') {
+    runE2SetbackRecovery(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else {
+    runE3ChangingConditions(appContainer, renderHeader, logEvent, onMiniGameComplete);
   }
 }
 
@@ -52,11 +49,11 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
           ${renderHeader('The Ceramic Mosaic', 'Sort each tile into the matching container.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>`,
-            goal: 'Observe each ceramic tile and assign it to the matching container.',
+            goal: 'Sort 9 tiles into the matching containers.',
             steps: [
-              'Look at the shape and color of the tile.',
-              'Pick Container 1 or Container 2.',
-              'Sort all 9 tiles to complete the task.'
+              'Look at the tile shape and color.',
+              'Click Container 1 or Container 2 to place it.',
+              'Watch the feedback note to see if your choice fit the rule.'
             ]
           })}
         </div>
@@ -244,11 +241,11 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
           ${renderHeader('The Courtyard Setup', 'Respond constructively to workshop situations.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
-            goal: 'Respond constructively to workshop situations and unexpected physical adjustments.',
+            goal: 'Respond to unexpected workshop situations across 4 rounds.',
             steps: [
-              'Review the workshop event in each round.',
-              'Evaluate the 3 response options.',
-              'Choose your response across all 4 sequences.'
+              'Read what just happened in the workshop.',
+              'Pick what you would do next from the 3 options.',
+              'Click Confirm to move to the next situation.'
             ]
           })}
         </div>

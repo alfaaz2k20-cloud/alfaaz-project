@@ -1,8 +1,9 @@
 import json
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 _TASK_DEFINITIONS_CACHE: Optional[Dict[str, Any]] = None
+_BATTERY_CONFIG_CACHE: Optional[Dict[str, Any]] = None
 
 def get_task_definitions() -> Dict[str, Any]:
     global _TASK_DEFINITIONS_CACHE
@@ -23,6 +24,72 @@ def get_task_definitions() -> Dict[str, Any]:
                 return _TASK_DEFINITIONS_CACHE
 
     raise FileNotFoundError("config/task_definitions.json could not be located.")
+
+def get_battery_config() -> Dict[str, Any]:
+    global _BATTERY_CONFIG_CACHE
+    if _BATTERY_CONFIG_CACHE is not None:
+        return _BATTERY_CONFIG_CACHE
+
+    config_paths = [
+        os.path.join(os.path.dirname(__file__), "..", "..", "config", "battery.json"),
+        os.path.join(os.path.dirname(__file__), "..", "..", "..", "config", "battery.json"),
+        "config/battery.json",
+        "backend/config/battery.json"
+    ]
+
+    for p in config_paths:
+        if os.path.exists(p):
+            with open(p, "r", encoding="utf-8") as f:
+                _BATTERY_CONFIG_CACHE = json.load(f)
+                return _BATTERY_CONFIG_CACHE
+
+    return {
+        "version": "2.0",
+        "candidate_core_games": {
+            "empathy": ["F1", "F2"],
+            "conscientiousness": ["A1", "A2"],
+            "collaborative_spirit": ["C1", "C2"],
+            "emotional_agility": ["E1", "E2"],
+            "curiosity": ["Q1", "Q2"],
+            "creative_initiative": ["CR1", "CR3"],
+            "motivation": ["M1", "M2"]
+        },
+        "candidate_core_games_by_world": {
+            "W1": ["F1", "F2"],
+            "W2": ["A1", "A2"],
+            "W3": ["C1", "C2"],
+            "W4": ["E1", "E2"],
+            "W5": ["Q1", "Q2"],
+            "W6": ["CR1", "CR3"],
+            "W7": ["M1", "M2"]
+        },
+        "research_bank_games": {
+            "empathy": ["F3"],
+            "conscientiousness": ["A3"],
+            "collaborative_spirit": ["C3"],
+            "emotional_agility": ["E3"],
+            "curiosity": ["Q3"],
+            "creative_initiative": ["CR2"],
+            "motivation": ["M3"]
+        },
+        "research_bank_games_by_world": {
+            "W1": ["F3"],
+            "W2": ["A3"],
+            "W3": ["C3"],
+            "W4": ["E3"],
+            "W5": ["Q3"],
+            "W6": ["CR2"],
+            "W7": ["M3"]
+        }
+    }
+
+def get_candidate_core_games(by_world: bool = False) -> Dict[str, List[str]]:
+    cfg = get_battery_config()
+    return cfg.get("candidate_core_games_by_world" if by_world else "candidate_core_games", {})
+
+def get_research_bank_games(by_world: bool = False) -> Dict[str, List[str]]:
+    cfg = get_battery_config()
+    return cfg.get("research_bank_games_by_world" if by_world else "research_bank_games", {})
 
 def get_game_definition(game_id: str, version: str = "1.0") -> Optional[Dict[str, Any]]:
     defs = get_task_definitions()

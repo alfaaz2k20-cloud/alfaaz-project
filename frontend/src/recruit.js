@@ -4,6 +4,7 @@
 
 import consentCopy from '../../config/copy/consent.json';
 import './recruit-utilities.css';
+import { runMiniGame, CANDIDATE_CORE_GAMES } from './recruit_games/index.js';
 
 // KEEP-ALIVE PING FOR RENDER FREE TIER
 function startKeepAlivePing() {
@@ -129,7 +130,7 @@ function restoreLocalState() {
           const currentWorldCode = state.worldSequence[state.currentWorldIndex];
           const mgId = getMiniGameId(currentWorldCode, state.currentMiniGameIndex);
           logEvent('game', 'interrupted', { mini_game: mgId, reason: 'page_reload' });
-          if (state.currentMiniGameIndex < 2) {
+          if (state.currentMiniGameIndex < 1) {
             state.currentMiniGameIndex++;
           } else {
             state.currentMiniGameIndex = 0;
@@ -819,12 +820,16 @@ function renderSJT(app, progressBarFill) {
 
   const total = state.sjtScenarios.length;
   const current = state.currentSjtIndex + 1;
+  // Total 21 assessment units: 7 Judgment scenarios + 14 Interactive Activities
   if (progressBarFill) {
-    progressBarFill.style.width = `${((current - 1) / (total + 7)) * 100}%`;
+    progressBarFill.style.width = `${((current - 1) / 21) * 100}%`;
   }
 
   const segmentProgress = document.getElementById('segmentProgress');
-  if (segmentProgress) segmentProgress.textContent = `SJT ${current}/${total}`;
+  if (segmentProgress) {
+    const remainingMins = Math.max(1, Math.round(((total - current + 1) * 35 + 14 * 32) / 60));
+    segmentProgress.innerHTML = `<span class="text-[var(--text-secondary)] hidden sm:inline mr-2 text-[10px] sm:text-xs font-normal">About ${remainingMins} mins remaining</span><span>Judgment ${current} / ${total}</span>`;
+  }
 
   const selectedOptId = state.sjtResponses[scenario.id] || null;
 
@@ -840,12 +845,12 @@ function renderSJT(app, progressBarFill) {
       <!-- Top Context and Step -->
       <div class="border-b border-[var(--grid-border)] pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-1">
         <div>
-          <span class="act-badge">Act ${scenario.act}: ${scenario.act_title_en}</span>
+          <span class="act-badge">Judgment ${current} of ${total}</span>
           <span class="act-title-ur font-serif">${scenario.act_title_ur || ''}</span>
-          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">Scenario ${current} of ${total}</h2>
+          <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">${scenario.act_title_en}</h2>
         </div>
         <div class="text-[11px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider font-medium">
-          Part 1 &middot; ${current} of ${total}
+          Section 1 &middot; ${current} of ${total}
         </div>
       </div>
 
@@ -870,7 +875,7 @@ function renderSJT(app, progressBarFill) {
       <div class="pt-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-[var(--grid-border)]">
         <span class="text-xs text-[var(--text-secondary)] order-2 sm:order-1 text-[11px]">Tip: Press keys 1-4 to choose</span>
         <button id="nextSjtBtn" ${selectedOptId ? '' : 'disabled'} class="w-full sm:w-auto min-h-[44px] px-7 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 disabled:hover:bg-[var(--text-primary)] transition shadow-sm rounded-xs order-1 sm:order-2">
-          ${current === total ? 'Complete Part 1 &rarr;' : 'Next Scenario &rarr;'}
+          ${current === total ? 'Complete Judgment Section &rarr;' : 'Next Scenario &rarr;'}
         </button>
       </div>
     </div>
@@ -974,8 +979,6 @@ async function submitSjtAndProceed() {
 }
 
 // 5. Game Battery Container & Dispatcher
-import { runMiniGame } from './recruit_games/index.js';
-
 function renderGames(app, progressBarFill) {
   const currentWorldCode = state.worldSequence[state.currentWorldIndex];
   if (!currentWorldCode || state.currentWorldIndex >= state.worldSequence.length) {
@@ -986,11 +989,19 @@ function renderGames(app, progressBarFill) {
   state.activeMiniGameInProgress = true;
   saveLocalState({ immediate: true });
 
+  const currentActivityNumber = state.currentWorldIndex * 2 + state.currentMiniGameIndex + 1;
+  const totalActivities = 14;
+
   const segmentProgress = document.getElementById('segmentProgress');
-  if (segmentProgress) segmentProgress.textContent = `World ${state.currentWorldIndex + 1}/7`;
+  if (segmentProgress) {
+    const remainingActivities = totalActivities - currentActivityNumber + 1;
+    const remainingMins = Math.max(1, Math.round((remainingActivities * 32) / 60));
+    segmentProgress.innerHTML = `<span class="text-[var(--text-secondary)] hidden sm:inline mr-2 text-[10px] sm:text-xs font-normal">About ${remainingMins} min${remainingMins > 1 ? 's' : ''} remaining</span><span>Activities ${currentActivityNumber} / ${totalActivities}</span>`;
+  }
 
   if (progressBarFill) {
-    progressBarFill.style.width = `${((state.currentSjtIndex + state.currentWorldIndex + 1) / (state.sjtScenarios.length + 7)) * 100}%`;
+    const currentProgressStep = 7 + (currentActivityNumber - 1);
+    progressBarFill.style.width = `${(currentProgressStep / 21) * 100}%`;
   }
 
   runMiniGame({
@@ -1008,7 +1019,7 @@ function renderGames(app, progressBarFill) {
       const mgId = getMiniGameId(currentWorldCode, state.currentMiniGameIndex);
       logEvent('game', 'minigame_end', mgResult, {}, 'mouse', mgId);
       flushTelemetry();
-      if (state.currentMiniGameIndex < 2) {
+      if (state.currentMiniGameIndex < 1) {
         state.currentMiniGameIndex++;
       } else {
         state.currentMiniGameIndex = 0;
@@ -1021,16 +1032,20 @@ function renderGames(app, progressBarFill) {
 }
 
 function getMiniGameId(worldCode, mgIndex) {
-  const mapping = {
-    'W1': ['F1', 'F2', 'F3'],
-    'W2': ['A1', 'A2', 'A3'],
-    'W3': ['C1', 'C2', 'C3'],
-    'W4': ['E1', 'E2', 'E3'],
-    'W5': ['Q1', 'Q2', 'Q3'],
-    'W6': ['CR1', 'CR2', 'CR3'],
-    'W7': ['M1', 'M2', 'M3']
+  const coreGames = CANDIDATE_CORE_GAMES && CANDIDATE_CORE_GAMES[worldCode];
+  if (coreGames && coreGames[mgIndex]) {
+    return coreGames[mgIndex];
+  }
+  const fallback = {
+    'W1': ['F1', 'F2'],
+    'W2': ['A1', 'A2'],
+    'W3': ['C1', 'C2'],
+    'W4': ['E1', 'E2'],
+    'W5': ['Q1', 'Q2'],
+    'W6': ['CR1', 'CR3'],
+    'W7': ['M1', 'M2']
   };
-  return (mapping[worldCode] && mapping[worldCode][mgIndex]) || 'MG';
+  return (fallback[worldCode] && fallback[worldCode][mgIndex]) || 'MG';
 }
 
 let isFinishingAssessment = false;

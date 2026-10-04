@@ -10,18 +10,15 @@
 import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheBrokenTool(context, renderHeader) {
-  const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
+  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
 
-  switch (miniGameIndex) {
-    case 0:
-      runCR1OpenConstruction(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 1:
-      runCR2ConstraintShift(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 2:
-      runCR3UnspecifiedToolUse(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
+  const targetGame = gameId || (miniGameIndex === 0 ? 'CR1' : (miniGameIndex === 1 ? 'CR3' : 'CR2'));
+  if (targetGame === 'CR1') {
+    runCR1OpenConstruction(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else if (targetGame === 'CR3') {
+    runCR3UnspecifiedToolUse(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else {
+    runCR2ConstraintShift(appContainer, renderHeader, logEvent, onMiniGameComplete);
   }
 }
 
@@ -85,12 +82,11 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`,
-            goal: 'Select studio materials to build a working fixture across 2 stages.',
+            goal: 'Build a working replacement tool across 2 stages.',
             steps: [
-              'Read the hardware challenge and available workbench items.',
-              'Click parts to add or remove them from your setup.',
-              'You may test your setup to check mechanical balance.',
-              'Click confirm to advance to the next stage.'
+              'Read what needs to be fixed.',
+              'Click items on the workbench to add or remove them.',
+              'Click Test to check your setup, then click Confirm.'
             ]
           })}
         </div>
@@ -713,12 +709,11 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>`,
-            goal: 'Pair a tool with an action method, test the result, and adapt your approach.',
+            goal: 'Choose and test tools for craft tasks across 3 rounds.',
             steps: [
-              'Review the craft goal and available implements.',
-              'Choose an implement and an action method.',
-              'Click Apply Technique to test the result.',
-              'Refine your choice and confirm to finish World 6.'
+              'Read the craft goal on the workbench.',
+              'Pick a tool and choose how you will use it.',
+              'Click Test Technique to see the result, then click Confirm.'
             ]
           })}
         </div>

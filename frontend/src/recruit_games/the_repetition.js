@@ -11,18 +11,15 @@
 import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheRepetition(context, renderHeader) {
-  const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
+  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
 
-  switch (miniGameIndex) {
-    case 0:
-      runM1Minimum(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 1:
-      runM2Optional(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 2:
-      runM3ReducedReward(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
+  const targetGame = gameId || (miniGameIndex === 0 ? 'M1' : (miniGameIndex === 1 ? 'M2' : 'M3'));
+  if (targetGame === 'M1') {
+    runM1Minimum(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else if (targetGame === 'M2') {
+    runM2Optional(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else {
+    runM3ReducedReward(appContainer, renderHeader, logEvent, onMiniGameComplete);
   }
 }
 
@@ -52,12 +49,11 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>`,
-            goal: 'Press the wax seal on each of the 3 required invitation envelopes.',
+            goal: 'Apply wax seals to 3 invitation envelopes.',
             steps: [
-              'Mandatory requirement: Exactly 3 invitations.',
-              'Review the named recipient on each handcrafted envelope.',
-              'Click the button to press the wax seal.',
-              'Completing all 3 fulfills this activity requirement.'
+              'Look at the named recipient on the envelope.',
+              'Click the button to apply the wax seal.',
+              'Completing all 3 envelopes finishes this activity.'
             ]
           })}
         </div>
@@ -203,12 +199,11 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`,
-            goal: 'Prepare 3 required folders. Then decide whether to finish or make extras.',
+            goal: 'Stamp 3 required folders, then decide if you want to continue.',
             steps: [
-              'Complete the 3 required courtesy folders.',
-              'After the third folder, you will be given a clear choice.',
-              'You may conclude the activity now, or make extra folders.',
-              'Stopping at the minimum is completely neutral.'
+              'Stamp the 3 required guest folders.',
+              'After folder 3, you choose whether to finish or do optional extras.',
+              'Stopping after 3 is completely fine and has no penalty.'
             ]
           })}
         </div>

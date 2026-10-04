@@ -9,18 +9,15 @@
 import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheSharedCanvas(context, renderHeader) {
-  const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
+  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
 
-  switch (miniGameIndex) {
-    case 0:
-      runC1ResourceCooperation(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 1:
-      runC2Coordination(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 2:
-      runC3CollaborationRepair(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
+  const targetGame = gameId || (miniGameIndex === 0 ? 'C1' : (miniGameIndex === 1 ? 'C2' : 'C3'));
+  if (targetGame === 'C1') {
+    runC1ResourceCooperation(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else if (targetGame === 'C2') {
+    runC2Coordination(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else {
+    runC3CollaborationRepair(appContainer, renderHeader, logEvent, onMiniGameComplete);
   }
 }
 
@@ -70,11 +67,11 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
           ${renderHeader("The Artisan's Basket", 'Coordinate ceramic tiles with your workshop partner.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>`,
-            goal: 'Look at both baskets and decide if you want to share tiles.',
+            goal: 'Share tiles with your partner across 3 rounds.',
             steps: [
-              'Check how many tiles you and your partner have.',
-              'Use plus and minus to move tiles between baskets.',
-              'Confirm your choice across 3 rounds.'
+              'Check how many tiles you and your partner currently have.',
+              'Use plus and minus to move tiles if you wish.',
+              'Click Confirm to complete the round.'
             ]
           })}
         </div>
@@ -286,11 +283,11 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
           ${renderHeader('The Gallery Wall', 'Coordinate artwork placement with your partner.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>`,
-            goal: 'Pick a hanging spot that leaves space for your partner.',
+            goal: 'Choose a wall spot for your piece across 3 rounds.',
             steps: [
-              'Check where your partner hung their piece in each round.',
-              'Inspect the available hanging spots on the wall.',
-              'Confirm your chosen position across all 3 rounds.'
+              'See where your partner hung their artwork.',
+              'Choose an open wall spot from the options.',
+              'Click Confirm to hang your piece.'
             ]
           })}
         </div>

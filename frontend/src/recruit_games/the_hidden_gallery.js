@@ -10,18 +10,15 @@
 import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheHiddenGallery(context, renderHeader) {
-  const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
+  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
 
-  switch (miniGameIndex) {
-    case 0:
-      runQ1InformationSeeking(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 1:
-      runQ2InvestigationUnderUncertainty(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 2:
-      runQ3KnowledgeIntegration(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
+  const targetGame = gameId || (miniGameIndex === 0 ? 'Q1' : (miniGameIndex === 1 ? 'Q2' : 'Q3'));
+  if (targetGame === 'Q1') {
+    runQ1InformationSeeking(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else if (targetGame === 'Q2') {
+    runQ2InvestigationUnderUncertainty(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else {
+    runQ3KnowledgeIntegration(appContainer, renderHeader, logEvent, onMiniGameComplete);
   }
 }
 
@@ -106,12 +103,11 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`,
-            goal: 'Make preservation decisions for 4 historic items. You may view optional notes if helpful.',
+            goal: 'Make preservation choices for 4 historic items.',
             steps: [
-              'Review the historic artifact and decision prompt.',
-              'Click optional research notes if you want extra context.',
-              'Choose your preservation decision for each of the 4 items.',
-              'Click confirm to continue.'
+              'Read the artifact prompt and choose your option.',
+              'Click optional research notes if you want more background.',
+              'Click Confirm when you are ready to continue.'
             ]
           })}
         </div>
@@ -380,12 +376,11 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
           </div>
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>`,
-            goal: 'Investigate physical clues on 4 historical relics to identify their origins.',
+            goal: 'Inspect 4 historic relics to identify where they came from.',
             steps: [
-              'Examine each historic relic and read its description.',
-              'Click clues to uncover material facts at your choice.',
-              'Select your origin conclusion for the relic.',
-              'Click finalize to advance.'
+              'Read the description of the relic.',
+              'Click any clues you want to inspect.',
+              'Pick your conclusion and click Confirm.'
             ]
           })}
         </div>

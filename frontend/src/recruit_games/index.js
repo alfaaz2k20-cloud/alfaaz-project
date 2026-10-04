@@ -20,6 +20,36 @@ const WORLD_METADATA = {
   'W7': { name: 'The Repetition', name_ur: 'دہرائی', subtitle: 'Readiness & Ceremony' }
 };
 
+export const CANDIDATE_CORE_GAMES = {
+  'W1': ['F1', 'F2'],
+  'W2': ['A1', 'A2'],
+  'W3': ['C1', 'C2'],
+  'W4': ['E1', 'E2'],
+  'W5': ['Q1', 'Q2'],
+  'W6': ['CR1', 'CR3'],
+  'W7': ['M1', 'M2']
+};
+
+export const RESEARCH_BANK_GAMES = {
+  'W1': ['F3'],
+  'W2': ['A3'],
+  'W3': ['C3'],
+  'W4': ['E3'],
+  'W5': ['Q3'],
+  'W6': ['CR2'],
+  'W7': ['M3']
+};
+
+export const ALL_GAMES_BY_WORLD = {
+  'W1': ['F1', 'F2', 'F3'],
+  'W2': ['A1', 'A2', 'A3'],
+  'W3': ['C1', 'C2', 'C3'],
+  'W4': ['E1', 'E2', 'E3'],
+  'W5': ['Q1', 'Q2', 'Q3'],
+  'W6': ['CR1', 'CR2', 'CR3'],
+  'W7': ['M1', 'M2', 'M3']
+};
+
 export function renderTutorialCard({ icon, goal, steps }) {
   return `
     <div class="tutorial-card cursor-pointer p-6 border border-[var(--accent-gold)] bg-gradient-to-br from-[#faf8f5] to-[#f5efe8] space-y-4 mb-6 interactive-option duration-300" tabindex="0" role="button" aria-label="Begin Activity Guide">
@@ -84,8 +114,11 @@ export function bindTutorialCard(app, onStart) {
 }
 
 export function runMiniGame(context) {
-  const { appContainer, worldCode, worldIndex, miniGameIndex, onMiniGameComplete } = context;
+  const { appContainer, worldCode, worldIndex, miniGameIndex, gameId, onMiniGameComplete } = context;
   const meta = WORLD_METADATA[worldCode] || { name: 'Alfaaz Workshop', name_ur: '', subtitle: '' };
+
+  const resolvedGameId = gameId || (CANDIDATE_CORE_GAMES[worldCode] && CANDIDATE_CORE_GAMES[worldCode][miniGameIndex]) || null;
+  const extendedContext = { ...context, gameId: resolvedGameId };
 
   // Clean, Poetic Header Shell without Skip Buttons
   const renderHeader = (mgTitle, mgDesc) => `
@@ -105,25 +138,25 @@ export function runMiniGame(context) {
   // Dispatch to World Runners
   switch (worldCode) {
     case 'W1':
-      runTheFrequency(context, renderHeader);
+      runTheFrequency(extendedContext, renderHeader);
       break;
     case 'W2':
-      runTheArchive(context, renderHeader);
+      runTheArchive(extendedContext, renderHeader);
       break;
     case 'W3':
-      runTheSharedCanvas(context, renderHeader);
+      runTheSharedCanvas(extendedContext, renderHeader);
       break;
     case 'W4':
-      runTheShiftingGrid(context, renderHeader);
+      runTheShiftingGrid(extendedContext, renderHeader);
       break;
     case 'W5':
-      runTheHiddenGallery(context, renderHeader);
+      runTheHiddenGallery(extendedContext, renderHeader);
       break;
     case 'W6':
-      runTheBrokenTool(context, renderHeader);
+      runTheBrokenTool(extendedContext, renderHeader);
       break;
     case 'W7':
-      runTheRepetition(context, renderHeader);
+      runTheRepetition(extendedContext, renderHeader);
       break;
     default:
       if (onMiniGameComplete) onMiniGameComplete({});

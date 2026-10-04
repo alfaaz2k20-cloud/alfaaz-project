@@ -9,18 +9,15 @@
 import { renderTutorialCard, bindTutorialCard } from './index.js';
 
 export function runTheArchive(context, renderHeader) {
-  const { appContainer, miniGameIndex, logEvent, onMiniGameComplete } = context;
+  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
 
-  switch (miniGameIndex) {
-    case 0:
-      runA1Classification(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 1:
-      runA2ExceptionHandling(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
-    case 2:
-      runA3QualityControl(appContainer, renderHeader, logEvent, onMiniGameComplete);
-      break;
+  const targetGame = gameId || (miniGameIndex === 0 ? 'A1' : (miniGameIndex === 1 ? 'A2' : 'A3'));
+  if (targetGame === 'A1') {
+    runA1Classification(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else if (targetGame === 'A2') {
+    runA2ExceptionHandling(appContainer, renderHeader, logEvent, onMiniGameComplete);
+  } else {
+    runA3QualityControl(appContainer, renderHeader, logEvent, onMiniGameComplete);
   }
 }
 
@@ -82,11 +79,11 @@ function runA1Classification(app, renderHeader, logEvent, onComplete) {
           ${renderHeader('The Manuscript Folios', 'Sort each historical page onto its proper shelf.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`,
-            goal: 'Organize historical items onto matching archive shelves across 5 trials.',
+            goal: 'File each document onto the correct shelf across 5 rounds.',
             steps: [
-              'Read the title and description tags on each card.',
-              'Click the shelf guide button anytime to check sorting rules.',
-              'Click the matching shelf button to file the page.'
+              'Check the date and description on each document card.',
+              'Click the matching shelf to file it.',
+              'Open the shelf guide anytime if you need a reminder.'
             ]
           })}
         </div>
@@ -292,11 +289,11 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete) {
           ${renderHeader('The Fragile Leaf', 'Examine the page condition and choose a handling step.')}
           ${renderTutorialCard({
             icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`,
-            goal: 'Evaluate the physical condition of 4 pages and choose how to handle them.',
+            goal: 'Check the condition of 4 pages and choose how to handle them.',
             steps: [
-              'Review the condition notes on each page card.',
-              'Notice if physical damage requires special repair care.',
-              'Choose your handling recommendation across all 4 trials.'
+              'Look at the condition notes on the page.',
+              'Decide if the page is clean or damaged.',
+              'Choose whether to file normally, quarantine for repair, or consult.'
             ]
           })}
         </div>
