@@ -1,3 +1,18 @@
+import sys
+import logging
+
+try:
+    sys.stdout.reconfigure(line_buffering=True)
+except Exception:
+    pass
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    stream=sys.stdout
+)
+logger = logging.getLogger("app.main")
+
 from app.routers import admin, auth, blogs, clubs, curator, events, exhibitions, recruit, research_view
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,24 +32,36 @@ from app.core.security import get_password_hash
 from app.routers import vault
 
 # Create Database Tables
+logger.info("Starting Base.metadata.create_all...")
 Base.metadata.create_all(bind=engine)
+logger.info("Base.metadata.create_all completed successfully.")
 
 # Ensure schema backward-compatibility for newly added columns
+logger.info("Starting schema migration check...")
 from sqlalchemy import inspect as sa_inspect, text as sa_text
 try:
     with engine.begin() as _conn:
         _insp = sa_inspect(_conn)
         _tables = _insp.get_table_names()
         _conn_dialect = _conn.dialect.name
+        logger.info("Database connection established (dialect: %s). Found %d existing table(s).", _conn_dialect, len(_tables))
 
-        def _add_column_if_missing(table_name: str, col_name: str, col_type: str):
-            if table_name in _tables:
-                existing = [c["name"] for c in _insp.get_columns(table_name)]
-                if col_name not in existing:
+        def _add_missing_columns(table_name: str, cols: list):
+            if table_name not in _tables:
+                return
+            existing_cols = {c["name"] for c in _insp.get_columns(table_name)}
+            added = 0
+            for col_name, col_type in cols:
+                if col_name not in existing_cols:
                     try:
-                        _conn.execute(sa_text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"))
+                        with _conn.begin_nested():
+                            _conn.execute(sa_text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"))
+                        existing_cols.add(col_name)
+                        added += 1
                     except Exception as _err:
-                        print(f"[DB Migration] Notice: adding {table_name}.{col_name}: {_err}")
+                        logger.warning("[DB Migration] Notice adding %s.%s: %s", table_name, col_name, _err)
+            if added > 0:
+                logger.info("[DB Migration] Added %d missing column(s) to %s.", added, table_name)
 
         # 1. telemetry_events
         _missing_te = [
@@ -47,8 +74,7 @@ try:
             ("state_json", "TEXT"),
             ("data_json", "TEXT")
         ]
-        for _cname, _ctype in _missing_te:
-            _add_column_if_missing("telemetry_events", _cname, _ctype)
+        _add_missing_columns("telemetry_events", _missing_te)
 
         # 2. evidence
         _missing_ev = [
@@ -93,12 +119,14 @@ try:
             ("game_observation_count", "INTEGER"),
             ("game_consistency_spread", "FLOAT")
         ]
-        for _cname, _ctype in _missing_ev:
-            _add_column_if_missing("evidence", _cname, _ctype)
+        _add_missing_columns("evidence", _missing_ev)
 
         # 3. applicant_identities
-        _add_column_if_missing("applicant_identities", "phone_or_contact", "VARCHAR")
-        _add_column_if_missing("applicant_identities", "created_at", "DATETIME DEFAULT CURRENT_TIMESTAMP" if _conn_dialect == "sqlite" else "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+        _missing_ai = [
+            ("phone_or_contact", "VARCHAR"),
+            ("created_at", "DATETIME DEFAULT CURRENT_TIMESTAMP" if _conn_dialect == "sqlite" else "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+        ]
+        _add_missing_columns("applicant_identities", _missing_ai)
 
         # 4. recruit_sessions
         _missing_rs = [
@@ -113,17 +141,22 @@ try:
             ("input_modality", "VARCHAR"),
             ("completed_at", "DATETIME" if _conn_dialect == "sqlite" else "TIMESTAMP")
         ]
-        for _cname, _ctype in _missing_rs:
-            _add_column_if_missing("recruit_sessions", _cname, _ctype)
+        _add_missing_columns("recruit_sessions", _missing_rs)
 
         # 5. consent_records
-        _add_column_if_missing("consent_records", "choices_json", "TEXT DEFAULT '{}'")
-        _add_column_if_missing("consent_records", "confirmed_18_plus", "BOOLEAN DEFAULT 1" if _conn_dialect == "sqlite" else "BOOLEAN DEFAULT TRUE")
+        _missing_cr = [
+            ("choices_json", "TEXT DEFAULT '{}'"),
+            ("confirmed_18_plus", "BOOLEAN DEFAULT 1" if _conn_dialect == "sqlite" else "BOOLEAN DEFAULT TRUE")
+        ]
+        _add_missing_columns("consent_records", _missing_cr)
+    logger.info("Schema migration check completed successfully.")
 except Exception as _e:
-    print(f"[DB Migration] Startup migration notice: {_e}")
+    logger.warning("Schema migration notice: %s", _e)
 
 # Initialize Application
+logger.info("Initializing FastAPI application...")
 app = FastAPI(title="Alfaaz Collective API", version="2.0")
+logger.info("FastAPI application initialized.")
 
 class RecruitBodyLimitMiddleware:
     """
@@ -214,6 +247,7 @@ app.add_middleware(
 )
 
 # Connect Routers
+logger.info("Registering API routers...")
 app.include_router(auth.router)
 app.include_router(events.router)
 app.include_router(curator.router)
@@ -224,10 +258,12 @@ app.include_router(blogs.router)
 app.include_router(vault.router)
 app.include_router(recruit.router)
 app.include_router(research_view.router)
+logger.info("All 10 API routers registered successfully.")
 
 # Server Startup Script (Ensures Admin exists)
 @app.on_event("startup")
 def on_startup():
+    logger.info("Executing on_startup lifecycle handler...")
     try:
         db = SessionLocal()
         master_email = "admin@alfaaz.com"
@@ -242,9 +278,14 @@ def on_startup():
             )
             db.add(master)
             db.commit()
+            logger.info("Default master admin created.")
+        else:
+            logger.info("Master admin verified.")
         db.close()
+        logger.info("Database startup checks passed.")
     except Exception as e:
-        print(f"CRITICAL DB ERROR: {e}")
+        logger.error("Database on_startup notice: %s", e)
+    logger.info("Application startup lifecycle complete. Port binding ready.")
 
 # Health Check Route
 @app.get("/ping")

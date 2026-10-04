@@ -314,6 +314,47 @@ def run_tests():
         assert_true("dimensions" in leg_dossier, "Legacy database successfully migrated and dossier opens")
         assert_eq(len(leg_dossier["dimensions"]), 7, "All 7 dimensions present in migrated dossier")
 
+    # --- Test 7: Schema Migration Savepoint Transaction-Failure Isolation ---
+    print("\n--- Test 7: Schema Migration Savepoint Transaction-Failure Isolation ---")
+    savepoint_engine = create_engine("sqlite:///:memory:")
+    with savepoint_engine.begin() as sp_conn:
+        sp_conn.execute(sa_txt("CREATE TABLE isolation_test (id INTEGER PRIMARY KEY)"))
+
+        test_columns = [
+            ("col_alpha", "VARCHAR"),
+            ("id", "INTEGER"),  # Intentional duplicate to simulate lock/DDL failure
+            ("col_omega", "FLOAT")
+        ]
+
+        sp_insp = sa_insp_tool(sp_conn)
+        existing = {c["name"] for c in sp_insp.get_columns("isolation_test")}
+        added_count = 0
+        failed_count = 0
+        for cname, ctype in test_columns:
+            if cname not in existing or cname == "id":  # Force attempt on 'id' to test savepoint
+                try:
+                    with sp_conn.begin_nested():
+                        sp_conn.execute(sa_txt(f"ALTER TABLE isolation_test ADD COLUMN {cname} {ctype}"))
+                    existing.add(cname)
+                    added_count += 1
+                except Exception:
+                    failed_count += 1
+
+        assert_eq(failed_count, 1, "Intentional faulty DDL was safely caught by savepoint")
+        assert_eq(added_count, 2, "Valid columns added despite intervening failure")
+
+    with savepoint_engine.connect() as verify_conn:
+        sp_insp2 = sa_insp_tool(verify_conn)
+        final_cols = {c["name"] for c in sp_insp2.get_columns("isolation_test")}
+        assert_true("col_alpha" in final_cols, "col_alpha present in table after outer commit")
+        assert_true("col_omega" in final_cols, "col_omega present in table after outer commit")
+
+    # Structural verification of backend/app/main.py
+    main_py_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app", "main.py"))
+    with open(main_py_path, "r", encoding="utf-8") as f:
+        main_content = f.read()
+    assert_true("with _conn.begin_nested():" in main_content, "main.py structurally enforces with _conn.begin_nested() savepoint isolation")
+
     print("\n" + "=" * 60)
     print(f"ALL {passed}/{total} VERIFICATION CHECKS PASSED WITH ZERO FAILURES!")
     print("=" * 60)
