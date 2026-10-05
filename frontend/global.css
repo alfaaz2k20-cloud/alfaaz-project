@@ -80,7 +80,7 @@ nav.hidden {  }
 
 .logo {
   font-family: var(--font-heading); font-size: 1.8rem;
-  text- color: var(--text-primary); text-decoration: none;
+  text-transform: uppercase; color: var(--text-primary); text-decoration: none;
 }
 
 /* ── VIDEO BACKGROUND ─────────────────────────── */
@@ -105,7 +105,7 @@ nav.hidden {  }
 /* ── LABELS ───────────────────────────────────── */
 .data-label, .input-label, .section-label {
   font-family: var(--font-body); font-size: 10px; font-weight: 600;
-  letter-spacing: 0.18em; text-
+  letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--text-secondary); margin-bottom: 0.5rem;
   display: block;
 }
@@ -115,7 +115,7 @@ nav.hidden {  }
   background: var(--text-primary); color: var(--bg-secondary);
   border: 1px solid var(--text-primary);
   font-family: var(--font-body); font-size: 11px; font-weight: 500;
-  text- letter-spacing: 0.15em;
+  text-transform: uppercase; letter-spacing: 0.15em;
   padding: 1rem 2.5rem; border-radius: 0;
   display: inline-block; text-decoration: none; text-align: center;
   
@@ -207,7 +207,7 @@ h3.ur-hover {
   font-family: var(--font-heading);
   font-size: clamp(2.8rem, 9vw, 6.5rem);
   font-weight: 400; line-height: 1;
-  text- color: var(--text-primary);
+  text-transform: uppercase; color: var(--text-primary);
   margin-bottom: 1.5rem;
 }
 
