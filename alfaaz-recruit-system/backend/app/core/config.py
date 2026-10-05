@@ -22,7 +22,7 @@ FRONTEND_ORIGINS = [
 
 
 def _load_recruit_copy(filename: str) -> dict:
-    copy_path = Path(__file__).resolve().parents[3] / "config" / "copy" / filename
+    copy_path = Path(__file__).resolve().parents[2] / "config" / "copy" / filename
     with copy_path.open(encoding="utf-8") as copy_file:
         return json.load(copy_file)
 

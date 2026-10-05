@@ -7,7 +7,7 @@
       "world_id": "W1",
       "parameter_id": "empathy",
       "facet": "attunement_to_cues",
-      "total_trials": 5,
+      "total_trials": 6,
       "trials": [
         {
           "stimulus_id": "F1_T1",
@@ -43,6 +43,13 @@
           "condition_type": "maintain_objective",
           "partner_state": "acoustics_stable_in_rhythm",
           "expected_action": "maintain_baseline"
+        },
+        {
+          "stimulus_id": "F1_T6",
+          "condition_id": "projected_forte",
+          "condition_type": "accommodate",
+          "partner_state": "vocal_projection_peaking",
+          "expected_action": "dampen_harshness"
         }
       ],
       "event_allowlist": [
@@ -60,7 +67,7 @@
       "world_id": "W1",
       "parameter_id": "empathy",
       "facet": "cognitive_perspective_taking",
-      "total_trials": 3,
+      "total_trials": 4,
       "trials": [
         {
           "stimulus_id": "F2_T1",
@@ -82,6 +89,13 @@
           "condition_type": "maintain",
           "partner_state": "expressive_performance_intensity_not_distress",
           "expected_action": "maintain_cadence"
+        },
+        {
+          "stimulus_id": "F2_T4",
+          "condition_id": "unspoken_timing_drift",
+          "condition_type": "act",
+          "partner_state": "tempo_misalignment_seeking_synchrony",
+          "expected_action": "realign_tempo"
         }
       ],
       "event_allowlist": [
@@ -99,7 +113,7 @@
       "world_id": "W1",
       "parameter_id": "empathy",
       "facet": "contextual_interpretation_updating",
-      "total_transitions": 2,
+      "total_transitions": 3,
       "total_trials": 3,
       "transitions": [
         {
@@ -183,6 +197,47 @@
               "is_appropriate": false
             }
           ]
+        },
+        {
+          "stimulus_id": "F3_T3",
+          "cue_id": "cue_rhythmic_syncopation",
+          "cue_text": "Performer introduces an abrupt, syncopated metric pause before the final couplet.",
+          "baseline_context": "Continuous Solo Recitation (Single vocal meter; steady pacing expected).",
+          "baseline_options": [
+            {
+              "id": "sustain_cadence",
+              "label": "Sustain Cadence (Maintain steady tempo support without hesitation)",
+              "is_appropriate": true
+            },
+            {
+              "id": "halt_accompaniment",
+              "label": "Halt Accompaniment (Stop suddenly on pause)",
+              "is_appropriate": false
+            },
+            {
+              "id": "force_metronome",
+              "label": "Force Accelerated Tempo (Push past pause)",
+              "is_appropriate": false
+            }
+          ],
+          "shifted_context": "Call-and-Response Ensemble (Audience or chorus provides reciprocal answering refrain during the pause).",
+          "shifted_options": [
+            {
+              "id": "open_reciprocal_space",
+              "label": "Open Reciprocal Space (Suspend direct drive to allow chorus reply to breathe)",
+              "is_appropriate": true
+            },
+            {
+              "id": "sustain_cadence",
+              "label": "Sustain Cadence (Drive straight through chorus refrain)",
+              "is_appropriate": false
+            },
+            {
+              "id": "force_metronome",
+              "label": "Force Accelerated Tempo (Rush ensemble)",
+              "is_appropriate": false
+            }
+          ]
         }
       ],
       "event_allowlist": [
@@ -200,7 +255,7 @@
       "world_id": "W2",
       "parameter_id": "conscientiousness",
       "facet": "rule_governed_classification",
-      "total_trials": 4,
+      "total_trials": 5,
       "trials": [
         {
           "stimulus_id": "DOC_01",
@@ -221,6 +276,11 @@
           "stimulus_id": "DOC_04",
           "rule": "LANGUAGE",
           "target_folder": "kashmiri"
+        },
+        {
+          "stimulus_id": "DOC_05",
+          "rule": "GENRE",
+          "target_folder": "chronicle"
         }
       ],
       "event_allowlist": [
@@ -238,7 +298,7 @@
       "world_id": "W2",
       "parameter_id": "conscientiousness",
       "facet": "exception_handling",
-      "total_trials": 3,
+      "total_trials": 4,
       "trials": [
         {
           "stimulus_id": "EXC_01",
@@ -255,6 +315,12 @@
         {
           "stimulus_id": "EXC_03",
           "condition_id": "catalog_anomaly_pagination",
+          "condition_type": "true_exception",
+          "expected_action": "flag_exception"
+        },
+        {
+          "stimulus_id": "EXC_04",
+          "condition_id": "catalog_anomaly_binding_split",
           "condition_type": "true_exception",
           "expected_action": "flag_exception"
         }
@@ -274,7 +340,7 @@
       "world_id": "W2",
       "parameter_id": "conscientiousness",
       "facet": "proofreading_vigilance",
-      "total_trials": 4,
+      "total_trials": 5,
       "trials": [
         {
           "stimulus_id": "REC_01",
@@ -295,6 +361,11 @@
           "stimulus_id": "REC_04",
           "has_error": false,
           "error_type": "clean_control"
+        },
+        {
+          "stimulus_id": "REC_05",
+          "has_error": true,
+          "error_type": "factual_error"
         }
       ],
       "event_allowlist": [
@@ -312,7 +383,7 @@
       "world_id": "W3",
       "parameter_id": "collaborative_spirit",
       "facet": "need_sensitive_resource_sharing",
-      "total_trials": 2,
+      "total_trials": 3,
       "trials": [
         {
           "stimulus_id": "C1_R1",
@@ -327,6 +398,13 @@
           "condition_type": "equal_distribution",
           "partner_state": "partner_adequate_materials",
           "expected_action": "maintain_equal_distribution"
+        },
+        {
+          "stimulus_id": "C1_R3",
+          "condition_id": "self_deficit_retain",
+          "condition_type": "retain_needed",
+          "partner_state": "partner_holding_ample_tiles_user_critical_shortage",
+          "expected_action": "retain_resources"
         }
       ],
       "event_allowlist": [
@@ -346,7 +424,7 @@
       "world_id": "W3",
       "parameter_id": "collaborative_spirit",
       "facet": "coordinated_spatial_placement",
-      "total_trials": 2,
+      "total_trials": 3,
       "trials": [
         {
           "stimulus_id": "C2_R1",
@@ -359,6 +437,12 @@
           "condition_id": "restricted_wall_space",
           "partner_state": "partner_framing_center",
           "expected_action": "avoid_blocking_partner"
+        },
+        {
+          "stimulus_id": "C2_R3",
+          "condition_id": "dynamic_canvas_adjustment",
+          "partner_state": "partner_shifted_composition_south",
+          "expected_action": "align_composition"
         }
       ],
       "event_allowlist": [
@@ -378,7 +462,7 @@
       "world_id": "W3",
       "parameter_id": "collaborative_spirit",
       "facet": "breakdown_repair",
-      "total_trials": 2,
+      "total_trials": 3,
       "trials": [
         {
           "stimulus_id": "C3_R1",
@@ -401,6 +485,17 @@
             "reseat_pulley_cable",
             "align_panel_height"
           ]
+        },
+        {
+          "stimulus_id": "C3_R3",
+          "condition_id": "shadow_corridor_breakdown",
+          "condition_type": "identify_and_repair",
+          "partner_state": "partner_blindspot_obstruction",
+          "repair_steps": [
+            "identify_fault",
+            "shift_lantern",
+            "illuminate_path"
+          ]
         }
       ],
       "event_allowlist": [
@@ -420,7 +515,7 @@
       "world_id": "W4",
       "parameter_id": "emotional_agility",
       "facet": "set_shifting_adaptation",
-      "total_trials": 8,
+      "total_trials": 9,
       "shift_trial_index": 4,
       "trials": [
         {
@@ -479,6 +574,13 @@
           "tile_color": "Gold",
           "tile_shape": "Square",
           "target_container": "container_2"
+        },
+        {
+          "stimulus_id": "E1_T9",
+          "rule": "SHAPE",
+          "tile_color": "Sage",
+          "tile_shape": "Circle",
+          "target_container": "container_1"
         }
       ],
       "event_allowlist": [
@@ -497,7 +599,7 @@
       "world_id": "W4",
       "parameter_id": "emotional_agility",
       "facet": "disruption_recovery",
-      "total_trials": 3,
+      "total_trials": 4,
       "trials": [
         {
           "stimulus_id": "E2_S1",
@@ -516,6 +618,12 @@
           "has_disruption": true,
           "disruption_type": "draft_blows_reference_card",
           "target_action": "stabilize_reference"
+        },
+        {
+          "stimulus_id": "E2_S4",
+          "has_disruption": true,
+          "disruption_type": "misplaced_pigment_tray",
+          "target_action": "reposition_tray"
         }
       ],
       "event_allowlist": [
@@ -534,7 +642,7 @@
       "world_id": "W4",
       "parameter_id": "emotional_agility",
       "facet": "constraint_adaptation",
-      "total_trials": 2,
+      "total_trials": 3,
       "trials": [
         {
           "stimulus_id": "E3_C1",
@@ -545,6 +653,11 @@
           "stimulus_id": "E3_C2",
           "constraint_state": "monochrome_indigo_only",
           "target_action": "tonal_adaptation"
+        },
+        {
+          "stimulus_id": "E3_C3",
+          "constraint_state": "boundary_constricted_half_grid",
+          "target_action": "compact_adaptation"
         }
       ],
       "event_allowlist": [
@@ -563,7 +676,7 @@
       "world_id": "W5",
       "parameter_id": "curiosity",
       "facet": "information_seeking",
-      "total_required_decisions": 3,
+      "total_required_decisions": 4,
       "decisions": [
         {
           "decision_id": "Q1_D1",
@@ -602,6 +715,19 @@
           "linked_resources": [
             "OPT_USEFUL_1",
             "OPT_CONTROL_1"
+          ]
+        },
+        {
+          "decision_id": "Q1_D4",
+          "title": "Botanical Pigment Specimen Jars",
+          "options": [
+            "dark_vented_cedar_chest",
+            "ambient_glass_display",
+            "sealed_vacuum_capsule"
+          ],
+          "linked_resources": [
+            "OPT_USEFUL_2",
+            "OPT_CONTROL_2"
           ]
         }
       ],
@@ -643,7 +769,7 @@
       "world_id": "W5",
       "parameter_id": "curiosity",
       "facet": "investigation_under_uncertainty",
-      "total_trials": 3,
+      "total_trials": 4,
       "trials": [
         {
           "stimulus_id": "Q2_T1",
@@ -662,6 +788,12 @@
           "uncertainty_level": "low",
           "expected_value": "low_control",
           "artifact_id": "standard_receipt_3"
+        },
+        {
+          "stimulus_id": "Q2_T4",
+          "uncertainty_level": "high",
+          "expected_value": "moderate",
+          "artifact_id": "unknown_crest_impression_4"
         }
       ],
       "event_allowlist": [
@@ -680,7 +812,7 @@
       "world_id": "W5",
       "parameter_id": "curiosity",
       "facet": "downstream_knowledge_integration",
-      "total_trials": 2,
+      "total_trials": 3,
       "trials": [
         {
           "stimulus_id": "Q3_E1",
@@ -693,6 +825,12 @@
           "ambiguity_type": "mismatched_period_provenance",
           "optional_context_available": true,
           "context_id": "provenance_context_2"
+        },
+        {
+          "stimulus_id": "Q3_E3",
+          "ambiguity_type": "regional_dialect_verse_origin",
+          "optional_context_available": true,
+          "context_id": "provenance_context_3"
         }
       ],
       "event_allowlist": [
@@ -771,7 +909,7 @@
       "world_id": "W6",
       "parameter_id": "creative_initiative",
       "facet": "spatial_reframing",
-      "total_episodes": 2,
+      "total_episodes": 3,
       "episodes": [
         {
           "episode_id": "CR2_E1",
@@ -802,6 +940,21 @@
             "central_compression",
             "diagonal_crossing"
           ]
+        },
+        {
+          "episode_id": "CR2_E3",
+          "constraint_change": "low_ceiling_arch_support",
+          "target_reframing": "linear_flow",
+          "pre_strategies": [
+            "S_TALL_STELAE",
+            "S_HORIZONTAL_VITRINES",
+            "S_CEILING_SUSPENSION"
+          ],
+          "post_strategies": [
+            "linear_flow",
+            "canopy_tent",
+            "staggered_alcoves"
+          ]
         }
       ],
       "event_allowlist": [
@@ -825,7 +978,7 @@
       "world_id": "W6",
       "parameter_id": "creative_initiative",
       "facet": "affordance_synthesis",
-      "total_trials": 2,
+      "total_trials": 3,
       "trials": [
         {
           "stimulus_id": "CR3_T1",
@@ -844,6 +997,15 @@
             "linen_swab"
           ],
           "target_motif": "fine_stipple"
+        },
+        {
+          "stimulus_id": "CR3_T3",
+          "tool_options": [
+            "agate_stone",
+            "polished_wood",
+            "copper_burnisher"
+          ],
+          "target_motif": "gold_leaf_seal"
         }
       ],
       "event_allowlist": [
@@ -867,7 +1029,7 @@
       "world_id": "W7",
       "parameter_id": "motivation",
       "facet": "baseline_diligence",
-      "mandatory_units": 2,
+      "mandatory_units": 3,
       "optional_units": 0,
       "trials": [
         {
@@ -879,6 +1041,11 @@
           "stimulus_id": "M1_U2",
           "unit_index": 1,
           "title": "Invitation Folio 2"
+        },
+        {
+          "stimulus_id": "M1_U3",
+          "unit_index": 2,
+          "title": "Invitation Folio 3"
         }
       ],
       "event_allowlist": [
@@ -896,7 +1063,7 @@
       "world_id": "W7",
       "parameter_id": "motivation",
       "facet": "voluntary_continuation",
-      "mandatory_units": 2,
+      "mandatory_units": 3,
       "max_optional_units": 3,
       "mandatory_trials": [
         {
@@ -947,7 +1114,7 @@
       "world_id": "W7",
       "parameter_id": "motivation",
       "facet": "persistence_under_reduced_feedback",
-      "mandatory_units": 2,
+      "mandatory_units": 3,
       "max_voluntary_units": 3,
       "feedback_saliency": "minimal",
       "explicit_permission_to_stop": true,
@@ -981,6 +1148,12 @@
           "unit_index": 4,
           "is_mandatory": false,
           "title": "Voluntary Register Verification 5"
+        },
+        {
+          "stimulus_id": "M3_U6",
+          "unit_index": 5,
+          "is_mandatory": false,
+          "title": "Voluntary Register Verification 6"
         }
       ],
       "event_allowlist": [

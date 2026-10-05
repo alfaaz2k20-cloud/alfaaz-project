@@ -2,7 +2,7 @@
  ALFAAZ RECRUIT — CANDIDATE EXPERIENCE & TELEMETRY CLIENT
  ========================================================================== */
 
-import consentCopy from '../../config/copy/consent.json';
+import consentCopy from '../../backend/config/copy/consent.json';
 import './recruit-utilities.css';
 import { runMiniGame, CANDIDATE_CORE_GAMES } from './recruit_games/index.js';
 
