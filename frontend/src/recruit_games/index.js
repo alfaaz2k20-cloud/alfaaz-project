@@ -57,14 +57,14 @@ export function renderGameShell({
       <!-- TASK HEADER -->
       <div>
         <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">${title}</h2>
-        ${subtitle ? `<p class="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">${subtitle}</p>` : ''}
+        ${subtitle ? `<p class="text-base text-black mt-1 leading-relaxed font-medium">${subtitle}</p>` : ''}
       </div>
 
       <!-- INSTRUCTION / CONTEXT BOX -->
       ${instruction ? `
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">${instructionPrompt}</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+          <div class="text-sm uppercase tracking-wider font-sans text-[var(--accent-gold)] font-bold mb-1">${instructionPrompt}</div>
+          <div class="text-base text-black leading-relaxed font-medium">
             ${instruction}
           </div>
         </div>
@@ -85,7 +85,7 @@ export function renderGameShell({
 
       <!-- ACTIVE SELECTION / SUMMARY AREA -->
       ${summaryContent ? `
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center candidate-content-protected">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs text-base font-sans text-[var(--text-secondary)] flex justify-between items-center candidate-content-protected">
           ${summaryContent}
         </div>
       ` : ''}
@@ -95,7 +95,7 @@ export function renderGameShell({
         <div class="flex flex-col sm:flex-row justify-end items-center gap-3 pt-1">
           ${secondaryActionHtml || ''}
           ${actionButtonText ? `
-            <button type="button" id="${actionButtonId}" ${actionButtonDisabled ? 'disabled' : ''} class="w-full sm:w-auto px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer interactive-option shadow-sm rounded-xs flex items-center justify-center gap-2 min-h-[44px]">
+            <button type="button" id="${actionButtonId}" ${actionButtonDisabled ? 'disabled' : ''} class="w-full sm:w-auto px-7 py-3.5 bg-[var(--text-primary)] text-white text-sm font-bold uppercase tracking-widest  disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer interactive-option shadow-sm rounded-xs flex items-center justify-center gap-2 min-h-[44px]">
               ${actionButtonText}
             </button>
           ` : ''}
@@ -107,7 +107,7 @@ export function renderGameShell({
 
       <!-- PROGRESS FOOTER -->
       ${progressText ? `
-        <div class="text-right text-[11px] text-[var(--text-secondary)] font-sans pt-1">
+        <div class="text-right text-sm text-[var(--text-secondary)] font-sans pt-1">
           ${progressText}
         </div>
       ` : ''}
@@ -147,13 +147,13 @@ export const ALL_GAMES_BY_WORLD = {
 
 export function renderTutorialCard({ icon, goal, steps }) {
   return `
-    <div class="tutorial-card cursor-pointer p-6 border border-[var(--accent-gold)] bg-gradient-to-br from-[#faf8f5] to-[#f5efe8] space-y-4 mb-6 interactive-option duration-300" tabindex="0" role="button" aria-label="Begin Activity Guide">
+    <div class="tutorial-card cursor-pointer p-6 border border-[var(--accent-gold)] bg-gradient-to-br from-[#faf8f5] to-[#f5efe8] space-y-4 mb-6 interactive-option " tabindex="0" role="button" aria-label="Begin Activity Guide">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-full bg-amber-100/80 border border-[var(--accent-gold)] flex items-center justify-center text-[var(--accent-gold)] shrink-0">
           ${icon || '<i data-lucide="compass" class="w-5 h-5"></i>'}
         </div>
         <div>
-          <span class="text-[10px] uppercase tracking-widest text-[var(--accent-gold)] font-medium">Activity Guide &middot; رہنمائے عمل</span>
+          <span class="text-sm uppercase tracking-widest text-[var(--accent-gold)] font-medium">Activity Guide &middot; رہنمائے عمل</span>
           <h3 class="text-base font-serif text-[var(--text-primary)] font-semibold">${goal}</h3>
         </div>
       </div>
@@ -161,15 +161,15 @@ export function renderTutorialCard({ icon, goal, steps }) {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
         ${steps.map((s, idx) => `
           <div class="bg-white/80 border border-[var(--grid-border)] p-3 flex items-start gap-2.5">
-            <span class="w-5 h-5 rounded-full bg-[var(--accent-gold)] text-white text-[10px] flex items-center justify-center font-serif shrink-0 mt-0.5">${idx + 1}</span>
-            <div class="text-xs text-[var(--text-primary)] leading-relaxed">${s}</div>
+            <span class="w-5 h-5 rounded-full bg-[var(--accent-gold)] text-white text-sm flex items-center justify-center font-serif shrink-0 mt-0.5">${idx + 1}</span>
+            <div class="text-base text-black leading-relaxed font-medium">${s}</div>
           </div>
         `).join('')}
       </div>
 
       <div class="pt-2 flex justify-between items-center">
         <span class="text-[11px] text-[var(--text-secondary)] italic">Click anywhere or press Enter to begin</span>
-        <button id="startActivityBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option flex items-center gap-2">
+        <button id="startActivityBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-base uppercase tracking-widest  interactive-option flex items-center gap-2">
           Begin Activity &rarr;
         </button>
       </div>
@@ -224,7 +224,7 @@ export function runMiniGame(context) {
           <span class="font-serif text-base sm:text-lg text-[var(--text-secondary)]" style="direction: rtl;">${meta.name_ur}</span>
         </div>
         <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">${mgTitle}</h2>
-        <p class="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">${mgDesc}</p>
+        <p class="text-base text-black mt-1 leading-relaxed font-medium">${mgDesc}</p>
       </div>
     </div>
   `;

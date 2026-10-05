@@ -53,27 +53,27 @@ GAME_PARAMETERS = {
 }
 
 GAME_BOUNDS = {
-    "F1": {"min": 0, "max": 6, "min_obs": 3},
-    "F2": {"min": 0, "max": 4, "min_obs": 2},
-    "F3": {"min": 0, "max": 3, "min_obs": 2},
-    "A1": {"min": 0, "max": 5, "min_obs": 3},
-    "A2": {"min": 0.0, "max": 1.0, "min_obs": 3},
-    "A3": {"min": 0, "max": 5, "min_obs": 3},
-    "C1": {"min": 0, "max": 3, "min_obs": 2},
-    "C2": {"min": 0, "max": 3, "min_obs": 2},
-    "C3": {"min": 0, "max": 3, "min_obs": 2},
-    "E1": {"min": 0, "max": 9, "min_obs": 5},
-    "E2": {"min": 0, "max": 4, "min_obs": 2},
-    "E3": {"min": 0, "max": 3, "min_obs": 2},
-    "Q1": {"min": 0, "max": 4, "min_obs": 3},
-    "Q2": {"min": 0, "max": 4, "min_obs": 2},
-    "Q3": {"min": 0, "max": 3, "min_obs": 2},
+    "F1": {"min": 0, "max": 5, "min_obs": 2},
+    "F2": {"min": 0, "max": 3, "min_obs": 1},
+    "F3": {"min": 0, "max": 2, "min_obs": 1},
+    "A1": {"min": 0, "max": 4, "min_obs": 2},
+    "A2": {"min": 0.0, "max": 1.0, "min_obs": 2},
+    "A3": {"min": 0, "max": 4, "min_obs": 2},
+    "C1": {"min": 0, "max": 2, "min_obs": 1},
+    "C2": {"min": 0, "max": 2, "min_obs": 1},
+    "C3": {"min": 0, "max": 2, "min_obs": 1},
+    "E1": {"min": 0, "max": 8, "min_obs": 4},
+    "E2": {"min": 0, "max": 3, "min_obs": 1},
+    "E3": {"min": 0, "max": 2, "min_obs": 1},
+    "Q1": {"min": 0, "max": 3, "min_obs": 2},
+    "Q2": {"min": 0, "max": 3, "min_obs": 1},
+    "Q3": {"min": 0, "max": 2, "min_obs": 1},
     "CR1": {"min": 0, "max": 2, "min_obs": 2},
-    "CR2": {"min": 0, "max": 3, "min_obs": 2},
-    "CR3": {"min": 0, "max": 3, "min_obs": 2},
-    "M1": {"min": 0, "max": 3, "min_obs": 2},
-    "M2": {"min": 0, "max": 3, "min_obs": 3},
-    "M3": {"min": 0, "max": 3, "min_obs": 3}
+    "CR2": {"min": 0, "max": 2, "min_obs": 1},
+    "CR3": {"min": 0, "max": 2, "min_obs": 1},
+    "M1": {"min": 0, "max": 2, "min_obs": 1},
+    "M2": {"min": 0, "max": 2, "min_obs": 2},
+    "M3": {"min": 0, "max": 2, "min_obs": 2}
 }
 
 
@@ -285,7 +285,7 @@ def score_a2(events: List[Any]) -> Tuple[float, int, List[str]]:
                 false_positives += 1
 
     flags = []
-    if genuine_evaluated < 3:
+    if genuine_evaluated < 2:
         flags.append("insufficient_observations")
 
     total_flagged = true_positives + false_positives
@@ -294,7 +294,7 @@ def score_a2(events: List[Any]) -> Tuple[float, int, List[str]]:
     else:
         precision = 0.0
 
-    obs_count = genuine_evaluated if genuine_evaluated < 3 else len(decisions)
+    obs_count = genuine_evaluated if genuine_evaluated < 2 else len(decisions)
     return precision, obs_count, flags
 
 
@@ -502,7 +502,7 @@ def score_m2(events: List[Any]) -> Tuple[int, int, List[str]]:
     opt_count = state.get("optional_completed_count", 0)
     mand_count = state.get("mandatory_completed_count", 0)
     # Require mandatory completion first
-    if mand_count < 3:
+    if mand_count < 2:
         return 0, mand_count, ["mandatory_incomplete"]
     return min(3, opt_count), mand_count + opt_count, []
 
@@ -515,7 +515,7 @@ def score_m3(events: List[Any]) -> Tuple[int, int, List[str]]:
     state = reconstruct_m3_persistence_state(events)
     vol_count = state.get("voluntary_completed_count", 0)
     mand_count = state.get("mandatory_completed_count", 0)
-    if mand_count < 3:
+    if mand_count < 2:
         return 0, mand_count, ["mandatory_incomplete"]
     return min(3, vol_count), mand_count + vol_count, []
 

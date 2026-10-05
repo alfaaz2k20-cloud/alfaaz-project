@@ -25,10 +25,11 @@ export function runTheShiftingGrid(context, renderHeader) {
 // E1: Rule Shift (9 trials, unannounced rule shift)
 // --------------------------------------------------------------------------
 function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentIdx = 0;
   let trialStartTime = 0;
   let lastInputModality = 'mouse';
+  let selectedChoice = null;
 
   const trials = [
     { stimulus_id: 'E1_T1', color: 'Gold', shape: 'Square', icon: '&#9632;', label: 'Gold Square' },
@@ -41,6 +42,8 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
     { stimulus_id: 'E1_T8', color: 'Gold', shape: 'Square', icon: '&#9632;', label: 'Gold Square' },
     { stimulus_id: 'E1_T9', color: 'Sage', shape: 'Circle', icon: '&#9679;', label: 'Sage Circle' }
   ];
+  if (trials.length > 2) trials.pop();
+
 
   function render() {
     if (inTutorial) {
@@ -88,46 +91,34 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
       `,
       interactionContent: `
         <div class="grid grid-cols-2 gap-4">
-          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:bg-amber-50/40 interactive-option text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_1" tabindex="0">
+          <button type="button" class="bin-btn p-5 bg-white border ${selectedChoice === 'container_1' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_1" tabindex="0">
             <span class="text-2xl text-[var(--accent-gold)] block mb-1">&#9679;</span>
-            <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 1</span>
-            <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Gold Circle</span>
+            <span class="text-base font-semibold text-[var(--text-primary)] block">Container 1</span>
+            <span class="text-sm text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Gold Circle</span>
           </button>
-          <button type="button" class="bin-btn p-5 bg-white border border-[var(--grid-border)] hover:bg-amber-50/40 interactive-option text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
+          <button type="button" class="bin-btn p-5 bg-white border ${selectedChoice === 'container_2' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
             <span class="text-2xl text-emerald-800 block mb-1">&#9632;</span>
-            <span class="text-xs font-semibold text-[var(--text-primary)] block">Container 2</span>
-            <span class="text-[10px] text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Sage Square</span>
+            <span class="text-base font-semibold text-[var(--text-primary)] block">Container 2</span>
+            <span class="text-sm text-[var(--text-secondary)] block mt-0.5 font-sans">Reference: Sage Square</span>
           </button>
         </div>
       `,
+      summaryContent: `
+        <span>${selectedChoice ? `You selected: <strong class="text-[var(--text-primary)]">${selectedChoice === 'container_1' ? 'Container 1' : 'Container 2'}</strong>` : 'Choose the option to continue.'}</span>
+        <span class="text-sm text-stone-400 font-sans">${currentIdx + 1} / ${trials.length}</span>
+      `,
+      actionButtonId: 'confirmE1Btn',
+      actionButtonText: currentIdx < trials.length - 1 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
+      actionButtonDisabled: !selectedChoice,
       progressText: `Tile ${currentIdx + 1} of ${trials.length}`
     });
 
     app.querySelectorAll('.bin-btn').forEach(btn => {
       const handleSort = (modality) => {
         lastInputModality = modality;
-        const choice = btn.getAttribute('data-choice');
-        logEvent('tile_sorted', {
-          trial_index: currentIdx,
-          stimulus_id: t.stimulus_id,
-          choice: choice,
-          input_modality: lastInputModality,
-          task_def_version: '1.0'
-        });
-
-        if (currentIdx < trials.length - 1) {
-          currentIdx++;
-          trialStartTime = performance.now();
-          logTrialPresented();
-          render();
-        } else {
-          onComplete({
-            mini_game: 'E1',
-            observations_count: 9
-          });
-        }
+        selectedChoice = btn.getAttribute('data-choice');
+        render();
       };
-
       btn.addEventListener('click', () => handleSort('mouse'));
       btn.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -135,6 +126,29 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
           handleSort('keyboard');
         }
       });
+    });
+
+    document.getElementById('confirmE1Btn')?.addEventListener('click', () => {
+      logEvent('tile_sorted', {
+        trial_index: currentIdx,
+        stimulus_id: t.stimulus_id,
+        choice: selectedChoice,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
+      });
+
+      if (currentIdx < trials.length - 1) {
+        currentIdx++;
+        selectedChoice = null;
+        trialStartTime = performance.now();
+        logTrialPresented();
+        render();
+      } else {
+        onComplete({
+          mini_game: 'E1',
+          observations_count: trials.length
+        });
+      }
     });
   }
 
@@ -156,7 +170,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
 // E2: Setback Recovery (4 sequences)
 // --------------------------------------------------------------------------
 function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentSeq = 0;
   let selectedAction = null;
   let lastInputModality = 'mouse';
@@ -211,6 +225,8 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
       ]
     }
   ];
+  if (sequences.length > 2) sequences.pop();
+
 
   function render() {
     if (inTutorial) {
@@ -250,23 +266,23 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
       instruction: 'Read the situation below. Pick the most practical next step.',
       stimulusContent: `
         <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs flex items-center justify-between">
-          <span class="text-xs font-serif text-[var(--text-primary)]">
+          <span class="text-base font-serif text-[var(--text-primary)]">
             <strong>${s.title}:</strong> ${s.situation}
           </span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${currentSeq + 1} of 4</span>
+          <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${currentSeq + 1} of 4</span>
         </div>
       `,
       interactionContent: `
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
-          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Available Responses:</div>
+          <div class="text-sm text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Available Responses:</div>
           <div class="space-y-2.5">
             ${s.options.map(opt => `
-              <div class="e2-opt p-3.5 bg-white border ${selectedAction === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs flex items-center justify-between min-h-[48px]" data-action="${opt.id}" tabindex="0" role="button">
+              <div class="e2-opt p-3.5 bg-white border ${selectedAction === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base flex items-center justify-between min-h-[48px]" data-action="${opt.id}" tabindex="0" role="button">
                 <span class="flex items-center gap-2">
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedAction === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAction === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
                 </span>
-                <span class="text-[10px] text-[var(--text-secondary)] uppercase font-medium">${opt.note}</span>
+                
               </div>
             `).join('')}
           </div>
@@ -274,7 +290,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
       `,
       summaryContent: `
         <span>${selectedAction ? `You selected: <strong class="text-[var(--text-primary)]">${activeOpt?.label}</strong>` : 'Select an option above to continue.'}</span>
-        <span class="text-[10px] text-stone-400 font-sans">${currentSeq + 1} / ${sequences.length}</span>
+        <span class="text-sm text-stone-400 font-sans">${currentSeq + 1} / ${sequences.length}</span>
       `,
       actionButtonId: 'confirmE2Btn',
       actionButtonText: currentSeq < sequences.length - 1 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
@@ -346,7 +362,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
 // E3: Changing Conditions (3 condition transitions)
 // --------------------------------------------------------------------------
 function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentCondition = 0;
   let selectedLayout = null;
   let lastInputModality = 'mouse';
@@ -429,50 +445,50 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
         <!-- TASK HEADER -->
         <div class="mb-4">
           <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Shifting Medium</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Adapt design layout to active studio conditions.</p>
+          <p class="text-base text-[var(--text-secondary)] mt-0.5">Adapt design layout to active studio conditions.</p>
         </div>
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+          <div class="text-sm uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-base text-[var(--text-primary)] leading-relaxed">
             Read the active condition below. Pick the layout that fits best.
           </div>
         </div>
 
         <!-- LOOK AT THIS -->
         <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected flex items-center justify-between">
-          <span class="text-xs font-serif text-[var(--text-primary)]">
+          <span class="text-base font-serif text-[var(--text-primary)]">
             <strong>${c.title}:</strong> ${c.description}
           </span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Layout ${currentCondition + 1} of ${conditions.length}</span>
+          <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-medium">Layout ${currentCondition + 1} of ${conditions.length}</span>
         </div>
 
         <!-- INTERACTION AREA -->
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
-          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Layout Options:</div>
+          <div class="text-sm text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Layout Options:</div>
           <div class="space-y-2.5">
             ${c.options.map(opt => `
-              <div class="e3-opt p-3.5 bg-white border ${selectedLayout === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-layout="${opt.id}" tabindex="0" role="button">
+              <div class="e3-opt p-3.5 bg-white border ${selectedLayout === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-base flex items-center justify-between min-h-[48px]" data-layout="${opt.id}" tabindex="0" role="button">
                 <span class="flex items-center gap-2">
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedLayout === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedLayout === opt.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
                 </span>
-                <span class="text-[10px] text-[var(--accent-gold)] uppercase font-medium">Option ${opt.id.replace('LAYOUT_', '')}</span>
+                <span class="text-sm text-[var(--accent-gold)] uppercase font-medium">Option ${opt.id.replace('LAYOUT_', '')}</span>
               </div>
             `).join('')}
           </div>
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-base font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>${selectedLayout ? `You selected: <strong class="text-[var(--text-primary)]">${activeLayout?.label}</strong>` : 'Select a layout above to continue.'}</span>
-          <span class="text-[10px] text-stone-400 font-sans">${currentCondition + 1} / ${conditions.length}</span>
+          <span class="text-sm text-stone-400 font-sans">${currentCondition + 1} / ${conditions.length}</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button type="button" id="confirmE3Btn" ${selectedLayout ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
+          <button type="button" id="confirmE3Btn" ${selectedLayout ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-base uppercase tracking-widest  disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
             ${currentCondition < conditions.length - 1 ? 'Confirm Layout &rarr;' : 'Finish World 4 &rarr;'}
           </button>
         </div>

@@ -28,7 +28,7 @@ export function runTheBrokenTool(context, renderHeader) {
 // No failure-count creativity scoring.
 // --------------------------------------------------------------------------
 function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentStageIdx = 0;
   let selectedParts = [];
   let testFeedback = null;
@@ -71,6 +71,8 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
       ]
     }
   ];
+  if (stages.length > 2) stages.pop();
+
 
   function render() {
     if (inTutorial) {
@@ -114,28 +116,28 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
       stimulusContent: `
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
           <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[10px] text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Atelier Hardware Need</span>
-            <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Stage ${currentStageIdx + 1} of ${stages.length}</span>
+            <span class="text-sm text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Atelier Hardware Need</span>
+            <span class="text-sm text-[var(--accent-gold)] font-medium uppercase">Stage ${currentStageIdx + 1} of ${stages.length}</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${st.title}</div>
-          <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${st.scenario}</div>
+          <div class="text-base text-[var(--text-secondary)] leading-relaxed">${st.scenario}</div>
         </div>
       `,
       interactionContent: `
         <div class="p-4 sm:p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs">
-          <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-3">Available Workbench Components (Click to Equip)</div>
+          <div class="text-sm font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-3">Available Workbench Components (Click to Equip)</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 mb-4">
             ${st.materials.map(m => {
               const isSelected = selectedParts.includes(m.id);
               return `
-                <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs flex flex-col justify-between min-h-[72px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+                <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base flex flex-col justify-between min-h-[72px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
                   <div>
                     <div class="text-lg mb-1 text-stone-700">${m.icon}</div>
                     <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
-                    <div class="text-[10px] text-[var(--text-secondary)]">${m.role}</div>
+                    <div class="text-sm text-[var(--text-secondary)]">${m.role}</div>
                   </div>
                   <div class="mt-2 text-right">
-                    <span class="text-[10px] font-sans font-semibold ${isSelected ? 'text-[var(--accent-gold)]' : 'text-stone-400'}">${isSelected ? '&#10003; EQUIPPED' : '+ ADD'}</span>
+                    <span class="text-sm font-sans font-semibold ${isSelected ? 'text-[var(--accent-gold)]' : 'text-stone-400'}">${isSelected ? '&#10003; EQUIPPED' : '+ ADD'}</span>
                   </div>
                 </div>
               `;
@@ -144,17 +146,17 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
 
           <!-- Assembly Status & Test Button -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-stone-200">
-            <div class="text-xs text-[var(--text-secondary)]">
+            <div class="text-base text-[var(--text-secondary)]">
               Equipped: <strong class="text-[var(--text-primary)]">${selectedParts.length > 0 ? selectedParts.map(id => st.materials.find(m => m.id === id)?.name).join(' + ') : 'None selected'}</strong>
             </div>
-            <button type="button" id="testAssemblyBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-4 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px]">
+            <button type="button" id="testAssemblyBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-4 py-2 bg-stone-100  border border-stone-300 text-[var(--text-primary)] text-base uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px]">
               Test Assembly
             </button>
           </div>
 
           ${testFeedback ? `
-            <div class="mt-3 p-3 bg-white border ${testFeedback.valid ? 'border-emerald-600/40 text-emerald-900' : 'border-amber-600/40 text-amber-900'} text-xs rounded-xs leading-relaxed animate-soft-fade-in">
-              <span class="font-sans text-[10px] uppercase font-semibold block mb-0.5">${testFeedback.valid ? 'Assembly Test: Passed' : 'Assembly Test: Note'}</span>
+            <div class="mt-3 p-3 bg-white border ${testFeedback.valid ? 'border-emerald-600/40 text-emerald-900' : 'border-amber-600/40 text-amber-900'} text-base rounded-xs leading-relaxed animate-soft-fade-in">
+              <span class="font-sans text-sm uppercase font-semibold block mb-0.5">${testFeedback.valid ? 'Assembly Test: Passed' : 'Assembly Test: Note'}</span>
               ${testFeedback.message}
             </div>
           ` : ''}
@@ -259,7 +261,7 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
 // Captures strategy before and after the shift; measures strategy revision.
 // --------------------------------------------------------------------------
 function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentEpisode = 0;
   let phase = 'pre_shift'; // 'pre_shift' -> 'post_shift'
   let initialStrategy = null;
@@ -319,6 +321,8 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
       ]
     }
   ];
+  if (episodes.length > 2) episodes.pop();
+
 
   function render() {
     if (inTutorial) {
@@ -368,13 +372,13 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           <!-- TASK HEADER -->
           <div class="mb-4">
             <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Spatial Pivot</h2>
-            <p class="text-xs text-[var(--text-secondary)] mt-0.5">Adapt room layouts when conditions shift.</p>
+            <p class="text-base text-[var(--text-secondary)] mt-0.5">Adapt room layouts when conditions shift.</p>
           </div>
 
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-            <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            <div class="text-sm uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-base text-[var(--text-primary)] leading-relaxed">
               Read the room context below. Choose an initial layout concept for the gallery space.
             </div>
           </div>
@@ -382,25 +386,25 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           <!-- LOOK AT THIS: Context Card -->
           <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] mb-4 shadow-xs rounded-xs candidate-content-protected">
             <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[10px] text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Gallery Layout Setting</span>
-              <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Episode ${currentEpisode + 1} of ${episodes.length}</span>
+              <span class="text-sm text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Gallery Layout Setting</span>
+              <span class="text-sm text-[var(--accent-gold)] font-medium uppercase">Episode ${currentEpisode + 1} of ${episodes.length}</span>
             </div>
             <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${ep.title}</div>
-            <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${ep.pre_context}</div>
+            <div class="text-base text-[var(--text-secondary)] leading-relaxed">${ep.pre_context}</div>
           </div>
 
           <!-- INTERACTION AREA: Initial Strategy Selection -->
           <div class="mb-5 space-y-2.5 candidate-content-protected">
-            <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider">Select Initial Curation Concept:</div>
+            <div class="text-sm font-sans text-[var(--text-secondary)] uppercase tracking-wider">Select Initial Curation Concept:</div>
             ${ep.pre_strategies.map(s => {
               const isSelected = initialStrategy === s.id;
               return `
-                <div class="pre-strat-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
+                <div class="pre-strat-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-base flex items-center justify-between min-h-[48px]" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
                   <div>
                     <div class="font-medium text-[var(--text-primary)]">${s.label}</div>
                     <div class="text-[11px] text-[var(--text-secondary)] mt-0.5">${s.desc}</div>
                   </div>
-                  <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '&#10003;' : ''}</span>
+                  <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-sm shrink-0 ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '&#10003;' : ''}</span>
                 </div>
               `;
             }).join('')}
@@ -408,7 +412,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 
           <!-- PRIMARY ACTION BUTTON -->
           <div class="flex justify-end mb-4">
-            <button type="button" id="confirmPreShiftBtn" ${initialStrategy ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+            <button type="button" id="confirmPreShiftBtn" ${initialStrategy ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-base uppercase tracking-widest  disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
               Set Plan & Proceed &rarr;
             </button>
           </div>
@@ -473,16 +477,16 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
           <!-- TASK HEADER -->
           <div class="mb-4">
             <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Spatial Pivot</h2>
-            <p class="text-xs text-[var(--text-secondary)] mt-0.5">Adapt room layouts when conditions shift.</p>
+            <p class="text-base text-[var(--text-secondary)] mt-0.5">Adapt room layouts when conditions shift.</p>
           </div>
 
           <!-- Constraint Shift Notification Banner -->
           <div class="p-4 bg-amber-50 border border-amber-300/80 mb-4 rounded-xs animate-soft-fade-in candidate-content-protected">
             <div class="flex items-center gap-2 mb-1">
               <span class="w-2 h-2 rounded-full bg-amber-600 "></span>
-              <span class="text-[10px] font-sans uppercase tracking-wider text-amber-900 font-bold">New Room Condition Detected</span>
+              <span class="text-sm font-sans uppercase tracking-wider text-amber-900 font-bold">New Room Condition Detected</span>
             </div>
-            <div class="text-xs text-amber-950 leading-relaxed font-serif">${ep.shift_description}</div>
+            <div class="text-base text-amber-950 leading-relaxed font-serif">${ep.shift_description}</div>
             <div class="mt-2 text-[11px] text-amber-800">
               Prior Plan: <strong>${ep.pre_strategies.find(s => s.id === initialStrategy)?.label || initialStrategy}</strong>
             </div>
@@ -490,16 +494,16 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 
           <!-- INTERACTION AREA: Post-Shift Strategy Selection -->
           <div class="mb-5 space-y-2.5 candidate-content-protected">
-            <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider">Choose Adapted Layout:</div>
+            <div class="text-sm font-sans text-[var(--text-secondary)] uppercase tracking-wider">Choose Adapted Layout:</div>
             ${ep.post_strategies.map(s => {
               const isSelected = revisedStrategy === s.id;
               return `
-                <div class="post-strat-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-xs flex items-center justify-between min-h-[48px]" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
+                <div class="post-strat-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/50 shadow-xs' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer  interactive-option text-base flex items-center justify-between min-h-[48px]" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.label}">
                   <div>
                     <div class="font-medium text-[var(--text-primary)]">${s.label}</div>
-                    <div class="text-[10px] font-sans text-[var(--text-secondary)] mt-0.5">${s.note}</div>
+                    <div class="text-sm font-sans text-[var(--text-secondary)] mt-0.5">${s.note}</div>
                   </div>
-                  <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '&#10003;' : ''}</span>
+                  <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-sm shrink-0 ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '&#10003;' : ''}</span>
                 </div>
               `;
             }).join('')}
@@ -507,7 +511,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 
           <!-- PRIMARY ACTION BUTTON -->
           <div class="flex justify-end mb-4">
-            <button type="button" id="confirmPostShiftBtn" ${revisedStrategy ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
+            <button type="button" id="confirmPostShiftBtn" ${revisedStrategy ? '' : 'disabled'} class="px-7 py-3.5 bg-[var(--text-primary)] text-white text-base uppercase tracking-widest  disabled:opacity-40 interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px]">
               ${currentEpisode < episodes.length - 1 ? 'Confirm Plan & Next Episode &rarr;' : 'Finish Part 2 &rarr;'}
             </button>
           </div>
@@ -580,7 +584,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
 // and strategy change based on craft outcomes.
 // --------------------------------------------------------------------------
 function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentTrial = 0;
   let selectedTool = null;
   let selectedMethod = null;
@@ -671,6 +675,8 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
       }
     }
   ];
+  if (trials.length > 2) trials.pop();
+
 
   function render() {
     if (inTutorial) {
@@ -716,23 +722,23 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
       stimulusContent: `
         <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
           <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[10px] text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Craft Objective</span>
-            <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Trial ${currentTrial + 1} of ${trials.length}</span>
+            <span class="text-sm text-[var(--accent-gold)] font-sans uppercase tracking-wider font-semibold">Craft Objective</span>
+            <span class="text-sm text-[var(--accent-gold)] font-medium uppercase">Trial ${currentTrial + 1} of ${trials.length}</span>
           </div>
           <div class="font-serif text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${tr.title}</div>
-          <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${tr.objective}</div>
+          <div class="text-base text-[var(--text-secondary)] leading-relaxed">${tr.objective}</div>
         </div>
       `,
       interactionContent: `
         <div class="space-y-4">
           <!-- Tool Selection -->
           <div>
-            <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">1. Select Implement:</div>
+            <div class="text-sm font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">1. Select Implement:</div>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               ${tr.tools.map(t => {
                 const isSelected = selectedTool === t.id;
                 return `
-                  <div class="cr3-tool-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs min-h-[64px]" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
+                  <div class="cr3-tool-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base min-h-[64px]" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
                     <div class="flex items-center gap-2 mb-1">
                       <span class="text-lg">${t.icon}</span>
                       <span class="font-medium text-[var(--text-primary)]">${t.name}</span>
@@ -746,12 +752,12 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
           <!-- Method Selection -->
           <div>
-            <div class="text-[10px] font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">2. Choose Action Method:</div>
+            <div class="text-sm font-sans text-[var(--text-secondary)] uppercase tracking-wider mb-2">2. Choose Action Method:</div>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               ${tr.methods.map(m => {
                 const isSelected = selectedMethod === m.id;
                 return `
-                  <div class="cr3-method-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-xs min-h-[64px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+                  <div class="cr3-method-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base min-h-[64px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
                     <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
                     <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed">${m.desc}</div>
                   </div>
@@ -762,17 +768,17 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
           <!-- Apply & Observe Feedback -->
           <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="text-xs text-[var(--text-secondary)]">
+            <div class="text-base text-[var(--text-secondary)]">
               Active Pairing: <strong class="text-[var(--text-primary)]">${selectedTool ? tr.tools.find(t => t.id === selectedTool)?.name : 'None'} + ${selectedMethod ? tr.methods.find(m => m.id === selectedMethod)?.name : 'None'}</strong>
             </div>
-            <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px]">
+            <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100  border border-stone-300 text-[var(--text-primary)] text-base uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px]">
               Apply Technique
             </button>
           </div>
 
           ${feedbackText ? `
-            <div class="p-4 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-emerald-950' : 'border-amber-600/40 text-amber-950'} rounded-xs text-xs leading-relaxed animate-soft-fade-in">
-              <div class="font-sans text-[10px] uppercase font-semibold mb-1 ${feedbackText.success ? 'text-emerald-800' : 'text-amber-800'}">Material Outcome Observation</div>
+            <div class="p-4 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-emerald-950' : 'border-amber-600/40 text-amber-950'} rounded-xs text-base leading-relaxed animate-soft-fade-in">
+              <div class="font-sans text-sm uppercase font-semibold mb-1 ${feedbackText.success ? 'text-emerald-800' : 'text-amber-800'}">Material Outcome Observation</div>
               <div>${feedbackText.text}</div>
             </div>
           ` : ''}

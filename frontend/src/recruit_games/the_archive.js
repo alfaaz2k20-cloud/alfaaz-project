@@ -25,7 +25,7 @@ export function runTheArchive(context, renderHeader) {
 // A1: The Manuscript Folios (5 rule-governed classification items)
 // --------------------------------------------------------------------------
 function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex = 1) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentDocIdx = 0;
   let guideOpened = false;
   let selectedFolder = null;
@@ -113,14 +113,14 @@ function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex
     const stimulusContent = `
       <div class="p-5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
         <div class="flex justify-between items-start mb-2">
-          <span class="text-[10px] tracking-widest text-[var(--accent-gold)] uppercase font-semibold">Folio ${currentDocIdx + 1} of ${documents.length}</span>
-          <button id="guideBtn" type="button" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1 hover:bg-amber-50 interactive-option flex items-center gap-1.5 rounded-xs min-h-[32px]" tabindex="0">
+          <span class="text-sm tracking-widest text-[var(--accent-gold)] uppercase font-semibold">Folio ${currentDocIdx + 1} of ${documents.length}</span>
+          <button id="guideBtn" type="button" class="text-base text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1  interactive-option flex items-center gap-1.5 rounded-xs min-h-[32px]" tabindex="0">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             ${guideOpened ? 'Close Guide' : 'Shelf Guide'}
           </button>
         </div>
 
-        <div id="guideModal" class="${guideOpened ? '' : 'hidden'} p-3 mb-3 bg-amber-50/80 border border-[var(--accent-gold)]/40 text-xs text-[var(--text-primary)] space-y-1 rounded-xs">
+        <div id="guideModal" class="${guideOpened ? '' : 'hidden'} p-3 mb-3 bg-amber-50/80 border border-[var(--accent-gold)]/40 text-base text-[var(--text-primary)] space-y-1 rounded-xs">
           <div>&bull; <strong>Century Rule:</strong> Sort by century made (19th vs 20th Century).</div>
           <div>&bull; <strong>Type Rule:</strong> Sort by content type (Poetry vs History).</div>
           <div>&bull; <strong>Language Rule:</strong> Sort by language (Kashmiri).</div>
@@ -128,7 +128,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex
 
         <h3 class="text-base sm:text-lg font-serif text-[var(--text-primary)] font-medium mt-1 mb-2.5">${doc.title}</h3>
         <div class="flex flex-wrap gap-2">
-          ${doc.tags.map(t => `<span class="px-2.5 py-1 bg-[#faf8f5] border border-[var(--grid-border)] text-xs text-[var(--text-secondary)] rounded-xs">${t}</span>`).join('')}
+          ${doc.tags.map(t => `<span class="px-2.5 py-1 bg-[#faf8f5] border border-[var(--grid-border)] text-base text-[var(--text-secondary)] rounded-xs">${t}</span>`).join('')}
         </div>
       </div>
     `;
@@ -137,12 +137,12 @@ function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex
 
     const interactionContent = `
       <div>
-        <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Select Destination Shelf:</div>
+        <div class="text-base uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Select Destination Shelf:</div>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
           ${folders.map(f => {
             const isSelected = selectedFolder === f.id;
             return `
-              <button type="button" class="folder-btn p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} text-xs font-semibold hover:bg-amber-50/40 interactive-option text-left flex items-center justify-between rounded-xs min-h-[48px]" data-folder="${f.id}" tabindex="0">
+              <button type="button" class="folder-btn p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} text-base font-semibold  interactive-option text-left flex items-center justify-between rounded-xs min-h-[48px]" data-folder="${f.id}" tabindex="0">
                 <span class="flex items-center gap-2.5">
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${isSelected ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${isSelected ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)]">${f.label}</span>
@@ -157,7 +157,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex
 
     const summaryContent = `
       <span>${selectedFolder ? `Selected shelf: <strong class="text-[var(--text-primary)]">${activeFolder?.label}</strong>` : 'Select a shelf above, then click Confirm.'}</span>
-      <span class="text-[10px] text-stone-400 font-sans">${currentDocIdx + 1} / ${documents.length}</span>
+      <span class="text-sm text-stone-400 font-sans">${currentDocIdx + 1} / ${documents.length}</span>
     `;
 
     app.innerHTML = renderGameShell({
@@ -232,7 +232,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex
 // Conditions: true_exception, clean_control, true_exception
 // --------------------------------------------------------------------------
 function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIndex = 1) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentTrial = 0;
   let chosenAction = null;
   let lastInputModality = 'mouse';
@@ -263,6 +263,8 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIn
       type_note: 'Broken Spine & Upside-Down Seal'
     }
   ];
+  if (trials.length > 2) trials.pop();
+
 
   const actions = [
     {
@@ -316,11 +318,11 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIn
     const stimulusContent = `
       <div class="p-5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-[10px] tracking-widest text-[#bd6f5d] uppercase font-semibold">Manuscript Folio ${currentTrial + 1} of 4</span>
-          <span class="text-[10px] text-[var(--text-secondary)] uppercase bg-[#faf8f5] px-2 py-0.5 border border-[var(--grid-border)] rounded-xs font-medium">${t.type_note}</span>
+          <span class="text-sm tracking-widest text-[#bd6f5d] uppercase font-semibold">Manuscript Folio ${currentTrial + 1} of 4</span>
+          <span class="text-sm text-[var(--text-secondary)] uppercase bg-[#faf8f5] px-2 py-0.5 border border-[var(--grid-border)] rounded-xs font-medium">${t.type_note}</span>
         </div>
         <h3 class="text-base font-serif text-[var(--text-primary)] font-medium mb-1.5">${t.title}</h3>
-        <p class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[#faf8f5] p-3 border border-[var(--grid-border)]/60 rounded-xs">
+        <p class="text-base text-[var(--text-secondary)] leading-relaxed bg-[#faf8f5] p-3 border border-[var(--grid-border)]/60 rounded-xs">
           ${t.anomaly_description}
         </p>
       </div>
@@ -328,11 +330,11 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIn
 
     const interactionContent = `
       <div class="space-y-2.5">
-        <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose handling action:</div>
+        <div class="text-base uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose handling action:</div>
         ${actions.map(a => `
           <div class="a2-opt p-3.5 bg-white border ${chosenAction === a.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} cursor-pointer interactive-option rounded-xs min-h-[52px]" data-action="${a.id}" tabindex="0" role="button">
             <div class="flex justify-between items-center mb-0.5">
-              <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+              <div class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full ${chosenAction === a.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                 ${a.title}
               </div>
@@ -345,7 +347,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIn
 
     const summaryContent = `
       <span>${chosenAction ? `You selected: <strong class="text-[var(--text-primary)]">${activeAct?.title}</strong>` : 'Select an option above to continue.'}</span>
-      <span class="text-[10px] text-stone-400 font-sans">${currentTrial + 1} / 4</span>
+      <span class="text-sm text-stone-400 font-sans">${currentTrial + 1} / 4</span>
     `;
 
     app.innerHTML = renderGameShell({
@@ -416,7 +418,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIn
 // A3: The Exhibition Ledger (5 display cards)
 // --------------------------------------------------------------------------
 function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let flaggedRecords = new Set();
   let inspectedRecords = new Set();
   let lastInputModality = 'mouse';
@@ -493,13 +495,13 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
         <!-- TASK HEADER -->
         <div class="mb-4">
           <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Exhibition Ledger</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Proofread all 5 display cards. Flag any card that has an error.</p>
+          <p class="text-base text-[var(--text-secondary)] mt-0.5">Proofread all 5 display cards. Flag any card that has an error.</p>
         </div>
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+          <div class="text-sm uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-base text-[var(--text-primary)] leading-relaxed">
             Read all 5 display cards. Click flag if a card has a mistake. Leave clean cards unflagged.
           </div>
         </div>
@@ -512,15 +514,15 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
               <div class="record-card p-4 bg-white border ${isFlagged ? 'border-[#bd6f5d] bg-amber-50/20' : 'border-[var(--grid-border)]'} rounded-xs interactive-option shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" data-id="${r.id}" tabindex="0">
                 <div class="space-y-1 flex-1">
                   <div class="flex items-center gap-2">
-                    <span class="text-[10px] text-[var(--accent-gold)] uppercase tracking-wider font-semibold">Ledger Card ${idx + 1} of 5</span>
+                    <span class="text-sm text-[var(--accent-gold)] uppercase tracking-wider font-semibold">Ledger Card ${idx + 1} of 5</span>
                   </div>
-                  <div class="text-xs font-semibold text-[var(--text-primary)]">${r.title}</div>
-                  <div class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[#faf8f5] p-2.5 border border-[var(--grid-border)]/60 rounded-xs mt-1">
+                  <div class="text-base font-semibold text-[var(--text-primary)]">${r.title}</div>
+                  <div class="text-base text-[var(--text-secondary)] leading-relaxed bg-[#faf8f5] p-2.5 border border-[var(--grid-border)]/60 rounded-xs mt-1">
                     ${r.text}
                   </div>
                 </div>
 
-                <button type="button" class="toggle-flag-btn px-4 py-2.5 border text-xs font-sans uppercase tracking-wider shrink-0 interactive-option rounded-xs min-h-[44px] w-full sm:w-auto ${isFlagged ? 'bg-[#bd6f5d] text-white border-[#bd6f5d]' : 'bg-white text-[var(--text-secondary)] border-[var(--grid-border)] '}" data-id="${r.id}">
+                <button type="button" class="toggle-flag-btn px-4 py-2.5 border text-base font-sans uppercase tracking-wider shrink-0 interactive-option rounded-xs min-h-[44px] w-full sm:w-auto ${isFlagged ? 'bg-[#bd6f5d] text-white border-[#bd6f5d]' : 'bg-white text-[var(--text-secondary)] border-[var(--grid-border)] '}" data-id="${r.id}">
                   ${isFlagged ? 'Mistake Flagged ✓' : 'Flag Mistake'}
                 </button>
               </div>
@@ -529,14 +531,14 @@ function runA3QualityControl(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-base font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>Cards flagged: <strong class="text-[var(--text-primary)]">${flaggedRecords.size} of 5</strong></span>
-          <span class="text-[10px] text-stone-400 font-sans">Clean cards remain unflagged</span>
+          <span class="text-sm text-stone-400 font-sans">Clean cards remain unflagged</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button id="a3SubmitBtn" class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] interactive-option shadow-sm rounded-xs min-h-[44px]">
+          <button id="a3SubmitBtn" class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-base uppercase tracking-widest  interactive-option shadow-sm rounded-xs min-h-[44px]">
             Verify and Complete World 2 &rarr;
           </button>
         </div>

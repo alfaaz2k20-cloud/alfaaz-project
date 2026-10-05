@@ -104,13 +104,11 @@ def run_tests():
             {"action": "trial_submit", "data": {"stimulus_id": "F1_T3", "action_id": "accommodate"}},
             {"action": "trial_submit", "data": {"stimulus_id": "F1_T4", "action_id": "clarify"}},
             {"action": "trial_submit", "data": {"stimulus_id": "F1_T5", "action_id": "maintain_objective"}},
-            {"action": "trial_submit", "data": {"stimulus_id": "F1_T6", "action_id": "accommodate"}},
         ],
         "F2": [
             {"action": "trial_submit", "data": {"stimulus_id": "F2_T1", "action_id": "act"}},
             {"action": "trial_submit", "data": {"stimulus_id": "F2_T2", "action_id": "clarify"}},
             {"action": "trial_submit", "data": {"stimulus_id": "F2_T3", "action_id": "maintain"}},
-            {"action": "trial_submit", "data": {"stimulus_id": "F2_T4", "action_id": "act"}},
         ],
         "F3": [
             {"action": "transition_presented", "data": {"stimulus_id": "F3_T1"}},
@@ -125,24 +123,17 @@ def run_tests():
             {"action": "updated_response_selected", "data": {"stimulus_id": "F3_T2", "choice_id": "boost_intelligibility"}},
             {"action": "transition_completed", "data": {"stimulus_id": "F3_T2"}},
 
-            {"action": "transition_presented", "data": {"stimulus_id": "F3_T3"}},
-            {"action": "baseline_response_selected", "data": {"stimulus_id": "F3_T3", "choice_id": "sustain_cadence"}},
-            {"action": "context_shifted", "data": {"stimulus_id": "F3_T3"}},
-            {"action": "updated_response_selected", "data": {"stimulus_id": "F3_T3", "choice_id": "open_reciprocal_space"}},
-            {"action": "transition_completed", "data": {"stimulus_id": "F3_T3"}},
         ],
         "A1": [
             {"action": "item_sorted", "data": {"stimulus_id": "DOC_01", "folder_id": "19th_century"}},
             {"action": "item_sorted", "data": {"stimulus_id": "DOC_02", "folder_id": "poetry"}},
             {"action": "item_sorted", "data": {"stimulus_id": "DOC_03", "folder_id": "20th_century"}},
             {"action": "item_sorted", "data": {"stimulus_id": "DOC_04", "folder_id": "kashmiri"}},
-            {"action": "item_sorted", "data": {"stimulus_id": "DOC_05", "folder_id": "chronicle"}},
         ],
         "A2": [
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_01", "action_id": "flag_exception"}},
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_02", "action_id": "file_standard"}},
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_03", "action_id": "flag_exception"}},
-            {"action": "decision_logged", "data": {"stimulus_id": "EXC_04", "action_id": "flag_exception"}},
         ],
         "A3": [
             {"action": "record_inspected", "data": {"stimulus_id": "REC_01"}},
@@ -151,8 +142,6 @@ def run_tests():
             {"action": "record_inspected", "data": {"stimulus_id": "REC_03"}},
             {"action": "discrepancy_toggled", "data": {"stimulus_id": "REC_03", "flagged_state": True}},
             {"action": "record_inspected", "data": {"stimulus_id": "REC_04"}},
-            {"action": "record_inspected", "data": {"stimulus_id": "REC_05"}},
-            {"action": "discrepancy_toggled", "data": {"stimulus_id": "REC_05", "flagged_state": True}},
             {"action": "verification_finalized", "data": {}},
         ],
         "C1": [
@@ -160,13 +149,10 @@ def run_tests():
             {"action": "allocation_confirmed", "data": {"stimulus_id": "C1_R1"}},
             {"action": "resource_transferred", "data": {"stimulus_id": "C1_R2", "delta": 1}},
             {"action": "allocation_confirmed", "data": {"stimulus_id": "C1_R2"}},
-            {"action": "resource_transferred", "data": {"stimulus_id": "C1_R3", "delta": 0}},
-            {"action": "allocation_confirmed", "data": {"stimulus_id": "C1_R3"}},
         ],
         "C2": [
             {"action": "placement_confirmed", "data": {"stimulus_id": "C2_R1", "chosen_slot": "SLOT_NORTH_RIGHT"}},
             {"action": "placement_confirmed", "data": {"stimulus_id": "C2_R2", "chosen_slot": "SLOT_PERIMETER_EAST"}},
-            {"action": "placement_confirmed", "data": {"stimulus_id": "C2_R3", "chosen_slot": "SLOT_UPPER_GALLERY"}},
         ],
         "C3": [
             {"action": "repair_presented", "data": {"stimulus_id": "C3_R1"}},
@@ -179,10 +165,6 @@ def run_tests():
             {"action": "repair_action_performed", "data": {"stimulus_id": "C3_R2", "repair_action_id": "reseat_cable"}},
             {"action": "repaired_action_executed", "data": {"stimulus_id": "C3_R2", "execution_action_id": "align_panel"}},
 
-            {"action": "repair_presented", "data": {"stimulus_id": "C3_R3"}},
-            {"action": "breakdown_identified", "data": {"stimulus_id": "C3_R3", "fault_id": "shadow_corridor"}},
-            {"action": "repair_action_performed", "data": {"stimulus_id": "C3_R3", "repair_action_id": "shift_lantern"}},
-            {"action": "repaired_action_executed", "data": {"stimulus_id": "C3_R3", "execution_action_id": "illuminate_path"}},
         ],
         "E1": [
             {"action": "trial_presented", "data": {"stimulus_id": "E1_T1"}},
@@ -201,19 +183,15 @@ def run_tests():
             {"action": "tile_sorted", "data": {"stimulus_id": "E1_T7", "choice": "container_1"}},
             {"action": "trial_presented", "data": {"stimulus_id": "E1_T8"}},
             {"action": "tile_sorted", "data": {"stimulus_id": "E1_T8", "choice": "container_2"}},
-            {"action": "trial_presented", "data": {"stimulus_id": "E1_T9"}},
-            {"action": "tile_sorted", "data": {"stimulus_id": "E1_T9", "choice": "container_1"}},
         ],
         "E2": [
             {"action": "action_selected", "data": {"stimulus_id": "E2_S1", "chosen_action": "clear_workspace"}},
             {"action": "action_selected", "data": {"stimulus_id": "E2_S2", "chosen_action": "standard_sequence"}},
             {"action": "action_selected", "data": {"stimulus_id": "E2_S3", "chosen_action": "stabilize_reference"}},
-            {"action": "action_selected", "data": {"stimulus_id": "E2_S4", "chosen_action": "reposition_tray"}},
         ],
         "E3": [
             {"action": "composition_confirmed", "data": {"stimulus_id": "E3_C1", "chosen_action": "standard_layout"}},
             {"action": "composition_confirmed", "data": {"stimulus_id": "E3_C2", "chosen_action": "tonal_adaptation"}},
-            {"action": "composition_confirmed", "data": {"stimulus_id": "E3_C3", "chosen_action": "compact_adaptation"}},
         ],
         "Q1": [
             {"action": "optional_resource_viewed", "data": {"stimulus_id": "Q1_D1", "resource_id": "RES_Q1_ARCHIVE_NOTE"}},
@@ -222,8 +200,6 @@ def run_tests():
             {"action": "decision_submitted", "data": {"stimulus_id": "Q1_D2", "choice": "choice_b"}},
             {"action": "optional_resource_viewed", "data": {"stimulus_id": "Q1_D3", "resource_id": "RES_Q1_PIGMENT_LOG"}},
             {"action": "decision_submitted", "data": {"stimulus_id": "Q1_D3", "choice": "choice_c"}},
-            {"action": "optional_resource_viewed", "data": {"stimulus_id": "Q1_D4", "resource_id": "RES_Q1_CURATOR_MARGINALIA"}},
-            {"action": "decision_submitted", "data": {"stimulus_id": "Q1_D4", "choice": "choice_d"}},
         ],
         "Q2": [
             {"action": "clue_inspected", "data": {"stimulus_id": "artifact_1", "clue_id": "clue_seal"}},
@@ -256,24 +232,18 @@ def run_tests():
             {"action": "constraint_shifted", "data": {"episode_id": "CR2_E2"}},
             {"action": "strategy_revised", "data": {"episode_id": "CR2_E2", "revised_strategy_id": "perimeter_flow"}},
 
-            {"action": "initial_strategy_selected", "data": {"episode_id": "CR2_E3", "strategy_id": "radial_spread"}},
-            {"action": "constraint_shifted", "data": {"episode_id": "CR2_E3"}},
-            {"action": "strategy_revised", "data": {"episode_id": "CR2_E3", "revised_strategy_id": "linear_flow"}},
         ],
         "CR3": [
             {"action": "strategy_adapted", "data": {"stimulus_id": "CR3_T1", "final_tool_id": "bone_folder", "final_method": "firm_edge_pass"}},
             {"action": "strategy_adapted", "data": {"stimulus_id": "CR3_T2", "final_tool_id": "sponge_block", "final_method": "mottled_dab"}},
-            {"action": "strategy_adapted", "data": {"stimulus_id": "CR3_T3", "final_tool_id": "agate_stone", "final_method": "friction_free_rub"}},
         ],
         "M1": [
             {"action": "unit_completed", "data": {"stimulus_id": "M1_U1"}},
             {"action": "unit_completed", "data": {"stimulus_id": "M1_U2"}},
-            {"action": "unit_completed", "data": {"stimulus_id": "M1_U3"}},
         ],
         "M2": [
             {"action": "unit_completed", "data": {"stimulus_id": "M2_U1", "is_mandatory": True}},
             {"action": "unit_completed", "data": {"stimulus_id": "M2_U2", "is_mandatory": True}},
-            {"action": "unit_completed", "data": {"stimulus_id": "M2_U3", "is_mandatory": True}},
             {"action": "continuation_choice_selected", "data": {"choice": "continue"}},
             {"action": "unit_completed", "data": {"stimulus_id": "M2_O1", "is_mandatory": False}},
             {"action": "unit_completed", "data": {"stimulus_id": "M2_O2", "is_mandatory": False}},
@@ -282,7 +252,6 @@ def run_tests():
         "M3": [
             {"action": "unit_completed", "data": {"stimulus_id": "M3_U1", "unit_index": 0}},
             {"action": "unit_completed", "data": {"stimulus_id": "M3_U2", "unit_index": 1}},
-            {"action": "unit_completed", "data": {"stimulus_id": "M3_U3", "unit_index": 2}},
             {"action": "unit_completed", "data": {"stimulus_id": "M3_U4", "unit_index": 3}},
             {"action": "unit_completed", "data": {"stimulus_id": "M3_U5", "unit_index": 4}},
             {"action": "unit_completed", "data": {"stimulus_id": "M3_U6", "unit_index": 5}},
@@ -307,11 +276,10 @@ def run_tests():
         {"action": "trial_submit", "data": {"stimulus_id": "F1_T3", "action_id": "clarify"}},            # Incorrect (exp accommodate)
         {"action": "trial_submit", "data": {"stimulus_id": "F1_T4", "action_id": "clarify"}},            # Correct (exp clarify)
         {"action": "trial_submit", "data": {"stimulus_id": "F1_T5", "action_id": "accommodate"}},        # Incorrect (exp maintain_objective)
-        {"action": "trial_submit", "data": {"stimulus_id": "F1_T6", "action_id": "accommodate"}},        # Correct (exp accommodate)
     ]
     scored_f1_sub = score_game("F1", f1_suboptimal)
-    assert_eq(scored_f1_sub.raw, 3.0, "F1 suboptimal behavior yields exactly 3 points")
-    assert_almost_eq(scored_f1_sub.relative, 0.5, "F1 suboptimal relative score is 0.5")
+    assert_eq(scored_f1_sub.raw, 2.0, "F1 suboptimal behavior yields exactly 2 points")
+    assert_almost_eq(scored_f1_sub.relative, 0.4, "F1 suboptimal relative score is 0.4")
 
     # Verify irrelevant telemetry does not alter score
     f1_noisy = list(f1_suboptimal) + [
@@ -320,8 +288,8 @@ def run_tests():
         {"action": "unrelated_noise", "data": {"some_field": "val"}},
     ]
     scored_f1_noisy = score_game("F1", f1_noisy)
-    assert_eq(scored_f1_noisy.raw, 3.0, "F1 score unaffected by irrelevant telemetry")
-    assert_almost_eq(scored_f1_noisy.relative, 0.5, "F1 relative score unaffected by irrelevant telemetry")
+    assert_eq(scored_f1_noisy.raw, 2.0, "F1 score unaffected by irrelevant telemetry")
+    assert_almost_eq(scored_f1_noisy.relative, 0.4, "F1 relative score unaffected by irrelevant telemetry")
 
     # ------------------------------------------------------------------
     # 3. Missingness & Quality States

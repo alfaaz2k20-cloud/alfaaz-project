@@ -26,7 +26,7 @@ export function runTheFrequency(context, renderHeader) {
 // Conditions: accommodate, maintain_objective, clarify
 // --------------------------------------------------------------------------
 function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentTrial = 0;
   let sliderVal = 50;
   let selectedAction = 'accommodate';
@@ -71,6 +71,8 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
       default_action: 'accommodate'
     }
   ];
+  if (trials.length > 2) trials.pop();
+
 
   function render() {
     if (animationFrameId) {
@@ -119,8 +121,8 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
             </div>
             <div>
-              <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold">${t.title}</div>
-              <div id="partnerSpeech" class="text-xs text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${t.cue_text}</div>
+              <div class="text-sm uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold">${t.title}</div>
+              <div id="partnerSpeech" class="text-base text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${t.cue_text}</div>
             </div>
           </div>
         </div>
@@ -128,24 +130,24 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
       interactionContent: `
         <div class="space-y-4">
           <div>
-            <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">1. Choose your response:</div>
+            <div class="text-base uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">1. Choose your response:</div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'accommodate' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="accommodate">
-                <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+                <div class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${selectedAction === 'accommodate' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                   Adjust Sound
                 </div>
                 <div class="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">Change the sound setting to help the speaker.</div>
               </button>
               <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'maintain_objective' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="maintain_objective">
-                <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+                <div class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${selectedAction === 'maintain_objective' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                   Keep Baseline
                 </div>
                 <div class="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">Leave the current sound setting as it is.</div>
               </button>
               <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'clarify' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="clarify">
-                <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+                <div class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${selectedAction === 'clarify' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                   Check Channel
                 </div>
@@ -155,11 +157,11 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
           </div>
 
           <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-inner">
-            <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans text-center">2. Adjust sound level:</div>
+            <div class="text-base uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans text-center">2. Adjust sound level:</div>
             <canvas id="waveCanvas" width="600" height="80" class="w-full h-20 bg-white border border-[var(--grid-border)] mb-3 rounded-xs"></canvas>
 
             <div class="w-full max-w-md mx-auto">
-              <div class="flex justify-between items-center text-xs text-[var(--text-secondary)] mb-2">
+              <div class="flex justify-between items-center text-base text-[var(--text-secondary)] mb-2">
                 <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-600 inline-block"></span> Soft (0)</span>
                 <span class="font-sans text-sm font-semibold text-[var(--accent-gold)] bg-white px-3 py-1 border border-[var(--grid-border)] rounded-xs" id="sliderValDisplay">${sliderVal}</span>
                 <span class="flex items-center gap-1">Bright (100) <span class="w-2 h-2 rounded-full bg-orange-500 inline-block"></span></span>
@@ -171,7 +173,7 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
       `,
       summaryContent: `
         <span>Your setting: <strong class="text-[var(--text-primary)]" id="choiceSummary">${selectedAction === 'accommodate' ? 'Adjust Sound' : (selectedAction === 'maintain_objective' ? 'Keep Baseline' : 'Check Channel')} (Level: ${sliderVal})</strong></span>
-        <span class="text-[10px] text-stone-400 font-sans">${currentTrial + 1} / 6</span>
+        <span class="text-sm text-stone-400 font-sans">${currentTrial + 1} / 6</span>
       `,
       actionButtonId: 'lockFreqBtn',
       actionButtonText: currentTrial < 5 ? 'Confirm Setting &rarr;' : 'Confirm & Finish &rarr;',
@@ -328,7 +330,7 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
 // Action choices: act, clarify, maintain
 // --------------------------------------------------------------------------
 function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentTrial = 0;
   let selectedAction = null;
   let lastInputModality = 'mouse';
@@ -359,6 +361,8 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
       condition_label: 'Subtle Drift'
     }
   ];
+  if (trials.length > 2) trials.pop();
+
 
   const choices = [
     {
@@ -420,19 +424,19 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
             </div>
             <div>
-              <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold">${t.speaker_role}</div>
-              <div class="text-xs text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${t.cue_text}</div>
+              <div class="text-sm uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold">${t.speaker_role}</div>
+              <div class="text-base text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${t.cue_text}</div>
             </div>
           </div>
         </div>
       `,
       interactionContent: `
         <div>
-          <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Pick your response:</div>
+          <div class="text-base uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-sans">Pick your response:</div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             ${choices.map(c => `
               <div class="f2-card p-4 bg-white border ${selectedAction === c.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} cursor-pointer interactive-option space-y-1.5 rounded-xs min-h-[56px]" data-action="${c.id}" tabindex="0" role="button">
-                <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+                <div class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${selectedAction === c.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                   ${c.title}
                 </div>
@@ -444,7 +448,7 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
       `,
       summaryContent: `
         <span id="f2ChoiceText">${selectedAction ? `You selected: <strong class="text-[var(--text-primary)]">${selectedChoice?.title}</strong>` : 'Select an option above to continue.'}</span>
-        <span class="text-[10px] text-stone-400 font-sans">${currentTrial + 1} / 4</span>
+        <span class="text-sm text-stone-400 font-sans">${currentTrial + 1} / 4</span>
       `,
       actionButtonId: 'f2ConfirmBtn',
       actionButtonText: currentTrial < 3 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
@@ -515,7 +519,7 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
 // Mechanic: Baseline response -> New context changes interpretation -> Updated response
 // --------------------------------------------------------------------------
 function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentTransition = 0;
   let phase = 'baseline';
   let selectedBaselineChoice = null;
@@ -624,13 +628,13 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
           <!-- TASK HEADER -->
           <div class="mb-4">
             <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Echo of the Room</h2>
-            <p class="text-xs text-[var(--text-secondary)] mt-0.5">Pick your response for the first room setting.</p>
+            <p class="text-base text-[var(--text-secondary)] mt-0.5">Pick your response for the first room setting.</p>
           </div>
 
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-            <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            <div class="text-sm uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-base text-[var(--text-primary)] leading-relaxed">
               Read the performer action in this room. Pick your first response.
             </div>
           </div>
@@ -638,21 +642,21 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
           <!-- LOOK AT THIS -->
           <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected space-y-3">
             <div>
-              <span class="text-[10px] uppercase font-sans tracking-wider text-[var(--accent-gold)] font-semibold">Performer Action</span>
-              <div class="text-xs font-serif text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${tr.cue_text}</div>
+              <span class="text-sm uppercase font-sans tracking-wider text-[var(--accent-gold)] font-semibold">Performer Action</span>
+              <div class="text-base font-serif text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${tr.cue_text}</div>
             </div>
             <div class="p-3 bg-amber-50/50 border border-[var(--grid-border)] rounded-xs">
-              <span class="text-[10px] uppercase font-sans tracking-wider text-amber-800 font-semibold">First Room Setting</span>
-              <div class="text-xs text-[var(--text-primary)] mt-0.5">${tr.baseline_context}</div>
+              <span class="text-sm uppercase font-sans tracking-wider text-amber-800 font-semibold">First Room Setting</span>
+              <div class="text-base text-[var(--text-primary)] mt-0.5">${tr.baseline_context}</div>
             </div>
           </div>
 
           <!-- INTERACTION AREA -->
           <div class="space-y-2.5 mb-4 candidate-content-protected">
-            <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose your response:</div>
+            <div class="text-base uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose your response:</div>
             ${tr.baseline_options.map(opt => `
               <div class="f3-opt p-3.5 bg-white border ${selectedBaselineChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer  interactive-option rounded-xs min-h-[50px]" data-choice="${opt.id}" tabindex="0" role="button">
-                <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+                <div class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${selectedBaselineChoice === opt.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                   ${opt.label}
                 </div>
@@ -662,14 +666,14 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
           </div>
 
           <!-- YOUR CHOICE -->
-          <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
+          <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-base font-sans text-[var(--text-secondary)] flex justify-between items-center">
             <span>${selectedBaselineChoice ? `You selected: <strong class="text-[var(--text-primary)]">${activeOpt?.label}</strong>` : 'Select an option above to continue.'}</span>
-            <span class="text-[10px] text-stone-400 font-sans">Step 1 of 2</span>
+            <span class="text-sm text-stone-400 font-sans">Step 1 of 2</span>
           </div>
 
           <!-- PRIMARY ACTION BUTTON -->
           <div class="flex justify-end">
-            <button id="f3BaselineBtn" ${selectedBaselineChoice ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
+            <button id="f3BaselineBtn" ${selectedBaselineChoice ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-base uppercase tracking-widest  disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
               Confirm and See Room Shift &rarr;
             </button>
           </div>
@@ -728,13 +732,13 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
           <!-- TASK HEADER -->
           <div class="mb-4">
             <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Echo of the Room</h2>
-            <p class="text-xs text-[var(--text-secondary)] mt-0.5">The room has changed. Update your response.</p>
+            <p class="text-base text-[var(--text-secondary)] mt-0.5">The room has changed. Update your response.</p>
           </div>
 
           <!-- YOUR TASK -->
           <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-            <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-            <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+            <div class="text-sm uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+            <div class="text-base text-[var(--text-primary)] leading-relaxed">
               The performer action is the same. Pick your updated response for the new room.
             </div>
           </div>
@@ -742,21 +746,21 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
           <!-- LOOK AT THIS -->
           <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected space-y-3">
             <div>
-              <span class="text-[10px] uppercase font-sans tracking-wider text-[var(--accent-gold)] font-semibold">Same Performer Action</span>
-              <div class="text-xs font-serif text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${tr.cue_text}</div>
+              <span class="text-sm uppercase font-sans tracking-wider text-[var(--accent-gold)] font-semibold">Same Performer Action</span>
+              <div class="text-base font-serif text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${tr.cue_text}</div>
             </div>
             <div class="p-3 bg-amber-100/70 border border-[#bd6f5d]/50 rounded-xs">
-              <span class="text-[10px] uppercase font-sans tracking-wider text-[#bd6f5d] font-semibold">New Room Setting</span>
-              <div class="text-xs text-[var(--text-primary)] font-medium mt-0.5">${tr.shifted_context}</div>
+              <span class="text-sm uppercase font-sans tracking-wider text-[#bd6f5d] font-semibold">New Room Setting</span>
+              <div class="text-base text-[var(--text-primary)] font-medium mt-0.5">${tr.shifted_context}</div>
             </div>
           </div>
 
           <!-- INTERACTION AREA -->
           <div class="space-y-2.5 mb-4 candidate-content-protected">
-            <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose your updated response:</div>
+            <div class="text-base uppercase tracking-wider text-[var(--text-secondary)] mb-1 font-sans">Choose your updated response:</div>
             ${tr.shifted_options.map(opt => `
               <div class="f3-updated-opt p-3.5 bg-white border ${selectedUpdatedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs' : 'border-[var(--grid-border)]'} cursor-pointer  interactive-option rounded-xs min-h-[50px]" data-choice="${opt.id}" tabindex="0" role="button">
-                <div class="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+                <div class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${selectedUpdatedChoice === opt.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
                   ${opt.label}
                 </div>
@@ -766,14 +770,14 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
           </div>
 
           <!-- YOUR CHOICE -->
-          <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
+          <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-base font-sans text-[var(--text-secondary)] flex justify-between items-center">
             <span>${selectedUpdatedChoice ? `You selected: <strong class="text-[var(--text-primary)]">${activeShiftedOpt?.label}</strong>` : 'Select an option above to continue.'}</span>
-            <span class="text-[10px] text-stone-400 font-sans">Step 2 of 2</span>
+            <span class="text-sm text-stone-400 font-sans">Step 2 of 2</span>
           </div>
 
           <!-- PRIMARY ACTION BUTTON -->
           <div class="flex justify-end">
-            <button id="f3UpdatedBtn" ${selectedUpdatedChoice ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
+            <button id="f3UpdatedBtn" ${selectedUpdatedChoice ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-base uppercase tracking-widest  disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
               ${currentTransition < 2 ? 'Save Updated Setting & Next Round &rarr;' : 'Finish World 1 &rarr;'}
             </button>
           </div>

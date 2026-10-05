@@ -25,7 +25,7 @@ export function runTheSharedCanvas(context, renderHeader) {
 // C1: Resource Cooperation (3 rounds: deficit, balanced, surplus control)
 // --------------------------------------------------------------------------
 function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentRound = 0;
   let transferCount = 0;
   let lastInputModality = 'mouse';
@@ -59,6 +59,8 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
       context_note: 'Keep Your Tiles'
     }
   ];
+  if (rounds.length > 2) rounds.pop();
+
 
   function render() {
     if (inTutorial) {
@@ -99,24 +101,24 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
       instruction: 'Check tile counts below. Move tiles to your partner if needed.',
       stimulusContent: `
         <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs flex items-center justify-between">
-          <span class="text-xs font-serif text-[var(--text-primary)]">
+          <span class="text-base font-serif text-[var(--text-primary)]">
             <strong>${r.title}:</strong> ${r.description}
           </span>
-          <span class="text-[10px] font-sans uppercase tracking-wider text-[var(--text-secondary)]">${r.context_note}</span>
+          
         </div>
       `,
       interactionContent: `
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
           <div class="grid grid-cols-2 gap-4 text-center mb-5">
             <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
-              <span class="text-[10px] text-[var(--accent-gold)] uppercase font-semibold font-sans">Partner Basket</span>
+              <span class="text-sm text-[var(--accent-gold)] uppercase font-semibold font-sans">Partner Basket</span>
               <div class="text-xl font-serif font-semibold text-[#bd6f5d] mt-1">${partnerTotal} Tiles</div>
               <div class="flex justify-center gap-1 mt-2.5 flex-wrap max-w-[140px] mx-auto">
                 ${Array(Math.max(0, partnerTotal)).fill('<div class="w-3.5 h-3.5 bg-[#bd6f5d]/70 rounded-xs shadow-xs"></div>').join('')}
               </div>
             </div>
             <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
-              <span class="text-[10px] text-emerald-700 uppercase font-semibold font-sans">Your Basket</span>
+              <span class="text-sm text-emerald-700 uppercase font-semibold font-sans">Your Basket</span>
               <div class="text-xl font-serif font-semibold text-emerald-800 mt-1">${userTotal} Tiles</div>
               <div class="flex justify-center gap-1 mt-2.5 flex-wrap max-w-[140px] mx-auto">
                 ${Array(Math.max(0, userTotal)).fill('<div class="w-3.5 h-3.5 bg-emerald-700/70 rounded-xs shadow-xs"></div>').join('')}
@@ -125,18 +127,18 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
           </div>
 
           <div class="text-center pt-3 border-t border-[var(--grid-border)]">
-            <div class="text-xs text-[var(--text-secondary)] mb-2 font-sans">Tiles to share with partner:</div>
+            <div class="text-base text-[var(--text-secondary)] mb-2 font-sans">Tiles to share with partner:</div>
             <div class="flex justify-center items-center gap-4">
-              <button type="button" id="minusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold hover:bg-amber-50 interactive-option shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">-</button>
+              <button type="button" id="minusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold  interactive-option shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">-</button>
               <span id="transferCount" class="font-serif text-3xl font-semibold text-[var(--accent-gold)] w-12 text-center">${transferCount}</span>
-              <button type="button" id="plusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold hover:bg-amber-50 interactive-option shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">+</button>
+              <button type="button" id="plusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold  interactive-option shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">+</button>
             </div>
           </div>
         </div>
       `,
       summaryContent: `
         <span>Sharing: <strong class="text-[var(--text-primary)]">${transferCount} tiles</strong> (You keep ${userTotal})</span>
-        <span class="text-[10px] text-stone-400 font-sans">Round ${currentRound + 1} of 3</span>
+        <span class="text-sm text-stone-400 font-sans">Round ${currentRound + 1} of 3</span>
       `,
       actionButtonId: 'confirmTransferBtn',
       actionButtonText: currentRound < 2 ? 'Confirm Allocation &rarr;' : 'Confirm & Finish &rarr;',
@@ -214,7 +216,7 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
 // C2: Coordination (3 coordinated placement rounds)
 // --------------------------------------------------------------------------
 function runC2Coordination(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentRound = 0;
   let chosenSlot = null;
   let lastInputModality = 'mouse';
@@ -251,6 +253,8 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
       ]
     }
   ];
+  if (rounds.length > 2) rounds.pop();
+
 
   function render() {
     if (inTutorial) {
@@ -290,23 +294,23 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
       instruction: "Check your partner's position. Choose an open spot that balances the wall.",
       stimulusContent: `
         <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs flex items-center justify-between">
-          <span class="text-xs font-serif text-[var(--text-primary)]">
+          <span class="text-base font-serif text-[var(--text-primary)]">
             <strong>${r.title}:</strong> ${r.partner_desc}
           </span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Round ${currentRound + 1} of 3</span>
+          <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-medium">Round ${currentRound + 1} of 3</span>
         </div>
       `,
       interactionContent: `
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
-          <div class="text-[10px] text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Available Wall Placement Slots:</div>
+          <div class="text-sm text-[var(--text-secondary)] font-sans uppercase tracking-wider mb-2.5">Available Wall Placement Slots:</div>
           <div class="flex flex-col gap-2.5">
             ${r.slots.map(s => `
-              <button type="button" class="slot-btn px-4 py-3 text-xs border rounded-xs ${chosenSlot === s.id ? 'border-[var(--accent-gold)] bg-amber-50/70 font-semibold shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'} interactive-option flex items-center justify-between min-h-[48px]" data-slot="${s.id}" tabindex="0">
+              <button type="button" class="slot-btn px-4 py-3 text-base border rounded-xs ${chosenSlot === s.id ? 'border-[var(--accent-gold)] bg-amber-50/70 font-semibold shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'} interactive-option flex items-center justify-between min-h-[48px]" data-slot="${s.id}" tabindex="0">
                 <span class="flex items-center gap-2">
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${chosenSlot === s.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-400'}">${chosenSlot === s.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)]">${s.label}</span>
                 </span>
-                <span class="text-[10px] text-[var(--accent-gold)] font-medium uppercase">Slot ${s.id.replace('SLOT_', '')}</span>
+                <span class="text-sm text-[var(--accent-gold)] font-medium uppercase">Slot ${s.id.replace('SLOT_', '')}</span>
               </button>
             `).join('')}
           </div>
@@ -314,7 +318,7 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
       `,
       summaryContent: `
         <span>${chosenSlot ? `You selected: <strong class="text-[var(--text-primary)]">${activeSlot?.label}</strong>` : 'Select a spot above to continue.'}</span>
-        <span class="text-[10px] text-stone-400 font-sans">Round ${currentRound + 1} of 3</span>
+        <span class="text-sm text-stone-400 font-sans">Round ${currentRound + 1} of 3</span>
       `,
       actionButtonId: 'confirmWallBtn',
       actionButtonText: currentRound < 2 ? 'Confirm Placement &rarr;' : 'Confirm & Finish &rarr;',
@@ -385,7 +389,7 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
 // Candidate must: identify breakdown -> perform useful repair -> execute repaired action
 // --------------------------------------------------------------------------
 function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
-  let inTutorial = true;
+  let inTutorial = false;
   let currentOpportunity = 0;
   let selectedFault = null;
   let selectedRepair = null;
@@ -487,35 +491,35 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
         <!-- TASK HEADER -->
         <div class="mb-4">
           <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">The Dual Lanterns</h2>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">Resolve studio issues to keep exhibition work moving.</p>
+          <p class="text-base text-[var(--text-secondary)] mt-0.5">Resolve studio issues to keep exhibition work moving.</p>
         </div>
 
         <!-- YOUR TASK -->
         <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs mb-4 candidate-content-protected">
-          <div class="text-[10px] uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
-          <div class="text-xs text-[var(--text-primary)] leading-relaxed">
+          <div class="text-sm uppercase tracking-wider font-sans text-[var(--accent-gold)] font-semibold mb-1">Your Task</div>
+          <div class="text-base text-[var(--text-primary)] leading-relaxed">
             Step 1: Identify what went wrong. Step 2: Choose how to fix it.
           </div>
         </div>
 
         <!-- LOOK AT THIS -->
         <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs mb-4 shadow-xs candidate-content-protected flex items-center justify-between">
-          <span class="text-xs font-serif text-[var(--text-primary)]">
+          <span class="text-base font-serif text-[var(--text-primary)]">
             <strong>${opp.title}:</strong> ${opp.partner_state}
           </span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--accent-gold)] font-medium">Stage ${currentOpportunity + 1} of 3</span>
+          <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-medium">Stage ${currentOpportunity + 1} of 3</span>
         </div>
 
         <!-- INTERACTION AREA -->
         <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] mb-4 rounded-xs shadow-xs candidate-content-protected">
           <!-- Step 1: Identify Breakdown -->
           <div class="mb-4">
-            <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2 font-sans">
+            <div class="text-base font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2 font-sans">
               Step 1: What is the issue?
             </div>
             <div class="space-y-2">
               ${opp.fault_options.map(f => `
-                <div class="fault-opt p-3 bg-white border ${selectedFault === f.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs font-medium' : 'border-[var(--grid-border)] '} rounded-xs cursor-pointer interactive-option text-xs flex items-center gap-2 min-h-[44px]" data-fault="${f.id}" tabindex="0" role="button">
+                <div class="fault-opt p-3 bg-white border ${selectedFault === f.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs font-medium' : 'border-[var(--grid-border)] '} rounded-xs cursor-pointer interactive-option text-base flex items-center gap-2 min-h-[44px]" data-fault="${f.id}" tabindex="0" role="button">
                   <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[8px] ${selectedFault === f.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedFault === f.id ? '✓' : ''}</span>
                   <span class="text-[var(--text-primary)]">${f.label}</span>
                 </div>
@@ -526,12 +530,12 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
           <!-- Step 2: Perform Constructive Repair -->
           ${selectedFault ? `
             <div class="pt-4 border-t border-[var(--grid-border)] animate-soft-fade-in">
-              <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2 font-sans">
+              <div class="text-base font-semibold uppercase tracking-wider text-[var(--text-primary)] mb-2 font-sans">
                 Step 2: Choose a constructive fix:
               </div>
               <div class="space-y-2">
                 ${opp.repair_options.map(r => `
-                  <div class="repair-opt p-3 bg-white border ${selectedRepair === r.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs font-medium' : 'border-[var(--grid-border)] '} rounded-xs cursor-pointer interactive-option text-xs flex items-center gap-2 min-h-[44px]" data-repair="${r.id}" tabindex="0" role="button">
+                  <div class="repair-opt p-3 bg-white border ${selectedRepair === r.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs font-medium' : 'border-[var(--grid-border)] '} rounded-xs cursor-pointer interactive-option text-base flex items-center gap-2 min-h-[44px]" data-repair="${r.id}" tabindex="0" role="button">
                     <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[8px] ${selectedRepair === r.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedRepair === r.id ? '✓' : ''}</span>
                     <span class="text-[var(--text-primary)]">${r.label}</span>
                   </div>
@@ -542,14 +546,14 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
         </div>
 
         <!-- YOUR CHOICE -->
-        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-xs font-sans text-[var(--text-secondary)] flex justify-between items-center">
+        <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs mb-4 text-base font-sans text-[var(--text-secondary)] flex justify-between items-center">
           <span>${selectedFault && selectedRepair ? `Fix selected: <strong class="text-[var(--text-primary)]">${activeRepair?.label}</strong>` : (selectedFault ? 'Now choose a fix in Step 2.' : 'Select an issue in Step 1.')}</span>
-          <span class="text-[10px] text-stone-400 font-sans">${currentOpportunity + 1} / 3</span>
+          <span class="text-sm text-stone-400 font-sans">${currentOpportunity + 1} / 3</span>
         </div>
 
         <!-- PRIMARY ACTION BUTTON -->
         <div class="flex justify-end">
-          <button type="button" id="executeRepairBtn" ${selectedFault && selectedRepair ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
+          <button type="button" id="executeRepairBtn" ${selectedFault && selectedRepair ? '' : 'disabled'} class="w-full sm:w-auto px-7 py-3 bg-[var(--text-primary)] text-white text-base uppercase tracking-widest  disabled:opacity-40 interactive-option shadow-sm rounded-xs min-h-[44px]">
             ${currentOpportunity < 2 ? 'Apply Fix & Next Problem &rarr;' : 'Finish World 3 &rarr;'}
           </button>
         </div>

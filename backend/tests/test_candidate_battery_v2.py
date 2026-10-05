@@ -178,39 +178,32 @@ def run_tests():
             {"action": "trial_submit", "data": {"stimulus_id": "F1_T3", "action_id": "accommodate"}},
             {"action": "trial_submit", "data": {"stimulus_id": "F1_T4", "action_id": "clarify"}},
             {"action": "trial_submit", "data": {"stimulus_id": "F1_T5", "action_id": "maintain_objective"}},
-            {"action": "trial_submit", "data": {"stimulus_id": "F1_T6", "action_id": "accommodate"}},
         ],
         "F2": [
             {"action": "trial_submit", "data": {"stimulus_id": "F2_T1", "action_id": "act"}},
             {"action": "trial_submit", "data": {"stimulus_id": "F2_T2", "action_id": "clarify"}},
             {"action": "trial_submit", "data": {"stimulus_id": "F2_T3", "action_id": "maintain"}},
-            {"action": "trial_submit", "data": {"stimulus_id": "F2_T4", "action_id": "act"}},
         ],
         "A1": [
             {"action": "item_sorted", "data": {"stimulus_id": "DOC_01", "folder_id": "19th_century"}},
             {"action": "item_sorted", "data": {"stimulus_id": "DOC_02", "folder_id": "poetry"}},
             {"action": "item_sorted", "data": {"stimulus_id": "DOC_03", "folder_id": "20th_century"}},
             {"action": "item_sorted", "data": {"stimulus_id": "DOC_04", "folder_id": "kashmiri"}},
-            {"action": "item_sorted", "data": {"stimulus_id": "DOC_05", "folder_id": "chronicle"}},
         ],
         "A2": [
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_01", "action_id": "flag_exception"}},
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_02", "action_id": "file_standard"}},
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_03", "action_id": "flag_exception"}},
-            {"action": "decision_logged", "data": {"stimulus_id": "EXC_04", "action_id": "flag_exception"}},
         ],
         "C1": [
             {"action": "resource_transferred", "data": {"stimulus_id": "C1_R1", "delta": 3}},
             {"action": "allocation_confirmed", "data": {"stimulus_id": "C1_R1"}},
             {"action": "resource_transferred", "data": {"stimulus_id": "C1_R2", "delta": 1}},
             {"action": "allocation_confirmed", "data": {"stimulus_id": "C1_R2"}},
-            {"action": "resource_transferred", "data": {"stimulus_id": "C1_R3", "delta": 0}},
-            {"action": "allocation_confirmed", "data": {"stimulus_id": "C1_R3"}},
         ],
         "C2": [
             {"action": "placement_confirmed", "data": {"stimulus_id": "C2_R1", "chosen_slot": "SLOT_NORTH_RIGHT"}},
             {"action": "placement_confirmed", "data": {"stimulus_id": "C2_R2", "chosen_slot": "SLOT_PERIMETER_EAST"}},
-            {"action": "placement_confirmed", "data": {"stimulus_id": "C2_R3", "chosen_slot": "SLOT_UPPER_GALLERY"}},
         ],
         "E1": [
             {"action": "trial_presented", "data": {"stimulus_id": "E1_T1"}},
@@ -229,14 +222,11 @@ def run_tests():
             {"action": "tile_sorted", "data": {"stimulus_id": "E1_T7", "choice": "container_1"}},
             {"action": "trial_presented", "data": {"stimulus_id": "E1_T8"}},
             {"action": "tile_sorted", "data": {"stimulus_id": "E1_T8", "choice": "container_2"}},
-            {"action": "trial_presented", "data": {"stimulus_id": "E1_T9"}},
-            {"action": "tile_sorted", "data": {"stimulus_id": "E1_T9", "choice": "container_1"}},
         ],
         "E2": [
             {"action": "action_selected", "data": {"stimulus_id": "E2_S1", "chosen_action": "clear_workspace"}},
             {"action": "action_selected", "data": {"stimulus_id": "E2_S2", "chosen_action": "standard_sequence"}},
             {"action": "action_selected", "data": {"stimulus_id": "E2_S3", "chosen_action": "stabilize_reference"}},
-            {"action": "action_selected", "data": {"stimulus_id": "E2_S4", "chosen_action": "reposition_tray"}},
         ],
         "Q1": [
             {"action": "optional_resource_viewed", "data": {"stimulus_id": "Q1_D1", "resource_id": "RES_Q1_ARCHIVE_NOTE"}},
@@ -245,8 +235,6 @@ def run_tests():
             {"action": "decision_submitted", "data": {"stimulus_id": "Q1_D2", "choice": "choice_b"}},
             {"action": "optional_resource_viewed", "data": {"stimulus_id": "Q1_D3", "resource_id": "RES_Q1_PIGMENT_LOG"}},
             {"action": "decision_submitted", "data": {"stimulus_id": "Q1_D3", "choice": "choice_c"}},
-            {"action": "optional_resource_viewed", "data": {"stimulus_id": "Q1_D4", "resource_id": "RES_Q1_CURATOR_MARGINALIA"}},
-            {"action": "decision_submitted", "data": {"stimulus_id": "Q1_D4", "choice": "choice_d"}},
         ],
         "Q2": [
             {"action": "clue_inspected", "data": {"stimulus_id": "artifact_1", "clue_id": "clue_seal"}},
@@ -265,17 +253,14 @@ def run_tests():
         "CR3": [
             {"action": "strategy_adapted", "data": {"stimulus_id": "CR3_T1", "final_tool_id": "bone_folder", "final_method": "firm_edge_pass"}},
             {"action": "strategy_adapted", "data": {"stimulus_id": "CR3_T2", "final_tool_id": "sponge_block", "final_method": "mottled_dab"}},
-            {"action": "strategy_adapted", "data": {"stimulus_id": "CR3_T3", "final_tool_id": "agate_stone", "final_method": "friction_free_rub"}},
         ],
         "M1": [
             {"action": "unit_completed", "data": {"stimulus_id": "M1_U1"}},
             {"action": "unit_completed", "data": {"stimulus_id": "M1_U2"}},
-            {"action": "unit_completed", "data": {"stimulus_id": "M1_U3"}},
         ],
         "M2": [
             {"action": "unit_completed", "data": {"stimulus_id": "M2_U1", "is_mandatory": True}},
             {"action": "unit_completed", "data": {"stimulus_id": "M2_U2", "is_mandatory": True}},
-            {"action": "unit_completed", "data": {"stimulus_id": "M2_U3", "is_mandatory": True}},
             {"action": "continuation_choice_selected", "data": {"choice": "continue"}},
             {"action": "unit_completed", "data": {"stimulus_id": "M2_O1", "is_mandatory": False}},
             {"action": "unit_completed", "data": {"stimulus_id": "M2_O2", "is_mandatory": False}},
