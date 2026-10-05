@@ -21,45 +21,7 @@ FRONTEND_ORIGINS = [
 ]
 
 
-def _load_recruit_copy(filename: str) -> dict:
-    copy_path = Path(__file__).resolve().parents[3] / "config" / "copy" / filename
-    with copy_path.open(encoding="utf-8") as copy_file:
-        return json.load(copy_file)
-
-
-RECRUIT_CONSENT_COPY = _load_recruit_copy("consent.json")
-RECRUIT_PRIVACY_COPY = _load_recruit_copy("privacy.json")
-
-
-def _find_recruit_copy_blockers(value: object, path: str) -> list[str]:
-    if value == "__MISSING__":
-        return [path]
-    if value is True and path.endswith(".interim"):
-        return [path]
-    if isinstance(value, dict):
-        return [
-            blocker
-            for key, child in value.items()
-            for blocker in _find_recruit_copy_blockers(child, f"{path}.{key}")
-        ]
-    if isinstance(value, list):
-        return [
-            blocker
-            for index, child in enumerate(value)
-            for blocker in _find_recruit_copy_blockers(child, f"{path}[{index}]")
-        ]
-    return []
-
-
-_missing_recruit_copy = _find_recruit_copy_blockers(RECRUIT_CONSENT_COPY, "consent") + _find_recruit_copy_blockers(RECRUIT_PRIVACY_COPY, "privacy")
-if _missing_recruit_copy:
-    _copy_message = (
-        "Recruit consent/privacy copy placeholders remain: "
-        + ", ".join(_missing_recruit_copy)
-    )
-    if ENV == "production":
-        raise RuntimeError(_copy_message)
-    warnings.warn(_copy_message, RuntimeWarning, stacklevel=1)
+# (Recruit config logic moved to alfaaz-recruit-system)
 
 # Database
 DATABASE_URL = os.environ.get("DATABASE_URL")
