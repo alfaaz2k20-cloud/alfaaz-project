@@ -6,18 +6,18 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
-from app.db.session import get_db
-from app.core.config import RECRUIT_CONSENT_COPY
-from app.models.recruit import (
+from recruit_system.db.session import get_db
+from recruit_system.core.config import RECRUIT_CONSENT_COPY
+from recruit_system.models.recruit import (
     DBApplicantIdentity, DBSession, DBConsentRecord, DBAccessibilityProfile,
     DBWarmupBaseline, DBTaskAssignment, DBSJTResponse, DBEvidence, DBDataQualityFlag,
     DBTelemetryEvent
 )
-from app.services.sjt_engine import (
+from recruit_system.services.sjt_engine import (
     get_public_sjt_payload, score_sjt_responses, get_config_hash
 )
-from app.services.telemetry_engine import ingest_telemetry_batch, TelemetryCapReachedException
-from app.services.rate_limiter import (
+from recruit_system.services.telemetry_engine import ingest_telemetry_batch, TelemetryCapReachedException
+from recruit_system.services.rate_limiter import (
     recruit_session_start_limiter,
     recruit_identity_limiter,
     recruit_sjt_submit_limiter,
@@ -26,7 +26,7 @@ from app.services.rate_limiter import (
 
 router = APIRouter(prefix="/recruit", tags=["Recruitment"])
 
-from app.services.world_order import (
+from recruit_system.services.world_order import (
     LATIN_SQUARE_14,
     assign_world_order,
     get_world_order_distribution,
@@ -268,7 +268,7 @@ def submit_sjt(req: SJTSubmitRequest, request: Request, db: Session = Depends(ge
     db.commit()
 
     # Integrate evidence records per parameter (creates version 1)
-    from app.services.evidence_integrator import integrate_session_evidence
+    from recruit_system.services.evidence_integrator import integrate_session_evidence
     try:
         integrate_session_evidence(db, req.session_id, force_recompute=True)
     except Exception as e:
@@ -385,8 +385,8 @@ def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db))
     db.commit()
 
     # Automatically extract game telemetry features and integrate evidence
-    from app.services.feature_extractor import extract_session_features
-    from app.services.evidence_integrator import integrate_session_evidence
+    from recruit_system.services.feature_extractor import extract_session_features
+    from recruit_system.services.evidence_integrator import integrate_session_evidence
     try:
         extract_session_features(db, req.session_id)
         integrate_session_evidence(db, req.session_id, force_recompute=True)

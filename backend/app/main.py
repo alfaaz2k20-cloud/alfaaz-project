@@ -99,7 +99,47 @@ app.include_router(exhibitions.router)
 app.include_router(admin.router)
 app.include_router(blogs.router)
 app.include_router(vault.router)
-logger.info("All 10 API routers registered successfully.")
+
+# ==============================================================================
+# ALFAAZ RECRUITMENT SYSTEM (Side-Loaded Plugin)
+# ==============================================================================
+try:
+    import os
+    import sys
+    recruit_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../alfaaz-recruit-system/backend"))
+    if recruit_path not in sys.path:
+        sys.path.insert(0, recruit_path)
+    
+    # Import recruit models to register them with SQLModel/Base
+    from recruit_system.models.recruit import DBTelemetryEvent, DBSJTResponse, DBApplicantIdentity, DBSession, DBConsentRecord, DBEvidence
+    
+    # Import recruit routers
+    from recruit_system.routers import recruit, research_view
+    
+    # Apply recruit body limit middleware for /recruit endpoints
+    from starlette.middleware.base import BaseHTTPMiddleware
+    
+    class RecruitBodyLimitMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request: Request, call_next):
+            path = request.url.path
+            if path.startswith("/recruit"):
+                max_limit = 256 * 1024 if path.endswith("/telemetry") else 16 * 1024
+                cl = request.headers.get("content-length")
+                if cl and int(cl) > max_limit:
+                    return JSONResponse(status_code=413, content={"detail": f"Request body exceeds {max_limit} bytes"})
+            return await call_next(request)
+            
+    app.add_middleware(RecruitBodyLimitMiddleware)
+    
+    # Mount routers
+    app.include_router(recruit.router)
+    app.include_router(research_view.router)
+    logger.info("Recruitment System Plugin successfully mounted.")
+except Exception as e:
+    logger.error(f"Failed to mount Recruitment System Plugin: {e}")
+# ==============================================================================
+
+logger.info("All API routers registered successfully.")
 
 # Server Startup Script (Ensures Admin exists)
 @app.on_event("startup")
