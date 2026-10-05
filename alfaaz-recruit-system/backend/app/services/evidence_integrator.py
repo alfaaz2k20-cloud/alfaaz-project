@@ -3,11 +3,11 @@ import json
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timezone
 from sqlmodel import Session, select
-from recruit_system.models.recruit import (
+from app.models.recruit import (
     DBEvidence, DBSession, DBDataQualityFlag, DBSJTResponse, DBGameScore
 )
-from recruit_system.services.sjt_engine import score_sjt_responses, resolve_config_path
-from recruit_system.services.game_scoring_engine import (
+from app.services.sjt_engine import score_sjt_responses, resolve_config_path
+from app.services.game_scoring_engine import (
     score_session_games, ScoredGame, SCORING_VERSION as GAME_SCORING_VERSION
 )
 

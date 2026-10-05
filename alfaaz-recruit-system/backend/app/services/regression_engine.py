@@ -2,8 +2,8 @@ import os
 import json
 import math
 from typing import Dict, Any, List, Optional, Tuple
-from recruit_system.models.recruit import DBFeature
-from recruit_system.services.sjt_engine import resolve_config_path
+from app.models.recruit import DBFeature
+from app.services.sjt_engine import resolve_config_path
 
 DEFAULT_MODEL_ARTIFACT_REL_PATH = os.path.join("models", "relative_ridge_v1.json")
 _MODEL_ARTIFACT_CACHE: Optional[Dict[str, Any]] = None

@@ -1,7 +1,7 @@
 import logging
 from sqlmodel import create_engine, Session
 from sqlalchemy.orm import sessionmaker
-from recruit_system.core.config import SQLALCHEMY_DATABASE_URL
+from app.core.config import SQLALCHEMY_DATABASE_URL
 
 logger = logging.getLogger("app.db")
 logger.info("Initializing database engine...")

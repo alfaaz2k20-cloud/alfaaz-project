@@ -35,9 +35,92 @@ let state = {
  telemetryTerminal: false
 };
 
+
 const STATE_STORAGE_KEY = 'alfaaz_recruit_state';
-const UNSENT_STORAGE_KEY = 'alfaaz_recruit_unsent';
+const UNSENT_STORAGE_KEY = 'alfaaz_recruit_unsent'; // deprecated
+
+const TelemetryOutbox = {
+  dbPromise: null,
+  init() {
+    this.dbPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open('AlfaazRecruitDB', 3);
+      req.onupgradeneeded = e => {
+        if (!e.target.result.objectStoreNames.contains('outbox')) {
+           e.target.result.createObjectStore('outbox', { keyPath: '_idbKey' });
+        } else if (e.oldVersion < 3) {
+           e.target.result.deleteObjectStore('outbox');
+           e.target.result.createObjectStore('outbox', { keyPath: '_idbKey' });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    return this.dbPromise;
+  },
+  async append(eventPayload) {
+    if (!eventPayload._idbKey) {
+        eventPayload._idbKey = crypto.randomUUID();
+    }
+    try {
+      const db = await this.dbPromise;
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('outbox', 'readwrite');
+        const store = tx.objectStore('outbox');
+        const payloadCopy = { ...eventPayload };
+        const req = store.add(payloadCopy);
+        req.onsuccess = () => resolve(req.result);
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch(e) {
+      console.warn('IDB append failed. State will only be persistent for the session.', e);
+      eventPayload._idbFailed = true;
+    }
+  },
+  async deleteMany(keys) {
+    if (!keys || keys.length === 0) return;
+    try {
+      const db = await this.dbPromise;
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('outbox', 'readwrite');
+        const store = tx.objectStore('outbox');
+        keys.forEach(k => store.delete(k));
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch(e) {
+      console.warn('IDB delete failed', e);
+    }
+  },
+  async getAll() {
+    try {
+      const db = await this.dbPromise;
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('outbox', 'readonly');
+        const req = tx.objectStore('outbox').getAll();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(tx.error);
+      });
+    } catch(e) {
+      console.warn('IDB getAll failed', e);
+      return [];
+    }
+  },
+  async clear() {
+    try {
+      const db = await this.dbPromise;
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('outbox', 'readwrite');
+        tx.objectStore('outbox').clear();
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (e) {}
+  }
+};
+TelemetryOutbox.init().catch(e => console.warn('IDB init failed', e));
+
 let localStateSaveScheduled = false;
+
 
 function persistLocalState() {
  localStateSaveScheduled = false;
@@ -61,7 +144,7 @@ function persistLocalState() {
  telemetryTerminal: state.telemetryTerminal
  };
  sessionStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(toSave));
- sessionStorage.setItem(UNSENT_STORAGE_KEY, JSON.stringify(state.telemetryQueue.slice(-100)));
+ // UNSENT_STORAGE_KEY persistence removed in favor of explicit IDB append
  } catch (e) {
  console.warn('[Persistence] Error saving sessionStorage:', e);
  }
@@ -84,20 +167,26 @@ function saveLocalState({ immediate = false } = {}) {
  }
 }
 
-function restoreLocalState() {
+async function restoreLocalState() {
  try {
  const savedStateStr = sessionStorage.getItem(STATE_STORAGE_KEY);
- const savedUnsentStr = sessionStorage.getItem(UNSENT_STORAGE_KEY);
-
- if (savedUnsentStr) {
- const parsedUnsent = JSON.parse(savedUnsentStr);
- if (Array.isArray(parsedUnsent)) {
- state.telemetryQueue = parsedUnsent;
- }
+ 
+ const idbEvents = await TelemetryOutbox.getAll();
+ if (idbEvents && idbEvents.length > 0) {
+     state.telemetryQueue = idbEvents;
+ } else {
+     const savedUnsentStr = sessionStorage.getItem(UNSENT_STORAGE_KEY);
+     if (savedUnsentStr) {
+         const parsedUnsent = JSON.parse(savedUnsentStr);
+         if (Array.isArray(parsedUnsent)) {
+             state.telemetryQueue = parsedUnsent;
+         }
+     }
  }
 
  if (savedStateStr) {
  const saved = JSON.parse(savedStateStr);
+
  if (saved.sessionId) {
  state.sessionId = saved.sessionId;
  state.configHash = saved.configHash || null;
@@ -192,8 +281,10 @@ function logEvent(screen, action, data = {}, stateSnapshot = {}, inputType = 'mo
  data: finalData
  };
 
+ eventPayload._idbKey = crypto.randomUUID();
  state.telemetryQueue.push(eventPayload);
  saveLocalState();
+ TelemetryOutbox.append(eventPayload).catch(e => console.warn(e));
 
  // Flush when reaching 50 buffered events, or at critical task boundaries
  if (state.telemetryQueue.length >= 50 || action === 'minigame_end' || action === 'sjt_complete') {
@@ -222,13 +313,19 @@ async function _executeFlushTelemetry() {
  if (!state.sessionId || state.telemetryQueue.length === 0) return true;
  if (state.telemetryTerminal) return true;
  const sending = state.telemetryQueue.slice(0, telemetryBatchSize);
+ const sendingIdbKeys = sending.map(ev => ev._idbKey).filter(k => k !== undefined);
+ const payloadEvents = sending.map(ev => {
+     const copy = { ...ev };
+     delete copy._idbKey;
+     return copy;
+ });
 
  try {
  const resp = await apiFetch('/recruit/telemetry', {
  method: 'POST',
  body: JSON.stringify({
  session_id: state.sessionId,
- events: sending
+ events: payloadEvents
  })
  });
 
@@ -259,6 +356,7 @@ async function _executeFlushTelemetry() {
  if (detailStr.includes('already complete')) {
  console.info('[Telemetry] Session is already complete on server; draining local queue.');
  state.telemetryQueue = [];
+ TelemetryOutbox.clear().catch(e => console.warn(e));
  state.telemetryTerminal = true;
  saveLocalState({ immediate: true });
  return true;
@@ -272,8 +370,10 @@ async function _executeFlushTelemetry() {
  const data = await resp.json().catch(() => ({}));
  if (data.result && data.result.session_status === 'COMPLETE') {
  state.telemetryQueue.splice(0, sending.length);
+ if (sendingIdbKeys.length > 0) TelemetryOutbox.deleteMany(sendingIdbKeys);
  if (data.result.new_rejected_count > 0) {
  state.telemetryQueue = [];
+ TelemetryOutbox.clear().catch(e => console.warn(e));
  state.telemetryTerminal = true;
  }
  saveLocalState({ immediate: true });
@@ -281,6 +381,7 @@ async function _executeFlushTelemetry() {
  }
 
  state.telemetryQueue.splice(0, sending.length);
+ if (sendingIdbKeys.length > 0) TelemetryOutbox.deleteMany(sendingIdbKeys);
  saveLocalState();
  return true;
  } catch (err) {
@@ -354,7 +455,7 @@ window.addEventListener('focus', () => {
 // Initialization
 document.addEventListener('DOMContentLoaded', async () => {
  startKeepAlivePing();
- restoreLocalState();
+ await restoreLocalState();
  renderScreen();
  setupGlobalControls();
 });
@@ -811,7 +912,35 @@ function renderWarmup(app) {
 }
 
 // 4. SJT Phase
-function renderSJT(app, progressBarFill) {
+
+ let sjtKeydownHandler = null;
+
+ function selectSjtOption(scenario, optId, inputType) {
+    if (state.sjtResponses[scenario.id] === optId) return;
+    
+    state.sjtResponses[scenario.id] = optId;
+    logEvent('sjt', inputType === 'keyboard' ? 'option_selected_key' : 'option_selected', { scenario_id: scenario.id, option_id: optId });
+
+    // Update DOM classes and aria attributes instead of full render
+    const cards = document.querySelectorAll('.option-card');
+    cards.forEach(c => {
+        if (c.getAttribute('data-opt-id') === optId) {
+            c.classList.add('selected');
+            c.setAttribute('aria-pressed', 'true');
+            c.focus();
+        } else {
+            c.classList.remove('selected');
+            c.setAttribute('aria-pressed', 'false');
+        }
+    });
+
+    const nextBtn = document.getElementById('nextSjtBtn');
+    if (nextBtn) nextBtn.disabled = false;
+    saveLocalState();
+ }
+
+ function renderSJT(app, progressBarFill) {
+
  const scenario = state.sjtScenarios[state.currentSjtIndex];
  if (!scenario) {
  submitSjtAndProceed();
@@ -834,7 +963,7 @@ function renderSJT(app, progressBarFill) {
  const selectedOptId = state.sjtResponses[scenario.id] || null;
 
  const optionsHtml = scenario.options.map(opt => `
- <div class="option-card min-h-[48px] ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button" aria-label="Option ${opt.id.slice(-1)}">
+ <div class="option-card min-h-[48px] ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button" aria-pressed="${selectedOptId === opt.id ? 'true' : 'false'}" aria-label="Option ${opt.id.slice(-1)}">
  <span class="text-sm font-semibold text-[var(--accent-gold)] shrink-0">${opt.id.slice(-1)}.</span>
  <span class="text-xs sm:text-sm text-[var(--text-primary)] leading-relaxed">${opt.text}</span>
  </div>
@@ -884,41 +1013,43 @@ function renderSJT(app, progressBarFill) {
  logEvent('sjt', 'scenario_displayed', { scenario_id: scenario.id, index: current });
 
  // Option selection handlers
- app.querySelectorAll('.option-card').forEach(card => {
- card.addEventListener('click', () => {
- const optId = card.getAttribute('data-opt-id');
- state.sjtResponses[scenario.id] = optId;
- logEvent('sjt', 'option_selected', { scenario_id: scenario.id, option_id: optId });
- renderSJT(app, progressBarFill);
- });
- });
+   app.querySelectorAll('.option-card').forEach(card => {
+     card.addEventListener('click', () => {
+       const optId = card.getAttribute('data-opt-id');
+       selectSjtOption(scenario, optId, 'pointer');
+     });
+   });
 
- document.getElementById('nextSjtBtn')?.addEventListener('click', () => {
- if (state.sjtResponses[scenario.id]) {
- state.currentSjtIndex++;
- renderSJT(app, progressBarFill);
- }
- });
+   document.getElementById('nextSjtBtn')?.addEventListener('click', () => {
+     if (state.sjtResponses[scenario.id]) {
+       state.currentSjtIndex++;
+       if (sjtKeydownHandler) {
+         document.removeEventListener('keydown', sjtKeydownHandler);
+         sjtKeydownHandler = null;
+       }
+       renderSJT(app, progressBarFill);
+     }
+   });
 
- // Keyboard shortcut listener (1-4)
- const keyHandler = (e) => {
- if (['1', '2', '3', '4'].includes(e.key)) {
- const idx = parseInt(e.key) - 1;
- if (scenario.options[idx]) {
- state.sjtResponses[scenario.id] = scenario.options[idx].id;
- logEvent('sjt', 'option_selected_key', { scenario_id: scenario.id, option_id: scenario.options[idx].id });
- renderSJT(app, progressBarFill);
- }
- }
- };
- window.onkeydown = keyHandler;
+   if (sjtKeydownHandler) {
+     document.removeEventListener('keydown', sjtKeydownHandler);
+   }
+   sjtKeydownHandler = (e) => {
+     if (['1', '2', '3', '4'].includes(e.key)) {
+       const idx = parseInt(e.key) - 1;
+       if (scenario.options[idx]) {
+         selectSjtOption(scenario, scenario.options[idx].id, 'keyboard');
+       }
+     }
+   };
+   document.addEventListener('keydown', sjtKeydownHandler);
 }
 
 let isSubmittingSjt = false;
 async function submitSjtAndProceed() {
  if (isSubmittingSjt) return;
  isSubmittingSjt = true;
- window.onkeydown = null;
+ if (sjtKeydownHandler) { document.removeEventListener('keydown', sjtKeydownHandler); sjtKeydownHandler = null; }
  const app = document.getElementById('recruitApp');
  if (app) {
  app.innerHTML = `
@@ -1136,6 +1267,7 @@ async function finishAssessment() {
  state.screen = 'complete';
  state.telemetryTerminal = true;
  state.telemetryQueue = [];
+ TelemetryOutbox.clear().catch(e => console.warn(e));
  saveLocalState({ immediate: true });
  renderScreen();
  return;

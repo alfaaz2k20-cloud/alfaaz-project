@@ -20,7 +20,7 @@ def _get_task_definitions():
     return _task_definitions
 
 from sqlmodel import Session, select
-from recruit_system.models.recruit import DBTelemetryEvent, DBSession, DBDataQualityFlag
+from app.models.recruit import DBTelemetryEvent, DBSession, DBDataQualityFlag
 
 class TelemetryCapReachedException(Exception):
     """Raised when the session event hard cap of 50,000 events is reached or exceeded."""

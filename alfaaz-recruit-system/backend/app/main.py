@@ -1,10 +1,10 @@
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from recruit_system.db.session import engine
-from recruit_system.routers import recruit, research_view
+from app.db.session import engine
+from app.routers import recruit, research_view
 from sqlmodel import SQLModel
-from recruit_system.models.recruit import DBApplicantIdentity, DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
+from app.models.recruit import DBApplicantIdentity, DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("app.main")

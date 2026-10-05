@@ -5,7 +5,7 @@ import secrets
 import threading
 from typing import Dict, List, Tuple, Any
 from sqlmodel import Session, select, text
-from recruit_system.models.recruit import DBSession, DBTaskAssignment
+from app.models.recruit import DBSession, DBTaskAssignment
 
 # Approved 14-row first-order balanced Latin square design
 # Worlds: W1 (Frequency), W2 (Archive), W3 (Shared Canvas),
