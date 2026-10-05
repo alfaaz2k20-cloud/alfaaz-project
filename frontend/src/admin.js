@@ -1,626 +1,626 @@
 // admin.js — Centralized Administration Logic
 document.addEventListener('DOMContentLoaded', () => {
-    const userData = localStorage.getItem('alfaaz_user');
-    if (!userData) {
-        window.location.href = 'login.html';
-        return;
-    }
+ const userData = localStorage.getItem('alfaaz_user');
+ if (!userData) {
+ window.location.href = 'login.html';
+ return;
+ }
 
-    let user;
-    try {
-        user = JSON.parse(userData);
-    } catch (error) {
-        localStorage.removeItem('alfaaz_user');
-        window.location.href = 'login.html';
-        return;
-    }
+ let user;
+ try {
+ user = JSON.parse(userData);
+ } catch (error) {
+ localStorage.removeItem('alfaaz_user');
+ window.location.href = 'login.html';
+ return;
+ }
 
-    if (!user || user.status !== 'ADMIN') {
-        window.location.href = 'dashboard.html';
-        return;
-    }
+ if (!user || user.status !== 'ADMIN') {
+ window.location.href = 'dashboard.html';
+ return;
+ }
 
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => { localStorage.clear(); window.location.href = 'login.html'; });
-    }
+ const logoutBtn = document.getElementById('logoutBtn');
+ if (logoutBtn) {
+ logoutBtn.addEventListener('click', () => { localStorage.clear(); window.location.href = 'login.html'; });
+ }
 
-    const tabLoaded = {};
-    window.switchTab = function(name) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      const targetBtn = document.querySelector(`[onclick="switchTab('${name}')"]`);
-      if (targetBtn) targetBtn.classList.add('active');
-      const targetPanel = document.getElementById(`tab-${name}`);
-      if (targetPanel) targetPanel.classList.add('active');
-      if (!tabLoaded[name]) { tabLoaded[name] = true; loadTab(name); }
-    };
+ const tabLoaded = {};
+ window.switchTab = function(name) {
+ document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+ document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+ const targetBtn = document.querySelector(`[onclick="switchTab('${name}')"]`);
+ if (targetBtn) targetBtn.classList.add('active');
+ const targetPanel = document.getElementById(`tab-${name}`);
+ if (targetPanel) targetPanel.classList.add('active');
+ if (!tabLoaded[name]) { tabLoaded[name] = true; loadTab(name); }
+ };
 
-    function loadTab(name) {
-      if (name === 'events') window.loadEvents(); 
-      if (name === 'exhibitions') { window.loadExhibitionManager(); window.loadExhibitionsData('ALL'); }
-      if (name === 'clubs') window.loadClubs('ALL'); 
-      if (name === 'roster') window.loadRoster();
-      if (name === 'recruitment') window.loadRecruitment();
-    }
+ function loadTab(name) {
+ if (name === 'events') window.loadEvents(); 
+ if (name === 'exhibitions') { window.loadExhibitionManager(); window.loadExhibitionsData('ALL'); }
+ if (name === 'clubs') window.loadClubs('ALL'); 
+ if (name === 'roster') window.loadRoster();
+ if (name === 'recruitment') window.loadRecruitment();
+ }
 
-    // ==========================================
-    // EVENTS LOGIC
-    // ==========================================
-    let allEvents = [];
-    window.loadEvents = async function() {
-      const container = document.getElementById('eventsContainer');
-      if(!container) return;
-      try {
-        const res = await window.globalApiFetch('/admin/events');
-        if(!res) return;
-        allEvents = await res.json();
-        if (!allEvents.length) { container.innerHTML = '<div class="empty-state">No events found.</div>'; return; }
-        container.innerHTML = '';
-        allEvents.forEach(e => {
-          const card = document.createElement('div'); card.className = 'data-card event-card';
-          const isOpen = e.registration_open; const capLabel = e.capacity === 0 ? '∞' : `${e.registered}/${e.capacity}`;
-          const safeName = window.escapeHtml(e.name);
-          const safeDesc = window.escapeHtml(e.description || '—');
-          const safeDate = window.escapeHtml(e.event_date || '—');
-          card.innerHTML = `
-            <div><div class="data-label">Event</div><div class="data-display">${safeName}</div><div style="font-size:11px; color:var(--text-secondary); margin-top: 4px;">${safeDesc}</div></div>
-            <div><div class="data-label">Date</div><div class="data-display" style="font-size:12px;">${safeDate}</div></div>
-            <div><div class="data-label">Registered</div><div class="data-display">${capLabel}</div></div>
-            <div><div class="data-label">Status</div><span class="badge ${isOpen ? 'badge-open' : 'badge-closed'}">${isOpen ? 'Open' : 'Closed'}</span></div>
-            <div style="display:flex; flex-direction:column; gap:0.6rem;">
-              <button class="action-btn ${isOpen ? '' : 'gold'}" style="padding: 0.6rem; font-size:9px;" onclick="toggleEvent(${e.id}, this)">${isOpen ? 'Close Registration' : 'Open Registration'}</button>
-              <button class="action-btn gold" style="padding: 0.6rem; font-size:9px;" onclick="viewRegistrations(${e.id})">View List</button>
-              <button class="action-btn" style="padding: 0.6rem; font-size:9px; border-color:var(--accent-red); color:var(--accent-red);" onclick="deleteEvent(${e.id}, '${safeName.replace(/'/g, "\\'")}', this)">Delete</button>
-            </div>`;
-          container.appendChild(card);
-        });
-        if(window.refreshGlobalEffects) window.refreshGlobalEffects();
-      } catch (e) { container.innerHTML = '<div class="empty-state">Error loading events.</div>'; }
-    };
+ // ==========================================
+ // EVENTS LOGIC
+ // ==========================================
+ let allEvents = [];
+ window.loadEvents = async function() {
+ const container = document.getElementById('eventsContainer');
+ if(!container) return;
+ try {
+ const res = await window.globalApiFetch('/admin/events');
+ if(!res) return;
+ allEvents = await res.json();
+ if (!allEvents.length) { container.innerHTML = '<div class="empty-state">No events found.</div>'; return; }
+ container.innerHTML = '';
+ allEvents.forEach(e => {
+ const card = document.createElement('div'); card.className = 'data-card event-card';
+ const isOpen = e.registration_open; const capLabel = e.capacity === 0 ? '∞' : `${e.registered}/${e.capacity}`;
+ const safeName = window.escapeHtml(e.name);
+ const safeDesc = window.escapeHtml(e.description || '—');
+ const safeDate = window.escapeHtml(e.event_date || '—');
+ card.innerHTML = `
+ <div><div class="data-label">Event</div><div class="data-display">${safeName}</div><div style="font-size:11px; color:var(--text-secondary); margin-top: 4px;">${safeDesc}</div></div>
+ <div><div class="data-label">Date</div><div class="data-display" style="font-size:12px;">${safeDate}</div></div>
+ <div><div class="data-label">Registered</div><div class="data-display">${capLabel}</div></div>
+ <div><div class="data-label">Status</div><span class="badge ${isOpen ? 'badge-open' : 'badge-closed'}">${isOpen ? 'Open' : 'Closed'}</span></div>
+ <div style="display:flex; flex-direction:column; gap:0.6rem;">
+ <button class="action-btn ${isOpen ? '' : 'gold'}" style="padding: 0.6rem; font-size:9px;" onclick="toggleEvent(${e.id}, this)">${isOpen ? 'Close Registration' : 'Open Registration'}</button>
+ <button class="action-btn gold" style="padding: 0.6rem; font-size:9px;" onclick="viewRegistrations(${e.id})">View List</button>
+ <button class="action-btn" style="padding: 0.6rem; font-size:9px; border-color:var(--accent-red); color:var(--accent-red);" onclick="deleteEvent(${e.id}, '${safeName.replace(/'/g, "\\'")}', this)">Delete</button>
+ </div>`;
+ container.appendChild(card);
+ });
+ if(window.refreshGlobalEffects) window.refreshGlobalEffects();
+ } catch (e) { container.innerHTML = '<div class="empty-state">Error loading events.</div>'; }
+ };
 
-    window.handleCreateEvent = async function() {
-      const name = document.getElementById('ev-name').value.trim(), date = document.getElementById('ev-date').value.trim(), capacity = parseInt(document.getElementById('ev-capacity').value) || 0, desc = document.getElementById('ev-desc').value.trim(), msg = document.getElementById('ev-create-msg');
-      if (!name) return; msg.textContent = 'Creating...';
-      const res = await window.globalApiFetch('/admin/events/create', { method: 'POST', body: JSON.stringify({ name, description: desc, event_date: date, capacity }) });
-      if (res && res.ok) { msg.textContent = '✓ Created.'; window.loadEvents(); }
-    };
-    window.toggleEvent = async function(id, btn) { btn.textContent = '...'; const res = await window.globalApiFetch(`/admin/events/${id}/toggle`, { method: 'PATCH' }); if (res && res.ok) window.loadEvents(); };
-    window.deleteEvent = async function(id, name, btn) { if (!confirm(`Delete ${name}?`)) return; btn.textContent = '...'; const res = await window.globalApiFetch(`/admin/events/${id}`, { method: 'DELETE' }); if (res && res.ok) window.loadEvents(); };
-    
-    window.viewRegistrations = async function(id) {
-      const event = allEvents.find(e => e.id === id); document.getElementById('modalTitle').textContent = event.name; document.getElementById('modalBody').innerHTML = 'Loading...'; document.getElementById('regModal').classList.add('open');
-      const res = await window.globalApiFetch(`/admin/events/${id}/registrations`);
-      if(!res) return;
-      const data = await res.json();
-      let html = `<div style="font-size:12px; margin-bottom:1.5rem; color:var(--accent-gold); font-weight:600; letter-spacing: 1px; text-transform: uppercase;">Total Approved: ${data.registrations.length}</div>`;
-      data.registrations.forEach((r, i) => {
-        const safeEmail = window.escapeHtml(r.email);
-        const safeWa = r.whatsapp ? 'WA: ' + window.escapeHtml(r.whatsapp) : 'No WA provided';
-        html += `<div style="padding:1rem 0; border-bottom:1px solid var(--grid-border); font-size:13px; display:flex; justify-content:space-between; align-items: center;"><span><strong style="color: var(--accent-gold); margin-right: 10px;">${i+1}.</strong> ${safeEmail}</span><span style="color:var(--text-primary); font-size: 11px; background: var(--bg-primary); padding: 4px 10px; border-radius: 2px;">${safeWa}</span></div>`;
-      });
-      document.getElementById('modalBody').innerHTML = html || '<div class="empty-state">No registrations.</div>';
-    };
-    window.closeModal = function() { document.getElementById('regModal').classList.remove('open'); };
+ window.handleCreateEvent = async function() {
+ const name = document.getElementById('ev-name').value.trim(), date = document.getElementById('ev-date').value.trim(), capacity = parseInt(document.getElementById('ev-capacity').value) || 0, desc = document.getElementById('ev-desc').value.trim(), msg = document.getElementById('ev-create-msg');
+ if (!name) return; msg.textContent = 'Creating...';
+ const res = await window.globalApiFetch('/admin/events/create', { method: 'POST', body: JSON.stringify({ name, description: desc, event_date: date, capacity }) });
+ if (res && res.ok) { msg.textContent = '✓ Created.'; window.loadEvents(); }
+ };
+ window.toggleEvent = async function(id, btn) { btn.textContent = '...'; const res = await window.globalApiFetch(`/admin/events/${id}/toggle`, { method: 'PATCH' }); if (res && res.ok) window.loadEvents(); };
+ window.deleteEvent = async function(id, name, btn) { if (!confirm(`Delete ${name}?`)) return; btn.textContent = '...'; const res = await window.globalApiFetch(`/admin/events/${id}`, { method: 'DELETE' }); if (res && res.ok) window.loadEvents(); };
+ 
+ window.viewRegistrations = async function(id) {
+ const event = allEvents.find(e => e.id === id); document.getElementById('modalTitle').textContent = event.name; document.getElementById('modalBody').innerHTML = 'Loading...'; document.getElementById('regModal').classList.add('open');
+ const res = await window.globalApiFetch(`/admin/events/${id}/registrations`);
+ if(!res) return;
+ const data = await res.json();
+ let html = `<div style="font-size:12px; margin-bottom:1.5rem; color:var(--accent-gold); font-weight:600; letter-spacing: 1px; text-: uppercase;">Total Approved: ${data.registrations.length}</div>`;
+ data.registrations.forEach((r, i) => {
+ const safeEmail = window.escapeHtml(r.email);
+ const safeWa = r.whatsapp ? 'WA: ' + window.escapeHtml(r.whatsapp) : 'No WA provided';
+ html += `<div style="padding:1rem 0; border-bottom:1px solid var(--grid-border); font-size:13px; display:flex; justify-content:space-between; align-items: center;"><span><strong style="color: var(--accent-gold); margin-right: 10px;">${i+1}.</strong> ${safeEmail}</span><span style="color:var(--text-primary); font-size: 11px; background: var(--bg-primary); padding: 4px 10px; border-radius: 2px;">${safeWa}</span></div>`;
+ });
+ document.getElementById('modalBody').innerHTML = html || '<div class="empty-state">No registrations.</div>';
+ };
+ window.closeModal = function() { document.getElementById('regModal').classList.remove('open'); };
 
-    // ==========================================
-    // EXHIBITIONS LOGIC (TRUE EVENTS MODEL)
-    // ==========================================
-    let allExhibs = [], activeCycleFilter = 'ALL';
-    let currentCycleView = 'ALL'; 
+ // ==========================================
+ // EXHIBITIONS LOGIC (TRUE EVENTS MODEL)
+ // ==========================================
+ let allExhibs = [], activeCycleFilter = 'ALL';
+ let currentCycleView = 'ALL'; 
 
-    window.loadExhibitionManager = async function() {
-      const res = await window.globalApiFetch('/admin/exhibitions/list');
-      if (!res || !res.ok) return;
-      
-      const exhibitions = await res.json();
-      const container = document.getElementById('exhibitionListContainer');
-      const statusText = document.getElementById('portalLiveStatus');
-      if(!container) return;
-      container.innerHTML = '';
+ window.loadExhibitionManager = async function() {
+ const res = await window.globalApiFetch('/admin/exhibitions/list');
+ if (!res || !res.ok) return;
+ 
+ const exhibitions = await res.json();
+ const container = document.getElementById('exhibitionListContainer');
+ const statusText = document.getElementById('portalLiveStatus');
+ if(!container) return;
+ container.innerHTML = '';
 
-      const liveEx = exhibitions.find(e => e.is_active);
-      if (liveEx) {
-        statusText.innerHTML = `Currently Live: <strong style="color: var(--accent-green);">${window.escapeHtml(liveEx.title)}</strong>`;
-      } else {
-        statusText.innerHTML = `<strong style="color: var(--accent-red);">CLOSED</strong> (No active exhibition)`;
-      }
+ const liveEx = exhibitions.find(e => e.is_active);
+ if (liveEx) {
+ statusText.innerHTML = `Currently Live: <strong style="color: var(--accent-green);">${window.escapeHtml(liveEx.title)}</strong>`;
+ } else {
+ statusText.innerHTML = `<strong style="color: var(--accent-red);">CLOSED</strong> (No active exhibition)`;
+ }
 
-      if (exhibitions.length === 0) {
-        container.innerHTML = '<div style="font-size: 12px; color: var(--text-secondary);">No exhibitions created yet.</div>';
-        return;
-      }
+ if (exhibitions.length === 0) {
+ container.innerHTML = '<div style="font-size: 12px; color: var(--text-secondary);">No exhibitions created yet.</div>';
+ return;
+ }
 
-      exhibitions.forEach(ex => {
-        const card = document.createElement('div');
-        card.style.cssText = `border: 1px solid ${ex.is_active ? 'var(--accent-gold)' : 'var(--grid-border)'}; padding: 1.5rem; background: ${ex.is_active ? 'var(--bg-primary)' : 'transparent'}; transition: all 0.3s;`;
-        
-        const statusBadge = ex.is_active 
-          ? `<span style="font-size: 9px; padding: 3px 8px; background: var(--accent-gold); color: #fff; letter-spacing: 1px; text-transform: uppercase;">Live Now</span>`
-          : `<span style="font-size: 9px; padding: 3px 8px; border: 1px solid var(--grid-border); color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase;">Inactive</span>`;
-          
-        const safeTitle = window.escapeHtml(ex.title);
-        const safeDateText = window.escapeHtml(ex.date_text);
-        const actionBtn = ex.is_active
-          ? `<button disabled style="font-family: var(--font-body); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--grid-border); color: var(--text-secondary); cursor: not-allowed;">Currently Active</button>`
-          : `<button onclick="activateExhibition(${ex.id}, '${safeTitle.replace(/'/g, "\\'")}')" class="action-btn gold" style="padding: 0.5rem 1rem; font-size: 10px;">Set as Live</button>`;
+ exhibitions.forEach(ex => {
+ const card = document.createElement('div');
+ card.style.cssText = `border: 1px solid ${ex.is_active ? 'var(--accent-gold)' : 'var(--grid-border)'}; padding: 1.5rem; background: ${ex.is_active ? 'var(--bg-primary)' : 'transparent'}; : all 0.3s;`;
+ 
+ const statusBadge = ex.is_active 
+ ? `<span style="font-size: 9px; padding: 3px 8px; background: var(--accent-gold); color: #fff; letter-spacing: 1px; text-: uppercase;">Live Now</span>`
+ : `<span style="font-size: 9px; padding: 3px 8px; border: 1px solid var(--grid-border); color: var(--text-secondary); letter-spacing: 1px; text-: uppercase;">Inactive</span>`;
+ 
+ const safeTitle = window.escapeHtml(ex.title);
+ const safeDateText = window.escapeHtml(ex.date_text);
+ const actionBtn = ex.is_active
+ ? `<button disabled style="font-family: var(--font-body); font-size: 10px; text-: uppercase; letter-spacing: 1px; padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--grid-border); color: var(--text-secondary); cursor: not-allowed;">Currently Active</button>`
+ : `<button onclick="activateExhibition(${ex.id}, '${safeTitle.replace(/'/g, "\\'")}')" class="action-btn gold" style="padding: 0.5rem 1rem; font-size: 10px;">Set as Live</button>`;
 
-        card.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-            <div>
-              <div style="font-family: var(--font-heading); font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.2rem;">${safeTitle}</div>
-              <div style="font-size: 11px; color: var(--text-secondary);">${safeDateText}</div>
-            </div>
-            ${statusBadge}
-          </div>
-          <div>${actionBtn}</div>
-        `;
-        container.appendChild(card);
-      });
-    };
+ card.innerHTML = `
+ <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+ <div>
+ <div style="font-family: var(--font-heading); font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.2rem;">${safeTitle}</div>
+ <div style="font-size: 11px; color: var(--text-secondary);">${safeDateText}</div>
+ </div>
+ ${statusBadge}
+ </div>
+ <div>${actionBtn}</div>
+ `;
+ container.appendChild(card);
+ });
+ };
 
-    window.createNewExhibition = async function() {
-      const btn = document.querySelector('button[onclick="createNewExhibition()"]');
-      const msg = document.getElementById('createExMsg');
-      
-      const payload = {
-        title: document.getElementById('newExTitle').value.trim(),
-        date_text: document.getElementById('newExDate').value.trim(),
-        venue: document.getElementById('newExVenue').value.trim(),
-        about_text: document.getElementById('newExDesc').value.trim(),
-        tnc_pdf_url: document.getElementById('newExTnc').value.trim(),
-        registration_fee: document.getElementById('newExFee').value.trim(),
-        payment_qr_url: document.getElementById('newExQr').value.trim(),
-        payment_instructions: document.getElementById('newExPayInst').value.trim()
-      };
+ window.createNewExhibition = async function() {
+ const btn = document.querySelector('button[onclick="createNewExhibition()"]');
+ const msg = document.getElementById('createExMsg');
+ 
+ const payload = {
+ title: document.getElementById('newExTitle').value.trim(),
+ date_text: document.getElementById('newExDate').value.trim(),
+ venue: document.getElementById('newExVenue').value.trim(),
+ about_text: document.getElementById('newExDesc').value.trim(),
+ tnc_pdf_url: document.getElementById('newExTnc').value.trim(),
+ registration_fee: document.getElementById('newExFee').value.trim(),
+ payment_qr_url: document.getElementById('newExQr').value.trim(),
+ payment_instructions: document.getElementById('newExPayInst').value.trim()
+ };
 
-      if (!payload.title || !payload.date_text || !payload.venue) {
-        msg.textContent = "Title, Dates, and Venue are required.";
-        msg.style.color = "var(--accent-red)";
-        return;
-      }
+ if (!payload.title || !payload.date_text || !payload.venue) {
+ msg.textContent = "Title, Dates, and Venue are required.";
+ msg.style.color = "var(--accent-red)";
+ return;
+ }
 
-      btn.textContent = "Creating..."; btn.disabled = true;
-      const res = await window.globalApiFetch('/admin/exhibitions/create', { method: 'POST', body: JSON.stringify(payload) });
-      
-      if (res && res.ok) {
-        msg.textContent = "✓ Exhibition Created!";
-        msg.style.color = "var(--accent-green)";
-        document.querySelectorAll('#newExTitle, #newExDate, #newExVenue, #newExDesc, #newExTnc, #newExFee, #newExQr, #newExPayInst').forEach(el => el.value = '');
-        await window.loadExhibitionManager(); 
-      } else {
-        msg.textContent = "Failed to create. Title might already exist.";
-        msg.style.color = "var(--accent-red)";
-      }
-      
-      btn.textContent = "Create Exhibition"; btn.disabled = false;
-      setTimeout(() => msg.textContent = '', 4000);
-    };
+ btn.textContent = "Creating..."; btn.disabled = true;
+ const res = await window.globalApiFetch('/admin/exhibitions/create', { method: 'POST', body: JSON.stringify(payload) });
+ 
+ if (res && res.ok) {
+ msg.textContent = "✓ Exhibition Created!";
+ msg.style.color = "var(--accent-green)";
+ document.querySelectorAll('#newExTitle, #newExDate, #newExVenue, #newExDesc, #newExTnc, #newExFee, #newExQr, #newExPayInst').forEach(el => el.value = '');
+ await window.loadExhibitionManager(); 
+ } else {
+ msg.textContent = "Failed to create. Title might already exist.";
+ msg.style.color = "var(--accent-red)";
+ }
+ 
+ btn.textContent = "Create Exhibition"; btn.disabled = false;
+ setTimeout(() => msg.textContent = '', 4000);
+ };
 
-    window.activateExhibition = async function(id, title) {
-      if (!confirm(`Are you sure you want to make "${title}" the live exhibition on the public portal?`)) return;
-      const res = await window.globalApiFetch(`/admin/exhibitions/${id}/activate`, { method: 'PATCH' });
-      if (res && res.ok) { await window.loadExhibitionManager(); await window.loadExhibitionsData('ALL'); } 
-      else { alert("Failed to activate exhibition."); }
-    };
+ window.activateExhibition = async function(id, title) {
+ if (!confirm(`Are you sure you want to make "${title}" the live exhibition on the public portal?`)) return;
+ const res = await window.globalApiFetch(`/admin/exhibitions/${id}/activate`, { method: 'PATCH' });
+ if (res && res.ok) { await window.loadExhibitionManager(); await window.loadExhibitionsData('ALL'); } 
+ else { alert("Failed to activate exhibition."); }
+ };
 
-    window.deactivateAllExhibitions = async function() {
-      if (!confirm("Are you sure you want to CLOSE the exhibition portal? The public will not be able to apply until you set a cycle to live.")) return;
-      const res = await window.globalApiFetch('/admin/exhibitions/deactivate-all', { method: 'PATCH' });
-      if (res && res.ok) { await window.loadExhibitionManager(); alert("Portal successfully closed."); } 
-      else { alert("Failed to close portal."); }
-    };
+ window.deactivateAllExhibitions = async function() {
+ if (!confirm("Are you sure you want to CLOSE the exhibition portal? The public will not be able to apply until you set a cycle to live.")) return;
+ const res = await window.globalApiFetch('/admin/exhibitions/deactivate-all', { method: 'PATCH' });
+ if (res && res.ok) { await window.loadExhibitionManager(); alert("Portal successfully closed."); } 
+ else { alert("Failed to close portal."); }
+ };
 
-    async function buildCycleSelector() {
-      const res = await window.globalApiFetch('/admin/exhibitions/cycles');
-      if (!res || !res.ok) return;
-      const { cycles, current } = await res.json();
-      const wrap = document.getElementById('cycleSelectWrap');
-      if (!wrap) return;
+ async function buildCycleSelector() {
+ const res = await window.globalApiFetch('/admin/exhibitions/cycles');
+ if (!res || !res.ok) return;
+ const { cycles, current } = await res.json();
+ const wrap = document.getElementById('cycleSelectWrap');
+ if (!wrap) return;
 
-      let opts = `<option value="">Active Now: ${current || 'None'}</option>`;
-      cycles.forEach(c => { if (c !== current) opts += `<option value="${c}">${c}</option>`; });
-      opts += `<option value="ALL">— All Archive —</option>`;
+ let opts = `<option value="">Active Now: ${current || 'None'}</option>`;
+ cycles.forEach(c => { if (c !== current) opts += `<option value="${c}">${c}</option>`; });
+ opts += `<option value="ALL">— All Archive —</option>`;
 
-      wrap.innerHTML = `
-        <label style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-right:0.8rem;">Viewing Cycle:</label>
-        <select id="cycleSelect" style="background:transparent;border:none;border-bottom:1px solid var(--grid-border);color:var(--text-primary);font-family:var(--font-body);font-size:12px;padding:0.4rem 0;outline:none;">
-          ${opts}
-        </select>`;
+ wrap.innerHTML = `
+ <label style="font-size:10px;color:var(--text-secondary);text-:uppercase;letter-spacing:1px;margin-right:0.8rem;">Viewing Cycle:</label>
+ <select id="cycleSelect" style="background:transparent;border:none;border-bottom:1px solid var(--grid-border);color:var(--text-primary);font-family:var(--font-body);font-size:12px;padding:0.4rem 0;outline:none;">
+ ${opts}
+ </select>`;
 
-      const sel = document.getElementById('cycleSelect');
-      sel.value = currentCycleView;
+ const sel = document.getElementById('cycleSelect');
+ sel.value = currentCycleView;
 
-      sel.addEventListener('change', async (e) => {
-        currentCycleView = e.target.value; 
-        const query = currentCycleView ? `?cycle=${encodeURIComponent(currentCycleView)}` : '';
-        const r = await window.globalApiFetch(`/admin/exhibitions${query}`);
-        if (r && r.ok) { allExhibs = await r.json(); window.filterExhibitions('ALL'); }
-      });
-    }
+ sel.addEventListener('change', async (e) => {
+ currentCycleView = e.target.value; 
+ const query = currentCycleView ? `?cycle=${encodeURIComponent(currentCycleView)}` : '';
+ const r = await window.globalApiFetch(`/admin/exhibitions${query}`);
+ if (r && r.ok) { allExhibs = await r.json(); window.filterExhibitions('ALL'); }
+ });
+ }
 
-    window.loadExhibitionsData = async function(f) {
-      currentCycleView = 'ALL'; 
-      const res = await window.globalApiFetch('/admin/exhibitions?cycle=ALL');
-      if (!res) return;
-      allExhibs = await res.json();
-      await buildCycleSelector();
-      window.renderExhibitions(f);
-    };
+ window.loadExhibitionsData = async function(f) {
+ currentCycleView = 'ALL'; 
+ const res = await window.globalApiFetch('/admin/exhibitions?cycle=ALL');
+ if (!res) return;
+ allExhibs = await res.json();
+ await buildCycleSelector();
+ window.renderExhibitions(f);
+ };
 
-    const hasPaymentSubmission = (a) => a.registration_status === 'SUBMITTED' || a.registration_status === 'CONFIRMED' || Boolean(a.payment_proof_url);
-    const getExhibitionLabel = (a) => a.registration_status === 'CONFIRMED' ? 'CONFIRMED' : hasPaymentSubmission(a) ? 'PAYMENT SUBMITTED' : a.status;
+ const hasPaymentSubmission = (a) => a.registration_status === 'SUBMITTED' || a.registration_status === 'CONFIRMED' || Boolean(a.payment_proof_url);
+ const getExhibitionLabel = (a) => a.registration_status === 'CONFIRMED' ? 'CONFIRMED' : hasPaymentSubmission(a) ? 'PAYMENT SUBMITTED' : a.status;
 
-    window.filterExhibitions = function(f) {
-      activeCycleFilter = f;
-      document.querySelectorAll('[id^="filt-"]').forEach(b => b.classList.remove('gold'));
-      const target = document.getElementById(`filt-${f}`);
-      if (target) target.classList.add('gold');
-      window.renderExhibitions(f);
-    };
+ window.filterExhibitions = function(f) {
+ activeCycleFilter = f;
+ document.querySelectorAll('[id^="filt-"]').forEach(b => b.classList.remove('gold'));
+ const target = document.getElementById(`filt-${f}`);
+ if (target) target.classList.add('gold');
+ window.renderExhibitions(f);
+ };
 
-    window.renderExhibitions = function(f) {
-      const container = document.getElementById('exhibitionsContainer');
-      const apps = f === 'ALL' ? allExhibs : allExhibs.filter(a => f === 'FINALIZED' ? hasPaymentSubmission(a) : f === 'APPROVED' ? a.status === 'APPROVED' && !hasPaymentSubmission(a) : a.status === f);
-      
-      container.innerHTML = '';
-      if (!apps.length) { container.innerHTML = '<div class="empty-state">No portfolios found.</div>'; return; }
+ window.renderExhibitions = function(f) {
+ const container = document.getElementById('exhibitionsContainer');
+ const apps = f === 'ALL' ? allExhibs : allExhibs.filter(a => f === 'FINALIZED' ? hasPaymentSubmission(a) : f === 'APPROVED' ? a.status === 'APPROVED' && !hasPaymentSubmission(a) : a.status === f);
+ 
+ container.innerHTML = '';
+ if (!apps.length) { container.innerHTML = '<div class="empty-state">No portfolios found.</div>'; return; }
 
-      apps.forEach(a => {
-        const card = document.createElement('div');
-        card.className = 'data-card exhib-card';
-        const displayStatus = getExhibitionLabel(a);
-        const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
+ apps.forEach(a => {
+ const card = document.createElement('div');
+ card.className = 'data-card exhib-card';
+ const displayStatus = getExhibitionLabel(a);
+ const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
 
-        let actionBtns = `<a href="${a.portfolio_url}" target="_blank" class="action-btn gold" style="padding:0.6rem;font-size:9px;text-align:center;">View Portfolio</a>`;
+ let actionBtns = `<a href="${a.portfolio_url}" target="_blank" class="action-btn gold" style="padding:0.6rem;font-size:9px;text-align:center;">View Portfolio</a>`;
 
-        if (a.status === 'PENDING') {
-          actionBtns += `
-            <button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="reviewExhibition(${a.id},'APPROVED',this)">Approve</button>
-            <button class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-red);color:var(--accent-red);" onclick="reviewExhibition(${a.id},'REJECTED',this)">Reject</button>`;
-        } else if (a.status === 'REJECTED') {
-          actionBtns += `<button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="revertExhibition(${a.id},this)">Undo Rejection</button>`;
-        }
-        if (a.payment_proof_url) {
-          actionBtns += `<a href="${a.payment_proof_url}" target="_blank" class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-green);color:var(--accent-green);text-align:center;margin-top:0.5rem;">View Payment Receipt</a>`;
-        }
-        if (a.registration_status === 'SUBMITTED') {
-          actionBtns += `<button class="action-btn gold" style="padding:0.6rem;font-size:9px;" onclick="confirmExhibitionPayment(${a.id},this)">Confirm Payment</button>`;
-        }
+ if (a.status === 'PENDING') {
+ actionBtns += `
+ <button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="reviewExhibition(${a.id},'APPROVED',this)">Approve</button>
+ <button class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-red);color:var(--accent-red);" onclick="reviewExhibition(${a.id},'REJECTED',this)">Reject</button>`;
+ } else if (a.status === 'REJECTED') {
+ actionBtns += `<button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="revertExhibition(${a.id},this)">Undo Rejection</button>`;
+ }
+ if (a.payment_proof_url) {
+ actionBtns += `<a href="${a.payment_proof_url}" target="_blank" class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-green);color:var(--accent-green);text-align:center;margin-top:0.5rem;">View Payment Receipt</a>`;
+ }
+ if (a.registration_status === 'SUBMITTED') {
+ actionBtns += `<button class="action-btn gold" style="padding:0.6rem;font-size:9px;" onclick="confirmExhibitionPayment(${a.id},this)">Confirm Payment</button>`;
+ }
 
-        const cycleName = window.escapeHtml(a.exhibition_cycle ? a.exhibition_cycle : 'LEGACY ARCHIVE');
-        const cycleTag = `<div style="font-size:10px; margin-top:6px; color:var(--accent-gold); letter-spacing:1.5px; text-transform:uppercase; font-weight:600;">CYCLE: ${cycleName}</div>`;
+ const cycleName = window.escapeHtml(a.exhibition_cycle ? a.exhibition_cycle : 'LEGACY ARCHIVE');
+ const cycleTag = `<div style="font-size:10px; margin-top:6px; color:var(--accent-gold); letter-spacing:1.5px; text-:uppercase; font-weight:600;">CYCLE: ${cycleName}</div>`;
 
-        const safeFullName = window.escapeHtml(a.full_name);
-        const safeUserEmail = window.escapeHtml(a.user_email);
-        const safeGenre = window.escapeHtml(a.genre);
-        const safeMedium = window.escapeHtml(a.medium);
+ const safeFullName = window.escapeHtml(a.full_name);
+ const safeUserEmail = window.escapeHtml(a.user_email);
+ const safeGenre = window.escapeHtml(a.genre);
+ const safeMedium = window.escapeHtml(a.medium);
 
-        card.innerHTML = `
-          <div>
-            <div class="data-label">Artist</div>
-            <div class="data-display">${safeFullName}</div>
-            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">${safeUserEmail}</div>
-            ${cycleTag}
-          </div>
-          <div>
-            <div class="data-label">Art Profile</div>
-            <div class="data-display" style="font-size:13px;">${safeGenre}</div>
-            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Medium: ${safeMedium}</div>
-          </div>
-          <div><div class="data-label">Status</div><span class="badge ${badge}">${displayStatus}</span></div>
-          <div style="display:flex;flex-direction:column;gap:0.5rem;">${actionBtns}</div>`;
-        container.appendChild(card);
-      });
-      if (window.refreshGlobalEffects) window.refreshGlobalEffects();
-    };
+ card.innerHTML = `
+ <div>
+ <div class="data-label">Artist</div>
+ <div class="data-display">${safeFullName}</div>
+ <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">${safeUserEmail}</div>
+ ${cycleTag}
+ </div>
+ <div>
+ <div class="data-label">Art Profile</div>
+ <div class="data-display" style="font-size:13px;">${safeGenre}</div>
+ <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Medium: ${safeMedium}</div>
+ </div>
+ <div><div class="data-label">Status</div><span class="badge ${badge}">${displayStatus}</span></div>
+ <div style="display:flex;flex-direction:column;gap:0.5rem;">${actionBtns}</div>`;
+ container.appendChild(card);
+ });
+ if (window.refreshGlobalEffects) window.refreshGlobalEffects();
+ };
 
-    window.reviewExhibition = async function(id, status, btn) {
-      const note = prompt('Curator Note to Artist (optional):');
-      btn.textContent = '...'; btn.disabled = true;
-      const res = await window.globalApiFetch('/admin/exhibitions/review', { method: 'POST', body: JSON.stringify({ application_id: id, status: status, curator_note: note || null }) });
-      if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions(activeCycleFilter); } 
-      else { btn.textContent = status === 'APPROVED' ? 'Approve' : 'Reject'; btn.disabled = false; }
-    };
+ window.reviewExhibition = async function(id, status, btn) {
+ const note = prompt('Curator Note to Artist (optional):');
+ btn.textContent = '...'; btn.disabled = true;
+ const res = await window.globalApiFetch('/admin/exhibitions/review', { method: 'POST', body: JSON.stringify({ application_id: id, status: status, curator_note: note || null }) });
+ if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions(activeCycleFilter); } 
+ else { btn.textContent = status === 'APPROVED' ? 'Approve' : 'Reject'; btn.disabled = false; }
+ };
 
-    window.revertExhibition = async function(id, btn) {
-      if (!confirm('Undo rejection and return to Pending?')) return;
-      btn.textContent = '...'; btn.disabled = true;
-      const res = await window.globalApiFetch(`/admin/exhibitions/${id}/revert`, { method: 'PATCH' });
-      if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions(activeCycleFilter); } 
-      else { btn.textContent = 'Undo Rejection'; btn.disabled = false; }
-    };
+ window.revertExhibition = async function(id, btn) {
+ if (!confirm('Undo rejection and return to Pending?')) return;
+ btn.textContent = '...'; btn.disabled = true;
+ const res = await window.globalApiFetch(`/admin/exhibitions/${id}/revert`, { method: 'PATCH' });
+ if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions(activeCycleFilter); } 
+ else { btn.textContent = 'Undo Rejection'; btn.disabled = false; }
+ };
 
-    window.confirmExhibitionPayment = async function(id, btn) {
-      if (!confirm('Confirm this payment? This will notify the artist.')) return;
-      btn.textContent = '...'; btn.disabled = true;
-      const res = await window.globalApiFetch(`/admin/exhibitions/${id}/confirm-payment`, { method: 'PATCH' });
-      if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions('FINALIZED'); } 
-      else { btn.textContent = 'Confirm Payment'; btn.disabled = false; }
-    };
+ window.confirmExhibitionPayment = async function(id, btn) {
+ if (!confirm('Confirm this payment? This will notify the artist.')) return;
+ btn.textContent = '...'; btn.disabled = true;
+ const res = await window.globalApiFetch(`/admin/exhibitions/${id}/confirm-payment`, { method: 'PATCH' });
+ if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions('FINALIZED'); } 
+ else { btn.textContent = 'Confirm Payment'; btn.disabled = false; }
+ };
 
-    // ==========================================
-    // CLUBS LOGIC
-    // ==========================================
-    let allClubApps = [];
-    window.loadClubs = async function(f) { const res = await window.globalApiFetch('/admin/club-applications'); if(!res) return; allClubApps = await res.json(); window.renderClubs(f); };
-    window.filterClubs = function(f) { document.querySelectorAll('[id^="filter-"]').forEach(b => { b.classList.remove('gold'); b.style.color = ''; b.style.borderColor = ''; }); const target = document.getElementById(`filter-${f}`); if(target) target.classList.add('gold'); window.renderClubs(f); };
-    window.renderClubs = function(f) {
-      const container = document.getElementById('clubsContainer'); const apps = f === 'ALL' ? allClubApps : allClubApps.filter(a => a.status === f); container.innerHTML = '';
-      if (!apps.length) { container.innerHTML = '<div class="empty-state">No applications found.</div>'; return; }
-      apps.forEach(a => {
-        const card = document.createElement('div'); card.className = 'data-card club-card'; const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
-        const safeEmail = window.escapeHtml(a.user_email);
-        const safeClub = window.escapeHtml(a.club_name);
-        card.innerHTML = `
-          <div><div class="data-label">User</div><div class="data-display">${safeEmail}</div></div>
-          <div><div class="data-label">Club</div><div class="data-display">${safeClub}</div></div>
-          <div><div class="data-label">Status</div><span class="badge ${badge}">${a.status}</span></div>
-          <div style="display:flex; flex-direction:column; gap:0.5rem;">
-          ${a.status === 'PENDING' ? `<button class="action-btn" style="padding:0.6rem; font-size:9px;" onclick="reviewClub(${a.id}, 'APPROVED', this)">Approve</button><button class="action-btn" style="padding:0.6rem; font-size:9px; border-color:var(--accent-red); color:var(--accent-red);" onclick="reviewClub(${a.id}, 'REJECTED', this)">Reject</button>` : ''}
-          ${a.status === 'REJECTED' ? `<button class="action-btn" style="padding:0.6rem; font-size:9px;" onclick="revertClub(${a.id}, this)">Undo</button>` : ''}
-          </div>`;
-        container.appendChild(card);
-      });
-      if(window.refreshGlobalEffects) window.refreshGlobalEffects();
-    };
-    window.reviewClub = async function(id, status, btn) { const note = status === 'REJECTED' ? prompt('Note:') : null; btn.textContent = '...'; const res = await window.globalApiFetch('/admin/club-applications/review', { method: 'POST', body: JSON.stringify({ application_id: id, status, admin_note: note }) }); if (res && res.ok) window.loadClubs('ALL'); };
-    window.revertClub = async function(id, btn) { if (!confirm('Undo rejection?')) return; btn.textContent = '...'; btn.disabled = true; const res = await window.globalApiFetch(`/admin/club-applications/${id}/revert`, { method: 'PATCH' }); if (res && res.ok) { window.loadClubs('ALL'); window.filterClubs('ALL'); } };
+ // ==========================================
+ // CLUBS LOGIC
+ // ==========================================
+ let allClubApps = [];
+ window.loadClubs = async function(f) { const res = await window.globalApiFetch('/admin/club-applications'); if(!res) return; allClubApps = await res.json(); window.renderClubs(f); };
+ window.filterClubs = function(f) { document.querySelectorAll('[id^="filter-"]').forEach(b => { b.classList.remove('gold'); b.style.color = ''; b.style.borderColor = ''; }); const target = document.getElementById(`filter-${f}`); if(target) target.classList.add('gold'); window.renderClubs(f); };
+ window.renderClubs = function(f) {
+ const container = document.getElementById('clubsContainer'); const apps = f === 'ALL' ? allClubApps : allClubApps.filter(a => a.status === f); container.innerHTML = '';
+ if (!apps.length) { container.innerHTML = '<div class="empty-state">No applications found.</div>'; return; }
+ apps.forEach(a => {
+ const card = document.createElement('div'); card.className = 'data-card club-card'; const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
+ const safeEmail = window.escapeHtml(a.user_email);
+ const safeClub = window.escapeHtml(a.club_name);
+ card.innerHTML = `
+ <div><div class="data-label">User</div><div class="data-display">${safeEmail}</div></div>
+ <div><div class="data-label">Club</div><div class="data-display">${safeClub}</div></div>
+ <div><div class="data-label">Status</div><span class="badge ${badge}">${a.status}</span></div>
+ <div style="display:flex; flex-direction:column; gap:0.5rem;">
+ ${a.status === 'PENDING' ? `<button class="action-btn" style="padding:0.6rem; font-size:9px;" onclick="reviewClub(${a.id}, 'APPROVED', this)">Approve</button><button class="action-btn" style="padding:0.6rem; font-size:9px; border-color:var(--accent-red); color:var(--accent-red);" onclick="reviewClub(${a.id}, 'REJECTED', this)">Reject</button>` : ''}
+ ${a.status === 'REJECTED' ? `<button class="action-btn" style="padding:0.6rem; font-size:9px;" onclick="revertClub(${a.id}, this)">Undo</button>` : ''}
+ </div>`;
+ container.appendChild(card);
+ });
+ if(window.refreshGlobalEffects) window.refreshGlobalEffects();
+ };
+ window.reviewClub = async function(id, status, btn) { const note = status === 'REJECTED' ? prompt('Note:') : null; btn.textContent = '...'; const res = await window.globalApiFetch('/admin/club-applications/review', { method: 'POST', body: JSON.stringify({ application_id: id, status, admin_note: note }) }); if (res && res.ok) window.loadClubs('ALL'); };
+ window.revertClub = async function(id, btn) { if (!confirm('Undo rejection?')) return; btn.textContent = '...'; btn.disabled = true; const res = await window.globalApiFetch(`/admin/club-applications/${id}/revert`, { method: 'PATCH' }); if (res && res.ok) { window.loadClubs('ALL'); window.filterClubs('ALL'); } };
 
-    // ==========================================
-    // ROSTER LOGIC
-    // ==========================================
-    window.loadRoster = async function() {
-      const container = document.getElementById('rosterContainer'); const res = await window.globalApiFetch('/admin/users'); if(!res) return; const users = await res.json(); container.innerHTML = '';
-      users.forEach((u, i) => {
-        const card = document.createElement('div'); card.className = 'data-card user-card';
-        const safeEmail = window.escapeHtml(u.email);
-        card.innerHTML = `
-          <div><div class="data-label">User</div><div class="data-display">${safeEmail}</div></div>
-          <div><div class="data-label">Role</div><select id="st-${i}" style="margin:0;"><option value="PARTICIPANT" ${u.status==='PARTICIPANT'?'selected':''}>Participant</option><option value="ADMIN" ${u.status==='ADMIN'?'selected':''}>Admin</option></select></div>
-          <button class="action-btn gold" style="padding:0.8rem; font-size:9px;" onclick="updateStatus('${u.email}', ${i}, this)">Save Role</button>`;
-        container.appendChild(card);
-      });
-      if(window.refreshGlobalEffects) window.refreshGlobalEffects();
-    };
-    window.updateStatus = async function(email, i, btn) { const status = document.getElementById(`st-${i}`).value; btn.textContent = '...'; const res = await window.globalApiFetch('/admin/update_status', { method: 'POST', body: JSON.stringify({ email, status }) }); if (res && res.ok) { if (email === user.email && status === 'PARTICIPANT') { localStorage.clear(); window.location.href = 'login.html'; } btn.textContent = '✓'; setTimeout(() => btn.textContent = 'Save Role', 2000); } };
+ // ==========================================
+ // ROSTER LOGIC
+ // ==========================================
+ window.loadRoster = async function() {
+ const container = document.getElementById('rosterContainer'); const res = await window.globalApiFetch('/admin/users'); if(!res) return; const users = await res.json(); container.innerHTML = '';
+ users.forEach((u, i) => {
+ const card = document.createElement('div'); card.className = 'data-card user-card';
+ const safeEmail = window.escapeHtml(u.email);
+ card.innerHTML = `
+ <div><div class="data-label">User</div><div class="data-display">${safeEmail}</div></div>
+ <div><div class="data-label">Role</div><select id="st-${i}" style="margin:0;"><option value="PARTICIPANT" ${u.status==='PARTICIPANT'?'selected':''}>Participant</option><option value="ADMIN" ${u.status==='ADMIN'?'selected':''}>Admin</option></select></div>
+ <button class="action-btn gold" style="padding:0.8rem; font-size:9px;" onclick="updateStatus('${u.email}', ${i}, this)">Save Role</button>`;
+ container.appendChild(card);
+ });
+ if(window.refreshGlobalEffects) window.refreshGlobalEffects();
+ };
+ window.updateStatus = async function(email, i, btn) { const status = document.getElementById(`st-${i}`).value; btn.textContent = '...'; const res = await window.globalApiFetch('/admin/update_status', { method: 'POST', body: JSON.stringify({ email, status }) }); if (res && res.ok) { if (email === user.email && status === 'PARTICIPANT') { localStorage.clear(); window.location.href = 'login.html'; } btn.textContent = '✓'; setTimeout(() => btn.textContent = 'Save Role', 2000); } };
 
-    // ==========================================
-    // VOLUNTEER RECRUITMENT LOGIC
-    // ==========================================
-    window.loadRecruitment = async function() {
-      const container = document.getElementById('recruitmentContainer');
-      if (!container) return;
-      container.innerHTML = `
-        <div style="padding: 3rem 1rem; text-align: center; color: var(--text-secondary);">
-          <div style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
-          <div style="font-size: 13px; font-family: var(--font-heading);">Connecting to Recruitment Registry...</div>
-          <div style="font-size: 11px; margin-top: 6px; color: var(--text-secondary);">Retrieving candidate sessions and evidence status.</div>
-        </div>
-      `;
+ // ==========================================
+ // VOLUNTEER RECRUITMENT LOGIC
+ // ==========================================
+ window.loadRecruitment = async function() {
+ const container = document.getElementById('recruitmentContainer');
+ if (!container) return;
+ container.innerHTML = `
+ <div style="padding: 3rem 1rem; text-align: center; color: var(--text-secondary);">
+ <div style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
+ <div style="font-size: 13px; font-family: var(--font-heading);">Connecting to Recruitment Registry...</div>
+ <div style="font-size: 11px; margin-top: 6px; color: var(--text-secondary);">Retrieving candidate sessions and evidence status.</div>
+ </div>
+ `;
 
-      try {
-        const res = await window.globalApiFetch('/recruit/research/sessions');
-        if (!res) throw new Error("No response from server");
-        const sessions = await res.json();
-        if (!sessions || !sessions.length) {
-          container.innerHTML = '<div class="empty-state">No recruitment assessment sessions found in registry.</div>';
-          return;
-        }
+ try {
+ const res = await window.globalApiFetch('/recruit/research/sessions');
+ if (!res) throw new Error("No response from server");
+ const sessions = await res.json();
+ if (!sessions || !sessions.length) {
+ container.innerHTML = '<div class="empty-state">No recruitment assessment sessions found in registry.</div>';
+ return;
+ }
 
-        container.innerHTML = '';
-        sessions.forEach(s => {
-          const card = document.createElement('div');
-          card.className = 'data-card user-card';
-          const safeName = window.escapeHtml(s.full_name || 'Anonymous Applicant');
-          const safeEmail = window.escapeHtml(s.email || '—');
-          const contactInfo = s.phone_or_contact ? ` · ${window.escapeHtml(s.phone_or_contact)}` : '';
-          const dateStr = s.created_at ? new Date(s.created_at).toLocaleString() : '—';
-          const sjtBadgeText = s.has_sjt ? 'SJT: Completed' : 'SJT: In Progress';
-          const sjtBadgeClass = s.has_sjt ? 'badge-approved' : 'badge-pending';
-          const totalExpected = s.battery_expected_tasks || (s.battery_version === '1.0' ? 21 : 14);
-          const tasksCount = s.completed_tasks_count || 0;
-          const tasksText = `Tasks: ${tasksCount} / ${totalExpected} completed`;
-          const evidenceStatus = s.evidence_status || (tasksCount >= totalExpected && s.has_sjt ? 'Evidence Collected' : 'In Progress');
-          const evidenceBadgeClass = evidenceStatus === 'Evidence Collected' ? 'badge-approved' : 'badge-pending';
-          const sessionStatus = s.status || 'ACTIVE';
-          const isSessionComplete = ['COMPLETE', 'COMPLETED'].includes(sessionStatus);
-          const sessionStatusClass = isSessionComplete ? 'badge-approved' : (sessionStatus === 'CONSENTED' ? 'badge-pending' : 'badge-open');
+ container.innerHTML = '';
+ sessions.forEach(s => {
+ const card = document.createElement('div');
+ card.className = 'data-card user-card';
+ const safeName = window.escapeHtml(s.full_name || 'Anonymous Applicant');
+ const safeEmail = window.escapeHtml(s.email || '—');
+ const contactInfo = s.phone_or_contact ? ` · ${window.escapeHtml(s.phone_or_contact)}` : '';
+ const dateStr = s.created_at ? new Date(s.created_at).toLocaleString() : '—';
+ const sjtBadgeText = s.has_sjt ? 'SJT: Completed' : 'SJT: In Progress';
+ const sjtBadgeClass = s.has_sjt ? 'badge-approved' : 'badge-pending';
+ const totalExpected = s.battery_expected_tasks || (s.battery_version === '1.0' ? 21 : 14);
+ const tasksCount = s.completed_tasks_count || 0;
+ const tasksText = `Tasks: ${tasksCount} / ${totalExpected} completed`;
+ const evidenceStatus = s.evidence_status || (tasksCount >= totalExpected && s.has_sjt ? 'Evidence Collected' : 'In Progress');
+ const evidenceBadgeClass = evidenceStatus === 'Evidence Collected' ? 'badge-approved' : 'badge-pending';
+ const sessionStatus = s.status || 'ACTIVE';
+ const isSessionComplete = ['COMPLETE', 'COMPLETED'].includes(sessionStatus);
+ const sessionStatusClass = isSessionComplete ? 'badge-approved' : (sessionStatus === 'CONSENTED' ? 'badge-pending' : 'badge-open');
 
-          card.innerHTML = `
-            <div style="flex:1;">
-              <div class="data-label">Candidate · Status: <span class="badge ${sessionStatusClass}" style="font-size:9px; padding:1px 5px; margin-left:4px;">${sessionStatus}</span></div>
-              <div class="data-display" style="font-weight: 500;">${safeName}</div>
-              <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">${safeEmail}${contactInfo} · <span style="font-family:monospace; font-size:10px;">${s.session_id.slice(0, 8)}...</span></div>
-              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
-                <span class="badge ${sjtBadgeClass}" style="font-size:10px;">${sjtBadgeText}</span>
-                <span class="badge" style="font-size:10px; background:#f0eeea; color:var(--text-primary); border:1px solid var(--grid-border);">${tasksText}</span>
-                <span class="badge ${evidenceBadgeClass}" style="font-size:10px;">${evidenceStatus}</span>
-              </div>
-            </div>
-            <div style="min-width:200px;">
-              <div class="data-label">Evidence & Extractor Calibration</div>
-              <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
-                <span class="badge" style="font-size:10px; background:#e8f4f8; color:#1e5066; border:1px solid #bce0ed; align-self:flex-start;">Active Extractors: 2 / 2 (A1, A2)</span>
-                <span style="font-size:10px; color:var(--text-secondary); font-style:italic;">19 extractors pending derivation (Design Freeze v1.1)</span>
-              </div>
-              <div style="font-size:11px; color:var(--text-secondary); margin-top:6px;">Submitted: ${dateStr}</div>
-            </div>
-            <div style="display:flex; justify-content:flex-end; align-items:center;">
-              <button class="action-btn gold" style="padding:0.8rem 1.2rem; font-size:10px;" onclick="viewCandidateDossier('${s.session_id}')">
-                Inspect Dossier &rarr;
-              </button>
-            </div>
-          `;
-          container.appendChild(card);
-        });
+ card.innerHTML = `
+ <div style="flex:1;">
+ <div class="data-label">Candidate · Status: <span class="badge ${sessionStatusClass}" style="font-size:9px; padding:1px 5px; margin-left:4px;">${sessionStatus}</span></div>
+ <div class="data-display" style="font-weight: 500;">${safeName}</div>
+ <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">${safeEmail}${contactInfo} · <span style="font-family:monospace; font-size:10px;">${s.session_id.slice(0, 8)}...</span></div>
+ <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+ <span class="badge ${sjtBadgeClass}" style="font-size:10px;">${sjtBadgeText}</span>
+ <span class="badge" style="font-size:10px; background:#f0eeea; color:var(--text-primary); border:1px solid var(--grid-border);">${tasksText}</span>
+ <span class="badge ${evidenceBadgeClass}" style="font-size:10px;">${evidenceStatus}</span>
+ </div>
+ </div>
+ <div style="min-width:200px;">
+ <div class="data-label">Evidence & Extractor Calibration</div>
+ <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
+ <span class="badge" style="font-size:10px; background:#e8f4f8; color:#1e5066; border:1px solid #bce0ed; align-self:flex-start;">Active Extractors: 2 / 2 (A1, A2)</span>
+ <span style="font-size:10px; color:var(--text-secondary); font-style:italic;">19 extractors pending derivation (Design Freeze v1.1)</span>
+ </div>
+ <div style="font-size:11px; color:var(--text-secondary); margin-top:6px;">Submitted: ${dateStr}</div>
+ </div>
+ <div style="display:flex; justify-content:flex-end; align-items:center;">
+ <button class="action-btn gold" style="padding:0.8rem 1.2rem; font-size:10px;" onclick="viewCandidateDossier('${s.session_id}')">
+ Inspect Dossier &rarr;
+ </button>
+ </div>
+ `;
+ container.appendChild(card);
+ });
 
-        if (window.refreshGlobalEffects) window.refreshGlobalEffects();
-      } catch (err) {
-        container.innerHTML = `
-          <div class="empty-state" style="padding: 2.5rem 1rem; text-align: center;">
-            <div style="color: var(--accent-gold); font-size: 14px; margin-bottom: 8px;">Unable to load candidate records.</div>
-            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 16px;">The recruitment server may still be initializing or experiencing a connection delay.</div>
-            <button class="action-btn gold" onclick="window.loadRecruitment()" style="padding: 0.6rem 1.2rem; font-size: 10px;">Retry Connection</button>
-          </div>
-        `;
-      }
-    };
+ if (window.refreshGlobalEffects) window.refreshGlobalEffects();
+ } catch (err) {
+ container.innerHTML = `
+ <div class="empty-state" style="padding: 2.5rem 1rem; text-align: center;">
+ <div style="color: var(--accent-gold); font-size: 14px; margin-bottom: 8px;">Unable to load candidate records.</div>
+ <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 16px;">The recruitment server may still be initializing or experiencing a connection delay.</div>
+ <button class="action-btn gold" onclick="window.loadRecruitment()" style="padding: 0.6rem 1.2rem; font-size: 10px;">Retry Connection</button>
+ </div>
+ `;
+ }
+ };
 
-    async function fetchCandidateDossier(sessionId) {
-      let response = null;
+ async function fetchCandidateDossier(sessionId) {
+ let response = null;
 
-      for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-          response = await window.globalApiFetch(`/recruit/research/sessions/${sessionId}?recompute=true`);
-          if (response && response.ok) return response;
-        } catch (error) {
-          if (attempt === 2) throw error;
-        }
+ for (let attempt = 0; attempt < 3; attempt++) {
+ try {
+ response = await window.globalApiFetch(`/recruit/research/sessions/${sessionId}?recompute=true`);
+ if (response && response.ok) return response;
+ } catch (error) {
+ if (attempt === 2) throw error;
+ }
 
-        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-      }
+ await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+ }
 
-      return response;
-    }
+ return response;
+ }
 
-    let isDossierLoading = false;
-    window.viewCandidateDossier = async function(sessionId) {
-      if (isDossierLoading) return;
-      isDossierLoading = true;
-      document.getElementById('modalTitle').textContent = 'Candidate Evidence Dossier';
-      const body = document.getElementById('modalBody');
-      body.innerHTML = `
-        <div style="padding: 3rem 1rem; text-align: center; color: var(--text-secondary);">
-          <div class="w-8 h-8 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin mx-auto mb-3" style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
-          <div style="font-size: 13px; font-family: var(--font-heading);">Loading candidate details...</div>
-          <div style="font-size: 11px; margin-top: 6px; color: var(--text-secondary);">Loading candidate profile, behavioral evidence, and task records.</div>
-        </div>
-      `;
-      document.getElementById('regModal').classList.add('open');
-  
-      try {
-        const res = await fetchCandidateDossier(sessionId);
-        if (!res || !res.ok) throw new Error("Failed to load dossier");
-        const data = await res.json();
-        const dims = data.dimensions || [];
-        const summary = data.profile_summary || {};
-        const meta = data.metadata || {};
-        const applicant = meta.applicant || {};
-        
-        const candidateName = window.escapeHtml(applicant.full_name || 'Candidate');
-        const candidateEmail = window.escapeHtml(applicant.email || '—');
-        const candidatePhone = window.escapeHtml(applicant.phone_or_contact || '—');
-        const durationMin = meta.duration_minutes !== null ? `${meta.duration_minutes} min` : 'In progress';
-        const completeness = summary.completeness || 'INSUFFICIENT';
+ let isDossierLoading = false;
+ window.viewCandidateDossier = async function(sessionId) {
+ if (isDossierLoading) return;
+ isDossierLoading = true;
+ document.getElementById('modalTitle').textContent = 'Candidate Evidence Dossier';
+ const body = document.getElementById('modalBody');
+ body.innerHTML = `
+ <div style="padding: 3rem 1rem; text-align: center; color: var(--text-secondary);">
+ <div class="w-8 h-8 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full mx-auto mb-3" style="width:28px; height:28px; border-radius:50%; border:2px solid var(--accent-gold); border-top-color:transparent; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
+ <div style="font-size: 13px; font-family: var(--font-heading);">Loading candidate details...</div>
+ <div style="font-size: 11px; margin-top: 6px; color: var(--text-secondary);">Loading candidate profile, behavioral evidence, and task records.</div>
+ </div>
+ `;
+ document.getElementById('regModal').classList.add('open');
+ 
+ try {
+ const res = await fetchCandidateDossier(sessionId);
+ if (!res || !res.ok) throw new Error("Failed to load dossier");
+ const data = await res.json();
+ const dims = data.dimensions || [];
+ const summary = data.profile_summary || {};
+ const meta = data.metadata || {};
+ const applicant = meta.applicant || {};
+ 
+ const candidateName = window.escapeHtml(applicant.full_name || 'Candidate');
+ const candidateEmail = window.escapeHtml(applicant.email || '—');
+ const candidatePhone = window.escapeHtml(applicant.phone_or_contact || '—');
+ const durationMin = meta.duration_minutes !== null ? `${meta.duration_minutes} min` : 'In progress';
+ const completeness = summary.completeness || 'INSUFFICIENT';
 
-        const levelBadge = (lvl) => {
-            if (lvl === 'RELATIVELY_STRONG') return '<span style="font-size:10px; font-weight:600; padding:3px 8px; background:#f5efe6; color:#8c651e; border:1px solid #d4be98; border-radius:2px; text-transform:uppercase; letter-spacing:0.5px;">Relatively Strong</span>';
-            if (lvl === 'RELATIVELY_LOWER') return '<span style="font-size:10px; padding:3px 8px; background:#f9f9f9; color:#777; border:1px solid #ddd; border-radius:2px; text-transform:uppercase; letter-spacing:0.5px;">Relatively Lower</span>';
-            if (lvl === 'ABOUT_EQUAL') return '<span style="font-size:10px; padding:3px 8px; background:#f0f0f0; color:#555; border:1px solid #ccc; border-radius:2px; text-transform:uppercase; letter-spacing:0.5px;">About Equal</span>';
-            if (lvl === 'RELATIVELY_MIDDLE') return '<span style="font-size:10px; padding:3px 8px; background:#f5f5f5; color:#444; border:1px solid #ddd; border-radius:2px; text-transform:uppercase; letter-spacing:0.5px;">Relatively Middle</span>';
-            return '<span style="font-size:10px; padding:3px 8px; background:#fafafa; color:#999; border:1px solid #eee; border-radius:2px; text-transform:uppercase; letter-spacing:0.5px;">Insufficient</span>';
-        };
+ const levelBadge = (lvl) => {
+ if (lvl === 'RELATIVELY_STRONG') return '<span style="font-size:10px; font-weight:600; padding:3px 8px; background:#f5efe6; color:#8c651e; border:1px solid #d4be98; border-radius:2px; text-:uppercase; letter-spacing:0.5px;">Relatively Strong</span>';
+ if (lvl === 'RELATIVELY_LOWER') return '<span style="font-size:10px; padding:3px 8px; background:#f9f9f9; color:#777; border:1px solid #ddd; border-radius:2px; text-:uppercase; letter-spacing:0.5px;">Relatively Lower</span>';
+ if (lvl === 'ABOUT_EQUAL') return '<span style="font-size:10px; padding:3px 8px; background:#f0f0f0; color:#555; border:1px solid #ccc; border-radius:2px; text-:uppercase; letter-spacing:0.5px;">About Equal</span>';
+ if (lvl === 'RELATIVELY_MIDDLE') return '<span style="font-size:10px; padding:3px 8px; background:#f5f5f5; color:#444; border:1px solid #ddd; border-radius:2px; text-:uppercase; letter-spacing:0.5px;">Relatively Middle</span>';
+ return '<span style="font-size:10px; padding:3px 8px; background:#fafafa; color:#999; border:1px solid #eee; border-radius:2px; text-:uppercase; letter-spacing:0.5px;">Insufficient</span>';
+ };
 
-        const relBadge = (rel) => {
-            if (rel === 'ALIGNED') return '<span style="color:#2e7d32; font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Aligned</span>';
-            if (rel === 'PARTLY_ALIGNED') return '<span style="color:#b5832a; font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Partly Aligned</span>';
-            if (rel === 'DIFFERENT') return '<span style="color:#6a1b9a; font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Different</span>';
-            if (rel === 'NOT_ENOUGH_EVIDENCE') return '<span style="color:#777; font-size:10px;">Not Enough Evidence</span>';
-            return '<span style="color:#999; font-size:10px;">Not Available</span>';
-        };
+ const relBadge = (rel) => {
+ if (rel === 'ALIGNED') return '<span style="color:#2e7d32; font-weight:600; text-:uppercase; font-size:10px; letter-spacing:0.5px;">Aligned</span>';
+ if (rel === 'PARTLY_ALIGNED') return '<span style="color:#b5832a; font-weight:600; text-:uppercase; font-size:10px; letter-spacing:0.5px;">Partly Aligned</span>';
+ if (rel === 'DIFFERENT') return '<span style="color:#6a1b9a; font-weight:600; text-:uppercase; font-size:10px; letter-spacing:0.5px;">Different</span>';
+ if (rel === 'NOT_ENOUGH_EVIDENCE') return '<span style="color:#777; font-size:10px;">Not Enough Evidence</span>';
+ return '<span style="color:#999; font-size:10px;">Not Available</span>';
+ };
 
-        const dimensionRows = dims.map(d => {
-            const p = d.profile || {};
-            const scoreDisp = p.relative_score !== null && p.relative_score !== undefined ? `${p.relative_score} / 100` : '—';
-            const rankDisp = p.relative_rank !== null && p.relative_rank !== undefined ? `#${p.relative_rank}` : '—';
-            const levelDisp = levelBadge(p.relative_level);
-            const relDisp = relBadge(d.relationship);
-            const confDisp = d.confidence || 'LIMITED';
-            const safeName = window.escapeHtml(d.display_name || d.parameter);
-            const sjtRel = (d.sjt && d.sjt.relative !== null && d.sjt.relative !== undefined) ? d.sjt.relative.toFixed(2) : '—';
-            const gameRel = (d.game_relative !== null && d.game_relative !== undefined) ? d.game_relative.toFixed(2) : ((d.games && d.games.relative !== null && d.games.relative !== undefined) ? d.games.relative.toFixed(2) : '—');
-            const deltaDisp = (d.cross_method_delta !== null && d.cross_method_delta !== undefined) ? d.cross_method_delta.toFixed(2) : '—';
-            const obs = window.escapeHtml(d.observed_behavior || '—');
+ const dimensionRows = dims.map(d => {
+ const p = d.profile || {};
+ const scoreDisp = p.relative_score !== null && p.relative_score !== undefined ? `${p.relative_score} / 100` : '—';
+ const rankDisp = p.relative_rank !== null && p.relative_rank !== undefined ? `#${p.relative_rank}` : '—';
+ const levelDisp = levelBadge(p.relative_level);
+ const relDisp = relBadge(d.relationship);
+ const confDisp = d.confidence || 'LIMITED';
+ const safeName = window.escapeHtml(d.display_name || d.parameter);
+ const sjtRel = (d.sjt && d.sjt.relative !== null && d.sjt.relative !== undefined) ? d.sjt.relative.toFixed(2) : '—';
+ const gameRel = (d.game_relative !== null && d.game_relative !== undefined) ? d.game_relative.toFixed(2) : ((d.games && d.games.relative !== null && d.games.relative !== undefined) ? d.games.relative.toFixed(2) : '—');
+ const deltaDisp = (d.cross_method_delta !== null && d.cross_method_delta !== undefined) ? d.cross_method_delta.toFixed(2) : '—';
+ const obs = window.escapeHtml(d.observed_behavior || '—');
 
-            return `
-            <tr style="border-bottom:1px solid var(--grid-border); font-size:11px;">
-                <td style="padding:0.9rem 0.8rem; font-weight: 500;">
-                    <div style="font-size:12px; color:var(--text-primary);">${safeName}</div>
-                    <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">${obs}</div>
-                </td>
-                <td style="padding:0.9rem 0.6rem; text-align:center; font-family:monospace; font-size:11px;">${sjtRel}</td>
-                <td style="padding:0.9rem 0.6rem; text-align:center; font-family:monospace; font-size:11px;">${gameRel}</td>
-                <td style="padding:0.9rem 0.6rem; text-align:center; font-family:monospace; font-size:11px; font-weight:600;">${deltaDisp}</td>
-                <td style="padding:0.9rem 0.8rem; text-align:center;">${relDisp}</td>
-                <td style="padding:0.9rem 0.8rem; text-align:center; font-size:10px; text-transform:uppercase; color:var(--text-secondary); font-weight:600;">${confDisp}</td>
-                <td style="padding:0.9rem 0.6rem; font-weight: 600; text-align:center; font-family:var(--font-heading); font-size:12px;">${scoreDisp}</td>
-                <td style="padding:0.9rem 0.6rem; font-weight: 600; text-align:center;">${rankDisp}</td>
-                <td style="padding:0.9rem 0.8rem; text-align:center;">${levelDisp}</td>
-            </tr>
-            `;
-        }).join('');
+ return `
+ <tr style="border-bottom:1px solid var(--grid-border); font-size:11px;">
+ <td style="padding:0.9rem 0.8rem; font-weight: 500;">
+ <div style="font-size:12px; color:var(--text-primary);">${safeName}</div>
+ <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">${obs}</div>
+ </td>
+ <td style="padding:0.9rem 0.6rem; text-align:center; font-family:monospace; font-size:11px;">${sjtRel}</td>
+ <td style="padding:0.9rem 0.6rem; text-align:center; font-family:monospace; font-size:11px;">${gameRel}</td>
+ <td style="padding:0.9rem 0.6rem; text-align:center; font-family:monospace; font-size:11px; font-weight:600;">${deltaDisp}</td>
+ <td style="padding:0.9rem 0.8rem; text-align:center;">${relDisp}</td>
+ <td style="padding:0.9rem 0.8rem; text-align:center; font-size:10px; text-:uppercase; color:var(--text-secondary); font-weight:600;">${confDisp}</td>
+ <td style="padding:0.9rem 0.6rem; font-weight: 600; text-align:center; font-family:var(--font-heading); font-size:12px;">${scoreDisp}</td>
+ <td style="padding:0.9rem 0.6rem; font-weight: 600; text-align:center;">${rankDisp}</td>
+ <td style="padding:0.9rem 0.8rem; text-align:center;">${levelDisp}</td>
+ </tr>
+ `;
+ }).join('');
 
-        body.innerHTML = `
-          <div style="background:#faf8f5; border:1px solid var(--grid-border); padding:1.25rem; margin-bottom:1.25rem;">
-            <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.75rem;">1. Candidate & Session Overview</div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; font-size:12px;">
-              <div><strong>Name:</strong> ${candidateName}</div>
-              <div><strong>Email:</strong> ${candidateEmail}</div>
-              <div><strong>Contact:</strong> ${candidatePhone}</div>
-              <div><strong>Session Duration:</strong> ${durationMin}</div>
-            </div>
-          </div>
+ body.innerHTML = `
+ <div style="background:#faf8f5; border:1px solid var(--grid-border); padding:1.25rem; margin-bottom:1.25rem;">
+ <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-:uppercase; color:var(--accent-gold); margin-bottom:0.75rem;">1. Candidate & Session Overview</div>
+ <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; font-size:12px;">
+ <div><strong>Name:</strong> ${candidateName}</div>
+ <div><strong>Email:</strong> ${candidateEmail}</div>
+ <div><strong>Contact:</strong> ${candidatePhone}</div>
+ <div><strong>Session Duration:</strong> ${durationMin}</div>
+ </div>
+ </div>
 
-          <div style="background:#fff; border-left:3px solid var(--accent-gold); border-top:1px solid var(--grid-border); border-right:1px solid var(--grid-border); border-bottom:1px solid var(--grid-border); padding:1rem 1.25rem; margin-bottom:1.5rem; font-size:11px; color:var(--text-secondary); line-height:1.5;">
-            <strong style="color:var(--text-primary); text-transform:uppercase; letter-spacing:0.5px;">Psychometric Safeguard Notice:</strong>
-            This dossier provides a <em>provisional within-person relative profile</em> for exploratory human review only. It reflects the relative emphasis among dimensions for this candidate, NOT normative trait scores, clinical evaluation, or automated hiring recommendations. Cross-method convergence is exploratory; empirical normative calibration is pending.
-          </div>
+ <div style="background:#fff; border-left:3px solid var(--accent-gold); border-top:1px solid var(--grid-border); border-right:1px solid var(--grid-border); border-bottom:1px solid var(--grid-border); padding:1rem 1.25rem; margin-bottom:1.5rem; font-size:11px; color:var(--text-secondary); line-height:1.5;">
+ <strong style="color:var(--text-primary); text-:uppercase; letter-spacing:0.5px;">Psychometric Safeguard Notice:</strong>
+ This dossier provides a <em>provisional within-person relative profile</em> for exploratory human review only. It reflects the relative emphasis among dimensions for this candidate, NOT normative trait scores, clinical evaluation, or automated hiring recommendations. Cross-method convergence is exploratory; empirical normative calibration is pending.
+ </div>
 
-          <div style="margin-bottom:1.5rem;">
-            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.75rem;">
-              <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent-gold);">2. Within-Person Relative Dimension Profile</div>
-              <div style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px;">Profile Completeness: <strong style="color:var(--text-primary);">${completeness}</strong></div>
-            </div>
-            <div style="overflow-x:auto; border:1px solid var(--grid-border); background:#fff;">
-              <table style="width:100%; border-collapse:collapse; text-align:left;">
-                <thead>
-                  <tr style="background:#f0eeea; font-size:10px; text-transform:uppercase; color:var(--text-secondary); letter-spacing:0.5px;">
-                    <th style="padding:0.8rem;">Dimension & Observed Context</th>
-                    <th style="padding:0.8rem 0.6rem; text-align:center;">SJT Rel</th>
-                    <th style="padding:0.8rem 0.6rem; text-align:center;">Game Rel</th>
-                    <th style="padding:0.8rem 0.6rem; text-align:center;">Delta</th>
-                    <th style="padding:0.8rem; text-align:center;">Relationship</th>
-                    <th style="padding:0.8rem; text-align:center;">Confidence</th>
-                    <th style="padding:0.8rem 0.6rem; text-align:center;">Score (0–100)</th>
-                    <th style="padding:0.8rem 0.6rem; text-align:center;">Rank</th>
-                    <th style="padding:0.8rem; text-align:center;">Profile Position</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${dimensionRows}
-                </tbody>
-              </table>
-            </div>
-            <div style="background:#fcfbf9; border:1px solid var(--grid-border); border-top:none; padding:0.75rem 1rem; font-size:11px; color:var(--text-secondary); line-height:1.4;">
-              <strong style="color:var(--text-primary);">Delta is the absolute difference between the candidate's SJT-relative evidence and Game-SJT-relative evidence for this dimension.</strong> Larger Delta indicates greater divergence and reduces evidence confidence. Delta is not a measure of honesty, reliability, or validity.
-            </div>
-          </div>
-        `;
-  
-      } catch (err) {
-        body.innerHTML = `
-          <div style="padding:2.5rem 1rem; text-align:center;">
-            <div style="color:var(--accent-gold); font-size:14px; margin-bottom:8px;">Failed to load candidate dossier.</div>
-            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:16px;">The server may be waking up from idle or taking longer to process. Your request timed out.</div>
-            <button class="action-btn gold" onclick="viewCandidateDossier('${sessionId}')" style="padding:0.6rem 1.2rem; font-size:10px;">Retry Dossier Retrieval</button>
-          </div>
-        `;
-      } finally {
-        isDossierLoading = false;
-      }
-  };
-  
+ <div style="margin-bottom:1.5rem;">
+ <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.75rem;">
+ <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-:uppercase; color:var(--accent-gold);">2. Within-Person Relative Dimension Profile</div>
+ <div style="font-size:10px; color:var(--text-secondary); text-:uppercase; letter-spacing:0.5px;">Profile Completeness: <strong style="color:var(--text-primary);">${completeness}</strong></div>
+ </div>
+ <div style="overflow-x:auto; border:1px solid var(--grid-border); background:#fff;">
+ <table style="width:100%; border-collapse:collapse; text-align:left;">
+ <thead>
+ <tr style="background:#f0eeea; font-size:10px; text-:uppercase; color:var(--text-secondary); letter-spacing:0.5px;">
+ <th style="padding:0.8rem;">Dimension & Observed Context</th>
+ <th style="padding:0.8rem 0.6rem; text-align:center;">SJT Rel</th>
+ <th style="padding:0.8rem 0.6rem; text-align:center;">Game Rel</th>
+ <th style="padding:0.8rem 0.6rem; text-align:center;">Delta</th>
+ <th style="padding:0.8rem; text-align:center;">Relationship</th>
+ <th style="padding:0.8rem; text-align:center;">Confidence</th>
+ <th style="padding:0.8rem 0.6rem; text-align:center;">Score (0–100)</th>
+ <th style="padding:0.8rem 0.6rem; text-align:center;">Rank</th>
+ <th style="padding:0.8rem; text-align:center;">Profile Position</th>
+ </tr>
+ </thead>
+ <tbody>
+ ${dimensionRows}
+ </tbody>
+ </table>
+ </div>
+ <div style="background:#fcfbf9; border:1px solid var(--grid-border); border-top:none; padding:0.75rem 1rem; font-size:11px; color:var(--text-secondary); line-height:1.4;">
+ <strong style="color:var(--text-primary);">Delta is the absolute difference between the candidate's SJT-relative evidence and Game-SJT-relative evidence for this dimension.</strong> Larger Delta indicates greater divergence and reduces evidence confidence. Delta is not a measure of honesty, reliability, or validity.
+ </div>
+ </div>
+ `;
+ 
+ } catch (err) {
+ body.innerHTML = `
+ <div style="padding:2.5rem 1rem; text-align:center;">
+ <div style="color:var(--accent-gold); font-size:14px; margin-bottom:8px;">Failed to load candidate dossier.</div>
+ <div style="font-size:11px; color:var(--text-secondary); margin-bottom:16px;">The server may be waking up from idle or taking longer to process. Your request timed out.</div>
+ <button class="action-btn gold" onclick="viewCandidateDossier('${sessionId}')" style="padding:0.6rem 1.2rem; font-size:10px;">Retry Dossier Retrieval</button>
+ </div>
+ `;
+ } finally {
+ isDossierLoading = false;
+ }
+ };
+ 
 // INIT
-    window.switchTab('events');
+ window.switchTab('events');
 });
