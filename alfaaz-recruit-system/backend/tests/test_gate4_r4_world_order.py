@@ -12,10 +12,10 @@ from sqlmodel import Session, create_engine, SQLModel, select
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
-from app.main import app
-from app.db.session import get_db
-from app.models.recruit import DBSession, DBTaskAssignment, DBConsentRecord
-from app.services.world_order import (
+from recruit_system.main import app
+from recruit_system.db.session import get_db
+from recruit_system.models.recruit import DBSession, DBTaskAssignment, DBConsentRecord
+from recruit_system.services.world_order import (
     LATIN_SQUARE_14,
     verify_latin_square_balance,
     generate_minigame_seeds,

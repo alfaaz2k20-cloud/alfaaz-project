@@ -6,11 +6,11 @@ from fastapi.testclient import TestClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
-from app.main import app
-from app.models.recruit import DBSession, DBEvidence
+from recruit_system.main import app
+from recruit_system.models.recruit import DBSession, DBEvidence
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
-from app.db.session import get_db
+from recruit_system.db.session import get_db
 
 VALID_CONFIDENCE_VALUES = {"LIMITED", "MODERATE", "SUBSTANTIAL"}
 
@@ -37,7 +37,7 @@ class TestConfidenceContract(unittest.TestCase):
             return {"email": "admin@test.com", "status": "ADMIN"}
 
         app.dependency_overrides[get_db] = override_get_db
-        from app.routers.research_view import require_admin as rv_require_admin
+        from recruit_system.routers.research_view import require_admin as rv_require_admin
         app.dependency_overrides[rv_require_admin] = override_require_admin
         self.client = TestClient(app)
 
@@ -45,8 +45,8 @@ class TestConfidenceContract(unittest.TestCase):
             db.add(DBSession(session_id="test-session", status="COMPLETE"))
             db.commit()
 
-    @patch("app.routers.research_view.integrate_session_evidence")
-    @patch("app.routers.research_view.extract_session_features")
+    @patch("recruit_system.routers.research_view.integrate_session_evidence")
+    @patch("recruit_system.routers.research_view.extract_session_features")
     def test_api_returns_categorical_confidence_for_all_entries(
         self, mock_extract, mock_integrate
     ):
@@ -96,8 +96,8 @@ class TestConfidenceContract(unittest.TestCase):
                     self.assertNotIsInstance(val, (int, float),
                                             f"'{param}.{key}' must not be numeric, got {val}")
 
-    @patch("app.routers.research_view.integrate_session_evidence")
-    @patch("app.routers.research_view.extract_session_features")
+    @patch("recruit_system.routers.research_view.integrate_session_evidence")
+    @patch("recruit_system.routers.research_view.extract_session_features")
     def test_no_numeric_confidence_anywhere_in_payload(
         self, mock_extract, mock_integrate
     ):

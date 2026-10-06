@@ -12,10 +12,10 @@ from sqlmodel import Session, create_engine, SQLModel, select
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
-from app.main import app
-from app.db.session import get_db
-from app.core.security import create_token
-from app.models.recruit import (
+from recruit_system.main import app
+from recruit_system.db.session import get_db
+from recruit_system.core.security import create_token
+from recruit_system.models.recruit import (
     DBSession, DBApplicantIdentity, DBTaskAssignment,
     DBFeature, DBEvidence, DBRecruiterAccessLog,
     DBTelemetryEvent, DBSJTResponse

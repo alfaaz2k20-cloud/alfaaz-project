@@ -63,15 +63,8 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
  title: 'Sound Note: Group Singing',
  cue_text: '"Group singing is steady and balanced across the entire room."',
  default_action: 'maintain_objective'
- },
- {
- stimulus_id: 'F1_T6',
- title: 'Sound Note: Loud Voice Peak',
- cue_text: '"The speaker\'s voice peaks loudly on strong dramatic verse lines."',
- default_action: 'accommodate'
  }
  ];
- if (trials.length > 2) trials.pop();
 
 
  function render() {
@@ -86,7 +79,7 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
  ${renderHeader('Tuning the Hall', 'Adjust the hall sound to support the poetry reading.')}
  ${renderTutorialCard({
  icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>`,
- goal: 'Balance the room sound for the reading across 6 rounds.',
+ goal: 'Balance the room sound for the reading across 5 rounds.',
  steps: [
  'Read the sound note from the hall.',
  'Choose what to do: Adjust, Keep, or Check.',
@@ -353,15 +346,8 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
  speaker_role: 'Sound Helper',
  cue_text: '"The performer sings with intense emotion as part of the poem."',
  condition_label: 'Expressive Intensity'
- },
- {
- stimulus_id: 'F2_T4',
- speaker_role: 'Guest Drummer',
- cue_text: '"The drum player slowed tempo and watches the speaker closely."',
- condition_label: 'Subtle Drift'
  }
  ];
- if (trials.length > 2) trials.pop();
 
 
  const choices = [
@@ -389,7 +375,7 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
  ${renderHeader('The Gathering Voices', 'Coordinate sound with your hall team.')}
  ${renderTutorialCard({
  icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>`,
- goal: 'Respond to teammate messages across 4 rounds.',
+ goal: 'Respond to teammate messages across 3 rounds.',
  steps: [
  'Read the message from your teammate.',
  'Choose your next step: Act, Ask, or Keep Course.',
@@ -448,12 +434,12 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
  `,
  summaryContent: `
  <span id="f2ChoiceText">${selectedAction ? `You selected: <strong class="text-[var(--text-primary)]">${selectedChoice?.title}</strong>` : 'Select an option above to continue.'}</span>
- <span class="text-sm text-black ">${currentTrial + 1} / 4</span>
+ <span class="text-sm text-black ">${currentTrial + 1} / ${trials.length}</span>
  `,
  actionButtonId: 'f2ConfirmBtn',
- actionButtonText: currentTrial < 3 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
+ actionButtonText: currentTrial < trials.length - 1 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
  actionButtonDisabled: !selectedAction,
- progressText: `Message ${currentTrial + 1} of 4`
+ progressText: `Message ${currentTrial + 1} of ${trials.length}`
  });
 
  const confirmBtn = document.getElementById('f2ConfirmBtn');
@@ -498,14 +484,14 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
  task_def_version: '1.0'
  });
 
- if (currentTrial < 3) {
+ if (currentTrial < trials.length - 1) {
  currentTrial++;
  selectedAction = null;
  render();
  } else {
  onComplete({
  mini_game: 'F2',
- observations_count: 4
+ observations_count: trials.length
  });
  }
  });

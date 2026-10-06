@@ -11,14 +11,14 @@ if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 BASE_DIR = os.path.dirname(BACKEND_DIR)
 
-from app.models.recruit import DBFeature, DBDataQualityFlag, DBTelemetryEvent
-from app.services.sjt_engine import score_sjt_responses, verify_and_load_configs, resolve_config_path
-from app.services.regression_engine import (
+from recruit_system.models.recruit import DBFeature, DBDataQualityFlag, DBTelemetryEvent
+from recruit_system.services.sjt_engine import score_sjt_responses, verify_and_load_configs, resolve_config_path
+from recruit_system.services.regression_engine import (
     load_model_artifact, standardize_feature, predict_parameter_relative,
     solve_ridge_regression
 )
-from app.services.feature_extractor import _extract_A1, _extract_A2, extract_session_features
-from app.services.evidence_integrator import (
+from recruit_system.services.feature_extractor import _extract_A1, _extract_A2, extract_session_features
+from recruit_system.services.evidence_integrator import (
     PARAM_MINIGAMES, evaluate_minigame_status, classify_minigame_band,
     aggregate_game_bands, is_calibrated, load_feature_bands_config
 )

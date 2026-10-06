@@ -9,11 +9,11 @@ from pathlib import Path
 # Add backend to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
-from app.services.sjt_engine import (
+from recruit_system.services.sjt_engine import (
     verify_and_load_configs, get_public_sjt_payload, score_sjt_responses, get_config_hash
 )
-from app.services.telemetry_engine import ingest_telemetry_batch, calculate_active_duration_ms
-from app.models.recruit import DBSession, DBTelemetryEvent, DBApplicantIdentity, DBDataQualityFlag
+from recruit_system.services.telemetry_engine import ingest_telemetry_batch, calculate_active_duration_ms
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBApplicantIdentity, DBDataQualityFlag
 from sqlmodel import Session, create_engine, SQLModel, select
 
 class TestGate2SJTAndTelemetry(unittest.TestCase):
@@ -43,7 +43,7 @@ class TestGate2SJTAndTelemetry(unittest.TestCase):
             self.assertEqual(ranges[p]["span"], exp["span"], f"Span mismatch for {p}")
 
     def test_recruit_config_copies_are_byte_identical(self):
-        root = Path(__file__).resolve().parents[1]
+        root = Path(__file__).resolve().parents[2] if (Path(__file__).resolve().parents[2] / "backend").exists() else Path(__file__).resolve().parents[1]
         for filename in ("sjt_items.json", "parameters.json", "locked_hashes.json"):
             self.assertEqual(
                 (root / "config" / filename).read_bytes(),
@@ -52,7 +52,7 @@ class TestGate2SJTAndTelemetry(unittest.TestCase):
             )
 
     def test_locked_hashes_and_fingerprints(self):
-        root = Path(__file__).resolve().parents[1]
+        root = Path(__file__).resolve().parents[2] if (Path(__file__).resolve().parents[2] / "backend").exists() else Path(__file__).resolve().parents[1]
         with open(root / "config" / "locked_hashes.json", "r", encoding="utf-8") as f:
             locked = json.load(f)
 
@@ -69,11 +69,11 @@ class TestGate2SJTAndTelemetry(unittest.TestCase):
         self.assertEqual(hashlib.sha256(canonical_p).hexdigest(), locked["parameters_canonical_sha256"])
 
         sjt_data = json.loads(sjt_bytes.decode("utf-8"))
-        from app.services.sjt_engine import compute_keys_fingerprint
+        from recruit_system.services.sjt_engine import compute_keys_fingerprint
         self.assertEqual(compute_keys_fingerprint(sjt_data), locked["sjt_keys_fingerprint"])
 
     def test_tampering_with_sjt_keys_fails(self):
-        import app.services.sjt_engine as engine
+        import recruit_system.services.sjt_engine as engine
         # Clear cache
         engine._CACHED_PARAMS = None
         engine._CACHED_SJT = None

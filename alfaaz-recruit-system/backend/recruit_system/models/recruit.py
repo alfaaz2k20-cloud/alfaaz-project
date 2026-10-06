@@ -188,10 +188,6 @@ class DBEvidence(SQLModel, table=True):
     game_observation_count: Optional[int] = None
     game_consistency_spread: Optional[float] = None
     cross_method_delta: Optional[float] = None
-    fused_relative: Optional[float] = None
-    profile_relative_score: Optional[float] = None  # 0 to 100 within-person scale
-    profile_relative_rank: Optional[int] = None     # 1 to 7 within-person rank
-    profile_relative_level: Optional[str] = None    # RELATIVELY_STRONG, RELATIVELY_MIDDLE, RELATIVELY_LOWER, ABOUT_EQUAL
     profile_completeness: Optional[str] = None      # COMPLETE, SJT_ONLY, PARTIAL, INSUFFICIENT
     game_status: str = Field(default="INSUFFICIENT") # USABLE, INSUFFICIENT, INVALID
     game_band: Optional[str] = None # UNCALIBRATED or None

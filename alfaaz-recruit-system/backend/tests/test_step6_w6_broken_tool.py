@@ -8,15 +8,15 @@ import uuid
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from sqlmodel import Session, SQLModel, create_engine, select
-from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
-from app.services.telemetry_engine import ingest_telemetry_batch
-from app.services.task_definitions import (
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
+from recruit_system.services.telemetry_engine import ingest_telemetry_batch
+from recruit_system.services.task_definitions import (
     get_task_definitions,
     reconstruct_cr1_construction_state,
     reconstruct_cr2_reframing_state,
     reconstruct_cr3_affordance_state
 )
-from app.services.feature_extractor import extract_session_features
+from recruit_system.services.feature_extractor import extract_session_features
 
 class TestStep6W6BrokenTool(unittest.TestCase):
     def setUp(self):
@@ -36,11 +36,19 @@ class TestStep6W6BrokenTool(unittest.TestCase):
         self.db.close()
 
     def test_w6_task_definitions_golden_fixture(self):
-        """Verify task definitions for CR1 (2 stages), CR2 (3 episodes), CR3 (3 affordance trials)."""
-        defs = get_task_definitions()
+        """Verify task definitions for CR1 (2 stages), CR2 (3 episodes), CR3 (3 affordance trials in V1, 2 in V2)."""
+        defs = get_task_definitions("1.0")
         games = defs.get("games", {})
 
-        # CR1: 2 construction stages
+        # V2: CR1 (2 stages), CR3 (2 trials)
+        defs_v2 = get_task_definitions("2.0")
+        games_v2 = defs_v2.get("games", {})
+        self.assertEqual(games_v2["CR1"].get("total_stages"), 2)
+        self.assertEqual(len(games_v2["CR1"].get("stages", [])), 2)
+        self.assertEqual(games_v2["CR3"].get("total_trials"), 2)
+        self.assertEqual(len(games_v2["CR3"].get("trials", [])), 2)
+
+        # CR1: 2 construction stages in V1
         self.assertIn("CR1", games)
         cr1 = games["CR1"]
         self.assertEqual(cr1.get("total_stages"), 2)
@@ -53,7 +61,7 @@ class TestStep6W6BrokenTool(unittest.TestCase):
         self.assertEqual(stages[1]["constraint"], "tension_wire_unanchored")
         self.assertEqual(stages[1]["valid_solution_count"], 3)
 
-        # CR2: 3 spatial reframing episodes
+        # CR2: 3 spatial reframing episodes in V1
         self.assertIn("CR2", games)
         cr2 = games["CR2"]
         self.assertEqual(cr2.get("total_episodes"), 3)
@@ -69,7 +77,7 @@ class TestStep6W6BrokenTool(unittest.TestCase):
         self.assertEqual(episodes[2]["constraint_change"], "low_ceiling_arch_support")
         self.assertEqual(episodes[2]["target_reframing"], "linear_flow")
 
-        # CR3: 3 affordance synthesis trials
+        # CR3: 3 affordance synthesis trials in V1
         self.assertIn("CR3", games)
         cr3 = games["CR3"]
         self.assertEqual(cr3.get("total_trials"), 3)

@@ -8,14 +8,14 @@ import uuid
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from sqlmodel import Session, SQLModel, create_engine, select
-from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
-from app.services.telemetry_engine import ingest_telemetry_batch
-from app.services.task_definitions import (
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
+from recruit_system.services.telemetry_engine import ingest_telemetry_batch
+from recruit_system.services.task_definitions import (
     get_task_definitions,
     reconstruct_c1_allocation_state,
     reconstruct_c3_repair_state
 )
-from app.services.feature_extractor import extract_session_features
+from recruit_system.services.feature_extractor import extract_session_features
 
 class TestStep3W3SharedCanvas(unittest.TestCase):
     def setUp(self):
@@ -35,11 +35,19 @@ class TestStep3W3SharedCanvas(unittest.TestCase):
         self.db.close()
 
     def test_w3_task_definitions_golden_fixture(self):
-        """Verify task definitions for C1 (3 rounds), C2 (3 rounds), C3 (3 breakdown opportunities)."""
-        defs = get_task_definitions()
+        """Verify task definitions for C1 (3 rounds in V1, 2 in V2), C2 (3 rounds in V1, 2 in V2), C3 (3 breakdown opportunities)."""
+        defs = get_task_definitions("1.0")
         games = defs.get("games", {})
 
-        # C1: 3 rounds (deficit, balanced, self shortage retaining)
+        # V2: C1 (2 rounds), C2 (2 rounds)
+        defs_v2 = get_task_definitions("2.0")
+        games_v2 = defs_v2.get("games", {})
+        self.assertEqual(games_v2["C1"].get("total_trials"), 2)
+        self.assertEqual(len(games_v2["C1"].get("trials", [])), 2)
+        self.assertEqual(games_v2["C2"].get("total_trials"), 2)
+        self.assertEqual(len(games_v2["C2"].get("trials", [])), 2)
+
+        # C1: 3 rounds in V1 (deficit, balanced, self shortage retaining)
         self.assertIn("C1", games)
         c1 = games["C1"]
         self.assertEqual(c1.get("total_trials"), 3)

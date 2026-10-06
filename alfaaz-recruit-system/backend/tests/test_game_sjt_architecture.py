@@ -8,23 +8,23 @@ from sqlmodel import Session, SQLModel, create_engine, select
 # Add backend directory to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.models.recruit import (
+from recruit_system.models.recruit import (
     DBSession, DBSJTResponse, DBTelemetryEvent, DBEvidence,
     DBGameScore, DBDataQualityFlag, DBApplicantIdentity, DBConsentRecord
 )
-from app.services.sjt_engine import (
+from recruit_system.services.sjt_engine import (
     score_sjt_responses, verify_and_load_configs, compute_keys_fingerprint,
     resolve_config_path
 )
-from app.services.game_scoring_engine import (
+from recruit_system.services.game_scoring_engine import (
     score_game, score_session_games, GAME_PARAMETERS, GAME_BOUNDS,
-    SCORING_VERSION, TASK_DEF_VERSION
+    SCORING_VERSION
 )
-from app.services.evidence_integrator import (
+from recruit_system.services.evidence_integrator import (
     integrate_session_evidence, compute_cross_method_delta,
     determine_relationship, determine_confidence, PARAM_MINIGAMES
 )
-from app.routers.research_view import get_session_research_view
+from recruit_system.routers.research_view import get_session_research_view
 
 PASSED_CHECKS = 0
 FAILED_CHECKS = 0
@@ -60,10 +60,10 @@ def run_tests():
     print("--- 0. Startup & Import Integrity ---")
     import importlib
     import inspect
-    import app.main
-    assert_true(app.main.app is not None, "FastAPI application initializes successfully at app.main:app")
+    import recruit_system.main
+    assert_true(recruit_system.main.app is not None, "FastAPI application initializes successfully at recruit_system.main:app")
 
-    gse = importlib.import_module("app.services.game_scoring_engine")
+    gse = importlib.import_module("recruit_system.services.game_scoring_engine")
     assert_true(gse is not None, "game_scoring_engine module imports successfully")
 
     # Eagerly evaluate annotations across all functions and classes in game_scoring_engine
@@ -71,7 +71,7 @@ def run_tests():
     annotated_count = 0
     for name, obj in inspect.getmembers(gse):
         if inspect.isfunction(obj) or inspect.isclass(obj):
-            if getattr(obj, "__module__", None) == "app.services.game_scoring_engine":
+            if getattr(obj, "__module__", None) == "recruit_system.services.game_scoring_engine":
                 ann = inspect.get_annotations(obj)
                 annotated_count += 1
     assert_true(annotated_count >= 21, f"All game scoring functions eagerly evaluated annotations ({annotated_count} checked)")
@@ -134,6 +134,7 @@ def run_tests():
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_01", "action_id": "flag_exception"}},
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_02", "action_id": "file_standard"}},
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_03", "action_id": "flag_exception"}},
+            {"action": "decision_logged", "data": {"stimulus_id": "EXC_04", "action_id": "flag_exception"}},
         ],
         "A3": [
             {"action": "record_inspected", "data": {"stimulus_id": "REC_01"}},
@@ -470,6 +471,12 @@ def run_tests():
     print(f"============================================================")
     return FAILED_CHECKS == 0
 
+
+import unittest
+
+class TestGameSjtArchitecture(unittest.TestCase):
+    def test_all_architecture_invariants(self):
+        self.assertTrue(run_tests())
 
 if __name__ == "__main__":
     success = run_tests()

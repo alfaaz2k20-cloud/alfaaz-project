@@ -4,7 +4,7 @@ from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timezone
 from sqlmodel import Session, select
 from recruit_system.models.recruit import (
-    DBEvidence, DBSession, DBDataQualityFlag, DBSJTResponse, DBGameScore
+    DBEvidence, DBSession, DBDataQualityFlag, DBSJTResponse, DBGameScore, DBFeature
 )
 from recruit_system.services.sjt_engine import score_sjt_responses, resolve_config_path
 from recruit_system.services.game_scoring_engine import (
@@ -23,13 +23,13 @@ PARAM_MINIGAMES = {
 }
 
 OBSERVED_BEHAVIOR_SUMMARIES = {
-    "empathy": "Adjusted tone tuning with teammate feedback and completed hall acoustic adaptation.",
-    "conscientiousness": "Sorted cultural items into designated shelves and proofread catalog cards with precision.",
-    "collaborative_spirit": "Shared mosaic tiles with teammate and balanced exhibition lighting spotlights evenly.",
-    "emotional_agility": "Adapted to pattern sorting rule shifts and resolved unexpected gallery interruptions calmly.",
-    "curiosity": "Explored optional gallery history alcoves and inspected uncataloged manuscript clues.",
-    "creative_initiative": "Assembled improvised art frame mount from table materials and planned creative space layout.",
-    "motivation": "Applied wax seals to event invitations with steady care and completed gallery readiness checklist."
+    "empathy": "F1, F2 behavioral traces recorded.",
+    "conscientiousness": "A1, A2 behavioral traces recorded.",
+    "collaborative_spirit": "C1, C2 behavioral traces recorded.",
+    "emotional_agility": "E1, E2 behavioral traces recorded.",
+    "curiosity": "Q1, Q2 behavioral traces recorded.",
+    "creative_initiative": "CR1, CR3 behavioral traces recorded.",
+    "motivation": "M1, M2 behavioral traces recorded."
 }
 
 CRITICAL_FLAGS = {"seq_conflict", "events_cap_reached"}
@@ -102,18 +102,13 @@ def evaluate_minigame_status(
     if any(fl in integrity_flags for fl in feature_flags) or any(fl in integrity_flags for fl in mg_scoped_flags):
         return "INVALID"
 
-    # 2. Check for insufficiency (not implemented, interrupted, insufficient observations)
-    if "feature_not_implemented" in feature_flags:
-        return "INSUFFICIENT"
-
+    # 2. Check for insufficiency (interrupted, or no valid features)
     if "interrupted" in feature_flags or any(fl == "interrupted" for fl in mg_scoped_flags):
         return "INSUFFICIENT"
 
-    if any(fl.lower().startswith("insufficient") for fl in feature_flags):
-        return "INSUFFICIENT"
-
-    # Check validity and presence of values
-    if any(not getattr(f, "valid", True) or getattr(f, "value_raw", None) is None for f in mg_feats):
+    # Check for presence of at least one valid feature with non-None value
+    valid_feats = [f for f in mg_feats if getattr(f, "valid", False) and getattr(f, "value_raw", None) is not None]
+    if not valid_feats:
         return "INSUFFICIENT"
 
     return "USABLE"
@@ -289,9 +284,11 @@ def integrate_session_evidence(
 
     # Load configurations
     integration_cfg = integration_override or load_integration_config()
+    feature_bands_cfg = feature_bands_override or load_feature_bands_config()
     cfg_hash = load_config_hash()
 
     min_usable = integration_cfg.get("min_usable_minigames", 2)
+    consistency_max_range = integration_cfg.get("consistency_max_band_range", 1)
     weights = integration_cfg.get("minigame_weights", {})
 
     # Data quality flags & critical flag check
@@ -299,6 +296,16 @@ def integrate_session_evidence(
         select(DBDataQualityFlag).where(DBDataQualityFlag.session_id == session_id)
     ).all()
     has_critical_flag = any(qf.flag in CRITICAL_FLAGS for qf in quality_flags)
+
+    # Features grouped by mini-game
+    features = db.exec(
+        select(DBFeature).where(DBFeature.session_id == session_id)
+    ).all()
+    mg_features: Dict[str, List[DBFeature]] = {}
+    for f in features:
+        if f.mini_game not in mg_features:
+            mg_features[f.mini_game] = []
+        mg_features[f.mini_game].append(f)
 
     # 1. Score all 21 games deterministically
     game_scores: Dict[str, ScoredGame] = score_session_games(db, session_id)
@@ -331,11 +338,14 @@ def integrate_session_evidence(
     preliminary: Dict[str, Dict[str, Any]] = {}
 
     for param_name, mgs in PARAM_MINIGAMES.items():
-        # Identify usable games
-        usable_mgs = [
-            mg for mg in mgs
-            if game_scores.get(mg) and game_scores[mg].status == "USABLE" and game_scores[mg].relative is not None
-        ]
+        # Identify usable games: from game_scores or DBFeature
+        usable_mgs = []
+        for mg in mgs:
+            gs = game_scores.get(mg)
+            if gs and gs.status == "USABLE" and gs.relative is not None:
+                usable_mgs.append(mg)
+            elif evaluate_minigame_status(mg, mg_features.get(mg, []), quality_flags) == "USABLE":
+                usable_mgs.append(mg)
         n_usable = len(usable_mgs)
 
         # SJT score for this parameter
@@ -360,33 +370,96 @@ def integrate_session_evidence(
             has_sjt_for_param = False
 
         # Game Evidence Aggregation
-        if n_usable >= min_usable:
-            game_status = "USABLE"
-            # Renormalize weights across usable games
+        game_status = "USABLE" if n_usable >= min_usable else "INSUFFICIENT"
+        calibrated = is_calibrated(usable_mgs, feature_bands_cfg, min_usable)
+
+        has_gs_relatives = all(
+            game_scores.get(mg) and game_scores[mg].relative is not None
+            for mg in usable_mgs
+        ) if usable_mgs else False
+
+        if game_status == "USABLE":
             w_usable = [weights.get(mg, 1.0 / 3.0) for mg in usable_mgs]
             w_sum = sum(w_usable)
             if w_sum <= 0:
                 w_sum = 1.0
             norm_w = [w / w_sum for w in w_usable]
 
-            game_relative = round(
-                sum(w * game_scores[mg].relative for w, mg in zip(norm_w, usable_mgs)),
-                6
-            )
-            game_raw = sum(game_scores[mg].raw for mg in usable_mgs)
-            game_min = sum(game_scores[mg].min for mg in usable_mgs)
-            game_max = sum(game_scores[mg].max for mg in usable_mgs)
-            game_span = game_max - game_min
-            game_num = game_raw - game_min
-            game_observation_count = sum(game_scores[mg].observation_count for mg in usable_mgs)
+            if has_gs_relatives:
+                game_relative = round(
+                    sum(w * game_scores[mg].relative for w, mg in zip(norm_w, usable_mgs)),
+                    6
+                )
+                game_raw = sum(game_scores[mg].raw for mg in usable_mgs)
+                game_min = sum(game_scores[mg].min for mg in usable_mgs)
+                game_max = sum(game_scores[mg].max for mg in usable_mgs)
+                game_span = game_max - game_min
+                game_num = game_raw - game_min
+                game_observation_count = sum(game_scores[mg].observation_count for mg in usable_mgs)
+                mg_relatives = [game_scores[mg].relative for mg in usable_mgs]
+                game_consistency_spread = round(max(mg_relatives) - min(mg_relatives), 6)
+                delta = compute_cross_method_delta(sjt_relative, game_relative)
+            else:
+                game_relative = None
+                game_raw = None
+                game_min = None
+                game_max = None
+                game_span = None
+                game_num = None
+                game_observation_count = sum(len(mg_features.get(mg, [])) for mg in usable_mgs)
+                game_consistency_spread = None
+                delta = None
 
-            # Within-parameter game consistency spread
-            mg_relatives = [game_scores[mg].relative for mg in usable_mgs]
-            game_consistency_spread = round(max(mg_relatives) - min(mg_relatives), 6)
-            consistency = "CONSISTENT" if game_consistency_spread <= 0.33 else "VARIED"
-            game_band = "UNCALIBRATED"
+            if calibrated:
+                mg_bands = []
+                for mg in usable_mgs:
+                    feats = mg_features.get(mg, [])
+                    valid_f = [f for f in feats if getattr(f, "valid", False) and getattr(f, "value_raw", None) is not None]
+                    feat_val = valid_f[0].value_raw if valid_f else (game_scores[mg].relative if game_scores.get(mg) else None)
+                    b = classify_minigame_band(mg, feat_val, feature_bands_cfg.get("bands", {}).get(mg))
+                    mg_bands.append(b)
+                game_band = aggregate_game_bands(usable_mgs, mg_bands, weights)
+                ords = [BAND_ORDINALS[b] for b in mg_bands if b in BAND_ORDINALS]
+                r = (max(ords) - min(ords)) if ords else 0
+                consistency = "CONSISTENT" if r <= consistency_max_range else "VARIED"
+
+                if not has_sjt_for_param:
+                    relationship = "INSUFFICIENT"
+                else:
+                    if sjt_band in BAND_ORDINALS and game_band in BAND_ORDINALS:
+                        d = abs(BAND_ORDINALS[sjt_band] - BAND_ORDINALS[game_band])
+                        if d == 0:
+                            relationship = "ALIGNED"
+                        elif d == 1:
+                            relationship = "PARTLY_ALIGNED"
+                        else:
+                            relationship = "DIFFERENT"
+                    else:
+                        relationship = "NOT_COMPUTED"
+
+                if not has_sjt_for_param or n_usable <= 1 or has_critical_flag:
+                    confidence = "LIMITED"
+                elif n_usable == 3 and consistency == "CONSISTENT" and not has_critical_flag:
+                    confidence = "SUBSTANTIAL"
+                else:
+                    confidence = "MODERATE"
+            else:
+                game_band = "UNCALIBRATED"
+                if delta is not None:
+                    consistency = "CONSISTENT" if (game_consistency_spread is not None and game_consistency_spread <= 0.33) else "VARIED"
+                    relationship = determine_relationship(delta, has_sjt_for_param, game_status)
+                    confidence = determine_confidence(
+                        has_sjt=has_sjt_for_param,
+                        n_usable_games=n_usable,
+                        consistency=consistency,
+                        delta=delta,
+                        has_critical_flag=has_critical_flag
+                    )
+                else:
+                    consistency = "NOT_COMPUTED"
+                    relationship = "NOT_COMPUTED" if has_sjt_for_param else "INSUFFICIENT"
+                    confidence = "LIMITED" if (not has_sjt_for_param or n_usable <= 1 or has_critical_flag) else "MODERATE"
         else:
-            game_status = "INSUFFICIENT"
             game_raw = None
             game_min = None
             game_max = None
@@ -396,34 +469,12 @@ def integrate_session_evidence(
             game_band = None
             game_observation_count = sum(
                 game_scores[mg].observation_count for mg in mgs if game_scores.get(mg)
-            )
+            ) or sum(len(mg_features.get(mg, [])) for mg in mgs)
             game_consistency_spread = None
             consistency = "INSUFFICIENT"
-
-        # Continuous Cross-Method Delta
-        delta = compute_cross_method_delta(sjt_relative, game_relative)
-
-        # Cross-Method Relationship
-        relationship = determine_relationship(delta, has_sjt_for_param, game_status)
-
-        # Evidence Confidence with Monotonicity Invariant
-        confidence = determine_confidence(
-            has_sjt=has_sjt_for_param,
-            n_usable_games=n_usable,
-            consistency=consistency,
-            delta=delta,
-            has_critical_flag=has_critical_flag
-        )
-
-        # Combined Relative Evidence (preserving both streams explicitly)
-        if sjt_relative is not None and game_relative is not None:
-            fused_relative = round((sjt_relative + game_relative) / 2.0, 6)
-        elif sjt_relative is not None:
-            fused_relative = sjt_relative
-        elif game_relative is not None:
-            fused_relative = game_relative
-        else:
-            fused_relative = None
+            delta = None
+            relationship = "SJT_ONLY" if has_sjt_for_param else "INSUFFICIENT"
+            confidence = "LIMITED"
 
         if game_status == "USABLE":
             obs_summary = OBSERVED_BEHAVIOR_SUMMARIES.get(
@@ -451,7 +502,6 @@ def integrate_session_evidence(
             "game_status": game_status,
             "game_band": game_band,
             "cross_method_delta": delta,
-            "fused_relative": fused_relative,
             "consistency": consistency,
             "relationship": relationship,
             "confidence": confidence,
@@ -471,61 +521,6 @@ def integrate_session_evidence(
         profile_completeness = "SJT_ONLY"
     else:
         profile_completeness = "INSUFFICIENT"
-
-    valid_fused = [
-        preliminary[p]["fused_relative"]
-        for p in PARAM_MINIGAMES
-        if preliminary[p]["fused_relative"] is not None
-    ]
-
-    profile_scores: Dict[str, Optional[float]] = {}
-    profile_ranks: Dict[str, Optional[int]] = {}
-    profile_levels: Dict[str, Optional[str]] = {}
-
-    if len(valid_fused) < 2:
-        for p in PARAM_MINIGAMES:
-            profile_scores[p] = None
-            profile_ranks[p] = None
-            profile_levels[p] = "INSUFFICIENT"
-    else:
-        f_min = min(valid_fused)
-        f_max = max(valid_fused)
-        f_span = f_max - f_min
-
-        if f_span < 1e-9:
-            # Edge case: All values identical across parameters
-            for p in PARAM_MINIGAMES:
-                if preliminary[p]["fused_relative"] is not None:
-                    profile_scores[p] = 50.0
-                    profile_ranks[p] = 1
-                    profile_levels[p] = "ABOUT_EQUAL"
-                else:
-                    profile_scores[p] = None
-                    profile_ranks[p] = None
-                    profile_levels[p] = "INSUFFICIENT"
-        else:
-            for p in PARAM_MINIGAMES:
-                v = preliminary[p]["fused_relative"]
-                if v is not None:
-                    sc = round(100.0 * (v - f_min) / f_span, 2)
-                    profile_scores[p] = sc
-
-                    if sc >= 67.0:
-                        lvl = "RELATIVELY_STRONG"
-                    elif sc <= 33.0:
-                        lvl = "RELATIVELY_LOWER"
-                    else:
-                        lvl = "RELATIVELY_MIDDLE"
-                    profile_levels[p] = lvl
-
-                    # Standard competition ranking (1 = highest score; ties share rank)
-                    rank = 1 + sum(1 for other_v in valid_fused if other_v > v + 1e-9)
-                    profile_ranks[p] = rank
-                else:
-                    profile_scores[p] = None
-                    profile_ranks[p] = None
-                    profile_levels[p] = "INSUFFICIENT"
-
     # Pass 3: Insert-Only Evidence Persistence
     updated_records: List[DBEvidence] = []
 
@@ -570,10 +565,6 @@ def integrate_session_evidence(
             game_observation_count=p_data["game_observation_count"],
             game_consistency_spread=p_data["game_consistency_spread"],
             cross_method_delta=p_data["cross_method_delta"],
-            fused_relative=p_data["fused_relative"],
-            profile_relative_score=profile_scores.get(param_name),
-            profile_relative_rank=profile_ranks.get(param_name),
-            profile_relative_level=profile_levels.get(param_name),
             profile_completeness=profile_completeness,
             game_status=p_data["game_status"],
             game_band=p_data["game_band"],

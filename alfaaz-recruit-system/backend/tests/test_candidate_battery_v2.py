@@ -10,23 +10,23 @@ if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 BASE_DIR = os.path.dirname(BACKEND_DIR)
 
-from app.models.recruit import (
+from recruit_system.models.recruit import (
     DBSession, DBApplicantIdentity, DBConsentRecord,
     DBSJTResponse, DBTelemetryEvent, DBGameScore, DBEvidence
 )
-from app.services.sjt_engine import score_sjt_responses, verify_and_load_configs
-from app.services.task_definitions import (
+from recruit_system.services.sjt_engine import score_sjt_responses, verify_and_load_configs
+from recruit_system.services.task_definitions import (
     get_task_definitions, get_battery_config,
     get_candidate_core_games, get_research_bank_games,
     get_expected_candidate_game_count, is_candidate_core_game,
     is_research_bank_game, get_game_role
 )
-from app.services.descriptive_task_record import get_session_task_records
-from app.services.game_scoring_engine import (
+from recruit_system.services.descriptive_task_record import get_session_task_records
+from recruit_system.services.game_scoring_engine import (
     score_game, SCORING_VERSION,
     GAME_PARAMETERS, GAME_BOUNDS
 )
-from app.services.evidence_integrator import (
+from recruit_system.services.evidence_integrator import (
     PARAM_MINIGAMES, integrate_session_evidence,
     compute_cross_method_delta, determine_relationship, determine_confidence
 )
@@ -194,6 +194,7 @@ def run_tests():
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_01", "action_id": "flag_exception"}},
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_02", "action_id": "file_standard"}},
             {"action": "decision_logged", "data": {"stimulus_id": "EXC_03", "action_id": "flag_exception"}},
+            {"action": "decision_logged", "data": {"stimulus_id": "EXC_04", "action_id": "flag_exception"}},
         ],
         "C1": [
             {"action": "resource_transferred", "data": {"stimulus_id": "C1_R1", "delta": 3}},
@@ -472,7 +473,7 @@ def run_tests():
             assert_eq(tr.get("status"), "NOT_DERIVED", f"Research bank task record {tr.get('game_id')} is NOT_DERIVED")
 
         # 3. Research view and session listing propagation
-        from app.routers.research_view import list_research_sessions, get_session_research_view
+        from recruit_system.routers.research_view import list_research_sessions, get_session_research_view
         class DummyRequest:
             client = None
             query_params = {}

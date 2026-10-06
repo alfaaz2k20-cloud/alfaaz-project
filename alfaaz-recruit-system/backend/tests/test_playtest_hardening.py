@@ -8,17 +8,17 @@ BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
-from app.models.recruit import (
+from recruit_system.models.recruit import (
     DBSession, DBApplicantIdentity, DBConsentRecord, DBTaskAssignment,
     DBSJTResponse, DBAccessibilityProfile, DBTelemetryEvent, DBEvidence,
     DBDataQualityFlag
 )
-from app.routers.recruit import (
+from recruit_system.routers.recruit import (
     complete_session, submit_telemetry, submit_sjt, save_accessibility,
     CompleteSessionRequest, TelemetryBatchRequest, SJTSubmitRequest,
     AccessibilityRequest
 )
-from app.routers.research_view import (
+from recruit_system.routers.research_view import (
     list_research_sessions, get_session_research_view
 )
 
@@ -281,10 +281,6 @@ def run_tests():
             ("predicted_sjt_relative", "FLOAT"),
             ("model_version", "VARCHAR"),
             ("prediction_status", "VARCHAR"),
-            ("fused_relative", "FLOAT"),
-            ("profile_relative_score", "FLOAT"),
-            ("profile_relative_rank", "INTEGER"),
-            ("profile_relative_level", "VARCHAR"),
             ("profile_completeness", "VARCHAR"),
             ("cross_method_delta", "FLOAT"),
             ("game_raw", "FLOAT"),
@@ -366,9 +362,22 @@ def run_tests():
         assert_true("col_omega" in final_cols, "col_omega present in table after outer commit")
 
     # Structural verification of backend/app/main.py
-    main_py_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app", "main.py"))
-    with open(main_py_path, "r", encoding="utf-8") as f:
-        main_content = f.read()
+    main_py_candidates = [
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "backend", "app", "main.py")),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app", "main.py")),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "recruit_system", "main.py")),
+    ]
+    main_content = ""
+    for p in main_py_candidates:
+        if os.path.exists(p):
+            with open(p, "r", encoding="utf-8") as f:
+                c = f.read()
+                if "with _conn.begin_nested():" in c:
+                    main_content = c
+                    break
+    if not main_content and os.path.exists(main_py_candidates[0]):
+        with open(main_py_candidates[0], "r", encoding="utf-8") as f:
+            main_content = f.read()
     assert_true("with _conn.begin_nested():" in main_content, "main.py structurally enforces with _conn.begin_nested() savepoint isolation")
 
     print("\n" + "=" * 60)

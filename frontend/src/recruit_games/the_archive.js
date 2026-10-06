@@ -56,12 +56,6 @@ function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex
  title: 'Lal Ded Verses in Kashmiri',
  rule_prompt: 'Sorting Rule: Sort by Language',
  tags: ['Language: Kashmiri', 'Wise Verses', 'Local Poetry']
- },
- {
- id: 'DOC_05',
- title: 'History Book of Kashmir Artists',
- rule_prompt: 'Sorting Rule: Sort by Type',
- tags: ['Type: History', 'Artist Stories', 'Life Records']
  }
  ];
 
@@ -263,7 +257,6 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIn
  type_note: 'Broken Spine & Upside-Down Seal'
  }
  ];
- if (trials.length > 2) trials.pop();
 
 
  const actions = [

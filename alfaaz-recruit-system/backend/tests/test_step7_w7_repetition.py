@@ -8,15 +8,15 @@ import uuid
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from sqlmodel import Session, SQLModel, create_engine, select
-from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
-from app.services.telemetry_engine import ingest_telemetry_batch
-from app.services.task_definitions import (
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
+from recruit_system.services.telemetry_engine import ingest_telemetry_batch
+from recruit_system.services.task_definitions import (
     get_task_definitions,
     reconstruct_m1_diligence_state,
     reconstruct_m2_continuation_state,
     reconstruct_m3_persistence_state
 )
-from app.services.feature_extractor import extract_session_features
+from recruit_system.services.feature_extractor import extract_session_features
 
 class TestStep7W7Repetition(unittest.TestCase):
     def setUp(self):
@@ -36,18 +36,26 @@ class TestStep7W7Repetition(unittest.TestCase):
         self.db.close()
 
     def test_w7_task_definitions_golden_fixture(self):
-        """Verify task definitions for M1 (3 mandatory), M2 (2 mandatory + 3 optional), M3 (3 mandatory + 3 voluntary)."""
-        defs = get_task_definitions()
+        """Verify task definitions for M1 (3 mandatory in V1, 2 in V2), M2 (3 mandatory in V1, 2 in V2), M3 (3 mandatory + 3 voluntary)."""
+        defs = get_task_definitions("1.0")
         games = defs.get("games", {})
 
-        # M1: Baseline Diligence
+        # V2: M1 (2 mandatory), M2 (2 mandatory)
+        defs_v2 = get_task_definitions("2.0")
+        games_v2 = defs_v2.get("games", {})
+        self.assertEqual(games_v2["M1"].get("mandatory_units"), 2)
+        self.assertEqual(len(games_v2["M1"].get("trials", [])), 2)
+        self.assertEqual(games_v2["M2"].get("mandatory_units"), 2)
+        self.assertEqual(games_v2["M2"].get("max_optional_units"), 3)
+
+        # M1: Baseline Diligence in V1
         self.assertIn("M1", games)
         m1 = games["M1"]
         self.assertEqual(m1.get("mandatory_units"), 3)
         self.assertEqual(m1.get("optional_units"), 0)
         self.assertEqual(len(m1.get("trials", [])), 3)
 
-        # M2: Voluntary Continuation
+        # M2: Voluntary Continuation in V1
         self.assertIn("M2", games)
         m2 = games["M2"]
         self.assertEqual(m2.get("mandatory_units"), 3)

@@ -5,9 +5,9 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
-from app.main import app
+from recruit_system.main import app
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 BACKEND_DIR = PROJECT_ROOT / "backend"
 
 
@@ -47,7 +47,7 @@ class RetentionArchitectureTests(unittest.TestCase):
 
     def test_no_scheduler_registered(self):
         """main.py must not schedule any deletion background tasks."""
-        main_py = (BACKEND_DIR / "app" / "main.py").read_text(encoding="utf-8")
+        main_py = (BACKEND_DIR / "recruit_system" / "main.py").read_text(encoding="utf-8")
         self.assertNotIn("cleanup_expired_sessions", main_py)
 
     def test_brand_config_has_no_retention_days(self):
@@ -68,7 +68,7 @@ class RetentionArchitectureTests(unittest.TestCase):
 
     def test_no_ttl_fields_in_models(self):
         """Recruit models must not contain expires_at or TTL fields."""
-        models_py = (BACKEND_DIR / "app" / "models" / "recruit.py").read_text(encoding="utf-8")
+        models_py = (BACKEND_DIR / "recruit_system" / "models" / "recruit.py").read_text(encoding="utf-8")
         self.assertNotIn("expires_at", models_py)
         # Case-sensitive check for 'ttl' as a likely field/variable name
         self.assertNotIn("_ttl", models_py.lower())
@@ -79,7 +79,7 @@ class RetentionArchitectureTests(unittest.TestCase):
         import importlib
         # Just ensure the main app loads cleanly (it transitively imports everything)
         try:
-            importlib.import_module("app.main")
+            importlib.import_module("recruit_system.main")
         except ImportError as e:
             if "retention_cleanup" in str(e):
                 self.fail(f"Production import fails due to deleted retention_cleanup: {e}")

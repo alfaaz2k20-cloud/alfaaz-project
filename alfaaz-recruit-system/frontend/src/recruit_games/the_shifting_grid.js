@@ -39,10 +39,8 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
  { stimulus_id: 'E1_T5', color: 'Gold', shape: 'Square', icon: '&#9632;', label: 'Gold Square' },
  { stimulus_id: 'E1_T6', color: 'Sage', shape: 'Circle', icon: '&#9679;', label: 'Sage Circle' },
  { stimulus_id: 'E1_T7', color: 'Gold', shape: 'Circle', icon: '&#9679;', label: 'Gold Circle' },
- { stimulus_id: 'E1_T8', color: 'Gold', shape: 'Square', icon: '&#9632;', label: 'Gold Square' },
- { stimulus_id: 'E1_T9', color: 'Sage', shape: 'Circle', icon: '&#9679;', label: 'Sage Circle' }
+ { stimulus_id: 'E1_T8', color: 'Gold', shape: 'Square', icon: '&#9632;', label: 'Gold Square' }
  ];
- if (trials.length > 2) trials.pop();
 
 
  function render() {
@@ -211,21 +209,8 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
  { id: 'guess_motif', label: 'Place tiles from memory without looking at plan', note: 'Guessing' },
  { id: 'pause_idle', label: 'Wait for the wind to stop', note: 'Waiting' }
  ]
- },
- {
- stimulus_id: 'E2_S4',
- title: 'Sequence 4: Color Tray in the Way',
- situation: 'A color tray was nudged and blocks your tool holder.',
- has_disruption: true,
- disruption_type: 'misplaced_pigment_tray',
- options: [
- { id: 'reposition_tray', label: 'Slide the tray back to its own side', note: 'Move tray' },
- { id: 'use_wrong_shade', label: 'Work around the tray at an awkward angle', note: 'Awkward reach' },
- { id: 'pause_idle', label: 'Stop work until someone comes back', note: 'Waiting' }
- ]
  }
  ];
- if (sequences.length > 2) sequences.pop();
 
 
  function render() {
@@ -235,7 +220,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
  ${renderHeader('The Courtyard Setup', 'Respond constructively to workshop situations.')}
  ${renderTutorialCard({
  icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
- goal: 'Respond to unexpected workshop situations across 4 rounds.',
+ goal: 'Respond to unexpected workshop situations across 3 rounds.',
  steps: [
  'Read what just happened in the workshop.',
  'Pick what you would do next from the 3 options.',
@@ -269,7 +254,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
  <span class="text-base text-[var(--text-primary)]">
  <strong>${s.title}:</strong> ${s.situation}
  </span>
- <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${currentSeq + 1} of 4</span>
+ <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${currentSeq + 1} of ${sequences.length}</span>
  </div>
  `,
  interactionContent: `
@@ -338,7 +323,7 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
  } else {
  onComplete({
  mini_game: 'E2',
- observations_count: 4
+ observations_count: sequences.length
  });
  }
  });

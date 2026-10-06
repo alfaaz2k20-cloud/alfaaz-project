@@ -8,9 +8,9 @@ from sqlmodel import Session, SQLModel, create_engine
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
-from app.jobs.calibration_preflight import calibration_preflight
-from app.models.recruit import DBConsentRecord, DBSession, DBSJTResponse, DBTelemetryEvent
-from app.services.descriptive_task_record import LOCKED_GAMES
+from recruit_system.jobs.calibration_preflight import calibration_preflight
+from recruit_system.models.recruit import DBConsentRecord, DBSession, DBSJTResponse, DBTelemetryEvent
+from recruit_system.services.descriptive_task_record import LOCKED_GAMES
 
 
 def make_db():

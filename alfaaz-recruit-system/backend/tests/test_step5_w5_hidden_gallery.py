@@ -8,15 +8,15 @@ import uuid
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from sqlmodel import Session, SQLModel, create_engine, select
-from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
-from app.services.telemetry_engine import ingest_telemetry_batch
-from app.services.task_definitions import (
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
+from recruit_system.services.telemetry_engine import ingest_telemetry_batch
+from recruit_system.services.task_definitions import (
     get_task_definitions,
     reconstruct_q1_information_seeking_state,
     reconstruct_q2_investigation_state,
     reconstruct_q3_integration_state
 )
-from app.services.feature_extractor import extract_session_features
+from recruit_system.services.feature_extractor import extract_session_features
 
 class TestStep5W5HiddenGallery(unittest.TestCase):
     def setUp(self):
@@ -36,11 +36,19 @@ class TestStep5W5HiddenGallery(unittest.TestCase):
         self.db.close()
 
     def test_w5_task_definitions_golden_fixture(self):
-        """Verify task definitions for Q1 (4 decisions, useful/control resources), Q2 (4 relics, varying uncertainty), Q3 (3 ambiguity episodes)."""
-        defs = get_task_definitions()
+        """Verify task definitions for Q1 (4 decisions in V1, 3 in V2), Q2 (4 relics in V1, 3 in V2), Q3 (3 ambiguity episodes)."""
+        defs = get_task_definitions("1.0")
         games = defs.get("games", {})
 
-        # Q1: 4 decisions, 4 optional resources
+        # V2: Q1 (3 decisions), Q2 (3 relics)
+        defs_v2 = get_task_definitions("2.0")
+        games_v2 = defs_v2.get("games", {})
+        self.assertEqual(games_v2["Q1"].get("total_required_decisions"), 3)
+        self.assertEqual(len(games_v2["Q1"].get("optional_resources", [])), 4)
+        self.assertEqual(games_v2["Q2"].get("total_trials"), 3)
+        self.assertEqual(len(games_v2["Q2"].get("trials", [])), 3)
+
+        # Q1: 4 decisions, 4 optional resources in V1
         self.assertIn("Q1", games)
         q1 = games["Q1"]
         self.assertEqual(q1.get("total_required_decisions"), 4)
@@ -51,7 +59,7 @@ class TestStep5W5HiddenGallery(unittest.TestCase):
         self.assertEqual(useful_count, 2)
         self.assertEqual(control_count, 2)
 
-        # Q2: Exactly 4 relics, varying uncertainty
+        # Q2: Exactly 4 relics, varying uncertainty in V1
         self.assertIn("Q2", games)
         q2 = games["Q2"]
         self.assertEqual(q2.get("total_trials"), 4)

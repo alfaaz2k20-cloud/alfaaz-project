@@ -2,28 +2,35 @@ import json
 import os
 from typing import Dict, Any, Optional, List
 
-_TASK_DEFINITIONS_CACHE: Optional[Dict[str, Any]] = None
+
+_TASK_DEFINITIONS_CACHE: Dict[str, Dict[str, Any]] = {}
 _BATTERY_CONFIG_CACHE: Optional[Dict[str, Any]] = None
 
-def get_task_definitions() -> Dict[str, Any]:
+def get_task_definitions(version: str = "2.0") -> Dict[str, Any]:
     global _TASK_DEFINITIONS_CACHE
-    if _TASK_DEFINITIONS_CACHE is not None:
-        return _TASK_DEFINITIONS_CACHE
+    if version in _TASK_DEFINITIONS_CACHE:
+        return _TASK_DEFINITIONS_CACHE[version]
+        
+    # fallback to 1.0 if not v2 explicitly? Actually, standard logic:
+    filename = f"task_definitions_v2.json" if "2" in version else f"task_definitions_v1.json"
 
     config_paths = [
-        os.path.join(os.path.dirname(__file__), "..", "..", "config", "task_definitions.json"),
-        os.path.join(os.path.dirname(__file__), "..", "..", "..", "config", "task_definitions.json"),
-        "config/task_definitions.json",
-        "backend/config/task_definitions.json"
+        os.path.join(os.path.dirname(__file__), "..", "..", "config", filename),
+        os.path.join(os.path.dirname(__file__), "..", "..", "..", "config", filename),
+        f"config/{filename}",
+        f"backend/config/{filename}",
+        # Fallback to old name just in case
+        os.path.join(os.path.dirname(__file__), "..", "..", "config", "task_definitions.json")
     ]
 
     for p in config_paths:
         if os.path.exists(p):
             with open(p, "r", encoding="utf-8") as f:
-                _TASK_DEFINITIONS_CACHE = json.load(f)
-                return _TASK_DEFINITIONS_CACHE
+                _TASK_DEFINITIONS_CACHE[version] = json.load(f)
+                return _TASK_DEFINITIONS_CACHE[version]
 
-    raise FileNotFoundError("config/task_definitions.json could not be located.")
+    raise FileNotFoundError(f"config/{filename} could not be located.")
+
 
 def get_battery_config() -> Dict[str, Any]:
     global _BATTERY_CONFIG_CACHE
@@ -118,37 +125,74 @@ def get_game_role(game_id: str) -> str:
         return "research_bank"
     return "unknown"
 
-def get_game_definition(game_id: str, version: str = "1.0") -> Optional[Dict[str, Any]]:
-    defs = get_task_definitions()
-    if defs.get("task_def_version") != version:
-        return None
+def get_game_definition(game_id: str, version: str = "2.0") -> Optional[Dict[str, Any]]:
+    defs = get_task_definitions(version)
     return defs.get("games", {}).get(game_id)
 
-def get_stimulus_ground_truth(game_id: str, stimulus_id: str, version: str = "1.0") -> Optional[Dict[str, Any]]:
-    g_def = get_game_definition(game_id, version)
-    if not g_def:
-        return None
+def get_stimulus_ground_truth(game_id: str, stimulus_id: str, version: str = "2.0") -> Optional[Dict[str, Any]]:
+    versions_to_try = [version]
+    alt_ver = "1.0" if "2" in str(version) else "2.0"
+    if alt_ver not in versions_to_try:
+        versions_to_try.append(alt_ver)
 
-    trials = (
-        g_def.get("trials", [])
-        + g_def.get("transitions", [])
-        + g_def.get("stages", [])
-        + g_def.get("episodes", [])
-        + g_def.get("decisions", [])
-        + g_def.get("mandatory_trials", [])
-        + g_def.get("optional_trials", [])
-    )
-    for t in trials:
-        if (
-            t.get("stimulus_id") == stimulus_id
-            or t.get("stage_id") == stimulus_id
-            or t.get("episode_id") == stimulus_id
-            or t.get("decision_id") == stimulus_id
-        ):
-            return t
+    for ver in versions_to_try:
+        g_def = get_game_definition(game_id, ver)
+        if not g_def:
+            continue
+
+        trials = (
+            g_def.get("trials", [])
+            + g_def.get("transitions", [])
+            + g_def.get("stages", [])
+            + g_def.get("episodes", [])
+            + g_def.get("decisions", [])
+            + g_def.get("mandatory_trials", [])
+            + g_def.get("optional_trials", [])
+        )
+        for t in trials:
+            if (
+                t.get("stimulus_id") == stimulus_id
+                or t.get("stage_id") == stimulus_id
+                or t.get("episode_id") == stimulus_id
+                or t.get("decision_id") == stimulus_id
+            ):
+                return t
     return None
 
-def reconstruct_f3_context_state(events: list) -> Dict[str, Any]:
+def _detect_version_from_events(events: list, explicit_version: Optional[str] = None) -> str:
+    if explicit_version is not None:
+        return explicit_version
+    for ev in events:
+        v = (
+            getattr(ev, "task_def_version", None)
+            or (ev.get("task_def_version") if isinstance(ev, dict) else None)
+            or getattr(ev, "version", None)
+            or (ev.get("version") if isinstance(ev, dict) else None)
+        )
+        if v:
+            return str(v)
+        data_json = getattr(ev, "data_json", None)
+        if data_json:
+            try:
+                d = json.loads(data_json)
+                if isinstance(d, dict):
+                    if "task_def_version" in d:
+                        return str(d["task_def_version"])
+                    s_id = str(d.get("stimulus_id", ""))
+                    if s_id in ("E1_T9", "E2_S4", "Q1_D4", "DOC_05", "C1_R3", "C2_R3", "M1_U3"):
+                        return "1.0"
+            except Exception:
+                pass
+        elif isinstance(ev, dict) and isinstance(ev.get("data"), dict):
+            d = ev["data"]
+            if "task_def_version" in d:
+                return str(d["task_def_version"])
+            s_id = str(d.get("stimulus_id", ""))
+            if s_id in ("E1_T9", "E2_S4", "Q1_D4", "DOC_05", "C1_R3", "C2_R3", "M1_U3"):
+                return "1.0"
+    return "2.0"
+
+def reconstruct_f3_context_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs F3 contextual interpretation updating state strictly from primitive events:
     - transition_presented (stimulus_id, trial_index)
@@ -199,7 +243,7 @@ def reconstruct_f3_context_state(events: list) -> Dict[str, Any]:
         "all_completed": completed_count >= 3
     }
 
-def reconstruct_a3_inspection_state(events: list) -> Dict[str, Any]:
+def reconstruct_a3_inspection_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs A3 QC state strictly from primitive observable events:
     - record_inspected (stimulus_id)
@@ -236,7 +280,8 @@ def reconstruct_a3_inspection_state(events: list) -> Dict[str, Any]:
         elif action in ["verification_finalized", "ledger_verified"]:
             verified = True
 
-    defs = get_task_definitions().get("games", {}).get("A3", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("A3", {})
     trials = defs.get("trials", [])
 
     tp, tn, fp, fn = 0, 0, 0, 0
@@ -398,7 +443,7 @@ def reconstruct_c3_repair_state(events: list) -> Dict[str, Any]:
         "all_completed": completed_count == 3
     }
 
-def reconstruct_e1_sorting_state(events: list) -> Dict[str, Any]:
+def reconstruct_e1_sorting_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs E1 Rule Shift state strictly from primitive events:
     - trial_presented (stimulus_id, trial_index, t_ms)
@@ -407,7 +452,8 @@ def reconstruct_e1_sorting_state(events: list) -> Dict[str, Any]:
     Evaluates accuracy against server task ground truth.
     Tracks perseverative errors (post-shift adherence to pre-shift color rule).
     """
-    defs = get_task_definitions().get("games", {}).get("E1", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("E1", {})
     trials = defs.get("trials", [])
 
     presented_times = {}
@@ -486,14 +532,15 @@ def reconstruct_e1_sorting_state(events: list) -> Dict[str, Any]:
         "all_trials_completed": completed == len(trials)
     }
 
-def reconstruct_e2_recovery_state(events: list) -> Dict[str, Any]:
+def reconstruct_e2_recovery_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs E2 Setback Recovery state strictly from primitive events:
     - sequence_presented
     - action_selected
     - sequence_completed
     """
-    defs = get_task_definitions().get("games", {}).get("E2", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("E2", {})
     trials = defs.get("trials", [])
 
     seq_actions = {}
@@ -540,14 +587,15 @@ def reconstruct_e2_recovery_state(events: list) -> Dict[str, Any]:
         "all_completed": len(seq_actions) == len(trials)
     }
 
-def reconstruct_e3_adaptation_state(events: list) -> Dict[str, Any]:
+def reconstruct_e3_adaptation_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs E3 Changing Conditions state strictly from primitive events:
     - condition_presented
     - composition_action_attempted
     - composition_confirmed
     """
-    defs = get_task_definitions().get("games", {}).get("E3", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("E3", {})
     trials = defs.get("trials", [])
 
     confirmed = {}
@@ -594,7 +642,7 @@ def reconstruct_e3_adaptation_state(events: list) -> Dict[str, Any]:
         "all_completed": len(confirmed) == len(trials)
     }
 
-def reconstruct_q1_information_seeking_state(events: list) -> Dict[str, Any]:
+def reconstruct_q1_information_seeking_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs Q1 Information Seeking state strictly from primitive events:
     - decision_presented
@@ -602,7 +650,8 @@ def reconstruct_q1_information_seeking_state(events: list) -> Dict[str, Any]:
     - decision_submitted
     Differentiates high-value useful resources from low-value control resources.
     """
-    defs = get_task_definitions().get("games", {}).get("Q1", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("Q1", {})
     opt_resources = defs.get("optional_resources", [])
     useful_ids = {r["resource_id"] for r in opt_resources if r.get("info_value") == "high"}
     control_ids = {r["resource_id"] for r in opt_resources if r.get("info_value") == "low"}
@@ -642,23 +691,25 @@ def reconstruct_q1_information_seeking_state(events: list) -> Dict[str, Any]:
 
     completed_count = len(decisions)
     total_resources_viewed = len(useful_viewed) + len(control_viewed)
+    target_completed = len(defs.get("decisions", [])) or (3 if "2" in ver else 4)
     return {
         "decisions": decisions,
         "completed_count": completed_count,
         "useful_resources_viewed_count": len(useful_viewed),
         "control_resources_viewed_count": len(control_viewed),
         "optional_alcoves_inspected": total_resources_viewed,
-        "all_completed": completed_count == 4
+        "all_completed": completed_count >= target_completed
     }
 
-def reconstruct_q2_investigation_state(events: list) -> Dict[str, Any]:
+def reconstruct_q2_investigation_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs Q2 Investigation Under Uncertainty state strictly from primitive events:
     - artifact_presented
     - clue_inspected
     - investigation_finalized
     """
-    defs = get_task_definitions().get("games", {}).get("Q2", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("Q2", {})
     trials = defs.get("trials", [])
 
     clues_by_relic = {}
@@ -703,7 +754,7 @@ def reconstruct_q2_investigation_state(events: list) -> Dict[str, Any]:
         "all_completed": completed_count == len(trials)
     }
 
-def reconstruct_q3_integration_state(events: list) -> Dict[str, Any]:
+def reconstruct_q3_integration_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs Q3 Knowledge Integration state strictly from primitive events:
     - episode_presented
@@ -711,7 +762,8 @@ def reconstruct_q3_integration_state(events: list) -> Dict[str, Any]:
     - decision_integrated
     Distinguishes voluntary context retrieval from accurate downstream integration.
     """
-    defs = get_task_definitions().get("games", {}).get("Q3", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("Q3", {})
     trials = defs.get("trials", [])
 
     ground_truth_targets = {
@@ -764,7 +816,7 @@ def reconstruct_q3_integration_state(events: list) -> Dict[str, Any]:
         "all_completed": completed_count == len(trials)
     }
 
-def reconstruct_cr1_construction_state(events: list) -> Dict[str, Any]:
+def reconstruct_cr1_construction_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs CR1 Open Construction state strictly from primitive events:
     - stage_presented (stage_id, trial_index)
@@ -787,7 +839,8 @@ def reconstruct_cr1_construction_state(events: list) -> Dict[str, Any]:
     - First-try success is neutral (no bonus or penalty).
     - No failure-count creativity scoring.
     """
-    defs = get_task_definitions().get("games", {}).get("CR1", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("CR1", {})
     stages = defs.get("stages", [])
 
     valid_solutions = {
@@ -856,7 +909,7 @@ def reconstruct_cr1_construction_state(events: list) -> Dict[str, Any]:
         "all_completed": completed_count == len(stages)
     }
 
-def reconstruct_cr2_reframing_state(events: list) -> Dict[str, Any]:
+def reconstruct_cr2_reframing_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs CR2 Constraint Shift state strictly from primitive events:
     - episode_presented (episode_id, trial_index, initial_context)
@@ -870,7 +923,8 @@ def reconstruct_cr2_reframing_state(events: list) -> Dict[str, Any]:
     - Whether strategy was revised (pre != post)
     - Whether revised strategy aligns with target architectural reframing
     """
-    defs = get_task_definitions().get("games", {}).get("CR2", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("CR2", {})
     episodes = defs.get("episodes", [])
 
     target_reframings = {
@@ -953,7 +1007,7 @@ def reconstruct_cr2_reframing_state(events: list) -> Dict[str, Any]:
         "all_completed": completed_count == len(episodes)
     }
 
-def reconstruct_cr3_affordance_state(events: list) -> Dict[str, Any]:
+def reconstruct_cr3_affordance_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs CR3 Affordance Synthesis state strictly from primitive events:
     - trial_presented (stimulus_id, trial_index, target_motif)
@@ -972,7 +1026,8 @@ def reconstruct_cr3_affordance_state(events: list) -> Dict[str, Any]:
     - Captures tool selection, action sequence, feedback observation, and subsequent strategy change.
     - Brute force click counting is not rewarded.
     """
-    defs = get_task_definitions().get("games", {}).get("CR3", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("CR3", {})
     trials = defs.get("trials", [])
 
     target_affordances = {
@@ -1084,7 +1139,7 @@ def reconstruct_cr3_affordance_state(events: list) -> Dict[str, Any]:
         "all_completed": completed_count == len(trials)
     }
 
-def reconstruct_m1_diligence_state(events: list) -> Dict[str, Any]:
+def reconstruct_m1_diligence_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs M1 Baseline Diligence state strictly from primitive events:
     - unit_presented (stimulus_id, unit_index, is_mandatory)
@@ -1092,14 +1147,14 @@ def reconstruct_m1_diligence_state(events: list) -> Dict[str, Any]:
     - unit_completed (stimulus_id, unit_index)
 
     Invariants:
-    - Exactly 3 mandatory units.
     - Minimum is clearly stated.
     - Completion of mandatory units satisfies requirement (baseline diligence);
       completion alone is not "high motivation".
     """
-    defs = get_task_definitions().get("games", {}).get("M1", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("M1", {})
     trials = defs.get("trials", [])
-    mandatory_units = defs.get("mandatory_units", 3)
+    mandatory_units = defs.get("mandatory_units", 2 if "2" in ver else 3)
 
     completed_units = set()
     action_counts = {}
@@ -1139,7 +1194,7 @@ def reconstruct_m1_diligence_state(events: list) -> Dict[str, Any]:
         "all_completed": completed_count >= len(trials)
     }
 
-def reconstruct_m2_continuation_state(events: list) -> Dict[str, Any]:
+def reconstruct_m2_continuation_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs M2 Optional Continuation state strictly from primitive events:
     - unit_presented (stimulus_id, unit_index, is_mandatory)
@@ -1149,15 +1204,14 @@ def reconstruct_m2_continuation_state(events: list) -> Dict[str, Any]:
     - continuation_choice_selected (choice: 'continue' | 'conclude', optional_index)
 
     Invariants:
-    - 3 mandatory units.
     - Explicit finish-or-continue choice after minimum.
-    - Up to 3 optional units.
     - Stopping at minimum is neutral.
     - Continuation is behavioral observation, not a high motivation score.
     """
-    defs = get_task_definitions().get("games", {}).get("M2", {})
-    mandatory_target = defs.get("mandatory_units", 3)
-    max_optional = defs.get("max_optional_units", 3)
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("M2", {})
+    mandatory_target = defs.get("mandatory_units", 2 if "2" in ver else 3)
+    max_optional = defs.get("max_optional_units", 2 if "2" in ver else 3)
 
     mandatory_completed = set()
     optional_completed = set()
@@ -1209,7 +1263,7 @@ def reconstruct_m2_continuation_state(events: list) -> Dict[str, Any]:
         "final_choice": final_choice
     }
 
-def reconstruct_m3_persistence_state(events: list) -> Dict[str, Any]:
+def reconstruct_m3_persistence_state(events: list, version: Optional[str] = None) -> Dict[str, Any]:
     """
     Reconstructs M3 Persistence Under Reduced Feedback state strictly from primitive events:
     - trial_presented (stimulus_id, unit_index, is_mandatory)
@@ -1225,7 +1279,8 @@ def reconstruct_m3_persistence_state(events: list) -> Dict[str, Any]:
     - Maximum observed continuation is right-censored at 6 units (3 mandatory + 3 voluntary).
     - No artificial submission experience or deception.
     """
-    defs = get_task_definitions().get("games", {}).get("M3", {})
+    ver = _detect_version_from_events(events, version)
+    defs = get_task_definitions(ver).get("games", {}).get("M3", {})
     mandatory_target = defs.get("mandatory_units", 3)
     max_units = mandatory_target + defs.get("max_voluntary_units", 3)
 

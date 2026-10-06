@@ -185,10 +185,6 @@ async function loadSessionDetail(sessionId) {
  };
 
  const dimensionRows = dims.map(d => {
- const p = d.profile || {};
- const scoreDisp = p.relative_score !== null && p.relative_score !== undefined ? `${p.relative_score} / 100` : '—';
- const rankDisp = p.relative_rank !== null && p.relative_rank !== undefined ? `#${p.relative_rank}` : '—';
- const levelDisp = levelBadge(p.relative_level);
  const relDisp = relBadge(d.relationship);
  const confDisp = d.confidence || 'LIMITED';
  const safeName = window.escapeHtml(d.display_name || d.parameter);
@@ -208,9 +204,6 @@ async function loadSessionDetail(sessionId) {
  <td class="p-3 text-center font-mono text-xs font-semibold">${deltaDisp}</td>
  <td class="p-3 text-center text-xs">${relDisp}</td>
  <td class="p-3 text-center text-[10px] uppercase text-black font-semibold">${confDisp}</td>
- <td class="p-3 text-center text-sm font-semibold">${scoreDisp}</td>
- <td class="p-3 text-center font-semibold text-xs">${rankDisp}</td>
- <td class="p-3 text-center">${levelDisp}</td>
  </tr>
  `;
  }).join('');
@@ -278,12 +271,13 @@ async function loadSessionDetail(sessionId) {
 
  <div class="bg-white border-l-4 border-[var(--accent-gold)] border-t border-r border-b border-[var(--grid-border)] p-4 mb-6 text-xs text-black leading-relaxed">
  <strong class="text-[var(--text-primary)] uppercase tracking-wider">Psychometric Safeguard Notice:</strong>
- This dossier provides a <em>provisional within-person relative profile</em> for exploratory human review only. It reflects the relative emphasis among dimensions for this candidate, NOT normative trait scores, clinical evaluation, or automated hiring recommendations. Cross-method convergence is exploratory; empirical normative calibration is pending.
+ This dossier provides a <em>provisional within-person relative profile</em> for exploratory human review only. It reflects the relative emphasis among dimensions for this candidate, NOT normative trait scores, clinical evaluation, or automated hiring decisions. Cross-method convergence is exploratory; empirical normative calibration is pending.
+ <div class="mt-2 text-[11px] text-[var(--text-secondary)] italic">${meta.safeguards?.sjt_emphasis_note || "Relative emphasis in this SJT's trade-offs: higher / middle / lower."}</div>
  </div>
 
  <div class="mb-6">
  <div class="flex justify-between items-baseline mb-3">
- <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)]">2. Within-Person Relative Dimension Profile</h3>
+ <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)]">2. Evidence by parameter</h3>
  <span class="text-xs uppercase tracking-wider text-black">Profile Completeness: <strong class="text-[var(--text-primary)]">${completeness}</strong></span>
  </div>
  <div class="overflow-x-auto border border-[var(--grid-border)] bg-white">
@@ -296,9 +290,6 @@ async function loadSessionDetail(sessionId) {
  <th class="p-3 text-center">Delta</th>
  <th class="p-3 text-center">Relationship</th>
  <th class="p-3 text-center">Confidence</th>
- <th class="p-3 text-center">Score (0–100)</th>
- <th class="p-3 text-center">Rank</th>
- <th class="p-3 text-center">Profile Position</th>
  </tr>
  </thead>
  <tbody>

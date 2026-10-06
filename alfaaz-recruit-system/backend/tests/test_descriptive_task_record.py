@@ -8,9 +8,9 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from sqlmodel import Session, create_engine, SQLModel, select
-from app.models.recruit import DBSession, DBTelemetryEvent, DBDataQualityFlag, DBEvidence, DBSJTResponse
-from app.services.descriptive_task_record import get_session_task_records, NEUTRAL_TAG, DOSSIER_STATEMENT, LOCKED_GAMES
-from app.services.evidence_integrator import integrate_session_evidence
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBDataQualityFlag, DBEvidence, DBSJTResponse
+from recruit_system.services.descriptive_task_record import get_session_task_records, NEUTRAL_TAG, DOSSIER_STATEMENT, LOCKED_GAMES
+from recruit_system.services.evidence_integrator import integrate_session_evidence
 
 class TestDescriptiveTaskRecord(unittest.TestCase):
     def setUp(self):

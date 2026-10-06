@@ -35,8 +35,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
 
  const units = [
  { stimulus_id: 'M1_U1', recipient: 'Master Ghulam — Calligraphy Diwan', note: 'Formal invitation envelope 1' },
- { stimulus_id: 'M1_U2', recipient: 'Valley Youth Literary Guild', note: 'Formal invitation envelope 2' },
- { stimulus_id: 'M1_U3', recipient: 'Regional Heritage Conservation Archive', note: 'Formal invitation envelope 3' }
+ { stimulus_id: 'M1_U2', recipient: 'Valley Youth Literary Guild', note: 'Formal invitation envelope 2' }
  ];
 
  function render() {
@@ -91,7 +90,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
  `,
  actionButtonId: 'stampBtn',
  actionButtonText: (currentIdx === units.length - 1) ? 'Confirm & Finish &rarr;' : 'Apply Wax Seal &rarr;',
- progressText: `Envelope ${currentIdx + 1} of ${units.length} (Required Minimum: 3)`
+ progressText: `Envelope ${currentIdx + 1} of ${units.length} (Required Minimum: 2)`
  });
 
  document.getElementById('stampBtn')?.addEventListener('click', () => {
@@ -151,14 +150,12 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
 
  const mandatoryUnits = [
  { stimulus_id: 'M2_M1', label: 'Guest Folder 1: Artisan Guild', is_mandatory: true },
- { stimulus_id: 'M2_M2', label: 'Guest Folder 2: Regional Patrons', is_mandatory: true },
- { stimulus_id: 'M2_M3', label: 'Guest Folder 3: Visiting Artists', is_mandatory: true }
+ { stimulus_id: 'M2_M2', label: 'Guest Folder 2: Regional Patrons', is_mandatory: true }
  ];
 
  const optionalUnits = [
  { stimulus_id: 'M2_O1', label: 'Extra Folder 1: Visiting Students', is_mandatory: false },
- { stimulus_id: 'M2_O2', label: 'Extra Folder 2: Community Observers', is_mandatory: false },
- { stimulus_id: 'M2_O3', label: 'Extra Folder 3: Studio Assistants', is_mandatory: false }
+ { stimulus_id: 'M2_O2', label: 'Extra Folder 2: Community Observers', is_mandatory: false }
  ];
 
  function render() {
@@ -171,11 +168,11 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
  </div>
  ${renderTutorialCard({
  icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`,
- goal: 'Stamp 3 required folders, then decide if you want to continue.',
+ goal: 'Stamp 2 required folders, then decide if you want to continue.',
  steps: [
- 'Stamp the 3 required guest folders.',
- 'After folder 3, you choose whether to finish or do optional extras.',
- 'Stopping after 3 is completely fine and has no penalty.'
+ 'Stamp the 2 required guest folders.',
+ 'After folder 2, you choose whether to finish or do optional extras.',
+ 'Stopping after 2 is completely fine and has no penalty.'
  ]
  })}
  </div>
@@ -196,11 +193,11 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
  app.innerHTML = renderGameShell({
  worldCode: 'W7',
  worldIndex: 6,
- stepBadge: `Required Phase (${mandatoryIdx + 1}/3)`,
+ stepBadge: `Required Phase (${mandatoryIdx + 1}/2)`,
  title: 'The Courtesy Sleeves',
  subtitle: 'Prepare courtesy sleeves for event attendees.',
  instructionPrompt: 'Your Task',
- instruction: 'Assemble the required folder below. Three required folders are needed to satisfy this activity.',
+ instruction: 'Assemble the required folder below. Two required folders are needed to satisfy this activity.',
  stimulusContent: `
  <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] text-center shadow-xs rounded-xs">
  <div class="max-w-sm mx-auto p-4 bg-white border border-[var(--grid-border)] rounded-xs">
@@ -261,7 +258,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
  </div>
  <div class="text-sm font-semibold text-[var(--text-primary)] mb-1">Required Minimum Satisfied</div>
  <p class="text-base text-black max-w-md mx-auto leading-relaxed mb-6">
- You have completed the required 3 courtesy folders. You may conclude this activity now, or make up to ${optionalUnits.length - optionalIdx} extra folders.
+ You have completed the required 2 courtesy folders. You may conclude this activity now, or make up to ${optionalUnits.length - optionalIdx} extra folders.
  <br><strong class="text-stone-700 mt-1 inline-block">Stopping at the minimum is completely neutral.</strong>
  </p>
 

@@ -48,18 +48,8 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
  user_initial: 5,
  default_transfer: 0,
  context_note: 'Both Have Enough'
- },
- {
- stimulus_id: 'C1_R3',
- title: 'Round 3: Your Basket is Low',
- description: 'Your basket has only 3 tiles (you need 6). Your partner has 7 tiles.',
- partner_initial: 7,
- user_initial: 3,
- default_transfer: 0,
- context_note: 'Keep Your Tiles'
  }
  ];
- if (rounds.length > 2) rounds.pop();
 
 
  function render() {
@@ -69,7 +59,7 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
  ${renderHeader("The Artisan's Basket", 'Coordinate ceramic tiles with your workshop partner.')}
  ${renderTutorialCard({
  icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>`,
- goal: 'Share tiles with your partner across 3 rounds.',
+ goal: 'Share tiles with your partner across 2 rounds.',
  steps: [
  'Check how many tiles you and your partner currently have.',
  'Use plus and minus to move tiles if you wish.',
@@ -138,11 +128,11 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
  `,
  summaryContent: `
  <span>Sharing: <strong class="text-[var(--text-primary)]">${transferCount} tiles</strong> (You keep ${userTotal})</span>
- <span class="text-sm text-black ">Round ${currentRound + 1} of 3</span>
+ <span class="text-sm text-black ">Round ${currentRound + 1} of ${rounds.length}</span>
  `,
  actionButtonId: 'confirmTransferBtn',
- actionButtonText: currentRound < 2 ? 'Confirm Allocation &rarr;' : 'Confirm & Finish &rarr;',
- progressText: `Round ${currentRound + 1} of 3`
+ actionButtonText: currentRound < rounds.length - 1 ? 'Confirm Allocation &rarr;' : 'Confirm & Finish &rarr;',
+ progressText: `Round ${currentRound + 1} of ${rounds.length}`
  });
 
  document.getElementById('minusTileBtn')?.addEventListener('click', () => {
@@ -185,7 +175,7 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
  task_def_version: '1.0'
  });
 
- if (currentRound < 2) {
+ if (currentRound < rounds.length - 1) {
  currentRound++;
  transferCount = 0;
  logRoundPresented();
@@ -193,7 +183,7 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
  } else {
  onComplete({
  mini_game: 'C1',
- observations_count: 3
+ observations_count: rounds.length
  });
  }
  });
@@ -241,19 +231,8 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
  { id: 'SLOT_CENTER_ADJACENT', label: 'Center Slot (Crowds the Hall)' },
  { id: 'SLOT_PERIMETER_WEST', label: 'West Wall (Keeps Path Open)' }
  ]
- },
- {
- stimulus_id: 'C2_R3',
- title: 'Round 3: Partner Moved Down',
- partner_desc: 'Partner moved their artwork down to the lower wall.',
- slots: [
- { id: 'SLOT_UPPER_GALLERY', label: 'Top Wall (Balances Both Sides)' },
- { id: 'SLOT_LOWER_CONGESTED', label: 'Lower Wall (Crowds Lower Wall)' },
- { id: 'SLOT_MID_SIDE', label: 'Side Niche (Side Corner)' }
- ]
  }
  ];
- if (rounds.length > 2) rounds.pop();
 
 
  function render() {
@@ -263,7 +242,7 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
  ${renderHeader('The Gallery Wall', 'Coordinate artwork placement with your partner.')}
  ${renderTutorialCard({
  icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>`,
- goal: 'Choose a wall spot for your piece across 3 rounds.',
+ goal: 'Choose a wall spot for your piece across 2 rounds.',
  steps: [
  'See where your partner hung their artwork.',
  'Choose an open wall spot from the options.',
@@ -297,7 +276,7 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
  <span class="text-base text-[var(--text-primary)]">
  <strong>${r.title}:</strong> ${r.partner_desc}
  </span>
- <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-medium">Round ${currentRound + 1} of 3</span>
+ <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-medium">Round ${currentRound + 1} of ${rounds.length}</span>
  </div>
  `,
  interactionContent: `
@@ -318,12 +297,12 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
  `,
  summaryContent: `
  <span>${chosenSlot ? `You selected: <strong class="text-[var(--text-primary)]">${activeSlot?.label}</strong>` : 'Select a spot above to continue.'}</span>
- <span class="text-sm text-black ">Round ${currentRound + 1} of 3</span>
+ <span class="text-sm text-black ">Round ${currentRound + 1} of ${rounds.length}</span>
  `,
  actionButtonId: 'confirmWallBtn',
- actionButtonText: currentRound < 2 ? 'Confirm Placement &rarr;' : 'Confirm & Finish &rarr;',
+ actionButtonText: currentRound < rounds.length - 1 ? 'Confirm Placement &rarr;' : 'Confirm & Finish &rarr;',
  actionButtonDisabled: !chosenSlot,
- progressText: `Round ${currentRound + 1} of 3`
+ progressText: `Round ${currentRound + 1} of ${rounds.length}`
  });
 
  app.querySelectorAll('.slot-btn').forEach(btn => {
@@ -358,7 +337,7 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
  task_def_version: '1.0'
  });
 
- if (currentRound < 2) {
+ if (currentRound < rounds.length - 1) {
  currentRound++;
  chosenSlot = null;
  logRoundPresented();
@@ -366,7 +345,7 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
  } else {
  onComplete({
  mini_game: 'C2',
- observations_count: 3
+ observations_count: rounds.length
  });
  }
  });

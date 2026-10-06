@@ -10,15 +10,15 @@ from fastapi.testclient import TestClient
 # Add backend to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
-from app.models.recruit import (
+from recruit_system.models.recruit import (
     DBSession, DBTelemetryEvent, DBFeature, DBEvidence,
     DBDataQualityFlag, DBSJTResponse, DBAccessibilityProfile
 )
-from app.services.feature_extractor import extract_session_features
-from app.services.evidence_integrator import (
+from recruit_system.services.feature_extractor import extract_session_features
+from recruit_system.services.evidence_integrator import (
     integrate_session_evidence, PARAM_MINIGAMES, BAND_ORDINALS, ORDINAL_BANDS
 )
-from app.main import app
+from recruit_system.main import app
 
 client = TestClient(app)
 

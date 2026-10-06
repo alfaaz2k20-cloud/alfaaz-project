@@ -8,15 +8,15 @@ import uuid
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from sqlmodel import Session, SQLModel, create_engine, select
-from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
-from app.services.telemetry_engine import ingest_telemetry_batch
-from app.services.task_definitions import (
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
+from recruit_system.services.telemetry_engine import ingest_telemetry_batch
+from recruit_system.services.task_definitions import (
     get_task_definitions,
     reconstruct_e1_sorting_state,
     reconstruct_e2_recovery_state,
     reconstruct_e3_adaptation_state
 )
-from app.services.feature_extractor import extract_session_features
+from recruit_system.services.feature_extractor import extract_session_features
 
 class TestStep4W4ShiftingGrid(unittest.TestCase):
     def setUp(self):
@@ -36,11 +36,19 @@ class TestStep4W4ShiftingGrid(unittest.TestCase):
         self.db.close()
 
     def test_w4_task_definitions_golden_fixture(self):
-        """Verify task definitions for E1 (9 trials, unannounced shift), E2 (4 sequences: 3 disrupted, 1 control), E3 (3 condition transitions)."""
-        defs = get_task_definitions()
+        """Verify task definitions for E1 (9 trials in V1, 8 in V2), E2 (4 sequences in V1, 3 in V2), E3 (3 condition transitions)."""
+        defs = get_task_definitions("1.0")
         games = defs.get("games", {})
 
-        # E1: exactly 9 trials, shift at trial index 3/4
+        # V2: E1 (8 trials), E2 (3 sequences)
+        defs_v2 = get_task_definitions("2.0")
+        games_v2 = defs_v2.get("games", {})
+        self.assertEqual(games_v2["E1"].get("total_trials"), 8)
+        self.assertEqual(len(games_v2["E1"].get("trials", [])), 8)
+        self.assertEqual(games_v2["E2"].get("total_trials"), 3)
+        self.assertEqual(len(games_v2["E2"].get("trials", [])), 3)
+
+        # E1: exactly 9 trials in V1, shift at trial index 3/4
         self.assertIn("E1", games)
         e1 = games["E1"]
         self.assertEqual(e1.get("total_trials"), 9)
@@ -54,7 +62,7 @@ class TestStep4W4ShiftingGrid(unittest.TestCase):
         self.assertEqual(e1["trials"][3]["rule"], "SHAPE")
         self.assertEqual(e1["trials"][8]["rule"], "SHAPE")
 
-        # E2: exactly 4 sequences (3 disrupted, 1 control)
+        # E2: exactly 4 sequences (3 disrupted, 1 control) in V1
         self.assertIn("E2", games)
         e2 = games["E2"]
         self.assertEqual(e2.get("total_trials"), 4)

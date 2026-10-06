@@ -26,7 +26,6 @@ from recruit_system.services.task_definitions import (
 )
 
 SCORING_VERSION = "game_sjt_scoring_v1"
-TASK_DEF_VERSION = "1.0"
 
 GAME_PARAMETERS = {
     "F1": "empathy",
@@ -57,7 +56,7 @@ GAME_BOUNDS = {
     "F2": {"min": 0, "max": 3, "min_obs": 1},
     "F3": {"min": 0, "max": 2, "min_obs": 1},
     "A1": {"min": 0, "max": 4, "min_obs": 2},
-    "A2": {"min": 0.0, "max": 1.0, "min_obs": 2},
+    "A2": {"min": 0.0, "max": 1.0, "min_obs": 3},
     "A3": {"min": 0, "max": 4, "min_obs": 2},
     "C1": {"min": 0, "max": 2, "min_obs": 1},
     "C2": {"min": 0, "max": 2, "min_obs": 1},
@@ -124,13 +123,13 @@ def _classify_band(relative_score: Optional[float]) -> Optional[str]:
     return "MODERATE"
 
 
-def score_f1(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_f1(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     F1 Cue Detection: 6 trials.
     Matches candidate choice (accommodate, maintain_objective, clarify)
     with target condition_type.
     """
-    defs = get_task_definitions().get("games", {}).get("F1", {})
+    defs = get_task_definitions(task_def_version).get("games", {}).get("F1", {})
     trials = defs.get("trials", [])
     expected_map = {t["stimulus_id"]: t.get("condition_type") for t in trials}
 
@@ -153,12 +152,12 @@ def score_f1(events: List[Any]) -> Tuple[int, int, List[str]]:
     return raw_score, len(submits), []
 
 
-def score_f2(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_f2(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     F2 Ambiguous Cue: 4 trials.
     Matches candidate action (act, clarify, maintain) with condition_type.
     """
-    defs = get_task_definitions().get("games", {}).get("F2", {})
+    defs = get_task_definitions(task_def_version).get("games", {}).get("F2", {})
     trials = defs.get("trials", [])
     expected_map = {t["stimulus_id"]: t.get("condition_type") for t in trials}
 
@@ -181,7 +180,7 @@ def score_f2(events: List[Any]) -> Tuple[int, int, List[str]]:
     return raw_score, len(submits), []
 
 
-def score_f3(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_f3(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     F3 Context Change: 3 transitions.
     Evaluates adapted response against shifted context appropriate option.
@@ -206,12 +205,12 @@ def score_f3(events: List[Any]) -> Tuple[int, int, List[str]]:
     return raw_score, completed, []
 
 
-def score_a1(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_a1(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     A1 Classification: 5 items.
     Checks destination folder against target_folder.
     """
-    defs = get_task_definitions().get("games", {}).get("A1", {})
+    defs = get_task_definitions(task_def_version).get("games", {}).get("A1", {})
     trials = defs.get("trials", [])
     target_map = {t["stimulus_id"]: t.get("target_folder") for t in trials}
 
@@ -234,7 +233,7 @@ def score_a1(events: List[Any]) -> Tuple[int, int, List[str]]:
     return raw_score, len(sorted_items), []
 
 
-def score_a2(events: List[Any]) -> Tuple[float, int, List[str]]:
+def score_a2(events: List[Any], task_def_version: str = "2.0") -> Tuple[float, int, List[str]]:
     """
     A2 Exception Handling: 4 trials (3 true exceptions, 1 clean control).
     True Precision: TP / (TP + FP)
@@ -243,7 +242,7 @@ def score_a2(events: List[Any]) -> Tuple[float, int, List[str]]:
     - If total_flagged (TP + FP) == 0: precision = 0.0
     - Requires genuine_evaluated >= 3; otherwise insufficient observations.
     """
-    defs = get_task_definitions().get("games", {}).get("A2", {})
+    defs = get_task_definitions(task_def_version).get("games", {}).get("A2", {})
     trials = defs.get("trials", [])
     expected_map = {t["stimulus_id"]: t for t in trials}
 
@@ -285,7 +284,7 @@ def score_a2(events: List[Any]) -> Tuple[float, int, List[str]]:
                 false_positives += 1
 
     flags = []
-    if genuine_evaluated < 2:
+    if genuine_evaluated < 3:
         flags.append("insufficient_observations")
 
     total_flagged = true_positives + false_positives
@@ -294,11 +293,11 @@ def score_a2(events: List[Any]) -> Tuple[float, int, List[str]]:
     else:
         precision = 0.0
 
-    obs_count = genuine_evaluated if genuine_evaluated < 2 else len(decisions)
+    obs_count = genuine_evaluated if genuine_evaluated < 3 else len(decisions)
     return precision, obs_count, flags
 
 
-def score_a3(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_a3(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     A3 Quality Control: 5 ledger records.
     raw_score = true_positives + true_negatives
@@ -311,7 +310,7 @@ def score_a3(events: List[Any]) -> Tuple[int, int, List[str]]:
     return raw_score, inspected, []
 
 
-def score_c1(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_c1(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     C1 Resource Cooperation: 3 rounds.
     R1 (deficit): transfer >= 2
@@ -341,7 +340,7 @@ def score_c1(events: List[Any]) -> Tuple[int, int, List[str]]:
     return raw_score, completed, []
 
 
-def score_c2(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_c2(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     C2 Coordination: 3 rounds.
     Checks if chosen placement avoids crowding / conflict.
@@ -373,7 +372,7 @@ def score_c2(events: List[Any]) -> Tuple[int, int, List[str]]:
     return raw_score, len(placements), []
 
 
-def score_c3(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_c3(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     C3 Collaboration Repair: 3 breakdown episodes.
     raw_score = completed_count of identified and executed repairs.
@@ -383,7 +382,7 @@ def score_c3(events: List[Any]) -> Tuple[int, int, List[str]]:
     return completed, completed, []
 
 
-def score_e1(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_e1(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     E1 Rule Shift: 9 sorting trials.
     raw_score = correct_count across rule shifts.
@@ -394,7 +393,7 @@ def score_e1(events: List[Any]) -> Tuple[int, int, List[str]]:
     return correct, completed, []
 
 
-def score_e2(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_e2(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     E2 Setback Recovery: 4 sequences.
     raw_score = constructive_count.
@@ -405,7 +404,7 @@ def score_e2(events: List[Any]) -> Tuple[int, int, List[str]]:
     return constructive, completed, []
 
 
-def score_e3(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_e3(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     E3 Changing Conditions: 3 environmental transitions.
     raw_score = aligned_count.
@@ -416,7 +415,7 @@ def score_e3(events: List[Any]) -> Tuple[int, int, List[str]]:
     return aligned, completed, []
 
 
-def score_q1(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_q1(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     Q1 Optional Discovery: 4 decisions with optional alcoves.
     raw_score = useful_resources_viewed_count (0 to 4).
@@ -427,7 +426,7 @@ def score_q1(events: List[Any]) -> Tuple[int, int, List[str]]:
     return min(4, useful), completed, []
 
 
-def score_q2(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_q2(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     Q2 Mystery Exploration: 4 artifacts with optional clues.
     raw_score = number of artifacts where candidate inspected optional clues (0 to 4).
@@ -439,7 +438,7 @@ def score_q2(events: List[Any]) -> Tuple[int, int, List[str]]:
     return min(4, investigated), completed, []
 
 
-def score_q3(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_q3(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     Q3 Information Integration: 3 synthesis episodes.
     raw_score = integrated_correctly_count (target-aligned decisions).
@@ -450,7 +449,7 @@ def score_q3(events: List[Any]) -> Tuple[int, int, List[str]]:
     return aligned, completed, []
 
 
-def score_cr1(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_cr1(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     CR1 Open Construction: 2 stages.
     raw_score = valid_solution_count (valid structural assemblies).
@@ -461,7 +460,7 @@ def score_cr1(events: List[Any]) -> Tuple[int, int, List[str]]:
     return min(2, val_count), completed, []
 
 
-def score_cr2(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_cr2(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     CR2 Constraint Shift: 3 episodes.
     raw_score = target_aligned_count of reframing adjustments.
@@ -472,7 +471,7 @@ def score_cr2(events: List[Any]) -> Tuple[int, int, List[str]]:
     return aligned, completed, []
 
 
-def score_cr3(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_cr3(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     CR3 Unspecified Tool Use: 3 trials.
     raw_score = aligned_count of tool affordances matching required action.
@@ -483,7 +482,7 @@ def score_cr3(events: List[Any]) -> Tuple[int, int, List[str]]:
     return aligned, completed, []
 
 
-def score_m1(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_m1(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     M1 Minimum Completed: 3 mandatory diligence units.
     raw_score = units completed (0 to 3).
@@ -493,7 +492,7 @@ def score_m1(events: List[Any]) -> Tuple[int, int, List[str]]:
     return min(3, completed), completed, []
 
 
-def score_m2(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_m2(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     M2 Optional Continuation: 3 mandatory + up to 3 optional units.
     raw_score = optional_completed_count (0 to 3 voluntary units completed).
@@ -507,7 +506,7 @@ def score_m2(events: List[Any]) -> Tuple[int, int, List[str]]:
     return min(3, opt_count), mand_count + opt_count, []
 
 
-def score_m3(events: List[Any]) -> Tuple[int, int, List[str]]:
+def score_m3(events: List[Any], task_def_version: str = "2.0") -> Tuple[int, int, List[str]]:
     """
     M3 Persistence Under Reduced Feedback: 3 mandatory + up to 3 voluntary units.
     raw_score = voluntary_completed_count (0 to 3 voluntary units persevered).
@@ -548,7 +547,8 @@ SCORERS = {
 def score_game(
     game_id: str,
     events: List[Any],
-    quality_flags: Optional[List[Any]] = None
+    quality_flags: Optional[List[Any]] = None,
+    task_def_version: str = "2.0"
 ) -> ScoredGame:
     """
     Scores a single game deterministically from accepted primitive events.
@@ -583,7 +583,7 @@ def score_game(
                     observation_count=len(events),
                     flags=[flag_name],
                     scoring_version=SCORING_VERSION,
-                    task_def_version=TASK_DEF_VERSION
+                    task_def_version=task_def_version
                 )
             if scope == game_id and flag_name in ["seq_gap", "invalid_timing"]:
                 flags.append(flag_name)
@@ -605,7 +605,7 @@ def score_game(
             observation_count=len(events),
             flags=["interrupted"],
             scoring_version=SCORING_VERSION,
-            task_def_version=TASK_DEF_VERSION
+            task_def_version=task_def_version
         )
 
     # 3. Check presence of events
@@ -624,7 +624,7 @@ def score_game(
             observation_count=0,
             flags=["no_events"],
             scoring_version=SCORING_VERSION,
-            task_def_version=TASK_DEF_VERSION
+            task_def_version=task_def_version
         )
 
     # 4. Invoke deterministic scorer
@@ -644,7 +644,7 @@ def score_game(
             observation_count=0,
             flags=["scorer_not_found"],
             scoring_version=SCORING_VERSION,
-            task_def_version=TASK_DEF_VERSION
+            task_def_version=task_def_version
         )
 
     norm_events = []
@@ -680,7 +680,7 @@ def score_game(
             observation_count=obs_count,
             flags=flags,
             scoring_version=SCORING_VERSION,
-            task_def_version=TASK_DEF_VERSION
+            task_def_version=task_def_version
         )
 
     # 6. Compute bounded relative score
@@ -704,7 +704,7 @@ def score_game(
         observation_count=obs_count,
         flags=flags,
         scoring_version=SCORING_VERSION,
-        task_def_version=TASK_DEF_VERSION
+        task_def_version=task_def_version
     )
 
 
@@ -717,6 +717,13 @@ def score_session_games(db: Session, session_id: str) -> Dict[str, ScoredGame]:
         .where(DBTelemetryEvent.session_id == session_id)
         .order_by(DBTelemetryEvent.seq)
     ).all()
+
+    # Detect task_def_version from events
+    detected_version = "1.0"
+    for ev in events:
+        if getattr(ev, "task_def_version", None):
+            detected_version = ev.task_def_version
+            break
 
     quality_flags = db.exec(
         select(DBDataQualityFlag).where(DBDataQualityFlag.session_id == session_id)
@@ -732,7 +739,7 @@ def score_session_games(db: Session, session_id: str) -> Dict[str, ScoredGame]:
     scores: Dict[str, ScoredGame] = {}
     for gid in GAME_PARAMETERS.keys():
         g_events = grouped_events.get(gid, [])
-        scored = score_game(gid, g_events, quality_flags)
+        scored = score_game(gid, g_events, quality_flags, detected_version)
         scores[gid] = scored
 
         # Persist DBGameScore (upsert or insert)

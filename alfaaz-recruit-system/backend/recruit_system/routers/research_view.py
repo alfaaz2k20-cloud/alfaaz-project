@@ -243,10 +243,6 @@ def get_session_research_view(
             "game_observation_count": ev.game_observation_count,
             "game_consistency_spread": ev.game_consistency_spread,
             "cross_method_delta": ev.cross_method_delta,
-            "fused_relative": ev.fused_relative,
-            "profile_relative_score": ev.profile_relative_score,
-            "profile_relative_rank": ev.profile_relative_rank,
-            "profile_relative_level": ev.profile_relative_level,
             "profile_completeness": ev.profile_completeness,
             "game_status": ev.game_status,
             "game_band": ev.game_band,
@@ -307,12 +303,6 @@ def get_session_research_view(
                 "status": ev.prediction_status if ev else "NOT_AVAILABLE",
                 "predicted_relative": ev.predicted_sjt_relative if ev else None,
                 "model_version": ev.model_version if ev else "none"
-            },
-            "profile": {
-                "fused_relative": ev.fused_relative if ev else None,
-                "relative_score": ev.profile_relative_score if ev else None,
-                "relative_rank": ev.profile_relative_rank if ev else None,
-                "relative_level": ev.profile_relative_level if ev else "INSUFFICIENT"
             },
             "relationship": ev.relationship if ev else "NOT_AVAILABLE",
             "confidence": ev.confidence if ev else "LIMITED",
@@ -473,7 +463,7 @@ def get_session_research_view(
             "safeguards": {
                 "banner": "Research evidence view. Not validated. Not for selection decisions.",
                 "ipsative_note": "Parameters are derived from Situational Judgment responses and interactive behavioral tasks. These are provisional within-person relative indicators, NOT standardized trait scores.",
-                "sjt_emphasis_note": "Relative emphasis in this candidate's profile: relatively strong / relatively middle / relatively lower."
+                "sjt_emphasis_note": "Relative emphasis in this SJT's trade-offs: higher / middle / lower."
             }
         },
         "profile_summary": profile_summary,

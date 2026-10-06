@@ -8,10 +8,10 @@ import uuid
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from fastapi.testclient import TestClient
-from app.main import app
-from app.core.security import create_token
-from app.models.recruit import DBSession, DBApplicantIdentity, DBRecruiterAccessLog
-from app.db.session import SessionLocal
+from recruit_system.main import app
+from recruit_system.core.security import create_token
+from recruit_system.models.recruit import DBSession, DBApplicantIdentity, DBRecruiterAccessLog
+from recruit_system.db.session import SessionLocal
 
 client = TestClient(app)
 

@@ -71,7 +71,6 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
  ]
  }
  ];
- if (stages.length > 2) stages.pop();
 
 
  function render() {
@@ -321,7 +320,6 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
  ]
  }
  ];
- if (episodes.length > 2) episodes.pop();
 
 
  function render() {
@@ -646,36 +644,8 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
  'sponge_block:textured_flick': { success: false, text: 'Sponge cannot be flicked; dropped heavy inconsistent blot.' },
  'linen_swab:mottled_dab': { success: false, text: 'Dense blot soaked through fiber without texture.' }
  }
- },
- {
- stimulus_id: 'CR3_T3',
- title: 'Trial 3: Gold Leaf Polish',
- target_motif: 'gold_leaf_seal',
- objective: 'Smooth delicate gold leaf onto a seal for a mirror-like shine.',
- tools: [
- { id: 'agate_stone', name: 'Agate Burnisher Stone', icon: '&#11044;', affordance: 'Silky smooth gemstone tip with zero friction' },
- { id: 'polished_wood', name: 'Dense Boxwood Block', icon: '&#129685;', affordance: 'Dense wood block that gives flat pressure' },
- { id: 'copper_burnisher', name: 'Curved Copper Spoon', icon: '&#129348;', affordance: 'Polished metal curve for gentle gliding' }
- ],
- methods: [
- { id: 'friction_free_rub', name: 'Small Circles', desc: 'Small circular motions with light steady contact.' },
- { id: 'planar_press', name: 'Flat Press', desc: 'Straight downward pressure without sliding sideways.' },
- { id: 'chisel_scrape', name: 'Angled Scrape', desc: 'Drag across surface with sharp edge.' }
- ],
- feedback_map: {
- 'agate_stone:friction_free_rub': { success: true, text: 'Flawless mirror-like specular gold luster achieved with zero abrasion.' },
- 'polished_wood:planar_press': { success: true, text: 'Uniformly bonded gold leaf with balanced satin foundation.' },
- 'copper_burnisher:friction_free_rub': { success: true, text: 'Deep warm metallic sheen burnished smoothly over seal.' },
- 'agate_stone:planar_press': { success: true, text: 'Firm adhesion established; solid reflective gilding.' },
- 'polished_wood:friction_free_rub': { success: true, text: 'Subtle warm satin luster across gold leaf.' },
- 'copper_burnisher:planar_press': { success: true, text: 'Stable flat bond achieved under spoon bowl.' },
- 'agate_stone:chisel_scrape': { success: false, text: 'Hard edge scratched through delicate gold foil.' },
- 'polished_wood:chisel_scrape': { success: false, text: 'Wood corner tore gold leaf away from size.' },
- 'copper_burnisher:chisel_scrape': { success: false, text: 'Metal rim gouged underlying paper impression.' }
- }
  }
  ];
- if (trials.length > 2) trials.pop();
 
 
  function render() {
@@ -688,7 +658,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
  </div>
  ${renderTutorialCard({
  icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>`,
- goal: 'Choose and test tools for craft tasks across 3 rounds.',
+ goal: 'Choose and test tools for craft tasks across 2 rounds.',
  steps: [
  'Read the craft goal on the workbench.',
  'Pick a tool and choose how you will use it.',
@@ -876,7 +846,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
  } else {
  onComplete({
  mini_game: 'CR3',
- observations_count: 3
+ observations_count: trials.length
  });
  }
  });

@@ -15,17 +15,17 @@ from fastapi.testclient import TestClient
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from sqlmodel import Session, create_engine, SQLModel, select
-from app.main import app
-from app.models.recruit import (
+from recruit_system.main import app
+from recruit_system.models.recruit import (
     DBSession, DBTelemetryEvent, DBDataQualityFlag, DBSJTResponse, DBConsentRecord
 )
-from app.services.rate_limiter import (
+from recruit_system.services.rate_limiter import (
     get_client_ip, SimpleRateLimiter, GlobalRateLimiter, TokenBucket,
     TelemetryRateLimiter, IdentityRateLimiter, SJTSubmitRateLimiter,
     recruit_session_start_minute_limiter, recruit_session_start_hour_limiter,
     recruit_session_start_global_limiter
 )
-from app.services.telemetry_engine import (
+from recruit_system.services.telemetry_engine import (
     ingest_telemetry_batch, calculate_active_duration_ms, TelemetryCapReachedException
 )
 
@@ -315,7 +315,7 @@ class TestGate2R2TelemetryIntegrity(unittest.TestCase):
 
         # In TestClient, patch db or use app database
         # We can test router logic directly by simulating the conditions:
-        from app.routers.recruit import submit_telemetry, TelemetryBatchRequest
+        from recruit_system.routers.recruit import submit_telemetry, TelemetryBatchRequest
         req = TelemetryBatchRequest(session_id=session_id, events=[{"seq": 1, "t_ms": 1.0}])
         dummy_request = make_dummy_request()
 
@@ -347,8 +347,8 @@ class TestGate2R2TelemetryIntegrity(unittest.TestCase):
         - identity before consent: rejected, 0 rows
         - affirmative consent: exactly 1 session ('CONSENTED'), 1 consent record, 1 assignment, 0 identity
         """
-        from app.routers.recruit import submit_consent, submit_identity, ConsentRequest, IdentityRequest
-        from app.models.recruit import DBApplicantIdentity, DBTaskAssignment
+        from recruit_system.routers.recruit import submit_consent, submit_identity, ConsentRequest, IdentityRequest
+        from recruit_system.models.recruit import DBApplicantIdentity, DBTaskAssignment
 
         with Session(self.engine) as db:
             # 1. Initial datastore state: completely empty
@@ -399,7 +399,7 @@ class TestGate2R2TelemetryIntegrity(unittest.TestCase):
         Verify that telemetry and completion strictly require status == 'ACTIVE'.
         Legacy 'GAMES', 'INIT', 'CONSENTED', 'SJT', or 'COMPLETE' cannot submit telemetry.
         """
-        from app.routers.recruit import submit_telemetry, complete_session, TelemetryBatchRequest, CompleteSessionRequest
+        from recruit_system.routers.recruit import submit_telemetry, complete_session, TelemetryBatchRequest, CompleteSessionRequest
 
         with Session(self.engine) as db:
             s_id = str(uuid.uuid4())

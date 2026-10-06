@@ -5,11 +5,11 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
-from app.main import app
-from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBEvidence, DBConsentRecord
+from recruit_system.main import app
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBEvidence, DBConsentRecord
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine, select
-from app.db.session import get_db
+from recruit_system.db.session import get_db
 
 ALL_QUARANTINED_GAMES = [
     "F1", "F2", "F3",
@@ -56,7 +56,7 @@ class TestEndToEndLineage(unittest.TestCase):
 
     def _get_research_data(self, session_id):
         """Helper: override admin auth, fetch research dossier, return parsed JSON."""
-        from app.routers.research_view import require_admin as rv_require_admin
+        from recruit_system.routers.research_view import require_admin as rv_require_admin
         app.dependency_overrides[rv_require_admin] = lambda: {"email": "a@t.com", "status": "ADMIN"}
         res = self.client.get(f"/recruit/research/sessions/{session_id}")
         self.assertEqual(res.status_code, 200, res.text)

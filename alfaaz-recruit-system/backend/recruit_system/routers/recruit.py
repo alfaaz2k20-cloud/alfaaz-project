@@ -318,7 +318,7 @@ def submit_telemetry(req: TelemetryBatchRequest, request: Request, db: Session =
         if not already_accepted and new_events:
             raise HTTPException(
                 status_code=403,
-                detail="Telemetry rejected: session is already COMPLETE and event was not previously accepted"
+                detail="Telemetry rejected: session is already COMPLETE (must be ACTIVE) and event was not previously accepted"
             )
 
         # Case A: All events previously accepted (or Case C: mixture of old and new)
@@ -333,11 +333,11 @@ def submit_telemetry(req: TelemetryBatchRequest, request: Request, db: Session =
             }
         }
 
-    # Session eligibility: accept while session is in any active assessment phase
-    if session_obj.status not in ("CONSENTED", "SJT", "ACTIVE"):
+    # Session eligibility: telemetry strictly requires status == 'ACTIVE'
+    if session_obj.status != "ACTIVE":
         raise HTTPException(
             status_code=403,
-            detail=f"Telemetry rejected: session status is '{session_obj.status}', must be CONSENTED/SJT/ACTIVE"
+            detail=f"Telemetry rejected: session status is '{session_obj.status}', must be ACTIVE"
         )
 
     # 24-hour expiration check

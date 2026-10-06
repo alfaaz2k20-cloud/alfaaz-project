@@ -162,7 +162,7 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
             desc_text = f"completed {opp_count} of 5 classification items"
 
         elif gid == "A2":
-            # Strict A2 Gate: genuine exceptions < 2 -> INSUFFICIENT
+            # Strict A2 Gate: genuine exceptions < 3 -> INSUFFICIENT
             decs = [e for e in evs if e.action == "decision_logged"]
             if not decs:
                 decs = [e for e in evs if e.action == "exception_resolved"]
@@ -174,11 +174,14 @@ def get_session_task_records(db: Session, session_id: str) -> List[Dict[str, Any
                 if sid and sid not in seen_stim:
                     seen_stim.add(sid)
                     stim = get_stimulus_ground_truth("A2", sid)
-                    if stim and stim.get("condition_type") == "true_exception":
+                    if stim:
+                        if stim.get("condition_type") == "true_exception":
+                            genuine_stim.add(sid)
+                    else:
                         genuine_stim.add(sid)
 
             opp_count = len(genuine_stim) if seen_stim else len(decs)
-            if opp_count < 2:
+            if opp_count < 3:
                 gate_status = "INSUFFICIENT"
                 desc_text = "INSUFFICIENT"
             else:

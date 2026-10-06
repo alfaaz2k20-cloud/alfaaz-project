@@ -6,11 +6,11 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
-from app.services.telemetry_engine import ingest_telemetry_batch, _get_task_definitions
-from app.models.recruit import DBSession, DBTelemetryEvent, DBDataQualityFlag
+from recruit_system.services.telemetry_engine import ingest_telemetry_batch, _get_task_definitions
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBDataQualityFlag
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine, select
-import app.services.telemetry_engine as te
+import recruit_system.services.telemetry_engine as te
 
 
 class TestFailClosedTelemetry(unittest.TestCase):
@@ -115,7 +115,7 @@ class TestFailClosedTelemetry(unittest.TestCase):
         old = te._task_definitions
         te._task_definitions = None
         try:
-            with patch("app.services.telemetry_engine.open",
+            with patch("recruit_system.services.telemetry_engine.open",
                         side_effect=IOError("Disk read error")):
                 with self.assertRaises(RuntimeError) as ctx:
                     te._get_task_definitions()
@@ -136,7 +136,7 @@ class TestFailClosedTelemetry(unittest.TestCase):
         old = te._task_definitions
         te._task_definitions = None
         try:
-            with patch("app.services.telemetry_engine.open",
+            with patch("recruit_system.services.telemetry_engine.open",
                         side_effect=FileNotFoundError("no such file")):
                 with self.assertRaises(RuntimeError):
                     te._get_task_definitions()

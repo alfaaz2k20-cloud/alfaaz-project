@@ -7,9 +7,9 @@ import uuid
 # Add backend to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
-from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature
-from app.services.feature_extractor import extract_session_features
-from app.services.evidence_integrator import integrate_session_evidence
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBFeature
+from recruit_system.services.feature_extractor import extract_session_features
+from recruit_system.services.evidence_integrator import integrate_session_evidence
 from sqlmodel import Session, create_engine, SQLModel
 
 class TestGate6SyntheticProfiles(unittest.TestCase):

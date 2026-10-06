@@ -11,10 +11,10 @@ from sqlmodel import SQLModel, Session, create_engine, select
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
-from app.core.config import RECRUIT_CONSENT_COPY, _find_recruit_copy_blockers
-from app.models.recruit import DBApplicantIdentity, DBConsentRecord, DBSession
-from app.routers.recruit import ConsentRequest, IdentityRequest, submit_consent, submit_identity
-from app.services.rate_limiter import (
+from recruit_system.core.config import RECRUIT_CONSENT_COPY, _find_recruit_copy_blockers
+from recruit_system.models.recruit import DBApplicantIdentity, DBConsentRecord, DBSession
+from recruit_system.routers.recruit import ConsentRequest, IdentityRequest, submit_consent, submit_identity
+from recruit_system.services.rate_limiter import (
     recruit_session_start_hour_limiter,
     recruit_session_start_limiter,
     recruit_session_start_minute_limiter,
@@ -110,7 +110,10 @@ class TestGate1ConsentIdentity(unittest.TestCase):
         self.assertEqual(error.exception.status_code, 429)
 
     def test_consent_controls_are_unchecked_and_gated(self):
-        source = (Path(__file__).resolve().parents[1] / "frontend" / "src" / "recruit.js").read_text(encoding="utf-8")
+        js_path = Path(__file__).resolve().parents[2] / "frontend" / "src" / "recruit.js"
+        if not js_path.exists():
+            js_path = Path(__file__).resolve().parents[3] / "frontend" / "src" / "recruit.js"
+        source = js_path.read_text(encoding="utf-8")
         self.assertNotIn('id="ageConfirm" required checked', source)
         self.assertNotIn('id="consentAgree" required checked', source)
         self.assertNotIn("telemetryConfirm", source)

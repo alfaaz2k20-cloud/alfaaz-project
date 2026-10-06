@@ -76,20 +76,6 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
  { id: 'OPT_USEFUL_1', topic: 'Register Stitching Styles', info_value: 'high', summary: 'Crimson thread stitching was reserved for registered royal guilds.' },
  { id: 'OPT_CONTROL_1', topic: 'Filing Code Reference', info_value: 'low', summary: 'Old municipal tax files use code series B.' }
  ]
- },
- {
- stimulus_id: 'Q1_D4',
- title: 'Natural Pigment Jars',
- scenario: 'Select storage conditions for delicate saffron and indigo pigments.',
- options: [
- { id: 'dark_vented_cedar_chest', label: 'Dark Cedar Chest (Controlled humidity and shade)' },
- { id: 'ambient_glass_display', label: 'Open Glass Vitrine (Direct gallery daylight)' },
- { id: 'sealed_vacuum_capsule', label: 'Sealed Dry Capsule (Zero-humidity container)' }
- ],
- optional_resources: [
- { id: 'OPT_USEFUL_2', topic: 'Natural Pigment Care', info_value: 'high', summary: 'Direct sunlight fades saffron. Cedar wood naturally repels insects.' },
- { id: 'OPT_CONTROL_2', topic: 'Shelf Weight Limits', info_value: 'low', summary: 'Wooden display shelves can hold up to 25 kilograms.' }
- ]
  }
  ];
 
@@ -103,7 +89,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
  </div>
  ${renderTutorialCard({
  icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`,
- goal: 'Make preservation choices for 4 historic items.',
+ goal: 'Make preservation choices for 3 historic items.',
  steps: [
  'Read the artifact prompt and choose your option.',
  'Click optional research notes if you want more background.',
@@ -135,7 +121,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
  <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
  <div class="flex items-center justify-between mb-2">
  <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Artifact Record</span>
- <span class="text-sm text-[var(--accent-gold)] uppercase font-medium">Record ${currentDecision + 1} of 4</span>
+ <span class="text-sm text-[var(--accent-gold)] uppercase font-medium">Record ${currentDecision + 1} of ${decisions.length}</span>
  </div>
  <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)]">${d.title}</div>
  <div class="text-base text-black mt-1.5 leading-relaxed">${d.scenario}</div>
@@ -240,7 +226,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
  } else {
  onComplete({
  mini_game: 'Q1',
- observations_count: 4
+ observations_count: decisions.length
  });
  }
  });
@@ -322,23 +308,6 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
  { id: 'attr_standard_tax_slip', label: 'City Transit Pass Receipt' },
  { id: 'attr_royal_chancery_grant', label: 'Palace Land Grant' },
  { id: 'attr_secret_monastery_order', label: 'Monastic Travel Permission' }
- ]
- },
- {
- stimulus_id: 'Q2_T4',
- artifact_id: 'unknown_crest_impression_4',
- title: 'Relic 4: Embossed Paper Falcon Stamp',
- description: 'A raised paper emblem showing a falcon above mountain ridges.',
- uncertainty_level: 'high',
- expected_value: 'moderate',
- clues: [
- { id: 'CLUE_FALCON_CREST', label: 'Raised Falcon Symbol', detail: 'Used by paper makers working along the Jhelum River.' },
- { id: 'CLUE_PAPER_WATERMARK', label: 'Paper Watermark Inspection', detail: 'Fine wire watermark includes maker initials M.K.' }
- ],
- attributions: [
- { id: 'attr_jhelum_paper_atelier', label: 'Jhelum River Paper Workshop' },
- { id: 'attr_foreign_consulate_letter', label: 'Foreign Embassy Stationery' },
- { id: 'attr_unknown_unresolved', label: 'Unresolved Historical Origin' }
  ]
  }
  ];
@@ -496,7 +465,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
  } else {
  onComplete({
  mini_game: 'Q2',
- observations_count: 4
+ observations_count: relics.length
  });
  }
  });
@@ -576,7 +545,6 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
  ]
  }
  ];
- if (episodes.length > 2) episodes.pop();
 
 
  function render() {

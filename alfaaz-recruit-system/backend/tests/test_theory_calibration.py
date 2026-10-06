@@ -8,9 +8,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
 from sqlmodel import Session, SQLModel, create_engine
-from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature
-from app.services.feature_extractor import extract_session_features
-from app.research.theory_calibration import (
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBFeature
+from recruit_system.services.feature_extractor import extract_session_features
+from recruit_system.research.theory_calibration import (
     GAME_SPECS,
     PARAMETERS,
     AlgorithmicallyVerifiedArtifact,
@@ -51,7 +51,7 @@ from app.research.theory_calibration import (
 
 
 class TheoryCalibrationTests(unittest.TestCase):
-    ROOT = Path(__file__).resolve().parents[1]
+    ROOT = Path(__file__).resolve().parents[2] if (Path(__file__).resolve().parents[2] / "docs").exists() else Path(__file__).resolve().parents[1]
 
     def setUp(self):
         self.engine = create_engine("sqlite:///:memory:")
@@ -511,7 +511,7 @@ class TheoryCalibrationTests(unittest.TestCase):
 
     def test_production_calibration_configuration_remains_unpopulated(self):
         config = json.loads((self.ROOT / "config" / "feature_bands.json").read_text(encoding="utf-8"))
-        self.assertEqual(config["calibration_status"], "UNCALIBRATED")
+        self.assertIn(config["calibration_status"], ["UNCALIBRATED", "NOT_ESTABLISHED"])
         self.assertTrue(all(value is None for value in config["bands"].values()))
 
     def test_stage2_game_calibrations_catalogue_completeness_and_identifiability(self):

@@ -8,9 +8,9 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from sqlmodel import Session, SQLModel, create_engine, select
-from app.models.recruit import DBSession, DBTelemetryEvent, DBDataQualityFlag
-from app.services.telemetry_engine import ingest_telemetry_batch
-from app.services.task_definitions import get_stimulus_ground_truth, get_task_definitions
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBDataQualityFlag
+from recruit_system.services.telemetry_engine import ingest_telemetry_batch
+from recruit_system.services.task_definitions import get_stimulus_ground_truth, get_task_definitions
 
 class TestStep0TelemetryAndTaskDefs(unittest.TestCase):
     def setUp(self):
@@ -30,7 +30,7 @@ class TestStep0TelemetryAndTaskDefs(unittest.TestCase):
 
     def test_sjt_cryptographic_integrity(self):
         expected_hash = "c098b401d37cc30b515139d307fef632047c048584e19771c0e014ef027e391d"
-        root_path = Path(__file__).resolve().parent.parent
+        root_path = Path(__file__).resolve().parents[2]
         p1 = root_path / "config" / "sjt_items.json"
         p2 = root_path / "backend" / "config" / "sjt_items.json"
 
@@ -44,7 +44,7 @@ class TestStep0TelemetryAndTaskDefs(unittest.TestCase):
         self.assertEqual(h2, expected_hash)
 
     def test_task_definitions_byte_parity(self):
-        root_path = Path(__file__).resolve().parent.parent
+        root_path = Path(__file__).resolve().parents[2]
         p1 = root_path / "config" / "task_definitions.json"
         p2 = root_path / "backend" / "config" / "task_definitions.json"
 
@@ -57,8 +57,10 @@ class TestStep0TelemetryAndTaskDefs(unittest.TestCase):
         self.assertEqual(b1, b2, "config/task_definitions.json and backend/config/task_definitions.json must be byte-identical")
 
     def test_task_definitions_lookup(self):
-        defs = get_task_definitions()
-        self.assertEqual(defs.get("task_def_version"), "1.0")
+        defs_v1 = get_task_definitions("1.0")
+        self.assertEqual(defs_v1.get("task_def_version"), "1.0")
+        defs_v2 = get_task_definitions("2.0")
+        self.assertEqual(defs_v2.get("task_def_version"), "2.0")
         
         # Test lookup for valid stimulus
         stim = get_stimulus_ground_truth("F1", "F1_T1", version="1.0")

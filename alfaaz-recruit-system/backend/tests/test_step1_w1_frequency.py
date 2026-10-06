@@ -8,10 +8,10 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from sqlmodel import Session, SQLModel, create_engine, select
-from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
-from app.services.telemetry_engine import ingest_telemetry_batch
-from app.services.task_definitions import get_task_definitions, get_stimulus_ground_truth
-from app.services.feature_extractor import extract_session_features
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
+from recruit_system.services.telemetry_engine import ingest_telemetry_batch
+from recruit_system.services.task_definitions import get_task_definitions, get_stimulus_ground_truth
+from recruit_system.services.feature_extractor import extract_session_features
 
 class TestStep1W1Frequency(unittest.TestCase):
     def setUp(self):
@@ -31,8 +31,8 @@ class TestStep1W1Frequency(unittest.TestCase):
         self.db.close()
 
     def test_w1_task_definitions_structure(self):
-        """Verify F1 (6 trials), F2 (4 trials), F3 (3 transitions) in task definitions."""
-        defs = get_task_definitions()
+        """Verify F1 (6 trials), F2 (4 trials), F3 (3 transitions) in V1 task definitions, and V2 (5, 3, 3)."""
+        defs = get_task_definitions("1.0")
         games = defs.get("games", {})
 
         # F1: 6 trials, attunement_to_cues
@@ -63,6 +63,14 @@ class TestStep1W1Frequency(unittest.TestCase):
         self.assertEqual(f3.get("total_transitions", f3.get("total_trials")), 3)
         f3_trials = f3.get("transitions", f3.get("trials", []))
         self.assertEqual(len(f3_trials), 3)
+
+        # V2: F1 (5 trials), F2 (3 trials), F3 (3 transitions)
+        defs_v2 = get_task_definitions("2.0")
+        games_v2 = defs_v2.get("games", {})
+        self.assertEqual(games_v2["F1"].get("total_trials"), 5)
+        self.assertEqual(len(games_v2["F1"].get("trials", [])), 5)
+        self.assertEqual(games_v2["F2"].get("total_trials"), 3)
+        self.assertEqual(len(games_v2["F2"].get("trials", [])), 3)
 
     def test_f1_raw_telemetry_ingestion(self):
         """Verify F1 6 trials emit raw telemetry without derived scores and ingest cleanly."""

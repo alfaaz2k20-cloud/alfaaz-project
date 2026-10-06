@@ -9,10 +9,10 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from sqlmodel import Session, SQLModel, create_engine, select
-from app.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
-from app.services.telemetry_engine import ingest_telemetry_batch
-from app.services.task_definitions import get_task_definitions, get_stimulus_ground_truth
-from app.services.feature_extractor import extract_session_features
+from recruit_system.models.recruit import DBSession, DBTelemetryEvent, DBFeature, DBDataQualityFlag
+from recruit_system.services.telemetry_engine import ingest_telemetry_batch
+from recruit_system.services.task_definitions import get_task_definitions, get_stimulus_ground_truth
+from recruit_system.services.feature_extractor import extract_session_features
 
 class TestStep2W2Archive(unittest.TestCase):
     def setUp(self):
@@ -32,17 +32,23 @@ class TestStep2W2Archive(unittest.TestCase):
         self.db.close()
 
     def test_w2_task_definitions_golden_fixture(self):
-        """Verify task definitions for A1 (5 items), A2 (4 items: 3 exceptions + 1 control), A3 (5 QC records)."""
-        defs = get_task_definitions()
+        """Verify task definitions for A1 (5 items in V1, 4 in V2), A2 (4 items: 3 exceptions + 1 control), A3 (5 QC records)."""
+        defs = get_task_definitions("1.0")
         games = defs.get("games", {})
 
-        # A1: 5 items
+        # A1: 5 items in V1
         self.assertIn("A1", games)
         a1 = games["A1"]
         self.assertEqual(a1.get("total_trials"), 5)
         self.assertEqual(len(a1.get("trials", [])), 5)
         expected_a1_stims = [f"DOC_{i:02d}" for i in range(1, 6)]
         self.assertEqual([t["stimulus_id"] for t in a1["trials"]], expected_a1_stims)
+
+        # V2: A1 (4 items)
+        defs_v2 = get_task_definitions("2.0")
+        games_v2 = defs_v2.get("games", {})
+        self.assertEqual(games_v2["A1"].get("total_trials"), 4)
+        self.assertEqual(len(games_v2["A1"].get("trials", [])), 4)
 
         # A2: 4 trials (3 true exceptions, 1 clean control)
         self.assertIn("A2", games)
@@ -203,7 +209,7 @@ class TestStep2W2Archive(unittest.TestCase):
 
     def test_a3_raw_telemetry_and_quarantine_preservation(self):
         """A3 emits granular inspect/toggle/verify telemetry, client summaries are rejected, and server reconstructs state."""
-        from app.services.task_definitions import reconstruct_a3_inspection_state
+        from recruit_system.services.task_definitions import reconstruct_a3_inspection_state
 
         # 1. Ingest primitive events: 5 inspected records, 3 toggled discrepancies, verification finalized
         primitive_events = []
