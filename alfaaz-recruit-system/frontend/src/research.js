@@ -213,28 +213,28 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
 
     // Case 1: Neither method available
     if (sjtVal === null && gameVal === null) {
-      return '<span class="text-stone-500 italic">Insufficient observations across both methods to establish an interpretive profile.</span>';
+      return '<span class="text-stone-500 italic">Insufficient observations across methods.</span>';
     }
 
     // Case 2: Only SJT available (Game data pending or insufficient)
     if (sjtVal !== null && gameVal === null) {
       if (sjtVal >= 0.60) {
-        return `High situational prioritization (${sjtVal.toFixed(2)}). Candidate deliberately prioritizes <strong>${name}</strong> in scenario trade-offs; awaiting interactive activity telemetry for behavioral verification.`;
+        return `High situational intent (${sjtVal.toFixed(2)}); deliberate scenario priority pending behavioral activity verification.`;
       } else if (sjtVal >= 0.40) {
-        return `Balanced situational prioritization (${sjtVal.toFixed(2)}). Candidate maintains a moderate baseline in scenario trade-offs; awaiting interactive activity telemetry for behavioral verification.`;
+        return `Balanced situational baseline (${sjtVal.toFixed(2)}); steady trade-off priority pending behavioral activity verification.`;
       } else {
-        return `Lower situational prioritization (${sjtVal.toFixed(2)}). Candidate allocates lower relative emphasis to <strong>${name}</strong> in scenario trade-offs; awaiting interactive activity telemetry for behavioral verification.`;
+        return `Lower situational priority (${sjtVal.toFixed(2)}); selective trade-off allocation pending behavioral activity verification.`;
       }
     }
 
     // Case 3: Only Games available (SJT missing)
     if (sjtVal === null && gameVal !== null) {
       if (gameVal >= 0.60) {
-        return `Elevated behavioral activity (${gameVal.toFixed(2)}). Candidate demonstrated strong relative engagement in practical tasks; awaiting situational judgment trade-offs for cognitive comparison.`;
+        return `Elevated behavioral activity (${gameVal.toFixed(2)}); strong task engagement pending situational trade-off confirmation.`;
       } else if (gameVal >= 0.40) {
-        return `Moderate behavioral activity (${gameVal.toFixed(2)}). Candidate demonstrated standard baseline engagement during tasks; awaiting situational judgment trade-offs for cognitive comparison.`;
+        return `Moderate behavioral activity (${gameVal.toFixed(2)}); standard task engagement pending situational trade-off confirmation.`;
       } else {
-        return `Lower behavioral activity (${gameVal.toFixed(2)}). Candidate demonstrated minimal engagement during interactive tasks; awaiting situational judgment trade-offs for cognitive comparison.`;
+        return `Lower behavioral activity (${gameVal.toFixed(2)}); minimal task engagement pending situational trade-off confirmation.`;
       }
     }
 
@@ -242,70 +242,122 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
     const deltaStr = deltaVal !== null ? deltaVal.toFixed(2) : (Math.abs(sjtVal - gameVal)).toFixed(2);
     const confTag = conf === 'SUBSTANTIAL' 
       ? '<span class="text-emerald-700 font-medium"> [High Confidence]</span>' 
-      : (conf === 'MODERATE' ? '<span class="text-stone-600"> [Moderate Confidence]</span>' : '<span class="text-amber-700"> [Limited Confidence &middot; Review Holistically]</span>');
+      : (conf === 'MODERATE' ? '<span class="text-stone-600"> [Moderate Confidence]</span>' : '<span class="text-amber-700"> [Limited Confidence]</span>');
 
     // 4A: ALIGNED (Delta <= 0.15)
     if (rel === 'ALIGNED' || (deltaVal !== null && deltaVal <= 0.15)) {
       if (sjtVal >= 0.55 && gameVal >= 0.55) {
-        return `<strong>Strong convergent strength</strong> (&Delta; ${deltaStr}). Candidate places high deliberate value on ${name} and consistently exhibits strong behavioral follow-through during studio tasks.${confTag}`;
+        return `<strong>Strong convergent strength</strong> (&Delta; ${deltaStr}). High deliberate priority matches active simulation execution.${confTag}`;
       } else if (sjtVal < 0.38 && gameVal < 0.38) {
-        return `<strong>Consistently lower emphasis</strong> (&Delta; ${deltaStr}). Candidate consistently selects alternative priorities across both deliberate trade-offs and practical activities.${confTag}`;
+        return `<strong>Consistently lower emphasis</strong> (&Delta; ${deltaStr}). Selectively allocated away across both judgment trade-offs and simulation.${confTag}`;
       } else {
-        return `<strong>Harmonious baseline</strong> (&Delta; ${deltaStr}). Stated judgment trade-offs closely mirror practical simulation behaviors, indicating stable and predictable self-regulation.${confTag}`;
+        return `<strong>Harmonious baseline</strong> (&Delta; ${deltaStr}). Stated trade-offs closely mirror practical simulation actions.${confTag}`;
       }
     }
 
     // 4B: PARTLY_ALIGNED (0.15 < Delta <= 0.30)
     if (rel === 'PARTLY_ALIGNED' || (deltaVal !== null && deltaVal <= 0.30)) {
       if (sjtVal > gameVal) {
-        return `<strong>Moderate judgment emphasis</strong> (&Delta; ${deltaStr}). Candidate endorses higher theoretical importance in scenario trade-offs than directly manifested during active simulation tasks.${confTag}`;
+        return `<strong>Moderate judgment emphasis</strong> (&Delta; ${deltaStr}). Higher conceptual importance in trade-offs than manifested in simulation.${confTag}`;
       } else {
-        return `<strong>Moderate behavioral emphasis</strong> (&Delta; ${deltaStr}). Candidate demonstrated higher practical engagement during active tasks than expressed in verbal judgment choices.${confTag}`;
+        return `<strong>Moderate behavioral emphasis</strong> (&Delta; ${deltaStr}). Higher hands-on task engagement than expressed in judgment trade-offs.${confTag}`;
       }
     }
 
     // 4C: DIFFERENT (Delta > 0.30)
     if (rel === 'DIFFERENT' || (deltaVal !== null && deltaVal > 0.30)) {
       if (sjtVal > gameVal) {
-        return `<strong>Marked cross-method divergence</strong> (&Delta; ${deltaStr}). High stated situational intent contrasts with significantly lower interactive behavioral expression. May indicate aspirational values or hesitation under practical task constraints. Explore during interview.${confTag}`;
+        return `<strong>Marked divergence</strong> (&Delta; ${deltaStr}). High stated situational intent contrasts with lower task execution; explore aspirational values in interview.${confTag}`;
       } else {
-        return `<strong>Marked cross-method divergence</strong> (&Delta; ${deltaStr}). Candidate instinctively demonstrates high behavioral execution during interactive tasks despite giving it lower priority in deliberate trade-offs. Suggests tacit competence exceeding stated preference. Explore during interview.${confTag}`;
+        return `<strong>Marked divergence</strong> (&Delta; ${deltaStr}). Hands-on execution exceeds stated situational priority; suggests tacit, unstated capability. Explore in interview.${confTag}`;
       }
     }
 
     // Fallback for edge cases
     if (rel === 'NOT_ENOUGH_EVIDENCE') {
-      return `<span class="text-stone-500 italic">Inconclusive cross-method evidence (&Delta; ${deltaStr}). Partial observations did not reach evidentiary thresholds for definitive triangulation.${confTag}</span>`;
+      return `<span class="text-stone-500 italic">Inconclusive evidence (&Delta; ${deltaStr}); observations below verification threshold.${confTag}</span>`;
     }
 
-    return `Provisional profile data. Relative evidence spans SJT (${sjtVal.toFixed(2)}) and Games (${gameVal.toFixed(2)}).${confTag}`;
+    return `Provisional data (&Delta; ${deltaStr}): SJT ${sjtVal.toFixed(2)}, Games ${gameVal.toFixed(2)}.${confTag}`;
   };
 
-const dimensionRows = dims.map(d => {
- const relDisp = relBadge(d.relationship);
- const confDisp = d.confidence || 'LIMITED';
- const safeName = window.escapeHtml(d.display_name || d.parameter);
- const sjtRel = (d.sjt && d.sjt.relative !== null && d.sjt.relative !== undefined) ? d.sjt.relative.toFixed(2) : '—';
- const gameRel = (d.game_relative !== null && d.game_relative !== undefined) ? d.game_relative.toFixed(2) : ((d.games && d.games.relative !== null && d.games.relative !== undefined) ? d.games.relative.toFixed(2) : '—');
- const deltaDisp = (d.cross_method_delta !== null && d.cross_method_delta !== undefined) ? d.cross_method_delta.toFixed(2) : '—';
- const obs = window.escapeHtml(d.observed_behavior || '—');
-    const interp = getDossierInterpretation(d);
+  let activeSortMode = 'sjt';
+  const hasSjt = dims.some(d => d.sjt && d.sjt.relative !== null && d.sjt.relative !== undefined);
+  const hasGame = dims.some(d => (d.game_relative !== null && d.game_relative !== undefined) || (d.games && d.games.relative !== null && d.games.relative !== undefined));
+  const hasDelta = dims.some(d => d.cross_method_delta !== null && d.cross_method_delta !== undefined);
 
-    return `
-    <tr class="border-b border-[var(--grid-border)]">
-      <td class="p-3 font-medium text-[var(--text-primary)] min-w-[180px]">
-        <div>${safeName}</div>
-        <div class="text-[10px] text-black mt-0.5">${obs}</div>
-      </td>
-      <td class="p-3 text-center font-mono text-xs">${sjtRel}</td>
-      <td class="p-3 text-center font-mono text-xs">${gameRel}</td>
-      <td class="p-3 text-center font-mono text-xs font-semibold">${deltaDisp}</td>
-      <td class="p-3 text-center text-xs whitespace-nowrap">${relDisp}</td>
-      <td class="p-3 text-center text-[10px] uppercase text-black font-semibold whitespace-nowrap">${confDisp}</td>
-      <td class="p-3 text-xs text-[var(--text-primary)] leading-relaxed min-w-[280px]">${interp}</td>
-    </tr>
-    `;
- }).join('');
+  if (!hasSjt && hasGame) {
+    activeSortMode = 'game';
+  }
+
+  const sortDimensions = (mode) => {
+    return [...dims].sort((a, b) => {
+      let valA, valB, tieA, tieB;
+      if (mode === 'game') {
+        valA = a.game_relative !== null && a.game_relative !== undefined 
+          ? Number(a.game_relative) 
+          : ((a.games && a.games.relative !== null && a.games.relative !== undefined) ? Number(a.games.relative) : -Infinity);
+        valB = b.game_relative !== null && b.game_relative !== undefined 
+          ? Number(b.game_relative) 
+          : ((b.games && b.games.relative !== null && b.games.relative !== undefined) ? Number(b.games.relative) : -Infinity);
+        tieA = a.sjt?.relative !== null && a.sjt?.relative !== undefined ? Number(a.sjt.relative) : -Infinity;
+        tieB = b.sjt?.relative !== null && b.sjt?.relative !== undefined ? Number(b.sjt.relative) : -Infinity;
+      } else if (mode === 'delta') {
+        valA = a.cross_method_delta !== null && a.cross_method_delta !== undefined ? Number(a.cross_method_delta) : -Infinity;
+        valB = b.cross_method_delta !== null && b.cross_method_delta !== undefined ? Number(b.cross_method_delta) : -Infinity;
+        tieA = a.sjt?.relative !== null && a.sjt?.relative !== undefined ? Number(a.sjt.relative) : -Infinity;
+        tieB = b.sjt?.relative !== null && b.sjt?.relative !== undefined ? Number(b.sjt.relative) : -Infinity;
+      } else {
+        // default: 'sjt'
+        valA = a.sjt?.relative !== null && a.sjt?.relative !== undefined ? Number(a.sjt.relative) : -Infinity;
+        valB = b.sjt?.relative !== null && b.sjt?.relative !== undefined ? Number(b.sjt.relative) : -Infinity;
+        tieA = a.game_relative !== null && a.game_relative !== undefined 
+          ? Number(a.game_relative) 
+          : ((a.games && a.games.relative !== null && a.games.relative !== undefined) ? Number(a.games.relative) : -Infinity);
+        tieB = b.game_relative !== null && b.game_relative !== undefined 
+          ? Number(b.game_relative) 
+          : ((b.games && b.games.relative !== null && b.games.relative !== undefined) ? Number(b.games.relative) : -Infinity);
+      }
+
+      if (valB !== valA) return valB - valA;
+      if (tieB !== tieA) return tieB - tieA;
+      return (a.display_name || a.parameter || '').localeCompare(b.display_name || b.parameter || '');
+    });
+  };
+
+  const renderDimensionRowsHtml = (sortedList, mode) => {
+    return sortedList.map((d, index) => {
+      const relDisp = relBadge(d.relationship);
+      const confDisp = d.confidence || 'LIMITED';
+      const safeName = window.escapeHtml(d.display_name || d.parameter);
+      const sjtRel = (d.sjt && d.sjt.relative !== null && d.sjt.relative !== undefined) ? d.sjt.relative.toFixed(2) : '—';
+      const gameRel = (d.game_relative !== null && d.game_relative !== undefined) ? d.game_relative.toFixed(2) : ((d.games && d.games.relative !== null && d.games.relative !== undefined) ? d.games.relative.toFixed(2) : '—');
+      const deltaDisp = (d.cross_method_delta !== null && d.cross_method_delta !== undefined) ? d.cross_method_delta.toFixed(2) : '—';
+      const obs = window.escapeHtml(d.observed_behavior || '—');
+      const interp = getDossierInterpretation(d);
+      const rankNum = index + 1;
+
+      const sjtColStyle = mode === 'sjt' ? 'font-bold bg-[#faf8f5]' : '';
+      const gameColStyle = mode === 'game' ? 'font-bold bg-[#faf8f5]' : '';
+      const deltaColStyle = mode === 'delta' ? 'font-bold bg-[#faf8f5]' : '';
+
+      return `
+      <tr class="border-b border-[var(--grid-border)] hover:bg-[#faf9f6] transition-colors">
+        <td class="p-3 text-center font-mono text-xs font-semibold text-stone-500">${rankNum}</td>
+        <td class="p-3 font-medium text-[var(--text-primary)] min-w-[180px]">
+          <div>${safeName}</div>
+          <div class="text-[10px] text-black mt-0.5">${obs}</div>
+        </td>
+        <td class="p-3 text-center font-mono text-xs ${sjtColStyle}">${sjtRel}</td>
+        <td class="p-3 text-center font-mono text-xs ${gameColStyle}">${gameRel}</td>
+        <td class="p-3 text-center font-mono text-xs ${deltaColStyle}">${deltaDisp}</td>
+        <td class="p-3 text-center text-xs whitespace-nowrap">${relDisp}</td>
+        <td class="p-3 text-center text-[10px] uppercase text-black font-semibold whitespace-nowrap">${confDisp}</td>
+        <td class="p-3 text-xs text-[var(--text-primary)] leading-relaxed min-w-[280px]">${interp}</td>
+      </tr>
+      `;
+    }).join('');
+  };
 
  const batteryVer = meta.battery_version === '2.0' ? 'V2 (14-Game Candidate Core)' : (meta.battery_version === '1.0' ? 'V1 (21-Game Historical Battery)' : (meta.battery_version || '2.0 (Candidate Core)'));
  const taskRecords = data.task_records || [];
@@ -378,25 +430,40 @@ const dimensionRows = dims.map(d => {
  </div>
 
  <div class="mb-6">
- <div class="flex justify-between items-baseline mb-3">
+ <div class="flex flex-wrap justify-between items-center gap-3 mb-3">
+ <div class="flex items-center gap-3 flex-wrap">
  <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)]">2. Evidence by parameter</h3>
+ <div class="inline-flex items-center gap-1.5 p-1 bg-[#f0eeea] border border-[var(--grid-border)]">
+ <span class="text-[10px] uppercase font-mono tracking-wider text-black px-1.5 font-semibold">Rank By:</span>
+ <button id="sortBySjtBtn" class="px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider transition-colors ${activeSortMode === 'sjt' ? 'bg-[var(--text-primary)] text-white' : 'text-stone-700 hover:bg-[#e4e1dc]'} ${!hasSjt ? 'opacity-40 cursor-not-allowed' : ''}" ${!hasSjt ? 'disabled title="No SJT data"' : 'title="Rank by Written Situational Trade-offs"'}>
+ Written (SJT) ${activeSortMode === 'sjt' ? '&darr;' : ''}
+ </button>
+ <button id="sortByGameBtn" class="px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider transition-colors ${activeSortMode === 'game' ? 'bg-[var(--text-primary)] text-white' : 'text-stone-700 hover:bg-[#e4e1dc]'} ${!hasGame ? 'opacity-40 cursor-not-allowed' : ''}" ${!hasGame ? 'disabled title="Game data pending"' : 'title="Rank by Practical Hands-On Game Performance"'}>
+ Hands-On (Games) ${activeSortMode === 'game' ? '&darr;' : ''}
+ </button>
+ <button id="sortByDeltaBtn" class="px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider transition-colors ${activeSortMode === 'delta' ? 'bg-[var(--text-primary)] text-white' : 'text-stone-700 hover:bg-[#e4e1dc]'} ${!hasDelta ? 'opacity-40 cursor-not-allowed' : ''}" ${!hasDelta ? 'disabled title="Requires both SJT and Game data"' : 'title="Rank by Largest Difference Between Words and Actions"'}>
+ Difference (&Delta;) ${activeSortMode === 'delta' ? '&darr;' : ''}
+ </button>
+ </div>
+ </div>
  <span class="text-xs uppercase tracking-wider text-black">Profile Completeness: <strong class="text-[var(--text-primary)]">${completeness}</strong></span>
  </div>
  <div class="overflow-x-auto border border-[var(--grid-border)] bg-white">
  <table class="w-full text-left text-sm">
- <thead class="bg-[#f0eeea] text-xs uppercase tracking-wider text-black">
+ <thead class="bg-[#f0eeea] text-xs uppercase tracking-wider text-black select-none">
  <tr>
+ <th class="p-3 text-center w-12">#</th>
  <th class="p-3">Dimension & Observed Context</th>
- <th class="p-3 text-center">SJT Rel</th>
- <th class="p-3 text-center">Game Rel</th>
- <th class="p-3 text-center">Delta</th>
+ <th id="thSjt" class="p-3 text-center cursor-pointer hover:bg-[#e4e1dc] transition-colors" title="Click to rank by SJT">SJT Rel <span id="thSjtArrow">${activeSortMode === 'sjt' ? '&darr;' : ''}</span></th>
+ <th id="thGame" class="p-3 text-center cursor-pointer hover:bg-[#e4e1dc] transition-colors" title="Click to rank by Game">Game Rel <span id="thGameArrow">${activeSortMode === 'game' ? '&darr;' : ''}</span></th>
+ <th id="thDelta" class="p-3 text-center cursor-pointer hover:bg-[#e4e1dc] transition-colors" title="Click to rank by Delta">Delta <span id="thDeltaArrow">${activeSortMode === 'delta' ? '&darr;' : ''}</span></th>
  <th class="p-3 text-center">Relationship</th>
  <th class="p-3 text-center">Confidence</th>
-                <th class="p-3">Interpretation</th>
-              </tr>
+ <th class="p-3">Interpretation</th>
+ </tr>
  </thead>
- <tbody>
- ${dimensionRows}
+ <tbody id="dimensionTableBody">
+ ${renderDimensionRowsHtml(sortDimensions(activeSortMode), activeSortMode)}
  </tbody>
  </table>
  </div>
@@ -416,6 +483,49 @@ const dimensionRows = dims.map(d => {
  `;
  document.getElementById('backToRegistryBtn')?.addEventListener('click', () => loadSessionsList());
  document.getElementById('recomputeTelemetryBtn')?.addEventListener('click', () => loadSessionDetail(sessionId, true));
+
+ const updateTableSort = (newMode) => {
+ activeSortMode = newMode;
+ const tbody = document.getElementById('dimensionTableBody');
+ if (tbody) {
+ tbody.innerHTML = renderDimensionRowsHtml(sortDimensions(activeSortMode), activeSortMode);
+ }
+ const btnSjt = document.getElementById('sortBySjtBtn');
+ const btnGame = document.getElementById('sortByGameBtn');
+ const btnDelta = document.getElementById('sortByDeltaBtn');
+ if (btnSjt && hasSjt) {
+ btnSjt.className = `px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider transition-colors ${activeSortMode === 'sjt' ? 'bg-[var(--text-primary)] text-white' : 'text-stone-700 hover:bg-[#e4e1dc]'}`;
+ btnSjt.innerHTML = `Written (SJT) ${activeSortMode === 'sjt' ? '&darr;' : ''}`;
+ }
+ if (btnGame && hasGame) {
+ btnGame.className = `px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider transition-colors ${activeSortMode === 'game' ? 'bg-[var(--text-primary)] text-white' : 'text-stone-700 hover:bg-[#e4e1dc]'}`;
+ btnGame.innerHTML = `Hands-On (Games) ${activeSortMode === 'game' ? '&darr;' : ''}`;
+ }
+ if (btnDelta && hasDelta) {
+ btnDelta.className = `px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider transition-colors ${activeSortMode === 'delta' ? 'bg-[var(--text-primary)] text-white' : 'text-stone-700 hover:bg-[#e4e1dc]'}`;
+ btnDelta.innerHTML = `Difference (&Delta;) ${activeSortMode === 'delta' ? '&darr;' : ''}`;
+ }
+ const thSjtArrow = document.getElementById('thSjtArrow');
+ const thGameArrow = document.getElementById('thGameArrow');
+ const thDeltaArrow = document.getElementById('thDeltaArrow');
+ if (thSjtArrow) thSjtArrow.innerHTML = activeSortMode === 'sjt' ? '&darr;' : '';
+ if (thGameArrow) thGameArrow.innerHTML = activeSortMode === 'game' ? '&darr;' : '';
+ if (thDeltaArrow) thDeltaArrow.innerHTML = activeSortMode === 'delta' ? '&darr;' : '';
+ };
+
+ if (hasSjt) {
+ document.getElementById('sortBySjtBtn')?.addEventListener('click', () => updateTableSort('sjt'));
+ document.getElementById('thSjt')?.addEventListener('click', () => updateTableSort('sjt'));
+ }
+ if (hasGame) {
+ document.getElementById('sortByGameBtn')?.addEventListener('click', () => updateTableSort('game'));
+ document.getElementById('thGame')?.addEventListener('click', () => updateTableSort('game'));
+ }
+ if (hasDelta) {
+ document.getElementById('sortByDeltaBtn')?.addEventListener('click', () => updateTableSort('delta'));
+ document.getElementById('thDelta')?.addEventListener('click', () => updateTableSort('delta'));
+ }
+
  if (window.lucide) window.lucide.createIcons();
  } catch (err) {
  container.innerHTML = `

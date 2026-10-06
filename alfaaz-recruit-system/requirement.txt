@@ -1,0 +1,2 @@
+# Alfaaz Recruit System — Python Dependencies (Alias for requirements.txt)
+-r requirements.txt

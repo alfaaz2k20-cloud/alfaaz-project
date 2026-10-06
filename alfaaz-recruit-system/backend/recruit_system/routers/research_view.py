@@ -330,6 +330,43 @@ def get_session_research_view(
             "observed_behavior": ev.observed_behavior_summary if ev else "No data."
         })
 
+    # Multi-mode ranking metrics across SJT, Game, and Delta dimensions
+    def _sjt_key(d):
+        val = d.get("sjt", {}).get("relative")
+        return (val if val is not None else -999.0, d.get("game_relative") or -999.0, d.get("parameter", ""))
+    sorted_by_sjt = sorted(dimensions, key=_sjt_key, reverse=True)
+    for idx, d in enumerate(sorted_by_sjt, start=1):
+        d["rank_sjt"] = idx if d.get("sjt", {}).get("relative") is not None else None
+
+    def _game_key(d):
+        val = d.get("game_relative")
+        return (val if val is not None else -999.0, d.get("sjt", {}).get("relative") or -999.0, d.get("parameter", ""))
+    sorted_by_game = sorted(dimensions, key=_game_key, reverse=True)
+    for idx, d in enumerate(sorted_by_game, start=1):
+        d["rank_game"] = idx if d.get("game_relative") is not None else None
+
+    def _delta_key(d):
+        val = d.get("cross_method_delta")
+        return (val if val is not None else -999.0, d.get("sjt", {}).get("relative") or -999.0, d.get("parameter", ""))
+    sorted_by_delta = sorted(dimensions, key=_delta_key, reverse=True)
+    for idx, d in enumerate(sorted_by_delta, start=1):
+        d["rank_delta"] = idx if d.get("cross_method_delta") is not None else None
+
+    has_any_sjt = any(d.get("sjt", {}).get("relative") is not None for d in dimensions)
+    has_any_game = any(d.get("game_relative") is not None for d in dimensions)
+
+    if has_any_sjt:
+        dimensions.sort(key=_sjt_key, reverse=True)
+        for idx, d in enumerate(dimensions, start=1):
+            d["rank"] = idx
+    elif has_any_game:
+        dimensions.sort(key=_game_key, reverse=True)
+        for idx, d in enumerate(dimensions, start=1):
+            d["rank"] = idx
+    else:
+        for idx, d in enumerate(dimensions, start=1):
+            d["rank"] = idx
+
     feature_bands_cfg = load_feature_bands_config()
     integration_cfg = load_integration_config()
     calibration_status = feature_bands_cfg.get("calibration_status", "UNCALIBRATED")
