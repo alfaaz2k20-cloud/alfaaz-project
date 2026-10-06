@@ -62,6 +62,34 @@ try:
             if added > 0:
                 logger.info("[DB Migration] Added %d missing column(s) to %s.", added, table_name)
 
+        _add_missing_columns("evidence", [
+            ("is_superseded", "BOOLEAN DEFAULT FALSE"),
+            ("superseded_at", "TIMESTAMP WITH TIME ZONE"),
+            ("game_raw", "FLOAT"),
+            ("game_min", "FLOAT"),
+            ("game_max", "FLOAT"),
+            ("game_span", "FLOAT"),
+            ("game_num", "FLOAT"),
+            ("game_relative", "FLOAT"),
+            ("game_observation_count", "INTEGER"),
+            ("game_consistency_spread", "FLOAT"),
+            ("cross_method_delta", "FLOAT"),
+            ("profile_completeness", "VARCHAR"),
+            ("game_status", "VARCHAR DEFAULT 'INSUFFICIENT'"),
+            ("game_band", "VARCHAR"),
+            ("consistency", "VARCHAR DEFAULT 'NOT_COMPUTED'"),
+            ("relationship", "VARCHAR DEFAULT 'NOT_COMPUTED'"),
+            ("confidence", "VARCHAR DEFAULT 'LIMITED'"),
+            ("observed_behavior_summary", "TEXT"),
+            ("data_quality_flags_json", "TEXT DEFAULT '[]'")
+        ])
+        _add_missing_columns("recruit_sessions", [
+            ("completed_at", "TIMESTAMP WITH TIME ZONE"),
+            ("order_id", "INTEGER"),
+            ("device_class", "VARCHAR"),
+            ("input_modality", "VARCHAR")
+        ])
+
 
     logger.info("Schema migration check completed successfully.")
 except Exception as _e:

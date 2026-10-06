@@ -3,6 +3,7 @@ import json
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timezone
 from sqlmodel import Session, select
+from sqlalchemy import func
 from recruit_system.models.recruit import (
     DBEvidence, DBSession, DBDataQualityFlag, DBSJTResponse, DBGameScore, DBFeature
 )
@@ -527,13 +528,27 @@ def integrate_session_evidence(
     for param_name in PARAM_MINIGAMES.keys():
         p_data = preliminary[param_name]
 
-        curr = existing_by_param.get(param_name)
-        next_version = 1
-        if curr is not None:
-            next_version = curr.version + 1
-            curr.is_superseded = True
-            curr.superseded_at = now_utc
-            db.add(curr)
+        # Supersede all existing active records for this session and parameter
+        old_active_records = db.exec(
+            select(DBEvidence).where(
+                DBEvidence.session_id == session_id,
+                DBEvidence.parameter == param_name,
+                DBEvidence.is_superseded == False
+            )
+        ).all()
+        for old_rec in old_active_records:
+            old_rec.is_superseded = True
+            old_rec.superseded_at = now_utc
+            db.add(old_rec)
+
+        # Calculate next_version based on MAX(version) across all versions in DB
+        max_v = db.exec(
+            select(func.max(DBEvidence.version)).where(
+                DBEvidence.session_id == session_id,
+                DBEvidence.parameter == param_name
+            )
+        ).one_or_none()
+        next_version = (max_v or 0) + 1
 
         new_ev = DBEvidence(
             session_id=session_id,
@@ -576,8 +591,12 @@ def integrate_session_evidence(
         db.add(new_ev)
         updated_records.append(new_ev)
 
-    db.commit()
-    for ev in updated_records:
-        db.refresh(ev)
+    try:
+        db.commit()
+        for ev in updated_records:
+            db.refresh(ev)
+    except Exception:
+        db.rollback()
+        raise
 
     return updated_records

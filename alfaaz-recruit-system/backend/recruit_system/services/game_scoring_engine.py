@@ -659,8 +659,27 @@ def score_game(
         else:
             norm_events.append(ev)
 
-    raw_val, obs_count, scorer_flags = scorer_fn(norm_events)
-    flags.extend(scorer_flags)
+    try:
+        raw_val, obs_count, scorer_flags = scorer_fn(norm_events)
+        flags.extend(scorer_flags)
+    except Exception as e:
+        flags.append("scorer_exception")
+        return ScoredGame(
+            game_id=game_id,
+            parameter=parameter,
+            raw=None,
+            min=float(g_min),
+            max=float(g_max),
+            span=float(g_span),
+            num=None,
+            relative=None,
+            band=None,
+            status="INSUFFICIENT",
+            observation_count=0,
+            flags=flags,
+            scoring_version=SCORING_VERSION,
+            task_def_version=task_def_version
+        )
 
     # 5. Check observation sufficiency
     if obs_count < min_obs or "mandatory_incomplete" in flags or "insufficient_observations" in flags:
@@ -786,5 +805,9 @@ def score_session_games(db: Session, session_id: str) -> Dict[str, ScoredGame]:
             )
             db.add(new_gs)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     return scores

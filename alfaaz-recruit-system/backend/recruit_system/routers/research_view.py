@@ -10,7 +10,7 @@ from recruit_system.core.security import require_admin
 from recruit_system.models.recruit import (
     DBSession, DBApplicantIdentity, DBEvidence, DBFeature,
     DBDataQualityFlag, DBRecruiterAccessLog, DBSJTResponse,
-    DBConsentRecord, DBTelemetryEvent
+    DBConsentRecord, DBTelemetryEvent, DBGameScore
 )
 from recruit_system.services.feature_extractor import extract_session_features
 from recruit_system.services.evidence_integrator import (
@@ -198,24 +198,25 @@ def get_session_research_view(
 
     # Auto-detect if game telemetry exists that was not yet integrated into evidence
     has_unintegrated_games = False
-    if not is_session_complete and existing_evidence and any(e.profile_completeness in ("SJT_ONLY", "PARTIAL") for e in existing_evidence):
-        max_ev_created = max((e.created_at for e in existing_evidence if e.created_at), default=None)
-        if max_ev_created:
-            has_new_game_events = db.exec(
-                select(DBTelemetryEvent.id).where(
-                    DBTelemetryEvent.session_id == session_id,
-                    DBTelemetryEvent.mini_game != None,
-                    DBTelemetryEvent.server_received > max_ev_created
-                )
-            ).first() is not None
-            if has_new_game_events:
-                has_unintegrated_games = True
-        else:
+    if existing_evidence and any(e.profile_completeness in ("SJT_ONLY", "PARTIAL") for e in existing_evidence):
+        has_game_events = db.exec(
+            select(DBTelemetryEvent.id).where(
+                DBTelemetryEvent.session_id == session_id,
+                DBTelemetryEvent.mini_game != None
+            )
+        ).first() is not None
+        if has_game_events:
             has_unintegrated_games = True
 
     if not existing_evidence or force_recompute or has_unintegrated_games:
-        extract_session_features(db, session_id)
-        evidence_list = integrate_session_evidence(db, session_id, force_recompute=True)
+        try:
+            extract_session_features(db, session_id)
+            evidence_list = integrate_session_evidence(db, session_id, force_recompute=True)
+        except Exception as _integ_err:
+            db.rollback()
+            import logging
+            logging.getLogger("research_view").error(f"Error integrating evidence for session {session_id}: {_integ_err}")
+            evidence_list = existing_evidence or []
     else:
         evidence_list = existing_evidence
 
@@ -275,13 +276,19 @@ def get_session_research_view(
         "motivation": "Motivation"
     }
 
+    game_scores_list = db.exec(
+        select(DBGameScore).where(DBGameScore.session_id == session_id)
+    ).all()
+    game_scores_by_id = {gs.game_id: gs for gs in game_scores_list}
+
     dimensions = []
     for param_name in PARAM_MINIGAMES.keys():
         ev = next((e for e in evidence_list if e.parameter == param_name), None)
         game_ids = PARAM_MINIGAMES[param_name]
         usable_count = sum(
             1 for gid in game_ids
-            if evaluate_minigame_status(gid, features_by_game.get(gid, []), flags) == "USABLE"
+            if (game_scores_by_id.get(gid) and game_scores_by_id[gid].status == "USABLE" and game_scores_by_id[gid].relative_score is not None)
+            or evaluate_minigame_status(gid, features_by_game.get(gid, []), flags) == "USABLE"
         )
         dimensions.append({
             "parameter": param_name,
