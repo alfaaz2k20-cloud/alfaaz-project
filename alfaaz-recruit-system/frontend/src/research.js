@@ -201,7 +201,87 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
  return '<span class="text-black text-[10px]">Not Available</span>';
  };
 
- const dimensionRows = dims.map(d => {
+   const getDossierInterpretation = (d) => {
+    const sjtVal = (d.sjt && d.sjt.relative !== null && d.sjt.relative !== undefined) ? Number(d.sjt.relative) : null;
+    const gameVal = (d.game_relative !== null && d.game_relative !== undefined)
+      ? Number(d.game_relative)
+      : ((d.games && d.games.relative !== null && d.games.relative !== undefined) ? Number(d.games.relative) : null);
+    const deltaVal = (d.cross_method_delta !== null && d.cross_method_delta !== undefined) ? Number(d.cross_method_delta) : null;
+    const rel = d.relationship || 'NOT_AVAILABLE';
+    const conf = d.confidence || 'LIMITED';
+    const name = window.escapeHtml(d.display_name || d.parameter || 'Dimension');
+
+    // Case 1: Neither method available
+    if (sjtVal === null && gameVal === null) {
+      return '<span class="text-stone-500 italic">Insufficient observations across both methods to establish an interpretive profile.</span>';
+    }
+
+    // Case 2: Only SJT available (Game data pending or insufficient)
+    if (sjtVal !== null && gameVal === null) {
+      if (sjtVal >= 0.60) {
+        return `High situational prioritization (${sjtVal.toFixed(2)}). Candidate deliberately prioritizes <strong>${name}</strong> in scenario trade-offs; awaiting interactive activity telemetry for behavioral verification.`;
+      } else if (sjtVal >= 0.40) {
+        return `Balanced situational prioritization (${sjtVal.toFixed(2)}). Candidate maintains a moderate baseline in scenario trade-offs; awaiting interactive activity telemetry for behavioral verification.`;
+      } else {
+        return `Lower situational prioritization (${sjtVal.toFixed(2)}). Candidate allocates lower relative emphasis to <strong>${name}</strong> in scenario trade-offs; awaiting interactive activity telemetry for behavioral verification.`;
+      }
+    }
+
+    // Case 3: Only Games available (SJT missing)
+    if (sjtVal === null && gameVal !== null) {
+      if (gameVal >= 0.60) {
+        return `Elevated behavioral activity (${gameVal.toFixed(2)}). Candidate demonstrated strong relative engagement in practical tasks; awaiting situational judgment trade-offs for cognitive comparison.`;
+      } else if (gameVal >= 0.40) {
+        return `Moderate behavioral activity (${gameVal.toFixed(2)}). Candidate demonstrated standard baseline engagement during tasks; awaiting situational judgment trade-offs for cognitive comparison.`;
+      } else {
+        return `Lower behavioral activity (${gameVal.toFixed(2)}). Candidate demonstrated minimal engagement during interactive tasks; awaiting situational judgment trade-offs for cognitive comparison.`;
+      }
+    }
+
+    // Case 4: Both methods available - Cross-method triangulation
+    const deltaStr = deltaVal !== null ? deltaVal.toFixed(2) : (Math.abs(sjtVal - gameVal)).toFixed(2);
+    const confTag = conf === 'SUBSTANTIAL' 
+      ? '<span class="text-emerald-700 font-medium"> [High Confidence]</span>' 
+      : (conf === 'MODERATE' ? '<span class="text-stone-600"> [Moderate Confidence]</span>' : '<span class="text-amber-700"> [Limited Confidence &middot; Review Holistically]</span>');
+
+    // 4A: ALIGNED (Delta <= 0.15)
+    if (rel === 'ALIGNED' || (deltaVal !== null && deltaVal <= 0.15)) {
+      if (sjtVal >= 0.55 && gameVal >= 0.55) {
+        return `<strong>Strong convergent strength</strong> (&Delta; ${deltaStr}). Candidate places high deliberate value on ${name} and consistently exhibits strong behavioral follow-through during studio tasks.${confTag}`;
+      } else if (sjtVal < 0.38 && gameVal < 0.38) {
+        return `<strong>Consistently lower emphasis</strong> (&Delta; ${deltaStr}). Candidate consistently selects alternative priorities across both deliberate trade-offs and practical activities.${confTag}`;
+      } else {
+        return `<strong>Harmonious baseline</strong> (&Delta; ${deltaStr}). Stated judgment trade-offs closely mirror practical simulation behaviors, indicating stable and predictable self-regulation.${confTag}`;
+      }
+    }
+
+    // 4B: PARTLY_ALIGNED (0.15 < Delta <= 0.30)
+    if (rel === 'PARTLY_ALIGNED' || (deltaVal !== null && deltaVal <= 0.30)) {
+      if (sjtVal > gameVal) {
+        return `<strong>Moderate judgment emphasis</strong> (&Delta; ${deltaStr}). Candidate endorses higher theoretical importance in scenario trade-offs than directly manifested during active simulation tasks.${confTag}`;
+      } else {
+        return `<strong>Moderate behavioral emphasis</strong> (&Delta; ${deltaStr}). Candidate demonstrated higher practical engagement during active tasks than expressed in verbal judgment choices.${confTag}`;
+      }
+    }
+
+    // 4C: DIFFERENT (Delta > 0.30)
+    if (rel === 'DIFFERENT' || (deltaVal !== null && deltaVal > 0.30)) {
+      if (sjtVal > gameVal) {
+        return `<strong>Marked cross-method divergence</strong> (&Delta; ${deltaStr}). High stated situational intent contrasts with significantly lower interactive behavioral expression. May indicate aspirational values or hesitation under practical task constraints. Explore during interview.${confTag}`;
+      } else {
+        return `<strong>Marked cross-method divergence</strong> (&Delta; ${deltaStr}). Candidate instinctively demonstrates high behavioral execution during interactive tasks despite giving it lower priority in deliberate trade-offs. Suggests tacit competence exceeding stated preference. Explore during interview.${confTag}`;
+      }
+    }
+
+    // Fallback for edge cases
+    if (rel === 'NOT_ENOUGH_EVIDENCE') {
+      return `<span class="text-stone-500 italic">Inconclusive cross-method evidence (&Delta; ${deltaStr}). Partial observations did not reach evidentiary thresholds for definitive triangulation.${confTag}</span>`;
+    }
+
+    return `Provisional profile data. Relative evidence spans SJT (${sjtVal.toFixed(2)}) and Games (${gameVal.toFixed(2)}).${confTag}`;
+  };
+
+const dimensionRows = dims.map(d => {
  const relDisp = relBadge(d.relationship);
  const confDisp = d.confidence || 'LIMITED';
  const safeName = window.escapeHtml(d.display_name || d.parameter);
@@ -209,20 +289,22 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
  const gameRel = (d.game_relative !== null && d.game_relative !== undefined) ? d.game_relative.toFixed(2) : ((d.games && d.games.relative !== null && d.games.relative !== undefined) ? d.games.relative.toFixed(2) : '—');
  const deltaDisp = (d.cross_method_delta !== null && d.cross_method_delta !== undefined) ? d.cross_method_delta.toFixed(2) : '—';
  const obs = window.escapeHtml(d.observed_behavior || '—');
+    const interp = getDossierInterpretation(d);
 
- return `
- <tr class="border-b border-[var(--grid-border)]">
- <td class="p-3 font-medium text-[var(--text-primary)]">
- <div>${safeName}</div>
- <div class="text-[10px] text-black mt-0.5">${obs}</div>
- </td>
- <td class="p-3 text-center font-mono text-xs">${sjtRel}</td>
- <td class="p-3 text-center font-mono text-xs">${gameRel}</td>
- <td class="p-3 text-center font-mono text-xs font-semibold">${deltaDisp}</td>
- <td class="p-3 text-center text-xs">${relDisp}</td>
- <td class="p-3 text-center text-[10px] uppercase text-black font-semibold">${confDisp}</td>
- </tr>
- `;
+    return `
+    <tr class="border-b border-[var(--grid-border)]">
+      <td class="p-3 font-medium text-[var(--text-primary)] min-w-[180px]">
+        <div>${safeName}</div>
+        <div class="text-[10px] text-black mt-0.5">${obs}</div>
+      </td>
+      <td class="p-3 text-center font-mono text-xs">${sjtRel}</td>
+      <td class="p-3 text-center font-mono text-xs">${gameRel}</td>
+      <td class="p-3 text-center font-mono text-xs font-semibold">${deltaDisp}</td>
+      <td class="p-3 text-center text-xs whitespace-nowrap">${relDisp}</td>
+      <td class="p-3 text-center text-[10px] uppercase text-black font-semibold whitespace-nowrap">${confDisp}</td>
+      <td class="p-3 text-xs text-[var(--text-primary)] leading-relaxed min-w-[280px]">${interp}</td>
+    </tr>
+    `;
  }).join('');
 
  const batteryVer = meta.battery_version === '2.0' ? 'V2 (14-Game Candidate Core)' : (meta.battery_version === '1.0' ? 'V1 (21-Game Historical Battery)' : (meta.battery_version || '2.0 (Candidate Core)'));
@@ -310,7 +392,8 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
  <th class="p-3 text-center">Delta</th>
  <th class="p-3 text-center">Relationship</th>
  <th class="p-3 text-center">Confidence</th>
- </tr>
+                <th class="p-3">Interpretation</th>
+              </tr>
  </thead>
  <tbody>
  ${dimensionRows}
