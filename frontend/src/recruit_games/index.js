@@ -44,27 +44,25 @@ export function renderGameShell({
  const cleanBadge = (stepBadge && !stepBadge.toLowerCase().includes('takes about')) ? stepBadge : '';
 
  return `
- <div class="max-w-2xl mx-auto space-y-4">
- <!-- TOP BAR -->
- <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
- <div class="flex items-center gap-2">
- <span class="act-badge">World ${wIdx + 1} of 7: ${meta.name}</span>
- ${meta.name_ur ? `<span class="font-serif text-base sm:text-lg text-black" style="direction: rtl;">${meta.name_ur}</span>` : ''}
- </div>
- ${cleanBadge ? `<div class="text-[11px] text-[var(--accent-gold)] font-sans font-medium">${cleanBadge}</div>` : ''}
- </div>
-
- <!-- TASK HEADER -->
+ <div class="max-w-2xl mx-auto space-y-5">
+ <!-- TOP BAR: English Left, Urdu Right -->
+ <div class="flex justify-between items-start pb-3 border-b border-[var(--grid-border)]">
  <div>
- <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)]">${title}</h2>
- ${subtitle ? `<p class="text-base text-black mt-1 leading-relaxed font-medium">${subtitle}</p>` : ''}
+ <span class="act-badge">World ${wIdx + 1} of 7 &middot; ${meta.name}</span>
+ <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">${title}</h2>
+ ${subtitle ? `<p class="text-sm text-[var(--text-secondary)] mt-1 leading-relaxed">${subtitle}</p>` : ''}
+ </div>
+ <div class="text-right shrink-0 ml-4">
+ ${meta.name_ur ? `<span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">${meta.name_ur}</span>` : ''}
+ ${cleanBadge ? `<span class="text-[11px] text-[var(--accent-gold)] uppercase tracking-wider block mt-1">${cleanBadge}</span>` : ''}
+ </div>
  </div>
 
- <!-- INSTRUCTION / CONTEXT BOX -->
+ <!-- CLEAR, SPACIOUS INSTRUCTION / CONTEXT BOX -->
  ${instruction ? `
- <div class="p-3 sm:p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs candidate-content-protected">
- <div class="text-sm uppercase tracking-wider font-sans text-[var(--accent-gold)] font-bold mb-1">${instructionPrompt}</div>
- <div class="text-base text-black leading-relaxed font-medium">
+ <div class="p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs candidate-content-protected">
+ <div class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold mb-1">${instructionPrompt}</div>
+ <div class="text-sm sm:text-base text-[var(--text-primary)] leading-relaxed">
  ${instruction}
  </div>
  </div>
@@ -85,17 +83,17 @@ export function renderGameShell({
 
  <!-- ACTIVE SELECTION / SUMMARY AREA -->
  ${summaryContent ? `
- <div class="p-3 bg-white border border-[var(--grid-border)] rounded-xs text-base font-sans text-black flex justify-between items-center candidate-content-protected">
+ <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs text-sm font-sans text-[var(--text-primary)] flex justify-between items-center candidate-content-protected">
  ${summaryContent}
  </div>
  ` : ''}
 
  <!-- PRIMARY ACTION BAR -->
  ${(actionButtonText || secondaryActionHtml) ? `
- <div class="flex flex-col sm:flex-row justify-end items-center gap-3 pt-1">
+ <div class="flex flex-col sm:flex-row justify-end items-center gap-3 pt-2">
  ${secondaryActionHtml || ''}
  ${actionButtonText ? `
- <button type="button" id="${actionButtonId}" ${actionButtonDisabled ? 'disabled' : ''} class="w-full sm:w-auto px-7 py-3.5 bg-[var(--text-primary)] text-white text-sm font-bold uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer interactive-option shadow-sm rounded-xs flex items-center justify-center gap-2 min-h-[44px]">
+ <button type="button" id="${actionButtonId}" ${actionButtonDisabled ? 'disabled' : ''} class="w-full sm:w-auto px-8 py-3.5 bg-[var(--text-primary)] text-white text-xs font-bold uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer interactive-option shadow-sm rounded-xs flex items-center justify-center gap-2 min-h-[44px]">
  ${actionButtonText}
  </button>
  ` : ''}
@@ -107,7 +105,7 @@ export function renderGameShell({
 
  <!-- PROGRESS FOOTER -->
  ${progressText ? `
- <div class="text-right text-sm text-black font-sans pt-1">
+ <div class="text-right text-xs text-[var(--text-secondary)] font-sans pt-1">
  ${progressText}
  </div>
  ` : ''}
@@ -147,29 +145,29 @@ export const ALL_GAMES_BY_WORLD = {
 
 export function renderTutorialCard({ icon, goal, steps }) {
  return `
- <div class="tutorial-card cursor-pointer p-6 border border-[var(--accent-gold)] bg-gradient-to-br from-[#faf8f5] to-[#f5efe8] space-y-4 mb-6 interactive-option " tabindex="0" role="button" aria-label="Begin Activity Guide">
- <div class="flex items-center gap-3">
- <div class="w-10 h-10 rounded-full bg-amber-100/80 border border-[var(--accent-gold)] flex items-center justify-center text-[var(--accent-gold)] shrink-0">
- ${icon || '<i data-lucide="compass" class="w-5 h-5"></i>'}
- </div>
+ <div class="tutorial-card cursor-pointer p-6 border border-[var(--accent-gold)] bg-gradient-to-br from-[#faf8f5] to-[#f5efe8] space-y-4 mb-6 interactive-option rounded-xs" tabindex="0" role="button" aria-label="Begin Activity Guide">
+ <div class="flex justify-between items-start gap-4">
  <div>
- <span class="text-sm uppercase tracking-widest text-[var(--accent-gold)] font-medium">Activity Guide &middot; رہنمائے عمل</span>
- <h3 class="text-base font-serif text-[var(--text-primary)] font-semibold">${goal}</h3>
+ <span class="text-xs uppercase tracking-widest text-[var(--accent-gold)] font-medium block">Activity Guide &middot; رہنمائے عمل</span>
+ <h3 class="text-base sm:text-lg font-serif text-[var(--text-primary)] font-semibold mt-0.5">${goal}</h3>
+ </div>
+ <div class="w-9 h-9 rounded-full bg-amber-100/80 border border-[var(--accent-gold)] flex items-center justify-center text-[var(--accent-gold)] shrink-0">
+ ${icon || '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'}
  </div>
  </div>
 
- <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+ <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
  ${steps.map((s, idx) => `
- <div class="bg-white/80 border border-[var(--grid-border)] p-3 flex items-start gap-2.5">
- <span class="w-5 h-5 rounded-full bg-[var(--accent-gold)] text-white text-sm flex items-center justify-center font-serif shrink-0 mt-0.5">${idx + 1}</span>
- <div class="text-base text-black leading-relaxed font-medium">${s}</div>
+ <div class="bg-white/90 border border-[var(--grid-border)] p-4 rounded-xs flex items-start gap-2.5">
+ <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif shrink-0 mt-0.5">${idx + 1}</span>
+ <div class="text-xs sm:text-sm text-[var(--text-primary)] leading-relaxed">${s}</div>
  </div>
  `).join('')}
  </div>
 
- <div class="pt-2 flex justify-between items-center">
- <span class="text-[11px] text-black italic">Click anywhere or press Enter to begin</span>
- <button id="startActivityBtn" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-base uppercase tracking-widest interactive-option flex items-center gap-2">
+ <div class="pt-2 flex flex-col sm:flex-row justify-between items-center gap-2">
+ <span class="text-xs text-[var(--text-secondary)] italic">Click anywhere or press Enter to begin</span>
+ <button id="startActivityBtn" class="w-full sm:w-auto px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest interactive-option flex items-center justify-center gap-2 rounded-xs">
  Begin Activity &rarr;
  </button>
  </div>
@@ -215,16 +213,16 @@ export function runMiniGame(context) {
  const resolvedGameId = gameId || (CANDIDATE_CORE_GAMES[worldCode] && CANDIDATE_CORE_GAMES[worldCode][miniGameIndex]) || null;
  const extendedContext = { ...context, gameId: resolvedGameId };
 
- // Clean, Poetic Header Shell without Skip Buttons
+ // Clean, Poetic Header Shell with English on Left, Urdu on Right
  const renderHeader = (mgTitle, mgDesc) => `
- <div class="border-b border-[var(--grid-border)] pb-3 mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
+ <div class="border-b border-[var(--grid-border)] pb-3 mb-5 flex justify-between items-start gap-4">
  <div>
- <div class="flex items-center gap-2">
- <span class="act-badge">World ${worldIndex + 1} of 7: ${meta.name}</span>
- <span class="font-serif text-base sm:text-lg text-black" style="direction: rtl;">${meta.name_ur}</span>
- </div>
+ <span class="act-badge">World ${worldIndex + 1} of 7 &middot; ${meta.name}</span>
  <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">${mgTitle}</h2>
- <p class="text-base text-black mt-1 leading-relaxed font-medium">${mgDesc}</p>
+ <p class="text-sm text-[var(--text-secondary)] mt-1 leading-relaxed">${mgDesc}</p>
+ </div>
+ <div class="text-right shrink-0">
+ ${meta.name_ur ? `<span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">${meta.name_ur}</span>` : ''}
  </div>
  </div>
  `;

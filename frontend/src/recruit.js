@@ -19,7 +19,7 @@ let state = {
  configHash: null,
  worldSequence: [],
  seeds: {},
- screen: 'consent', // consent, identity, accessibility, warmup, sjt, games, complete, paused
+ screen: 'consent', // consent, identity, accessibility, warmup, sjt_briefing, sjt, gba_briefing, games, complete, paused
  pausedPreviousScreen: null,
  sjtScenarios: [],
  currentSjtIndex: 0,
@@ -520,8 +520,14 @@ export function renderScreen() {
  case 'warmup':
  renderWarmup(app);
  break;
+ case 'sjt_briefing':
+ renderSjtBriefing(app);
+ break;
  case 'sjt':
  renderSJT(app, progressBarFill);
+ break;
+ case 'gba_briefing':
+ renderGbaBriefing(app);
  break;
  case 'games':
  renderGames(app, progressBarFill);
@@ -883,7 +889,7 @@ function renderWarmup(app) {
  const sjtData = await sjtResp.json();
  state.sjtScenarios = sjtData.scenarios || [];
  state.currentSjtIndex = 0;
- state.screen = 'sjt';
+ state.screen = 'sjt_briefing';
  saveLocalState({ immediate: true });
  renderScreen();
  } catch (err) {
@@ -913,7 +919,82 @@ function renderWarmup(app) {
  });
 }
 
-// 4. SJT Phase
+// 4. Section 1 Orientation (SJT Briefing)
+function renderSjtBriefing(app) {
+ const segmentProgress = document.getElementById('segmentProgress');
+ if (segmentProgress) {
+ segmentProgress.innerHTML = '<span>Section 1 &middot; Overview</span>';
+ }
+ const progressBarFill = document.getElementById('progressBarFill');
+ if (progressBarFill) {
+ progressBarFill.style.width = '0%';
+ }
+
+ app.innerHTML = `
+ <div class="max-w-2xl mx-auto py-4 sm:py-6 space-y-6">
+ <!-- Header: English Left, Urdu Right -->
+ <div class="flex justify-between items-start pb-4 border-b border-[var(--grid-border)]">
+ <div>
+ <span class="act-badge">Section 1 &middot; Overview</span>
+ <h1 class="text-2xl sm:text-3xl font-serif text-[var(--text-primary)]">Situational Scenarios</h1>
+ </div>
+ <div class="text-right shrink-0">
+ <span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">تفہیم و ارادہ</span>
+ <span class="text-[10px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider block mt-1">7 Scenarios</span>
+ </div>
+ </div>
+
+ <p class="text-sm sm:text-base text-[var(--text-primary)] leading-relaxed">
+ You will read 7 short situations from creative studio life, community events, and teamwork.
+ </p>
+
+ <!-- 3 Spacious Step Cards (Zero Construct Exposure) -->
+ <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">1</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">Read the Story</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ Each card describes a real situation that took place in the studio.
+ </p>
+ </div>
+
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">2</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">Pick Your Choice</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ Choose the response that best matches what you would actually do.
+ </p>
+ </div>
+
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">3</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">No Trick Questions</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ There is no right or wrong answer. Pick what you would genuinely do.
+ </p>
+ </div>
+ </div>
+
+ <!-- Pacing & Action Bar -->
+ <div class="pt-6 border-t border-[var(--grid-border)] flex flex-col sm:flex-row justify-between items-center gap-4">
+ <span class="text-xs text-[var(--text-secondary)]">7 scenarios &middot; Self-paced (approx. 6–8 mins) &middot; Tap options or press keys 1–4</span>
+ <button id="startSjtBtn" class="w-full sm:w-auto min-h-[44px] px-8 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] shadow-sm rounded-xs">
+ Begin Section 1: Scenarios &rarr;
+ </button>
+ </div>
+ </div>
+ `;
+
+ logEvent('sjt_briefing', 'briefing_viewed');
+
+ document.getElementById('startSjtBtn')?.addEventListener('click', () => {
+ state.screen = 'sjt';
+ saveLocalState({ immediate: true });
+ renderScreen();
+ });
+}
+
+// 5. SJT Phase
 
  let sjtKeydownHandler = null;
 
@@ -959,54 +1040,48 @@ function renderWarmup(app) {
  const segmentProgress = document.getElementById('segmentProgress');
  if (segmentProgress) {
  const remainingMins = Math.max(1, Math.round(((total - current + 1) * 35 + 14 * 32) / 60));
- segmentProgress.innerHTML = `<span class="text-black hidden sm:inline mr-2 text-[10px] sm:text-xs font-normal">About ${remainingMins} mins remaining</span><span>Judgment ${current} / ${total}</span>`;
+ segmentProgress.innerHTML = `<span class="text-black hidden sm:inline mr-2 text-[10px] sm:text-xs font-normal">About ${remainingMins} mins remaining</span><span>Scenario ${current} / ${total}</span>`;
  }
 
  const selectedOptId = state.sjtResponses[scenario.id] || null;
 
  const optionsHtml = scenario.options.map(opt => `
- <div class="option-card min-h-[48px] ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button" aria-pressed="${selectedOptId === opt.id ? 'true' : 'false'}" aria-label="Option ${opt.id.slice(-1)}">
- <span class="text-sm font-semibold text-[var(--accent-gold)] shrink-0">${opt.id.slice(-1)}.</span>
+ <div class="option-card min-h-[52px] p-4 sm:p-5 rounded-xs border transition-all ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button" aria-pressed="${selectedOptId === opt.id ? 'true' : 'false'}" aria-label="Option ${opt.id.slice(-1)}">
+ <span class="w-7 h-7 rounded-xs bg-stone-100 border border-[var(--grid-border)] flex items-center justify-center text-xs font-semibold text-[var(--accent-gold)] shrink-0 mt-0.5">${opt.id.slice(-1)}</span>
  <span class="text-xs sm:text-sm text-[var(--text-primary)] leading-relaxed">${opt.text}</span>
  </div>
  `).join('');
 
  app.innerHTML = `
- <div class="space-y-5 ">
- <!-- Top Context and Step -->
- <div class="border-b border-[var(--grid-border)] pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-1">
+ <div class="space-y-5">
+ <!-- Top Context: English Title on Top-Left, Urdu on Top-Right -->
+ <div class="border-b border-[var(--grid-border)] pb-3 flex justify-between items-start gap-4">
  <div>
- <span class="act-badge">Judgment ${current} of ${total}</span>
- <span class="act-title-ur ">${scenario.act_title_ur || ''}</span>
- <h2 class="text-xl sm:text-2xl text-[var(--text-primary)] mt-0.5">${scenario.act_title_en}</h2>
+ <span class="act-badge">Scenario ${current} of ${total}</span>
+ <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">${scenario.act_title_en}</h2>
  </div>
- <div class="text-[11px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider font-medium">
- Section 1 &middot; ${current} of ${total}
+ <div class="text-right shrink-0">
+ ${scenario.act_title_ur ? `<span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">${scenario.act_title_ur}</span>` : ''}
+ <span class="text-[10px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider block mt-1">Section 1 &middot; ${current} of ${total}</span>
  </div>
- </div>
-
- <!-- YOUR TASK -->
- <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-xs text-xs text-[var(--text-primary)] flex items-center gap-2">
- <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block shrink-0"></span>
- <span><strong>Your Task:</strong> Read the situation below and choose what you would do.</span>
  </div>
 
- <!-- SITUATION -->
- <div class="scenario-text text-xs sm:text-sm text-[var(--text-primary)] leading-relaxed bg-[#faf8f5] p-4 sm:p-5 border border-[var(--grid-border)] rounded-xs">
+ <!-- SITUATION: Clean paper card without repetitive labels -->
+ <div class="scenario-text text-sm sm:text-base text-[var(--text-primary)] leading-relaxed bg-[#faf8f5] p-5 sm:p-6 border border-[var(--grid-border)] rounded-xs">
  ${scenario.setup}
  </div>
 
- <!-- YOUR CHOICE -->
- <div class="space-y-2.5">
- <div class="text-[11px] uppercase tracking-wider text-black font-medium">Choose one response:</div>
+ <!-- OPTIONS -->
+ <div class="space-y-3">
+ <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-medium">Choose what you would do:</div>
  ${optionsHtml}
  </div>
 
  <!-- PRIMARY ACTION -->
- <div class="pt-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-[var(--grid-border)]">
- <span class="text-xs text-black order-2 sm:order-1 text-[11px]">Tip: Press keys 1-4 to choose</span>
- <button id="nextSjtBtn" ${selectedOptId ? '' : 'disabled'} class="w-full sm:w-auto min-h-[44px] px-7 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 disabled:hover:bg-[var(--text-primary)] shadow-sm rounded-xs order-1 sm:order-2">
- ${current === total ? 'Complete Judgment Section &rarr;' : 'Next Scenario &rarr;'}
+ <div class="pt-5 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-[var(--grid-border)]">
+ <span class="text-xs text-[var(--text-secondary)] order-2 sm:order-1 text-[11px]">Tip: Press keys 1 to 4 on your keyboard, or click an option</span>
+ <button id="nextSjtBtn" ${selectedOptId ? '' : 'disabled'} class="w-full sm:w-auto min-h-[44px] px-8 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 disabled:hover:bg-[var(--text-primary)] shadow-sm rounded-xs order-1 sm:order-2">
+ ${current === total ? 'Complete Section 1 &rarr;' : 'Next Scenario &rarr;'}
  </button>
  </div>
  </div>
@@ -1042,6 +1117,11 @@ function renderWarmup(app) {
        if (scenario.options[idx]) {
          selectSjtOption(scenario, scenario.options[idx].id, 'keyboard');
        }
+     } else if (e.key === 'Enter') {
+       const nextBtn = document.getElementById('nextSjtBtn');
+       if (nextBtn && !nextBtn.disabled) {
+         nextBtn.click();
+       }
      }
    };
    document.addEventListener('keydown', sjtKeydownHandler);
@@ -1074,7 +1154,7 @@ async function submitSjtAndProceed() {
  if (!res || !res.ok) {
  throw new Error(res ? `Server returned HTTP ${res.status}` : 'Connection failed');
  }
- state.screen = 'games';
+ state.screen = 'gba_briefing';
  state.currentWorldIndex = 0;
  state.currentMiniGameIndex = 0;
  logEvent('sjt', 'sjt_complete', { response_count: Object.keys(state.sjtResponses).length });
@@ -1111,7 +1191,82 @@ async function submitSjtAndProceed() {
  }
 }
 
-// 5. Game Battery Container & Dispatcher
+// 6. Section 2 Orientation (GBA Briefing)
+function renderGbaBriefing(app) {
+ const segmentProgress = document.getElementById('segmentProgress');
+ if (segmentProgress) {
+ segmentProgress.innerHTML = '<span>Section 2 &middot; Overview</span>';
+ }
+ const progressBarFill = document.getElementById('progressBarFill');
+ if (progressBarFill) {
+ progressBarFill.style.width = `${(7 / 21) * 100}%`;
+ }
+
+ app.innerHTML = `
+ <div class="max-w-2xl mx-auto py-4 sm:py-6 space-y-6">
+ <!-- Header: English Left, Urdu Right -->
+ <div class="flex justify-between items-start pb-4 border-b border-[var(--grid-border)]">
+ <div>
+ <span class="act-badge">Section 2 &middot; Overview</span>
+ <h1 class="text-2xl sm:text-3xl font-serif text-[var(--text-primary)]">Interactive Studio Activities</h1>
+ </div>
+ <div class="text-right shrink-0">
+ <span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">عملی مشاغل</span>
+ <span class="text-[10px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider block mt-1">14 Activities</span>
+ </div>
+ </div>
+
+ <p class="text-sm sm:text-base text-[var(--text-primary)] leading-relaxed">
+ A series of 14 short interactive exercises across seven creative studio areas.
+ </p>
+
+ <!-- 3 Spacious Step Cards (Zero Construct Exposure) -->
+ <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">1</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">Seven Areas</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ You will visit 7 studio rooms (Sound, Archives, Canvas, Mosaic, etc.).
+ </p>
+ </div>
+
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">2</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">Simple Actions</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ Each activity has a simple 1-sentence task. Just click, tap, or drag.
+ </p>
+ </div>
+
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">3</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">Not a Speed Test</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ These are not video games. Fast reflexes are not needed. Take your time.
+ </p>
+ </div>
+ </div>
+
+ <!-- Pacing & Action Bar -->
+ <div class="pt-6 border-t border-[var(--grid-border)] flex flex-col sm:flex-row justify-between items-center gap-4">
+ <span class="text-xs text-[var(--text-secondary)]">14 short tasks (2 per area) &middot; 1 to 2 minutes each &middot; Self-paced</span>
+ <button id="startGbaBtn" class="w-full sm:w-auto min-h-[44px] px-8 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] shadow-sm rounded-xs">
+ Enter World 1: The Frequency &rarr;
+ </button>
+ </div>
+ </div>
+ `;
+
+ logEvent('gba_briefing', 'briefing_viewed');
+
+ document.getElementById('startGbaBtn')?.addEventListener('click', () => {
+ state.screen = 'games';
+ saveLocalState({ immediate: true });
+ renderScreen();
+ });
+}
+
+// 7. Game Battery Container & Dispatcher
 function renderGames(app, progressBarFill) {
  const currentWorldCode = state.worldSequence[state.currentWorldIndex];
  if (!currentWorldCode || state.currentWorldIndex >= state.worldSequence.length) {

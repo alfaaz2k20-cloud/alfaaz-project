@@ -109,22 +109,21 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
  worldCode: 'W6',
  worldIndex: 5,
  title: "The Artisan's Assembly",
- subtitle: 'Build a working workshop fixture from available parts.',
+ subtitle: 'Fix the broken part using items on the workbench.',
  instructionPrompt: 'Your Task',
- instruction: 'Review the broken part below. Select one or more workbench items to fix it. Multiple valid combinations exist.',
+ instruction: '1. Read what is broken below. 2. Click bench items to add or remove them. 3. Click Test, then Confirm.',
  stimulusContent: `
  <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
  <div class="flex items-center justify-between mb-1.5">
- <span class="text-sm text-[var(--accent-gold)] uppercase tracking-wider font-semibold">Atelier Hardware Need</span>
- <span class="text-sm text-[var(--accent-gold)] font-medium uppercase">Stage ${currentStageIdx + 1} of ${stages.length}</span>
+ <span class="text-xs text-[var(--accent-gold)] uppercase tracking-wider font-semibold">Stage ${currentStageIdx + 1} of ${stages.length}</span>
  </div>
  <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${st.title}</div>
- <div class="text-base text-black leading-relaxed">${st.scenario}</div>
+ <div class="text-sm sm:text-base text-[var(--text-primary)] leading-relaxed">${st.scenario}</div>
  </div>
  `,
  interactionContent: `
  <div class="p-4 sm:p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs">
- <div class="text-sm text-black uppercase tracking-wider mb-3">Available Workbench Components (Click to Equip)</div>
+ <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-medium mb-3">Workbench Items (Click to Add or Remove):</div>
  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 mb-4">
  ${st.materials.map(m => {
  const isSelected = selectedParts.includes(m.id);
@@ -686,24 +685,23 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
  worldCode: 'W6',
  worldIndex: 5,
  title: 'The Improvised Tool',
- subtitle: 'Adapt craft technique from physical feedback.',
+ subtitle: 'Choose a tool and action to solve the craft problem.',
  instructionPrompt: 'Your Task',
- instruction: 'Pick a tool and an action method below. Click Apply Technique to test your result. You can change your choice before confirming.',
+ instruction: '1. Look at the goal below. 2. Pick a tool and an action. 3. Click Test to see what happens, then Confirm.',
  stimulusContent: `
  <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
  <div class="flex items-center justify-between mb-1.5">
- <span class="text-sm text-[var(--accent-gold)] uppercase tracking-wider font-semibold">Craft Objective</span>
- <span class="text-sm text-[var(--accent-gold)] font-medium uppercase">Trial ${currentTrial + 1} of ${trials.length}</span>
+ <span class="text-xs text-[var(--accent-gold)] uppercase tracking-wider font-semibold">Round ${currentTrial + 1} of ${trials.length}</span>
  </div>
  <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${tr.title}</div>
- <div class="text-base text-black leading-relaxed">${tr.objective}</div>
+ <div class="text-sm sm:text-base text-[var(--text-primary)] leading-relaxed">${tr.objective}</div>
  </div>
  `,
  interactionContent: `
  <div class="space-y-4">
  <!-- Tool Selection -->
  <div>
- <div class="text-sm text-black uppercase tracking-wider mb-2">1. Select Implement:</div>
+ <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-medium mb-2">1. Pick an Implement:</div>
  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
  ${tr.tools.map(t => {
  const isSelected = selectedTool === t.id;
@@ -722,7 +720,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
  <!-- Method Selection -->
  <div>
- <div class="text-sm text-black uppercase tracking-wider mb-2">2. Choose Action Method:</div>
+ <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-medium mb-2">2. Choose an Action:</div>
  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
  ${tr.methods.map(m => {
  const isSelected = selectedMethod === m.id;
