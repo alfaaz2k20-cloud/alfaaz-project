@@ -62,7 +62,6 @@ const TelemetryOutbox = {
         eventPayload._idbKey = crypto.randomUUID();
     }
     try {
- const researchParticipationConsent = consentAgree.checked;
       const db = await this.dbPromise;
       return new Promise((resolve, reject) => {
         const tx = db.transaction('outbox', 'readwrite');
@@ -80,7 +79,6 @@ const TelemetryOutbox = {
   async deleteMany(keys) {
     if (!keys || keys.length === 0) return;
     try {
- const researchParticipationConsent = consentAgree.checked;
       const db = await this.dbPromise;
       return new Promise((resolve, reject) => {
         const tx = db.transaction('outbox', 'readwrite');
@@ -95,7 +93,6 @@ const TelemetryOutbox = {
   },
   async getAll() {
     try {
- const researchParticipationConsent = consentAgree.checked;
       const db = await this.dbPromise;
       return new Promise((resolve, reject) => {
         const tx = db.transaction('outbox', 'readonly');
@@ -110,7 +107,6 @@ const TelemetryOutbox = {
   },
   async clear() {
     try {
- const researchParticipationConsent = consentAgree.checked;
       const db = await this.dbPromise;
       return new Promise((resolve, reject) => {
         const tx = db.transaction('outbox', 'readwrite');
@@ -129,7 +125,6 @@ let localStateSaveScheduled = false;
 function persistLocalState() {
  localStateSaveScheduled = false;
  try {
- const researchParticipationConsent = consentAgree.checked;
  const toSave = {
  sessionId: state.sessionId,
  configHash: state.configHash,
@@ -174,7 +169,6 @@ function saveLocalState({ immediate = false } = {}) {
 
 async function restoreLocalState() {
  try {
- const researchParticipationConsent = consentAgree.checked;
  const savedStateStr = sessionStorage.getItem(STATE_STORAGE_KEY);
  
  const idbEvents = await TelemetryOutbox.getAll();
@@ -261,7 +255,6 @@ function logEvent(screen, action, data = {}, stateSnapshot = {}, inputType = 'mo
  let finalState = stateSnapshot;
 
  try {
- const researchParticipationConsent = consentAgree.checked;
  const dataStr = JSON.stringify(data);
  const stateStr = JSON.stringify(stateSnapshot);
  const combinedBytes = (new TextEncoder().encode(dataStr)).length + (new TextEncoder().encode(stateStr)).length;
@@ -310,7 +303,6 @@ async function flushTelemetry() {
  }
  currentFlushPromise = _executeFlushTelemetry();
  try {
- const researchParticipationConsent = consentAgree.checked;
  return await currentFlushPromise;
  } finally {
  currentFlushPromise = null;
@@ -330,7 +322,6 @@ async function _executeFlushTelemetry() {
  });
 
  try {
- const researchParticipationConsent = consentAgree.checked;
  const resp = await apiFetch('/recruit/telemetry', {
  method: 'POST',
  body: JSON.stringify({
@@ -699,7 +690,6 @@ function renderIdentity(app) {
  }
 
  try {
- const researchParticipationConsent = consentAgree.checked;
  const resp = await apiFetch('/recruit/identity', {
  method: 'POST',
  body: JSON.stringify({
@@ -796,7 +786,6 @@ function renderAccessibility(app) {
  applyAccessibility(selectedModes);
 
  try {
- const researchParticipationConsent = consentAgree.checked;
  await apiFetch('/recruit/accessibility', {
  method: 'POST',
  body: JSON.stringify({
@@ -858,7 +847,6 @@ function renderWarmup(app) {
  const readingDwell = performance.now() - warmupStartTime;
 
  try {
- const researchParticipationConsent = consentAgree.checked;
  await apiFetch('/recruit/warmup', {
  method: 'POST',
  body: JSON.stringify({
@@ -888,7 +876,6 @@ function renderWarmup(app) {
  `;
 
  try {
- const researchParticipationConsent = consentAgree.checked;
  const sjtResp = await apiFetch('/recruit/sjt/public');
  if (!sjtResp || !sjtResp.ok) {
  throw new Error(sjtResp ? `Server returned HTTP ${sjtResp.status}` : 'Network timeout');
@@ -1077,7 +1064,6 @@ async function submitSjtAndProceed() {
  }
 
  try {
- const researchParticipationConsent = consentAgree.checked;
  const res = await apiFetch('/recruit/sjt/submit', {
  method: 'POST',
  body: JSON.stringify({
@@ -1245,7 +1231,6 @@ async function finishAssessment() {
  window.addEventListener('keydown', keyGuard, { capture: true });
 
  try {
- const researchParticipationConsent = consentAgree.checked;
  // Completion is only valid after every remaining telemetry batch is acknowledged.
  const telemetryFlushed = await flushAllTelemetry();
  if (!telemetryFlushed) {
@@ -1263,7 +1248,6 @@ async function finishAssessment() {
  let response = null;
  for (let attempt = 0; attempt < 3; attempt++) {
  try {
- const researchParticipationConsent = consentAgree.checked;
  response = await apiFetch('/recruit/complete', {
  method: 'POST',
  body: JSON.stringify({ session_id: state.sessionId })
