@@ -170,13 +170,18 @@ def get_session_research_view(
 
     # Log Recruiter Access
     admin_email = admin_user.get("email", "admin")
-    access_log = DBRecruiterAccessLog(
-        admin_email=admin_email,
-        session_id=session_id,
-        ip_address=request.client.host if request.client else None
-    )
-    db.add(access_log)
-    db.commit()
+    try:
+        access_log = DBRecruiterAccessLog(
+            admin_email=admin_email,
+            session_id=session_id,
+            ip_address=request.client.host if request.client else None
+        )
+        db.add(access_log)
+        db.commit()
+    except Exception as _log_err:
+        db.rollback()
+        import logging
+        logging.getLogger("research_view").warning(f"Notice: Recruiter access log skipped: {_log_err}")
 
     # Ensure features and evidence are extracted and integrated (reuse existing if valid and complete)
     existing_evidence = db.exec(
@@ -188,16 +193,24 @@ def get_session_research_view(
 
     force_recompute = request.query_params.get("recompute", "").lower() == "true"
 
+    session_obj = db.get(DBSession, session_id)
+    is_session_complete = session_obj and session_obj.status in ("COMPLETE", "COMPLETED")
+
     # Auto-detect if game telemetry exists that was not yet integrated into evidence
     has_unintegrated_games = False
-    if existing_evidence and any(e.profile_completeness in ("SJT_ONLY", "PARTIAL") for e in existing_evidence):
-        has_game_events = db.exec(
-            select(DBTelemetryEvent.id).where(
-                DBTelemetryEvent.session_id == session_id,
-                DBTelemetryEvent.mini_game != None
-            )
-        ).first() is not None
-        if has_game_events:
+    if not is_session_complete and existing_evidence and any(e.profile_completeness in ("SJT_ONLY", "PARTIAL") for e in existing_evidence):
+        max_ev_created = max((e.created_at for e in existing_evidence if e.created_at), default=None)
+        if max_ev_created:
+            has_new_game_events = db.exec(
+                select(DBTelemetryEvent.id).where(
+                    DBTelemetryEvent.session_id == session_id,
+                    DBTelemetryEvent.mini_game != None,
+                    DBTelemetryEvent.server_received > max_ev_created
+                )
+            ).first() is not None
+            if has_new_game_events:
+                has_unintegrated_games = True
+        else:
             has_unintegrated_games = True
 
     if not existing_evidence or force_recompute or has_unintegrated_games:

@@ -70,6 +70,13 @@ SQLALCHEMY_DATABASE_URL = DATABASE_URL or "sqlite:///./alfaaz_data.db"
 # JWT Security
 _jwt_secret_raw = os.environ.get("JWT_SECRET")
 if not _jwt_secret_raw:
+    try:
+        from app.core.config import JWT_SECRET as _app_jwt_secret
+        _jwt_secret_raw = _app_jwt_secret
+    except ImportError:
+        pass
+
+if not _jwt_secret_raw:
     if ENV == "production":
         print("FATAL: JWT_SECRET must be set in production.", file=sys.stderr)
         sys.exit(1)

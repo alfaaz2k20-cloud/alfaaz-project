@@ -3,11 +3,26 @@
  ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', async () => {
- const token = localStorage.getItem('alfaaz_token');
- if (!token) {
- window.location.href = 'login.html';
- return;
- }
+    const token = localStorage.getItem('alfaaz_token');
+    const userData = localStorage.getItem('alfaaz_user');
+    
+    if (!token || !userData) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    try {
+        const user = JSON.parse(userData);
+        if (user.status !== 'ADMIN') {
+            window.location.href = 'dashboard.html';
+            return;
+        }
+    } catch (e) {
+        localStorage.removeItem('alfaaz_token');
+        localStorage.removeItem('alfaaz_user');
+        window.location.href = 'login.html';
+        return;
+    }
 
  setupLogout();
  await loadSessionsList();
@@ -22,7 +37,7 @@ function setupLogout() {
 
 async function loadSessionsList(selectedStatus = '') {
  const container = document.getElementById('researchContent');
- const apiBase = window.ALFAAZ_API_URL || '';
+ const apiBase = window.ALFAAZ_API_URL || 'https://alfaaz-project.onrender.com';
 
  try {
  const token = localStorage.getItem('alfaaz_token');
@@ -128,16 +143,33 @@ async function loadSessionsList(selectedStatus = '') {
  }
 }
 
-async function loadSessionDetail(sessionId) {
+async function loadSessionDetail(sessionId, forceRecompute = false) {
  const container = document.getElementById('researchContent');
- const apiBase = window.ALFAAZ_API_URL || '';
+ const apiBase = window.ALFAAZ_API_URL || 'https://alfaaz-project.onrender.com';
+
+ container.innerHTML = `
+ <div class="mb-4">
+ <button id="backToRegistryLoadingBtn" class="text-xs uppercase tracking-widest text-black hover:text-[var(--accent-gold)]">&larr; Back to Registry</button>
+ </div>
+ <div class="p-12 text-center text-[var(--text-secondary)] font-serif text-lg bg-white border border-[var(--grid-border)]">
+ Loading applicant dossier${forceRecompute ? ' (re-analyzing telemetry)...' : '...'}
+ </div>
+ `;
+ document.getElementById('backToRegistryLoadingBtn')?.addEventListener('click', () => loadSessionsList());
 
  try {
  const token = localStorage.getItem('alfaaz_token');
- const url = `${apiBase}/recruit/research/sessions/${sessionId}?recompute=true`;
+ const url = `${apiBase}/recruit/research/sessions/${sessionId}${forceRecompute ? '?recompute=true' : ''}`;
  const resp = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
 
- if (!resp.ok) throw new Error("Failed to load dossier");
+ if (!resp.ok) {
+     let errDetail = resp.statusText;
+     try {
+         const errJson = await resp.json();
+         if (errJson && errJson.detail) errDetail = errJson.detail;
+     } catch (_) {}
+     throw new Error(`HTTP ${resp.status}: ${errDetail}`);
+ }
  const data = await resp.json();
 
  const meta = data.metadata || {};
@@ -170,10 +202,6 @@ async function loadSessionDetail(sessionId) {
  };
 
  const dimensionRows = dims.map(d => {
- const p = d.profile || {};
- const scoreDisp = p.relative_score !== null && p.relative_score !== undefined ? `${p.relative_score} / 100` : '—';
- const rankDisp = p.relative_rank !== null && p.relative_rank !== undefined ? `#${p.relative_rank}` : '—';
- const levelDisp = levelBadge(p.relative_level);
  const relDisp = relBadge(d.relationship);
  const confDisp = d.confidence || 'LIMITED';
  const safeName = window.escapeHtml(d.display_name || d.parameter);
@@ -193,9 +221,6 @@ async function loadSessionDetail(sessionId) {
  <td class="p-3 text-center font-mono text-xs font-semibold">${deltaDisp}</td>
  <td class="p-3 text-center text-xs">${relDisp}</td>
  <td class="p-3 text-center text-[10px] uppercase text-black font-semibold">${confDisp}</td>
- <td class="p-3 text-center text-sm font-semibold">${scoreDisp}</td>
- <td class="p-3 text-center font-semibold text-xs">${rankDisp}</td>
- <td class="p-3 text-center">${levelDisp}</td>
  </tr>
  `;
  }).join('');
@@ -246,8 +271,11 @@ async function loadSessionDetail(sessionId) {
  };
 
  container.innerHTML = `
- <div class="mb-4">
- <button onclick="loadSessionsList()" class="text-xs uppercase tracking-widest text-black hover:text-[var(--accent-gold)]">&larr; Back to Registry</button>
+ <div class="mb-4 flex justify-between items-center">
+ <button id="backToRegistryBtn" class="text-xs uppercase tracking-widest text-black hover:text-[var(--accent-gold)]">&larr; Back to Registry</button>
+ <button id="recomputeTelemetryBtn" class="px-3 py-1 bg-[#f4f1ea] border border-[var(--grid-border)] text-[10px] uppercase tracking-wider hover:bg-[#eae6dc] transition-colors">
+ Re-analyze Telemetry
+ </button>
  </div>
  
  <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-6 mb-4">
@@ -263,12 +291,13 @@ async function loadSessionDetail(sessionId) {
 
  <div class="bg-white border-l-4 border-[var(--accent-gold)] border-t border-r border-b border-[var(--grid-border)] p-4 mb-6 text-xs text-black leading-relaxed">
  <strong class="text-[var(--text-primary)] uppercase tracking-wider">Psychometric Safeguard Notice:</strong>
- This dossier provides a <em>provisional within-person relative profile</em> for exploratory human review only. It reflects the relative emphasis among dimensions for this candidate, NOT normative trait scores, clinical evaluation, or automated hiring recommendations. Cross-method convergence is exploratory; empirical normative calibration is pending.
+ This dossier provides a <em>provisional within-person relative profile</em> for exploratory human review only. It reflects the relative emphasis among dimensions for this candidate, NOT normative trait scores, clinical evaluation, or automated hiring decisions. Cross-method convergence is exploratory; empirical normative calibration is pending.
+ <div class="mt-2 text-[11px] text-[var(--text-secondary)] italic">${meta.safeguards?.sjt_emphasis_note || "Relative emphasis in this SJT's trade-offs: higher / middle / lower."}</div>
  </div>
 
  <div class="mb-6">
  <div class="flex justify-between items-baseline mb-3">
- <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)]">2. Within-Person Relative Dimension Profile</h3>
+ <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)]">2. Evidence by parameter</h3>
  <span class="text-xs uppercase tracking-wider text-black">Profile Completeness: <strong class="text-[var(--text-primary)]">${completeness}</strong></span>
  </div>
  <div class="overflow-x-auto border border-[var(--grid-border)] bg-white">
@@ -281,9 +310,6 @@ async function loadSessionDetail(sessionId) {
  <th class="p-3 text-center">Delta</th>
  <th class="p-3 text-center">Relationship</th>
  <th class="p-3 text-center">Confidence</th>
- <th class="p-3 text-center">Score (0–100)</th>
- <th class="p-3 text-center">Rank</th>
- <th class="p-3 text-center">Profile Position</th>
  </tr>
  </thead>
  <tbody>
@@ -305,7 +331,28 @@ async function loadSessionDetail(sessionId) {
  ${renderTaskTable(bankTasks, 'Research Bank', 'background:#f0eeea; color:var(--text-secondary); border:1px solid var(--grid-border);')}
  </div>
  `;
+ document.getElementById('backToRegistryBtn')?.addEventListener('click', () => loadSessionsList());
+ document.getElementById('recomputeTelemetryBtn')?.addEventListener('click', () => loadSessionDetail(sessionId, true));
+ if (window.lucide) window.lucide.createIcons();
  } catch (err) {
- container.innerHTML = `<div class="p-8 text-center text-red-600">Failed to load dossier.</div>`;
+ container.innerHTML = `
+ <div class="mb-4">
+ <button id="backToRegistryErrBtn" class="text-xs uppercase tracking-widest text-black hover:text-[var(--accent-gold)]">&larr; Back to Registry</button>
+ </div>
+ <div class="p-8 text-center bg-white border border-[var(--grid-border)] space-y-4">
+ <div class="text-red-600 font-semibold">Failed to load dossier</div>
+ <div class="text-xs text-stone-500 font-mono">${window.escapeHtml(err.message || String(err))}</div>
+ <div class="flex justify-center gap-3 pt-2">
+ <button id="retryDossierBtn" class="px-4 py-2 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition-colors">Retry</button>
+ <button id="recomputeDossierBtn" class="px-4 py-2 bg-[#f4f1ea] border border-[var(--grid-border)] text-xs uppercase tracking-widest hover:bg-[#eae6dc] transition-colors">Re-analyze Telemetry</button>
+ </div>
+ </div>
+ `;
+ document.getElementById('backToRegistryErrBtn')?.addEventListener('click', () => loadSessionsList());
+ document.getElementById('retryDossierBtn')?.addEventListener('click', () => loadSessionDetail(sessionId, false));
+ document.getElementById('recomputeDossierBtn')?.addEventListener('click', () => loadSessionDetail(sessionId, true));
  }
 }
+
+window.loadSessionsList = loadSessionsList;
+window.loadSessionDetail = loadSessionDetail;

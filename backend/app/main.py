@@ -111,7 +111,13 @@ try:
         sys.path.insert(0, recruit_path)
     
     # Import recruit models to register them with SQLModel/Base
-    from recruit_system.models.recruit import DBTelemetryEvent, DBSJTResponse, DBApplicantIdentity, DBSession, DBConsentRecord, DBEvidence
+    from recruit_system.models import recruit as recruit_models
+    from sqlmodel import SQLModel
+    try:
+        SQLModel.metadata.create_all(bind=engine)
+        logger.info("Recruit System SQLModel tables verified/created.")
+    except Exception as _table_err:
+        logger.warning(f"Notice creating SQLModel tables: {_table_err}")
     
     # Import recruit routers
     from recruit_system.routers import recruit, research_view
