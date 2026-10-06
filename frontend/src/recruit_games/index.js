@@ -50,7 +50,6 @@ export function renderGameShell({
  <div>
  <span class="act-badge">World ${wIdx + 1} of 7 &middot; ${meta.name}</span>
  <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">${title}</h2>
- ${subtitle ? `<p class="text-sm text-[var(--text-secondary)] mt-1 leading-relaxed">${subtitle}</p>` : ''}
  </div>
  <div class="text-right shrink-0 ml-4">
  ${meta.name_ur ? `<span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">${meta.name_ur}</span>` : ''}
@@ -58,20 +57,26 @@ export function renderGameShell({
  </div>
  </div>
 
- <!-- CLEAR, SPACIOUS INSTRUCTION / CONTEXT BOX -->
+ <!-- MAIN STIMULUS / SITUATION (HERO: Shown first, prominent and larger) -->
+ ${stimulusContent ? `
+ <div class="candidate-content-protected">
+ ${subtitle ? `<div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-medium mb-1.5">${subtitle}</div>` : ''}
+ ${stimulusContent}
+ </div>
+ ` : ''}
+
+ <!-- "YOUR TASK" / WHAT TO DO: Placed JUST BEFORE the options/interaction area -->
  ${instruction ? `
- <div class="p-4 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs candidate-content-protected">
- <div class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold mb-1">${instructionPrompt}</div>
- <div class="text-sm sm:text-base text-[var(--text-primary)] leading-relaxed">
+ <div class="p-3 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs flex items-center gap-2 candidate-content-protected">
+ <span class="w-2 h-2 rounded-full bg-[var(--accent-gold)] inline-block shrink-0"></span>
+ <div class="text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
+ <strong class="uppercase text-xs tracking-wider text-[var(--accent-gold)] mr-1">${instructionPrompt || 'Your Task'}:</strong>
  ${instruction}
  </div>
  </div>
  ` : ''}
 
- <!-- MAIN STIMULUS AREA -->
- ${stimulusContent ? `<div class="candidate-content-protected">${stimulusContent}</div>` : ''}
-
- <!-- INTERACTION AREA -->
+ <!-- INTERACTION AREA (Options / Controls / Actions) -->
  ${interactionContent ? `<div class="candidate-content-protected">${interactionContent}</div>` : ''}
 
  <!-- FEEDBACK REGION -->

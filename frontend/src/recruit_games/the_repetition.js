@@ -74,20 +74,21 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
  title: 'The Ceremonial Seal',
  subtitle: 'Apply wax seals to event invitations.',
  instructionPrompt: 'Your Task',
- instruction: 'Review the recipient below. Click Apply Wax Seal. Completing all 3 fulfills this activity.',
+ instructionPrompt: 'Your Task',
+    instruction: 'Click the button below to apply the wax seal. Completing all 3 fulfills this activity.',
  stimulusContent: `
- <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] text-center shadow-xs rounded-xs">
- <div class="w-full max-w-sm mx-auto min-h-[140px] bg-amber-50/70 border border-[var(--grid-border)] flex flex-col items-center justify-center p-5 relative shadow-sm rounded-xs">
- <span class="text-sm uppercase tracking-widest text-black ">Ceremonial Invitation</span>
- <div class="text-sm font-semibold text-[var(--text-primary)] mt-1.5">${u.recipient}</div>
- <div class="text-[11px] text-stone-500 mt-0.5">${u.note}</div>
-
- <div id="sealDisplay" class="w-12 h-12 rounded-full border-2 border-dashed border-[var(--accent-gold)] mt-3 flex items-center justify-center text-sm text-[var(--accent-gold)] font-bold shadow-xs">
- <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
- </div>
- </div>
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs text-center space-y-2">
+      <div class="flex items-center justify-between text-xs text-[var(--accent-gold)] font-bold uppercase tracking-wider">
+        <span>Ceremonial Invitation</span>
+        <span class="text-[var(--text-secondary)] font-normal">Envelope ${currentIdx + 1} of ${units.length}</span>
+      </div>
+      <div class="text-base sm:text-lg font-serif font-bold text-[var(--text-primary)] pt-1">${u.recipient}</div>
+      <div class="text-xs text-[var(--text-secondary)]">${u.note}</div>
+      <div id="sealDisplay" class="w-12 h-12 mx-auto rounded-full border-2 border-dashed border-[var(--accent-gold)] my-2 flex items-center justify-center text-sm text-[var(--accent-gold)] font-bold shadow-xs">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
+      </div>
+    </div>
+  `,
  actionButtonId: 'stampBtn',
  actionButtonText: (currentIdx === units.length - 1) ? 'Confirm & Finish &rarr;' : 'Apply Wax Seal &rarr;',
  progressText: `Envelope ${currentIdx + 1} of ${units.length} (Required Minimum: 2)`
@@ -199,13 +200,14 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
  instructionPrompt: 'Your Task',
  instruction: 'Assemble the required folder below. Two required folders are needed to satisfy this activity.',
  stimulusContent: `
- <div class="p-6 sm:p-8 bg-[#faf8f5] border border-[var(--grid-border)] text-center shadow-xs rounded-xs">
- <div class="max-w-sm mx-auto p-4 bg-white border border-[var(--grid-border)] rounded-xs">
- <span class="text-sm uppercase tracking-wider text-stone-500 ">Required Courtesy Folder</span>
- <div class="text-sm font-semibold text-[var(--text-primary)] mt-1">${u.label}</div>
- </div>
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs text-center space-y-2">
+      <div class="flex items-center justify-between text-xs text-[var(--accent-gold)] font-bold uppercase tracking-wider">
+        <span>Courtesy Folder</span>
+        <span class="text-[var(--text-secondary)] font-normal">Folder ${mandatoryIdx + 1} of ${mandatoryUnits.length}</span>
+      </div>
+      <div class="text-base sm:text-lg font-serif font-semibold text-[var(--text-primary)] pt-1">${u.label}</div>
+    </div>
+  `,
  actionButtonId: 'foldSleeveBtn',
  actionButtonText: 'Assemble Required Folder &rarr;',
  progressText: `Required Folder ${mandatoryIdx + 1} of ${mandatoryUnits.length}`
@@ -252,28 +254,28 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
  title: 'The Courtesy Sleeves',
  subtitle: 'Required minimum completed.',
  stimulusContent: `
- <div class="p-6 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs text-center">
- <div class="w-10 h-10 mx-auto rounded-full bg-[var(--text-primary)] border border-emerald-300 flex items-center justify-center text-[var(--text-primary)] text-lg mb-2">
- &#10003;
- </div>
- <div class="text-sm font-semibold text-[var(--text-primary)] mb-1">Required Minimum Satisfied</div>
- <p class="text-base text-black max-w-md mx-auto leading-relaxed mb-6">
- You have completed the required 2 courtesy folders. You may conclude this activity now, or make up to ${optionalUnits.length - optionalIdx} extra folders.
- <br><strong class="text-stone-700 mt-1 inline-block">Stopping at the minimum is completely neutral.</strong>
- </p>
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs text-center space-y-3">
+      <div class="w-10 h-10 mx-auto rounded-full bg-emerald-50 border border-emerald-300 flex items-center justify-center text-emerald-700 text-lg">
+        &#10003;
+      </div>
+      <div class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-bold">Requirement Satisfied</div>
+      <p class="text-sm sm:text-base text-[var(--text-primary)] max-w-md mx-auto leading-relaxed">
+        You have completed the required 2 courtesy folders. You may conclude this activity now, or prepare extra folders.
+        <br><strong class="text-[var(--text-primary)] font-semibold mt-1 inline-block">Stopping at the minimum is completely neutral.</strong>
+      </p>
 
- <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
- <button type="button" id="concludeBtn" class="px-6 py-3.5 bg-[var(--text-primary)] text-white text-base uppercase tracking-widest interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px] cursor-pointer">
- Conclude Activity Now &rarr;
- </button>
- ${optionalIdx < optionalUnits.length ? `
- <button type="button" id="continueOptionalBtn" class="px-6 py-3.5 bg-white border border-[var(--accent-gold)] text-[var(--accent-gold)] text-base uppercase tracking-widest interactive-option shadow-xs rounded-xs w-full sm:w-auto min-h-[44px] cursor-pointer">
- + Prepare Extra Folder (${optionalIdx + 1}/${optionalUnits.length})
- </button>
- ` : ''}
- </div>
- </div>
- `,
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+        <button type="button" id="concludeBtn" class="px-6 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest interactive-option shadow-sm rounded-xs w-full sm:w-auto min-h-[44px] cursor-pointer">
+          Conclude Activity Now &rarr;
+        </button>
+        ${optionalIdx < optionalUnits.length ? `
+        <button type="button" id="continueOptionalBtn" class="px-6 py-3 bg-white border border-[var(--accent-gold)] text-[var(--accent-gold)] text-xs uppercase tracking-widest interactive-option shadow-xs rounded-xs w-full sm:w-auto min-h-[44px] cursor-pointer font-bold">
+          + Prepare Extra Folder (${optionalIdx + 1}/${optionalUnits.length})
+        </button>
+        ` : ''}
+      </div>
+    </div>
+  `,
  progressText: 'Choice Point &middot; Stopping is neutral'
  });
 

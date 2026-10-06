@@ -88,44 +88,59 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
  title: "The Artisan's Basket",
  subtitle: 'Coordinate ceramic tiles with your workshop partner.',
  instructionPrompt: 'Your Task',
- instruction: 'Check tile counts below. Move tiles to your partner if needed.',
+ instructionPrompt: 'Your Task',
+    instruction: 'Check basket levels in Step 1. Use the + and &minus; buttons in Step 2 to choose tiles to share.',
  stimulusContent: `
- <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs flex items-center justify-between">
- <span class="text-base text-[var(--text-primary)]">
- <strong>${r.title}:</strong> ${r.description}
- </span>
- 
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${r.title}</span>
+        <span class="text-xs text-[var(--text-secondary)] uppercase">Round ${currentRound + 1} of ${rounds.length}</span>
+      </div>
+      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
+        ${r.description}
+      </p>
+    </div>
+  `,
  interactionContent: `
- <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
- <div class="grid grid-cols-2 gap-4 text-center mb-5">
- <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
- <span class="text-sm text-[var(--accent-gold)] uppercase font-semibold ">Partner Basket</span>
- <div class="text-xl font-semibold text-[var(--text-primary)] mt-1">${partnerTotal} Tiles</div>
- <div class="flex justify-center gap-1 mt-2.5 flex-wrap max-w-[140px] mx-auto">
- ${Array(Math.max(0, partnerTotal)).fill('<div class="w-3.5 h-3.5 bg-[var(--text-primary)]/70 rounded-xs shadow-xs"></div>').join('')}
- </div>
- </div>
- <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
- <span class="text-sm text-[var(--text-primary)] uppercase font-semibold ">Your Basket</span>
- <div class="text-xl font-semibold text-[var(--text-primary)] mt-1">${userTotal} Tiles</div>
- <div class="flex justify-center gap-1 mt-2.5 flex-wrap max-w-[140px] mx-auto">
- ${Array(Math.max(0, userTotal)).fill('<div class="w-3.5 h-3.5 bg-[var(--text-primary)]/70 rounded-xs shadow-xs"></div>').join('')}
- </div>
- </div>
- </div>
+    <div class="space-y-4">
+      <!-- STEP 1 -->
+      <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">1</span>
+          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 1: Check Current Basket Levels</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-center">
+          <div class="p-3.5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs">
+            <span class="text-xs text-[var(--text-secondary)] uppercase font-semibold">Partner Basket</span>
+            <div class="text-xl sm:text-2xl font-serif font-bold text-[var(--text-primary)] mt-1">${partnerTotal} Tiles</div>
+            <div class="flex justify-center gap-1 mt-2 flex-wrap max-w-[140px] mx-auto">
+              ${Array(Math.max(0, partnerTotal)).fill('<div class="w-3 h-3 bg-[var(--text-primary)]/70 rounded-xs shadow-xs"></div>').join('')}
+            </div>
+          </div>
+          <div class="p-3.5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs">
+            <span class="text-xs text-[var(--text-secondary)] uppercase font-semibold">Your Basket</span>
+            <div class="text-xl sm:text-2xl font-serif font-bold text-[var(--text-primary)] mt-1">${userTotal} Tiles</div>
+            <div class="flex justify-center gap-1 mt-2 flex-wrap max-w-[140px] mx-auto">
+              ${Array(Math.max(0, userTotal)).fill('<div class="w-3 h-3 bg-[var(--text-primary)]/70 rounded-xs shadow-xs"></div>').join('')}
+            </div>
+          </div>
+        </div>
+      </div>
 
- <div class="text-center pt-3 border-t border-[var(--grid-border)]">
- <div class="text-base text-black mb-2 ">Tiles to share with partner:</div>
- <div class="flex justify-center items-center gap-4">
- <button type="button" id="minusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold interactive-option shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">-</button>
- <span id="transferCount" class="text-3xl font-semibold text-[var(--accent-gold)] w-12 text-center">${transferCount}</span>
- <button type="button" id="plusTileBtn" class="w-12 h-12 rounded-xs bg-white border border-[var(--grid-border)] text-xl font-bold interactive-option shadow-xs flex items-center justify-center min-h-[44px]" tabindex="0">+</button>
- </div>
- </div>
- </div>
- `,
+      <!-- STEP 2 -->
+      <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">2</span>
+          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 2: Use + and &minus; to Choose Tiles to Share</span>
+        </div>
+        <div class="flex justify-center items-center gap-4 py-2">
+          <button type="button" id="minusTileBtn" class="w-12 h-12 rounded-xs bg-[#faf8f5] border border-[var(--grid-border)] text-2xl font-bold interactive-option shadow-xs flex items-center justify-center min-h-[48px]" tabindex="0">&minus;</button>
+          <span id="transferCount" class="text-3xl font-serif font-bold text-[var(--accent-gold)] w-16 text-center">${transferCount}</span>
+          <button type="button" id="plusTileBtn" class="w-12 h-12 rounded-xs bg-[#faf8f5] border border-[var(--grid-border)] text-2xl font-bold interactive-option shadow-xs flex items-center justify-center min-h-[48px]" tabindex="0">+</button>
+        </div>
+      </div>
+    </div>
+  `,
  summaryContent: `
  <span>Sharing: <strong class="text-[var(--text-primary)]">${transferCount} tiles</strong> (You keep ${userTotal})</span>
  <span class="text-sm text-black ">Round ${currentRound + 1} of ${rounds.length}</span>
@@ -270,15 +285,19 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
  title: 'The Gallery Wall',
  subtitle: 'Coordinate artwork placement with your partner.',
  instructionPrompt: 'Your Task',
- instruction: "Check your partner's position. Choose an open spot that balances the wall.",
+ instructionPrompt: 'Your Task',
+    instruction: "Look at where your partner hung their piece. Click one open spot below to hang yours.",
  stimulusContent: `
- <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs flex items-center justify-between">
- <span class="text-base text-[var(--text-primary)]">
- <strong>${r.title}:</strong> ${r.partner_desc}
- </span>
- <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-medium">Round ${currentRound + 1} of ${rounds.length}</span>
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${r.title}</span>
+        <span class="text-xs text-[var(--text-secondary)] uppercase">Round ${currentRound + 1} of ${rounds.length}</span>
+      </div>
+      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
+        ${r.partner_desc}
+      </p>
+    </div>
+  `,
  interactionContent: `
  <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
  <div class="text-sm text-black uppercase tracking-wider mb-2.5">Available Wall Placement Slots:</div>

@@ -105,27 +105,27 @@ function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex
  docStartTime = performance.now();
 
  const stimulusContent = `
- <div class="p-5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
- <div class="flex justify-between items-start mb-2">
- <span class="text-sm tracking-widest text-[var(--accent-gold)] uppercase font-semibold">Folio ${currentDocIdx + 1} of ${documents.length}</span>
- <button id="guideBtn" type="button" class="text-base text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1 interactive-option flex items-center gap-1.5 rounded-xs min-h-[32px]" tabindex="0">
- <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
- ${guideOpened ? 'Close Guide' : 'Shelf Guide'}
- </button>
- </div>
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
+      <div class="flex justify-between items-start mb-1">
+        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">Folio ${currentDocIdx + 1} of ${documents.length}</span>
+        <button id="guideBtn" type="button" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1 interactive-option flex items-center gap-1.5 rounded-xs min-h-[32px] bg-white" tabindex="0">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          ${guideOpened ? 'Close Guide' : 'Shelf Guide'}
+        </button>
+      </div>
 
- <div id="guideModal" class="${guideOpened ? '' : 'hidden'} p-3 mb-3 bg-amber-50/80 border border-[var(--accent-gold)]/40 text-base text-[var(--text-primary)] space-y-1 rounded-xs">
- <div>&bull; <strong>Century Rule:</strong> Sort by century made (19th vs 20th Century).</div>
- <div>&bull; <strong>Type Rule:</strong> Sort by content type (Poetry vs History).</div>
- <div>&bull; <strong>Language Rule:</strong> Sort by language (Kashmiri).</div>
- </div>
+      <div id="guideModal" class="${guideOpened ? '' : 'hidden'} p-3 mb-2 bg-amber-50/80 border border-[var(--accent-gold)]/40 text-xs text-[var(--text-primary)] space-y-1 rounded-xs">
+        <div>&bull; <strong>Century Rule:</strong> Sort by century made (19th vs 20th Century).</div>
+        <div>&bull; <strong>Type Rule:</strong> Sort by content type (Poetry vs History).</div>
+        <div>&bull; <strong>Language Rule:</strong> Sort by language (Kashmiri).</div>
+      </div>
 
- <h3 class="text-base sm:text-lg text-[var(--text-primary)] font-medium mt-1 mb-2.5">${doc.title}</h3>
- <div class="flex flex-wrap gap-2">
- ${doc.tags.map(t => `<span class="px-2.5 py-1 bg-[#faf8f5] border border-[var(--grid-border)] text-base text-black rounded-xs">${t}</span>`).join('')}
- </div>
- </div>
- `;
+      <h3 class="text-base sm:text-lg font-serif text-[var(--text-primary)] font-semibold leading-relaxed">${doc.title}</h3>
+      <div class="flex flex-wrap gap-2 pt-1">
+        ${doc.tags.map(t => `<span class="px-2.5 py-1 bg-white border border-[var(--grid-border)] text-xs text-[var(--text-primary)] font-medium rounded-xs">${t}</span>`).join('')}
+      </div>
+    </div>
+  `;
 
  const activeFolder = folders.find(f => f.id === selectedFolder);
 
@@ -159,8 +159,8 @@ function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex
  worldIndex,
  title: 'The Manuscript Folios',
  subtitle: 'Sort each historical page onto its proper shelf.',
- instruction: 'Examine this page. Pick the shelf that matches the active sorting rule.',
- instructionPrompt: doc.rule_prompt,
+ instructionPrompt: 'Your Task',
+    instruction: `Pick the shelf below that matches this page (${doc.rule_prompt}).`,
  stimulusContent,
  interactionContent,
  summaryContent,
@@ -309,17 +309,16 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIn
  const activeAct = actions.find(a => a.id === chosenAction);
 
  const stimulusContent = `
- <div class="p-5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
- <div class="flex items-center justify-between mb-2">
- <span class="text-sm tracking-widest text-[var(--text-primary)] uppercase font-semibold">Manuscript Folio ${currentTrial + 1} of 4</span>
- <span class="text-sm text-black uppercase bg-[#faf8f5] px-2 py-0.5 border border-[var(--grid-border)] rounded-xs font-medium">${t.type_note}</span>
- </div>
- <h3 class="text-base text-[var(--text-primary)] font-medium mb-1.5">${t.title}</h3>
- <p class="text-base text-black leading-relaxed bg-[#faf8f5] p-3 border border-[var(--grid-border)]/60 rounded-xs">
- ${t.anomaly_description}
- </p>
- </div>
- `;
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${t.title}</span>
+        <span class="text-xs text-[var(--text-secondary)] uppercase bg-white px-2 py-0.5 border border-[var(--grid-border)] rounded-xs">${t.type_note}</span>
+      </div>
+      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
+        ${t.anomaly_description}
+      </p>
+    </div>
+  `;
 
  const interactionContent = `
  <div class="space-y-2.5">
@@ -348,7 +347,8 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIn
  worldIndex,
  title: 'The Fragile Leaf',
  subtitle: 'Examine page condition and choose a handling step.',
- instruction: 'Read the page condition notes below. Choose the best handling option.',
+ instructionPrompt: 'Your Task',
+    instruction: 'Check the condition notes above. Choose how you want to handle this page below.',
  stimulusContent,
  interactionContent,
  summaryContent,

@@ -116,17 +116,19 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
  title: 'The Curatorial Dossier',
  subtitle: 'Choose the best way to care for each historic item.',
  instructionPrompt: 'Your Task',
- instruction: 'Review the artifact below. Choose an action. Optional reference notes are available if you want them.',
+ instructionPrompt: 'Your Task',
+    instruction: 'Choose a preservation action below. You can open optional reference notes if you wish.',
  stimulusContent: `
- <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
- <div class="flex items-center justify-between mb-2">
- <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Artifact Record</span>
- <span class="text-sm text-[var(--accent-gold)] uppercase font-medium">Record ${currentDecision + 1} of ${decisions.length}</span>
- </div>
- <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)]">${d.title}</div>
- <div class="text-base text-black mt-1.5 leading-relaxed">${d.scenario}</div>
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${d.title}</span>
+        <span class="text-xs text-[var(--text-secondary)] uppercase">Record ${currentDecision + 1} of ${decisions.length}</span>
+      </div>
+      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
+        ${d.scenario}
+      </p>
+    </div>
+  `,
  interactionContent: `
  <div class="space-y-4">
  <!-- Optional Reference Notes -->
@@ -350,17 +352,19 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
  title: 'The Antiquarian’s Bench',
  subtitle: 'Inspect physical clues to identify each historic object.',
  instructionPrompt: 'Your Task',
- instruction: 'Examine the relic below. Inspect any clues you wish. Then choose its origin.',
+ instructionPrompt: 'Your Task',
+    instruction: 'Inspect any clues you wish. Then choose where this object came from below.',
  stimulusContent: `
- <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
- <div class="flex items-center justify-between mb-2">
- <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Relic Specimen</span>
- <span class="text-sm text-[var(--accent-gold)] uppercase font-medium">Specimen ${currentTrial + 1} of ${relics.length}</span>
- </div>
- <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)]">${r.title}</div>
- <div class="text-base text-black mt-1.5 leading-relaxed">${r.description}</div>
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${r.title}</span>
+        <span class="text-xs text-[var(--text-secondary)] uppercase">Specimen ${currentTrial + 1} of ${relics.length}</span>
+      </div>
+      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
+        ${r.description}
+      </p>
+    </div>
+  `,
  interactionContent: `
  <div class="space-y-4">
  <!-- Clues Inspection Grid -->

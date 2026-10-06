@@ -111,55 +111,70 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
  title: "The Artisan's Assembly",
  subtitle: 'Fix the broken part using items on the workbench.',
  instructionPrompt: 'Your Task',
- instruction: '1. Read what is broken below. 2. Click bench items to add or remove them. 3. Click Test, then Confirm.',
+ instructionPrompt: 'Your Task',
+    instruction: 'Follow Step 1 and Step 2 below to assemble and test your replacement tool.',
  stimulusContent: `
- <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
- <div class="flex items-center justify-between mb-1.5">
- <span class="text-xs text-[var(--accent-gold)] uppercase tracking-wider font-semibold">Stage ${currentStageIdx + 1} of ${stages.length}</span>
- </div>
- <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${st.title}</div>
- <div class="text-sm sm:text-base text-[var(--text-primary)] leading-relaxed">${st.scenario}</div>
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${st.title}</span>
+        <span class="text-xs text-[var(--text-secondary)] uppercase">Stage ${currentStageIdx + 1} of ${stages.length}</span>
+      </div>
+      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
+        ${st.scenario}
+      </p>
+    </div>
+  `,
  interactionContent: `
- <div class="p-4 sm:p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs">
- <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-medium mb-3">Workbench Items (Click to Add or Remove):</div>
- <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 mb-4">
- ${st.materials.map(m => {
- const isSelected = selectedParts.includes(m.id);
- return `
- <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base flex flex-col justify-between min-h-[72px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
- <div>
- <div class="text-lg mb-1 text-stone-700">${m.icon}</div>
- <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
- <div class="text-sm text-black">${m.role}</div>
- </div>
- <div class="mt-2 text-right">
- <span class="text-sm font-semibold ${isSelected ? 'text-[var(--accent-gold)]' : 'text-black'}">${isSelected ? '&#10003; EQUIPPED' : '+ ADD'}</span>
- </div>
- </div>
- `;
- }).join('')}
- </div>
+    <div class="space-y-4">
+      <!-- STEP 1 -->
+      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">1</span>
+          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 1: Click pieces to add or remove</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+          ${st.materials.map(m => {
+            const isSelected = selectedParts.includes(m.id);
+            return `
+            <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-sm sm:text-base flex flex-col justify-between min-h-[72px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+              <div>
+                <div class="text-lg mb-1">${m.icon}</div>
+                <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
+                <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${m.role}</div>
+              </div>
+              <div class="mt-2 text-right">
+                <span class="text-xs font-bold ${isSelected ? 'text-[var(--accent-gold)]' : 'text-stone-400'}">${isSelected ? '&#10003; EQUIPPED' : '+ ADD'}</span>
+              </div>
+            </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
 
- <!-- Assembly Status & Test Button -->
- <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-stone-200">
- <div class="text-base text-black">
- Equipped: <strong class="text-[var(--text-primary)]">${selectedParts.length > 0 ? selectedParts.map(id => st.materials.find(m => m.id === id)?.name).join(' + ') : 'None selected'}</strong>
- </div>
- <button type="button" id="testAssemblyBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-4 py-2 bg-stone-100 border border-stone-300 text-[var(--text-primary)] text-base uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px]">
- Test Assembly
- </button>
- </div>
+      <!-- STEP 2 -->
+      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">2</span>
+          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 2: Test your assembled parts</span>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+          <div class="text-xs sm:text-sm text-[var(--text-secondary)]">
+            Equipped: <strong class="text-[var(--text-primary)]">${selectedParts.length > 0 ? selectedParts.map(id => st.materials.find(m => m.id === id)?.name).join(' + ') : 'None selected'}</strong>
+          </div>
+          <button type="button" id="testAssemblyBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px] font-bold">
+            Test Assembly
+          </button>
+        </div>
 
- ${testFeedback ? `
- <div class="mt-3 p-3 bg-white border ${testFeedback.valid ? 'border-emerald-600/40 text-[var(--text-primary)]' : 'border-amber-600/40 text-[var(--text-primary)]'} text-base rounded-xs leading-relaxed ">
- <span class="text-sm uppercase font-semibold block mb-0.5">${testFeedback.valid ? 'Assembly Test: Passed' : 'Assembly Test: Note'}</span>
- ${testFeedback.message}
- </div>
- ` : ''}
- </div>
- `,
+        ${testFeedback ? `
+        <div class="mt-2 p-3 bg-white border ${testFeedback.valid ? 'border-emerald-600/40 text-[var(--text-primary)]' : 'border-amber-600/40 text-[var(--text-primary)]'} text-xs sm:text-sm rounded-xs leading-relaxed">
+          <span class="text-xs uppercase font-bold block mb-0.5">${testFeedback.valid ? 'Assembly Test: Passed &#10003;' : 'Assembly Test: Observation'}</span>
+          ${testFeedback.message}
+        </div>
+        ` : ''}
+      </div>
+    </div>
+  `,
  actionButtonId: 'confirmStageBtn',
  actionButtonText: currentStageIdx < stages.length - 1 ? 'Confirm Assembly &rarr;' : 'Confirm & Finish &rarr;',
  actionButtonDisabled: selectedParts.length === 0,
@@ -687,71 +702,86 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
  title: 'The Improvised Tool',
  subtitle: 'Choose a tool and action to solve the craft problem.',
  instructionPrompt: 'Your Task',
- instruction: '1. Look at the goal below. 2. Pick a tool and an action. 3. Click Test to see what happens, then Confirm.',
+ instructionPrompt: 'Your Task',
+    instruction: 'Follow Step 1, Step 2, and Step 3 below to complete the craft task.',
  stimulusContent: `
- <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
- <div class="flex items-center justify-between mb-1.5">
- <span class="text-xs text-[var(--accent-gold)] uppercase tracking-wider font-semibold">Round ${currentTrial + 1} of ${trials.length}</span>
- </div>
- <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-1">${tr.title}</div>
- <div class="text-sm sm:text-base text-[var(--text-primary)] leading-relaxed">${tr.objective}</div>
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${tr.title}</span>
+        <span class="text-xs text-[var(--text-secondary)] uppercase">Round ${currentTrial + 1} of ${trials.length}</span>
+      </div>
+      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
+        ${tr.objective}
+      </p>
+    </div>
+  `,
  interactionContent: `
- <div class="space-y-4">
- <!-- Tool Selection -->
- <div>
- <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-medium mb-2">1. Pick an Implement:</div>
- <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
- ${tr.tools.map(t => {
- const isSelected = selectedTool === t.id;
- return `
- <div class="cr3-tool-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base min-h-[64px]" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
- <div class="flex items-center gap-2 mb-1">
- <span class="text-lg">${t.icon}</span>
- <span class="font-medium text-[var(--text-primary)]">${t.name}</span>
- </div>
- <div class="text-[11px] text-black leading-relaxed">${t.affordance}</div>
- </div>
- `;
- }).join('')}
- </div>
- </div>
+    <div class="space-y-4">
+      <!-- STEP 1 -->
+      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">1</span>
+          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 1: Pick an implement</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+          ${tr.tools.map(t => {
+            const isSelected = selectedTool === t.id;
+            return `
+            <div class="cr3-tool-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-sm sm:text-base min-h-[64px]" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-lg">${t.icon}</span>
+                <span class="font-medium text-[var(--text-primary)]">${t.name}</span>
+              </div>
+              <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${t.affordance}</div>
+            </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
 
- <!-- Method Selection -->
- <div>
- <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-medium mb-2">2. Choose an Action:</div>
- <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
- ${tr.methods.map(m => {
- const isSelected = selectedMethod === m.id;
- return `
- <div class="cr3-method-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base min-h-[64px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
- <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
- <div class="text-[11px] text-black leading-relaxed">${m.desc}</div>
- </div>
- `;
- }).join('')}
- </div>
- </div>
+      <!-- STEP 2 -->
+      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">2</span>
+          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 2: Choose an action</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+          ${tr.methods.map(m => {
+            const isSelected = selectedMethod === m.id;
+            return `
+            <div class="cr3-method-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-sm sm:text-base min-h-[64px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
+              <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
+              <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${m.desc}</div>
+            </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
 
- <!-- Apply & Observe Feedback -->
- <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
- <div class="text-base text-black">
- Active Pairing: <strong class="text-[var(--text-primary)]">${selectedTool ? tr.tools.find(t => t.id === selectedTool)?.name : 'None'} + ${selectedMethod ? tr.methods.find(m => m.id === selectedMethod)?.name : 'None'}</strong>
- </div>
- <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 border border-stone-300 text-[var(--text-primary)] text-base uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px]">
- Apply Technique
- </button>
- </div>
+      <!-- STEP 3 -->
+      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">3</span>
+          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 3: Test your technique</span>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+          <div class="text-xs sm:text-sm text-[var(--text-secondary)]">
+            Active Pairing: <strong class="text-[var(--text-primary)]">${selectedTool ? tr.tools.find(t => t.id === selectedTool)?.name : 'None'} + ${selectedMethod ? tr.methods.find(m => m.id === selectedMethod)?.name : 'None'}</strong>
+          </div>
+          <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px] font-bold">
+            Test Technique
+          </button>
+        </div>
 
- ${feedbackText ? `
- <div class="p-4 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-[var(--text-primary)]' : 'border-amber-600/40 text-[var(--text-primary)]'} rounded-xs text-base leading-relaxed ">
- <div class="text-sm uppercase font-semibold mb-1 ${feedbackText.success ? 'text-[var(--text-primary)]' : 'text-[var(--text-primary)]'}">Material Outcome Observation</div>
- <div>${feedbackText.text}</div>
- </div>
- ` : ''}
- </div>
- `,
+        ${feedbackText ? `
+        <div class="mt-2 p-3 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-[var(--text-primary)]' : 'border-amber-600/40 text-[var(--text-primary)]'} text-xs sm:text-sm rounded-xs leading-relaxed">
+          <div class="text-xs uppercase font-bold mb-1 ${feedbackText.success ? 'text-emerald-700' : 'text-amber-700'}">Outcome Result</div>
+          <div>${feedbackText.text}</div>
+        </div>
+        ` : ''}
+      </div>
+    </div>
+  `,
  actionButtonId: 'confirmTrialBtn',
  actionButtonText: currentTrial < trials.length - 1 ? 'Confirm Technique &rarr;' : 'Confirm & Finish &rarr;',
  actionButtonDisabled: !(selectedTool && selectedMethod),

@@ -1048,7 +1048,7 @@ function renderSjtBriefing(app) {
  const optionsHtml = scenario.options.map(opt => `
  <div class="option-card min-h-[52px] p-4 sm:p-5 rounded-xs border transition-all ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button" aria-pressed="${selectedOptId === opt.id ? 'true' : 'false'}" aria-label="Option ${opt.id.slice(-1)}">
  <span class="w-7 h-7 rounded-xs bg-stone-100 border border-[var(--grid-border)] flex items-center justify-center text-xs font-semibold text-[var(--accent-gold)] shrink-0 mt-0.5">${opt.id.slice(-1)}</span>
- <span class="text-xs sm:text-sm text-[var(--text-primary)] leading-relaxed">${opt.text}</span>
+ <span class="text-sm sm:text-base text-[var(--text-primary)] font-medium leading-relaxed">${opt.text}</span>
  </div>
  `).join('');
 
@@ -1066,14 +1066,22 @@ function renderSjtBriefing(app) {
  </div>
  </div>
 
- <!-- SITUATION: Clean paper card without repetitive labels -->
- <div class="scenario-text text-sm sm:text-base text-[var(--text-primary)] leading-relaxed bg-[#faf8f5] p-5 sm:p-6 border border-[var(--grid-border)] rounded-xs">
+ <!-- SITUATION / STIMULUS: Prominent, larger serif text (Hero) -->
+ <div class="scenario-text text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed bg-[#faf8f5] p-5 sm:p-6 border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs">
  ${scenario.setup}
+ </div>
+
+ <!-- YOUR TASK: Placed immediately before options -->
+ <div class="p-3 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs flex items-center gap-2">
+ <span class="w-2 h-2 rounded-full bg-[var(--accent-gold)] inline-block shrink-0"></span>
+ <div class="text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
+ <strong class="uppercase text-xs tracking-wider text-[var(--accent-gold)] mr-1">Your Task:</strong>
+ Read the situation above and pick what you would do.
+ </div>
  </div>
 
  <!-- OPTIONS -->
  <div class="space-y-3">
- <div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-medium">Choose what you would do:</div>
  ${optionsHtml}
  </div>
 
