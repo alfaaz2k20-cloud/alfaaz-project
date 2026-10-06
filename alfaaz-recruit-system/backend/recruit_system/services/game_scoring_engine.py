@@ -3,8 +3,8 @@ from dataclasses import dataclass, asdict
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timezone
 from sqlmodel import Session, select
-from app.models.recruit import DBTelemetryEvent, DBDataQualityFlag, DBSession, DBGameScore
-from app.services.task_definitions import (
+from recruit_system.models.recruit import DBTelemetryEvent, DBDataQualityFlag, DBSession, DBGameScore
+from recruit_system.services.task_definitions import (
     get_task_definitions,
     get_stimulus_ground_truth,
     reconstruct_f3_context_state,

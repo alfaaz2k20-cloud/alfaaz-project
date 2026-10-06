@@ -1,8 +1,8 @@
 import json
 from typing import List, Dict, Any, Optional, Set
 from sqlmodel import Session, select
-from app.models.recruit import DBTelemetryEvent, DBFeature, DBSession, DBDataQualityFlag, DBAccessibilityProfile
-from app.services.task_definitions import get_stimulus_ground_truth
+from recruit_system.models.recruit import DBTelemetryEvent, DBFeature, DBSession, DBDataQualityFlag, DBAccessibilityProfile
+from recruit_system.services.task_definitions import get_stimulus_ground_truth
 
 # Declared Feature Metadata and Directionality (Section 9)
 FEATURE_METADATA = {

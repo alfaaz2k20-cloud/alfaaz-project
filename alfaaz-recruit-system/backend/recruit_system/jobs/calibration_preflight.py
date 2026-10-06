@@ -10,16 +10,16 @@ import json
 
 from sqlmodel import Session, select
 
-from app.db.session import SessionLocal
-from app.models.recruit import (
+from recruit_system.db.session import SessionLocal
+from recruit_system.models.recruit import (
     DBConsentRecord,
     DBDataQualityFlag,
     DBSession,
     DBSJTResponse,
     DBTelemetryEvent,
 )
-from app.services.descriptive_task_record import LOCKED_GAMES
-from app.services.telemetry_engine import calculate_active_duration_ms
+from recruit_system.services.descriptive_task_record import LOCKED_GAMES
+from recruit_system.services.telemetry_engine import calculate_active_duration_ms
 
 EXPECTED_GAME_IDS = frozenset(game["game_id"] for game in LOCKED_GAMES)
 HARD_EXCLUSION_FLAGS = frozenset(

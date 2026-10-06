@@ -5,15 +5,15 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlmodel import Session, select
 from sqlalchemy import func
 
-from app.db.session import get_db
-from app.core.security import require_admin
-from app.models.recruit import (
+from recruit_system.db.session import get_db
+from recruit_system.core.security import require_admin
+from recruit_system.models.recruit import (
     DBSession, DBApplicantIdentity, DBEvidence, DBFeature,
     DBDataQualityFlag, DBRecruiterAccessLog, DBSJTResponse,
     DBConsentRecord, DBTelemetryEvent
 )
-from app.services.feature_extractor import extract_session_features
-from app.services.evidence_integrator import (
+from recruit_system.services.feature_extractor import extract_session_features
+from recruit_system.services.evidence_integrator import (
     PARAM_MINIGAMES,
     classify_minigame_band,
     evaluate_minigame_status,
@@ -21,8 +21,8 @@ from app.services.evidence_integrator import (
     load_feature_bands_config,
     load_integration_config
 )
-from app.services.descriptive_task_record import get_session_task_records, DOSSIER_STATEMENT
-from app.services.task_definitions import (
+from recruit_system.services.descriptive_task_record import get_session_task_records, DOSSIER_STATEMENT
+from recruit_system.services.task_definitions import (
     get_candidate_core_games,
     get_research_bank_games,
     get_expected_candidate_game_count

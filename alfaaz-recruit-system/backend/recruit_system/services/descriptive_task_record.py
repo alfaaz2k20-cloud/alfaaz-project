@@ -1,8 +1,8 @@
 import json
 from typing import List, Dict, Any, Optional
 from sqlmodel import Session, select
-from app.models.recruit import DBTelemetryEvent, DBDataQualityFlag, DBSession
-from app.services.task_definitions import (
+from recruit_system.models.recruit import DBTelemetryEvent, DBDataQualityFlag, DBSession
+from recruit_system.services.task_definitions import (
     reconstruct_a3_inspection_state,
     reconstruct_c1_allocation_state,
     reconstruct_c3_repair_state,
