@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timezone
 from sqlmodel import Session, select
@@ -11,6 +12,8 @@ from recruit_system.services.sjt_engine import score_sjt_responses, resolve_conf
 from recruit_system.services.game_scoring_engine import (
     score_session_games, ScoredGame, SCORING_VERSION as GAME_SCORING_VERSION
 )
+
+logger = logging.getLogger("evidence_integrator")
 
 # Locked seven parameters and mini-game mapping
 PARAM_MINIGAMES = {
@@ -595,8 +598,75 @@ def integrate_session_evidence(
         db.commit()
         for ev in updated_records:
             db.refresh(ev)
-    except Exception:
+    except Exception as _insert_err:
         db.rollback()
-        raise
+        logger.warning(
+            f"Insert-only persistence for session {session_id} encountered {_insert_err}; attempting safe in-place update fallback"
+        )
+        try:
+            fallback_records: List[DBEvidence] = []
+            for param_name in PARAM_MINIGAMES.keys():
+                p_data = preliminary[param_name]
+                existing = db.exec(
+                    select(DBEvidence).where(
+                        DBEvidence.session_id == session_id,
+                        DBEvidence.parameter == param_name
+                    ).order_by(DBEvidence.id.desc())
+                ).first()
+                if existing is None:
+                    existing = DBEvidence(
+                        session_id=session_id,
+                        parameter=param_name,
+                        version=1,
+                        is_superseded=False
+                    )
+                existing.is_superseded = False
+                existing.superseded_at = None
+                existing.spec_version = "2026-10-v2"
+                existing.sjt_version = "2026-09-rev"
+                existing.scoring_version = GAME_SCORING_VERSION
+                existing.feature_version = "1.0"
+                existing.config_hash = cfg_hash
+                existing.sjt_raw = p_data["sjt_raw"]
+                existing.sjt_min = p_data["sjt_min"]
+                existing.sjt_max = p_data["sjt_max"]
+                existing.sjt_span = p_data["sjt_span"]
+                existing.sjt_num = p_data["sjt_num"]
+                existing.sjt_relative = p_data["sjt_relative"]
+                existing.sjt_band = p_data["sjt_band"]
+                existing.predicted_sjt_relative = None
+                existing.model_version = "historical_deactivated"
+                existing.prediction_status = "DEACTIVATED_IN_FAVOR_OF_GAME_SJT"
+                existing.game_raw = p_data["game_raw"]
+                existing.game_min = p_data["game_min"]
+                existing.game_max = p_data["game_max"]
+                existing.game_span = p_data["game_span"]
+                existing.game_num = p_data["game_num"]
+                existing.game_relative = p_data["game_relative"]
+                existing.game_observation_count = p_data["game_observation_count"]
+                existing.game_consistency_spread = p_data["game_consistency_spread"]
+                existing.cross_method_delta = p_data["cross_method_delta"]
+                existing.profile_completeness = profile_completeness
+                existing.game_status = p_data["game_status"]
+                existing.game_band = p_data["game_band"]
+                existing.consistency = p_data["consistency"]
+                existing.relationship = p_data["relationship"]
+                existing.confidence = p_data["confidence"]
+                existing.observed_behavior_summary = p_data["observed_behavior_summary"]
+                db.add(existing)
+                fallback_records.append(existing)
+            db.commit()
+            for ev in fallback_records:
+                try:
+                    db.refresh(ev)
+                except Exception:
+                    pass
+            return fallback_records
+        except Exception as _fallback_err:
+            db.rollback()
+            logger.error(
+                f"Both insert-only and in-place persistence failed for session {session_id}: {_fallback_err}"
+            )
+            return updated_records
 
     return updated_records

@@ -215,7 +215,8 @@ def get_session_research_view(
         except Exception as _integ_err:
             db.rollback()
             import logging
-            logging.getLogger("research_view").error(f"Error integrating evidence for session {session_id}: {_integ_err}")
+            import traceback
+            logging.getLogger("research_view").error(f"Error integrating evidence for session {session_id}: {_integ_err}\n{traceback.format_exc()}")
             evidence_list = existing_evidence or []
     else:
         evidence_list = existing_evidence

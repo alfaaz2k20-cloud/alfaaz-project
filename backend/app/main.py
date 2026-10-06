@@ -62,19 +62,36 @@ try:
             if added > 0:
                 logger.info("[DB Migration] Added %d missing column(s) to %s.", added, table_name)
 
+        # 1. Evidence schema synchronization (All DBEvidence fields)
         _add_missing_columns("evidence", [
+            ("version", "INTEGER DEFAULT 1"),
             ("is_superseded", "BOOLEAN DEFAULT FALSE"),
             ("superseded_at", "TIMESTAMP WITH TIME ZONE"),
+            ("spec_version", "VARCHAR DEFAULT '2026-10-v2'"),
+            ("sjt_version", "VARCHAR DEFAULT '2026-09-rev'"),
+            ("scoring_version", "VARCHAR DEFAULT 'game_sjt_scoring_v1'"),
+            ("feature_version", "VARCHAR DEFAULT '1.0'"),
+            ("config_hash", "VARCHAR"),
+            ("sjt_raw", "INTEGER"),
+            ("sjt_min", "INTEGER"),
+            ("sjt_max", "INTEGER"),
+            ("sjt_span", "INTEGER"),
+            ("sjt_num", "INTEGER"),
+            ("sjt_relative", "FLOAT"),
+            ("sjt_band", "VARCHAR"),
+            ("predicted_sjt_relative", "FLOAT"),
+            ("model_version", "VARCHAR"),
+            ("prediction_status", "VARCHAR"),
             ("game_raw", "FLOAT"),
             ("game_min", "FLOAT"),
             ("game_max", "FLOAT"),
             ("game_span", "FLOAT"),
             ("game_num", "FLOAT"),
             ("game_relative", "FLOAT"),
-            ("game_observation_count", "INTEGER"),
+            ("game_observation_count", "INTEGER DEFAULT 0"),
             ("game_consistency_spread", "FLOAT"),
             ("cross_method_delta", "FLOAT"),
-            ("profile_completeness", "VARCHAR"),
+            ("profile_completeness", "VARCHAR DEFAULT 'INSUFFICIENT'"),
             ("game_status", "VARCHAR DEFAULT 'INSUFFICIENT'"),
             ("game_band", "VARCHAR"),
             ("consistency", "VARCHAR DEFAULT 'NOT_COMPUTED'"),
@@ -83,6 +100,27 @@ try:
             ("observed_behavior_summary", "TEXT"),
             ("data_quality_flags_json", "TEXT DEFAULT '[]'")
         ])
+
+        # Drop legacy unique constraint that prevented multi-version evidence persistence
+        for _drop_sql in [
+            "ALTER TABLE evidence DROP CONSTRAINT IF EXISTS uq_session_parameter",
+            "ALTER TABLE evidence DROP CONSTRAINT IF EXISTS evidence_session_id_parameter_key",
+            "DROP INDEX IF EXISTS uq_session_parameter",
+            "DROP INDEX IF EXISTS ix_evidence_session_id_parameter"
+        ]:
+            try:
+                with _conn.begin_nested():
+                    _conn.execute(sa_text(_drop_sql))
+            except Exception as _c_err:
+                logger.debug("[DB Migration] Drop legacy constraint notice: %s", _c_err)
+
+        try:
+            with _conn.begin_nested():
+                _conn.execute(sa_text("CREATE UNIQUE INDEX IF NOT EXISTS uq_session_parameter_version ON evidence (session_id, parameter, version)"))
+        except Exception as _idx_err:
+            logger.debug("[DB Migration] Unique index notice: %s", _idx_err)
+
+        # 2. Recruit Sessions
         _add_missing_columns("recruit_sessions", [
             ("completed_at", "TIMESTAMP WITH TIME ZONE"),
             ("order_id", "INTEGER"),
@@ -90,6 +128,65 @@ try:
             ("input_modality", "VARCHAR")
         ])
 
+        # 3. Telemetry events & Features
+        _add_missing_columns("telemetry_events", [
+            ("task_def_version", "VARCHAR DEFAULT '1.0'")
+        ])
+        _add_missing_columns("features", [
+            ("adjust_method", "VARCHAR")
+        ])
+
+        # 4. Explicit game_scores table creation
+        try:
+            with _conn.begin_nested():
+                if _conn_dialect == "postgresql":
+                    _conn.execute(sa_text("""
+                        CREATE TABLE IF NOT EXISTS game_scores (
+                            id SERIAL PRIMARY KEY,
+                            session_id VARCHAR NOT NULL,
+                            game_id VARCHAR NOT NULL,
+                            parameter VARCHAR NOT NULL,
+                            raw_score FLOAT,
+                            min_score FLOAT,
+                            max_score FLOAT,
+                            span FLOAT,
+                            num FLOAT,
+                            relative_score FLOAT,
+                            band VARCHAR,
+                            status VARCHAR DEFAULT 'INSUFFICIENT',
+                            task_def_version VARCHAR DEFAULT '1.0',
+                            scoring_version VARCHAR DEFAULT 'game_sjt_scoring_v1',
+                            observation_count INTEGER DEFAULT 0,
+                            flags_json TEXT DEFAULT '[]',
+                            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                            CONSTRAINT uq_session_game UNIQUE (session_id, game_id)
+                        )
+                    """))
+                else:
+                    _conn.execute(sa_text("""
+                        CREATE TABLE IF NOT EXISTS game_scores (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            session_id VARCHAR NOT NULL,
+                            game_id VARCHAR NOT NULL,
+                            parameter VARCHAR NOT NULL,
+                            raw_score FLOAT,
+                            min_score FLOAT,
+                            max_score FLOAT,
+                            span FLOAT,
+                            num FLOAT,
+                            relative_score FLOAT,
+                            band VARCHAR,
+                            status VARCHAR DEFAULT 'INSUFFICIENT',
+                            task_def_version VARCHAR DEFAULT '1.0',
+                            scoring_version VARCHAR DEFAULT 'game_sjt_scoring_v1',
+                            observation_count INTEGER DEFAULT 0,
+                            flags_json TEXT DEFAULT '[]',
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            CONSTRAINT uq_session_game UNIQUE (session_id, game_id)
+                        )
+                    """))
+        except Exception as _gs_tbl_err:
+            logger.warning("[DB Migration] Notice ensuring game_scores table: %s", _gs_tbl_err)
 
     logger.info("Schema migration check completed successfully.")
 except Exception as _e:

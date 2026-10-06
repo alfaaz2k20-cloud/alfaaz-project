@@ -78,7 +78,10 @@ def extract_session_features(db: Session, session_id: str) -> List[DBFeature]:
     existing = db.exec(select(DBFeature).where(DBFeature.session_id == session_id)).all()
     for f in existing:
         db.delete(f)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
 
     # Group events by mini_game
     mg_events: Dict[str, List[DBTelemetryEvent]] = {}
@@ -149,7 +152,12 @@ def extract_session_features(db: Session, session_id: str) -> List[DBFeature]:
 
     if extracted_features:
         db.add_all(extracted_features)
-        db.commit()
+        try:
+            db.commit()
+        except Exception as _feat_err:
+            db.rollback()
+            import logging
+            logging.getLogger("feature_extractor").warning(f"Notice committing features: {_feat_err}")
 
     return extracted_features
 

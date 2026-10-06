@@ -1,9 +1,12 @@
 import json
+import logging
 from dataclasses import dataclass, asdict
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timezone
 from sqlmodel import Session, select
 from recruit_system.models.recruit import DBTelemetryEvent, DBDataQualityFlag, DBSession, DBGameScore
+
+logger = logging.getLogger("game_scoring_engine")
 from recruit_system.services.task_definitions import (
     get_task_definitions,
     get_stimulus_ground_truth,
@@ -807,7 +810,7 @@ def score_session_games(db: Session, session_id: str) -> Dict[str, ScoredGame]:
 
     try:
         db.commit()
-    except Exception:
+    except Exception as _gs_err:
         db.rollback()
-        raise
+        logger.warning(f"Notice committing game_scores for session {session_id}: {_gs_err}")
     return scores
