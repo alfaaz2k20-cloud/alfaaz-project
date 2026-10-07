@@ -77,7 +77,6 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
  title: 'The Ceramic Mosaic',
  subtitle: 'Sort each ceramic tile into the matching container.',
  instructionPrompt: 'Your Task',
- instructionPrompt: 'Your Task',
     instruction: 'Look at the tile above. Click Container 1 or Container 2 below to sort it.',
  stimulusContent: `
     <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs text-center space-y-2">
@@ -101,7 +100,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
  <button type="button" class="bin-btn p-5 bg-white border ${selectedChoice === 'container_2' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
  <span class="text-2xl text-[var(--text-primary)] block mb-1">&#9632;</span>
  <span class="text-base font-semibold text-[var(--text-primary)] block">Container 2</span>
- <span class="text-sm text-black block mt-0.5 ">Reference: Sage Square</span>
+ <span class="text-sm text-black block mt-0.5 ">Reference: Green Square</span>
  </button>
  </div>
  `,
@@ -251,7 +250,6 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
  worldIndex: 3,
  title: 'The Courtyard Setup',
  subtitle: 'Choose the best response when unexpected studio events happen.',
- instructionPrompt: 'Your Task',
  instructionPrompt: 'Your Task',
     instruction: 'Read the situation above. Choose the most practical step below.',
  stimulusContent: `

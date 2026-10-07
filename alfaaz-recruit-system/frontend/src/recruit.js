@@ -1,8 +1,105 @@
+
+/* ==========================================================================
+   ALFAAZ CANDIDATE EXPERIENCE V2.1 — PLAIN ENGLISH SJT PRESENTATION
+   100% preserve scenario IDs, option IDs, weights, and telemetry.
+   ========================================================================== */
+const SJT_V2_1_COPY = {
+  S1: {
+    act_title_en: "The Exhibition",
+    act_title_ur: "نمائش",
+    setup: "The art exhibition opens in 2 hours. One artist's paintings have not arrived yet. The exhibition lead is very stressed while fixing the hall lights.",
+    options: {
+      S1A: "Quietly take over setup tasks and work quickly to give the lead space.",
+      S1B: "Suggest rearranging the room layout right now to hide the empty wall.",
+      S1C: "Go to the lead and ask directly how you can help them right now.",
+      S1D: "Start calling contacts yourself to find the artist or get backup art."
+    }
+  },
+  S2: {
+    act_title_en: "The Exhibition",
+    act_title_ur: "نمائش",
+    setup: "An artist, Faizan, is upset because his artwork was placed near the noisy entrance. He wants a quiet corner. Another artist, Meher, is already in the quiet corner and is happy there.",
+    options: {
+      S2A: "Bring Faizan and Meher together to talk and find an agreement.",
+      S2B: "Politely but firmly keep the original floor plan so things stay fair.",
+      S2C: "Walk through the building to find an empty, unused corner for Faizan.",
+      S2D: "Offer to stand near Faizan's artwork yourself to keep the crowd quiet."
+    }
+  },
+  S3: {
+    act_title_en: "The Exhibition",
+    act_title_ur: "نمائش",
+    setup: "A school teacher arrives without notice with 15 students. The room is still messy, with loose cables on the floor.",
+    options: {
+      S3A: "Gather the students in the entrance hall for a quick question-and-answer talk.",
+      S3B: "Politely remind the teacher of the opening time, but take their details to book a tour later.",
+      S3C: "Rope off a safe corner of the room and watch the students yourself.",
+      S3D: "Show them one piece of art safely without disturbing the setup work."
+    }
+  },
+  S4: {
+    act_title_en: "The Circle",
+    act_title_ur: "حلقہ",
+    setup: "During a group discussion, Zara, a new member, leans forward to speak but pulls back nervously.",
+    options: {
+      S4A: "Wait for a quiet moment and gently invite her to speak.",
+      S4B: "Notice what she is interested in and bring those topics up for the whole group.",
+      S4C: "Talk to her privately after the gathering to chat one-on-one.",
+      S4D: "Suggest a simple rule where everyone takes turns speaking in future meetings."
+    }
+  },
+  S5: {
+    act_title_en: "The Circle",
+    act_title_ur: "حلقہ",
+    setup: "A listener angrily interrupts a poet who is reading a sensitive, personal poem. The poet freezes.",
+    options: {
+      S5A: "Point to the community guidelines on respect and introduce the next reader.",
+      S5B: "Walk up to stand beside the poet right away so they feel safe.",
+      S5C: "Pause the event and let the angry person briefly explain what upset them.",
+      S5D: "Ask everyone in the room to sit in quiet reflection for one minute."
+    }
+  },
+  S6: {
+    act_title_en: "The Outreach",
+    act_title_ur: "رابطہ",
+    setup: "An 8-year-old boy refuses to paint. An experienced team volunteer whispers, 'Just leave him alone.'",
+    options: {
+      S6A: "Listen to your teammate's advice, but keep a watchful eye on the boy from where you stand.",
+      S6B: "Sit near him and draw quietly on your own paper so he feels no pressure.",
+      S6C: "Build a small tower out of paint jars to catch his interest.",
+      S6D: "Ask the full-time center staff what the boy usually enjoys doing."
+    }
+  },
+  S7: {
+    act_title_en: "The Outreach",
+    act_title_ur: "رابطہ",
+    setup: "You feel very tired from a long week. A close friend is visiting your town for only one day, but you promised earlier to help set up today's event.",
+    options: {
+      S7A: "Keep your full promise to work. Meet your friend only if work finishes early.",
+      S7B: "Call the team leader honestly and offer to take a harder shift next week instead.",
+      S7C: "Invite your friend to come with you and help out as a guest volunteer.",
+      S7D: "Work the two hardest hours, hand over your jobs clearly to the team, and then leave."
+    }
+  }
+};
+
+const FALLBACK_V2_1_SCENARIOS = Object.keys(SJT_V2_1_COPY).map((k, idx) => ({
+  id: k,
+  act: idx < 3 ? 1 : (idx < 5 ? 2 : 3),
+  act_title_en: SJT_V2_1_COPY[k].act_title_en,
+  act_title_ur: SJT_V2_1_COPY[k].act_title_ur,
+  setup: SJT_V2_1_COPY[k].setup,
+  options: Object.keys(SJT_V2_1_COPY[k].options).map(optId => ({
+    id: optId,
+    text: SJT_V2_1_COPY[k].options[optId]
+  }))
+}));
+
 /* ==========================================================================
  ALFAAZ RECRUIT — CANDIDATE EXPERIENCE & TELEMETRY CLIENT
  ========================================================================== */
 
-import consentCopy from '../../backend/config/copy/consent.json';
+import consentCopy from '../../alfaaz-recruit-system/backend/config/copy/consent.json';
 import './recruit-utilities.css';
 import { runMiniGame, CANDIDATE_CORE_GAMES } from './recruit_games/index.js';
 
@@ -19,7 +116,7 @@ let state = {
  configHash: null,
  worldSequence: [],
  seeds: {},
- screen: 'consent', // consent, identity, accessibility, warmup, sjt, games, complete, paused
+ screen: 'consent', // consent, identity, accessibility, warmup, sjt_briefing, sjt, gba_briefing, games, complete, paused
  pausedPreviousScreen: null,
  sjtScenarios: [],
  currentSjtIndex: 0,
@@ -35,9 +132,92 @@ let state = {
  telemetryTerminal: false
 };
 
+
 const STATE_STORAGE_KEY = 'alfaaz_recruit_state';
-const UNSENT_STORAGE_KEY = 'alfaaz_recruit_unsent';
+const UNSENT_STORAGE_KEY = 'alfaaz_recruit_unsent'; // deprecated
+
+const TelemetryOutbox = {
+  dbPromise: null,
+  init() {
+    this.dbPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open('AlfaazRecruitDB', 3);
+      req.onupgradeneeded = e => {
+        if (!e.target.result.objectStoreNames.contains('outbox')) {
+           e.target.result.createObjectStore('outbox', { keyPath: '_idbKey' });
+        } else if (e.oldVersion < 3) {
+           e.target.result.deleteObjectStore('outbox');
+           e.target.result.createObjectStore('outbox', { keyPath: '_idbKey' });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    return this.dbPromise;
+  },
+  async append(eventPayload) {
+    if (!eventPayload._idbKey) {
+        eventPayload._idbKey = crypto.randomUUID();
+    }
+    try {
+      const db = await this.dbPromise;
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('outbox', 'readwrite');
+        const store = tx.objectStore('outbox');
+        const payloadCopy = { ...eventPayload };
+        const req = store.add(payloadCopy);
+        req.onsuccess = () => resolve(req.result);
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch(e) {
+      console.warn('IDB append failed. State will only be persistent for the session.', e);
+      eventPayload._idbFailed = true;
+    }
+  },
+  async deleteMany(keys) {
+    if (!keys || keys.length === 0) return;
+    try {
+      const db = await this.dbPromise;
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('outbox', 'readwrite');
+        const store = tx.objectStore('outbox');
+        keys.forEach(k => store.delete(k));
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch(e) {
+      console.warn('IDB delete failed', e);
+    }
+  },
+  async getAll() {
+    try {
+      const db = await this.dbPromise;
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('outbox', 'readonly');
+        const req = tx.objectStore('outbox').getAll();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(tx.error);
+      });
+    } catch(e) {
+      console.warn('IDB getAll failed', e);
+      return [];
+    }
+  },
+  async clear() {
+    try {
+      const db = await this.dbPromise;
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('outbox', 'readwrite');
+        tx.objectStore('outbox').clear();
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (e) {}
+  }
+};
+TelemetryOutbox.init().catch(e => console.warn('IDB init failed', e));
+
 let localStateSaveScheduled = false;
+
 
 function persistLocalState() {
  localStateSaveScheduled = false;
@@ -61,7 +241,7 @@ function persistLocalState() {
  telemetryTerminal: state.telemetryTerminal
  };
  sessionStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(toSave));
- sessionStorage.setItem(UNSENT_STORAGE_KEY, JSON.stringify(state.telemetryQueue.slice(-100)));
+ // UNSENT_STORAGE_KEY persistence removed in favor of explicit IDB append
  } catch (e) {
  console.warn('[Persistence] Error saving sessionStorage:', e);
  }
@@ -84,20 +264,26 @@ function saveLocalState({ immediate = false } = {}) {
  }
 }
 
-function restoreLocalState() {
+async function restoreLocalState() {
  try {
  const savedStateStr = sessionStorage.getItem(STATE_STORAGE_KEY);
- const savedUnsentStr = sessionStorage.getItem(UNSENT_STORAGE_KEY);
-
- if (savedUnsentStr) {
- const parsedUnsent = JSON.parse(savedUnsentStr);
- if (Array.isArray(parsedUnsent)) {
- state.telemetryQueue = parsedUnsent;
- }
+ 
+ const idbEvents = await TelemetryOutbox.getAll();
+ if (idbEvents && idbEvents.length > 0) {
+     state.telemetryQueue = idbEvents;
+ } else {
+     const savedUnsentStr = sessionStorage.getItem(UNSENT_STORAGE_KEY);
+     if (savedUnsentStr) {
+         const parsedUnsent = JSON.parse(savedUnsentStr);
+         if (Array.isArray(parsedUnsent)) {
+             state.telemetryQueue = parsedUnsent;
+         }
+     }
  }
 
  if (savedStateStr) {
  const saved = JSON.parse(savedStateStr);
+
  if (saved.sessionId) {
  state.sessionId = saved.sessionId;
  state.configHash = saved.configHash || null;
@@ -192,8 +378,10 @@ function logEvent(screen, action, data = {}, stateSnapshot = {}, inputType = 'mo
  data: finalData
  };
 
+ eventPayload._idbKey = crypto.randomUUID();
  state.telemetryQueue.push(eventPayload);
  saveLocalState();
+ TelemetryOutbox.append(eventPayload).catch(e => console.warn(e));
 
  // Flush when reaching 50 buffered events, or at critical task boundaries
  if (state.telemetryQueue.length >= 50 || action === 'minigame_end' || action === 'sjt_complete') {
@@ -222,6 +410,7 @@ async function _executeFlushTelemetry() {
  if (!state.sessionId || state.telemetryQueue.length === 0) return true;
  if (state.telemetryTerminal) return true;
  const sending = state.telemetryQueue.slice(0, telemetryBatchSize);
+ const sendingIdbKeys = sending.map(ev => ev._idbKey).filter(k => k !== undefined);
  const payloadEvents = sending.map(ev => {
      const copy = { ...ev };
      delete copy._idbKey;
@@ -265,6 +454,7 @@ async function _executeFlushTelemetry() {
  if (detailStr.includes('already complete')) {
  console.info('[Telemetry] Session is already complete on server; draining local queue.');
  state.telemetryQueue = [];
+ TelemetryOutbox.clear().catch(e => console.warn(e));
  state.telemetryTerminal = true;
  saveLocalState({ immediate: true });
  return true;
@@ -278,8 +468,10 @@ async function _executeFlushTelemetry() {
  const data = await resp.json().catch(() => ({}));
  if (data.result && data.result.session_status === 'COMPLETE') {
  state.telemetryQueue.splice(0, sending.length);
+ if (sendingIdbKeys.length > 0) TelemetryOutbox.deleteMany(sendingIdbKeys);
  if (data.result.new_rejected_count > 0) {
  state.telemetryQueue = [];
+ TelemetryOutbox.clear().catch(e => console.warn(e));
  state.telemetryTerminal = true;
  }
  saveLocalState({ immediate: true });
@@ -287,6 +479,7 @@ async function _executeFlushTelemetry() {
  }
 
  state.telemetryQueue.splice(0, sending.length);
+ if (sendingIdbKeys.length > 0) TelemetryOutbox.deleteMany(sendingIdbKeys);
  saveLocalState();
  return true;
  } catch (err) {
@@ -360,7 +553,7 @@ window.addEventListener('focus', () => {
 // Initialization
 document.addEventListener('DOMContentLoaded', async () => {
  startKeepAlivePing();
- restoreLocalState();
+ await restoreLocalState();
  renderScreen();
  setupGlobalControls();
 });
@@ -424,8 +617,14 @@ export function renderScreen() {
  case 'warmup':
  renderWarmup(app);
  break;
+ case 'sjt_briefing':
+ renderSjtBriefing(app);
+ break;
  case 'sjt':
  renderSJT(app, progressBarFill);
+ break;
+ case 'gba_briefing':
+ renderGbaBriefing(app);
  break;
  case 'games':
  renderGames(app, progressBarFill);
@@ -785,9 +984,23 @@ function renderWarmup(app) {
  throw new Error(sjtResp ? `Server returned HTTP ${sjtResp.status}` : 'Network timeout');
  }
  const sjtData = await sjtResp.json();
- state.sjtScenarios = sjtData.scenarios || [];
+      const rawScenarios = (sjtData && sjtData.scenarios && sjtData.scenarios.length > 0) ? sjtData.scenarios : FALLBACK_V2_1_SCENARIOS;
+      state.sjtScenarios = rawScenarios.map(sc => {
+        const v21 = SJT_V2_1_COPY[sc.id];
+        if (!v21) return sc;
+        return {
+          ...sc,
+          act_title_en: v21.act_title_en || sc.act_title?.en || sc.act_title_en,
+          act_title_ur: v21.act_title_ur || sc.act_title?.ur || sc.act_title_ur,
+          setup: v21.setup || sc.setup,
+          options: (sc.options || []).map(opt => ({
+            ...opt,
+            text: (v21.options && v21.options[opt.id]) || opt.text
+          }))
+        };
+      });
  state.currentSjtIndex = 0;
- state.screen = 'sjt';
+ state.screen = 'sjt_briefing';
  saveLocalState({ immediate: true });
  renderScreen();
  } catch (err) {
@@ -817,8 +1030,111 @@ function renderWarmup(app) {
  });
 }
 
-// 4. SJT Phase
-function renderSJT(app, progressBarFill) {
+// 4. Section 1 Orientation (SJT Briefing)
+function renderSjtBriefing(app) {
+ const segmentProgress = document.getElementById('segmentProgress');
+ if (segmentProgress) {
+ segmentProgress.innerHTML = '<span>Section 1 &middot; Overview</span>';
+ }
+ const progressBarFill = document.getElementById('progressBarFill');
+ if (progressBarFill) {
+ progressBarFill.style.width = '0%';
+ }
+
+ app.innerHTML = `
+ <div class="max-w-2xl mx-auto py-4 sm:py-6 space-y-6">
+ <!-- Header: English Left, Urdu Right -->
+ <div class="flex justify-between items-start pb-4 border-b border-[var(--grid-border)]">
+ <div>
+ <span class="act-badge">Section 1 &middot; Overview</span>
+ <h1 class="text-2xl sm:text-3xl font-serif text-[var(--text-primary)]">Situational Scenarios</h1>
+ </div>
+ <div class="text-right shrink-0">
+ <span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">تفہیم و ارادہ</span>
+ <span class="text-[10px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider block mt-1">7 Scenarios</span>
+ </div>
+ </div>
+
+ <p class="text-sm sm:text-base text-[var(--text-primary)] leading-relaxed">
+ You will read 7 short situations from creative studio life, community events, and teamwork.
+ </p>
+
+ <!-- 3 Spacious Step Cards (Zero Construct Exposure) -->
+ <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">1</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">Read the Story</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ Each card describes a real situation that took place in the studio.
+ </p>
+ </div>
+
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">2</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">Pick Your Choice</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ Choose the response that best matches what you would actually do.
+ </p>
+ </div>
+
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">3</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">No Trick Questions</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ There is no right or wrong answer. Pick what you would genuinely do.
+ </p>
+ </div>
+ </div>
+
+ <!-- Pacing & Action Bar -->
+ <div class="pt-6 border-t border-[var(--grid-border)] flex flex-col sm:flex-row justify-between items-center gap-4">
+ <span class="text-xs text-[var(--text-secondary)]">7 scenarios &middot; Self-paced (approx. 6–8 mins) &middot; Tap options or press keys 1–4</span>
+ <button id="startSjtBtn" class="w-full sm:w-auto min-h-[44px] px-8 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] shadow-sm rounded-xs">
+ Begin Section 1: Scenarios &rarr;
+ </button>
+ </div>
+ </div>
+ `;
+
+ logEvent('sjt_briefing', 'briefing_viewed');
+
+ document.getElementById('startSjtBtn')?.addEventListener('click', () => {
+ state.screen = 'sjt';
+ saveLocalState({ immediate: true });
+ renderScreen();
+ });
+}
+
+// 5. SJT Phase
+
+ let sjtKeydownHandler = null;
+
+ function selectSjtOption(scenario, optId, inputType) {
+    if (state.sjtResponses[scenario.id] === optId) return;
+    
+    state.sjtResponses[scenario.id] = optId;
+    logEvent('sjt', inputType === 'keyboard' ? 'option_selected_key' : 'option_selected', { scenario_id: scenario.id, option_id: optId });
+
+    // Update DOM classes and aria attributes instead of full render
+    const cards = document.querySelectorAll('.option-card');
+    cards.forEach(c => {
+        if (c.getAttribute('data-opt-id') === optId) {
+            c.classList.add('selected');
+            c.setAttribute('aria-pressed', 'true');
+            c.focus();
+        } else {
+            c.classList.remove('selected');
+            c.setAttribute('aria-pressed', 'false');
+        }
+    });
+
+    const nextBtn = document.getElementById('nextSjtBtn');
+    if (nextBtn) nextBtn.disabled = false;
+    saveLocalState();
+ }
+
+ function renderSJT(app, progressBarFill) {
+
  const scenario = state.sjtScenarios[state.currentSjtIndex];
  if (!scenario) {
  submitSjtAndProceed();
@@ -835,54 +1151,56 @@ function renderSJT(app, progressBarFill) {
  const segmentProgress = document.getElementById('segmentProgress');
  if (segmentProgress) {
  const remainingMins = Math.max(1, Math.round(((total - current + 1) * 35 + 14 * 32) / 60));
- segmentProgress.innerHTML = `<span class="text-black hidden sm:inline mr-2 text-[10px] sm:text-xs font-normal">About ${remainingMins} mins remaining</span><span>Judgment ${current} / ${total}</span>`;
+ segmentProgress.innerHTML = `<span class="text-black hidden sm:inline mr-2 text-[10px] sm:text-xs font-normal">About ${remainingMins} mins remaining</span><span>Scenario ${current} / ${total}</span>`;
  }
 
  const selectedOptId = state.sjtResponses[scenario.id] || null;
 
  const optionsHtml = scenario.options.map(opt => `
- <div class="option-card min-h-[48px] ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button" aria-label="Option ${opt.id.slice(-1)}">
- <span class="text-sm font-semibold text-[var(--accent-gold)] shrink-0">${opt.id.slice(-1)}.</span>
- <span class="text-xs sm:text-sm text-[var(--text-primary)] leading-relaxed">${opt.text}</span>
+ <div class="option-card min-h-[52px] p-4 sm:p-5 rounded-xs border transition-all ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button" aria-pressed="${selectedOptId === opt.id ? 'true' : 'false'}" aria-label="Option ${opt.id.slice(-1)}">
+ <span class="w-7 h-7 rounded-xs bg-stone-100 border border-[var(--grid-border)] flex items-center justify-center text-xs font-semibold text-[var(--accent-gold)] shrink-0 mt-0.5">${opt.id.slice(-1)}</span>
+ <span class="text-sm sm:text-base text-[var(--text-primary)] font-medium leading-relaxed">${opt.text}</span>
  </div>
  `).join('');
 
  app.innerHTML = `
- <div class="space-y-5 ">
- <!-- Top Context and Step -->
- <div class="border-b border-[var(--grid-border)] pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-1">
+ <div class="space-y-5">
+ <!-- Top Context: English Title on Top-Left, Urdu on Top-Right -->
+ <div class="border-b border-[var(--grid-border)] pb-3 flex justify-between items-start gap-4">
  <div>
- <span class="act-badge">Judgment ${current} of ${total}</span>
- <span class="act-title-ur ">${scenario.act_title_ur || ''}</span>
- <h2 class="text-xl sm:text-2xl text-[var(--text-primary)] mt-0.5">${scenario.act_title_en}</h2>
+ <span class="act-badge">Scenario ${current} of ${total}</span>
+ <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">${scenario.act_title_en}</h2>
  </div>
- <div class="text-[11px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider font-medium">
- Section 1 &middot; ${current} of ${total}
+ <div class="text-right shrink-0">
+ ${scenario.act_title_ur ? `<span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">${scenario.act_title_ur}</span>` : ''}
+ <span class="text-[10px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider block mt-1">Section 1 &middot; ${current} of ${total}</span>
  </div>
- </div>
-
- <!-- YOUR TASK -->
- <div class="p-3 bg-stone-100 border border-[var(--grid-border)] rounded-xs text-xs text-[var(--text-primary)] flex items-center gap-2">
- <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] inline-block shrink-0"></span>
- <span><strong>Your Task:</strong> Read the situation below and choose what you would do.</span>
  </div>
 
- <!-- SITUATION -->
- <div class="scenario-text text-xs sm:text-sm text-[var(--text-primary)] leading-relaxed bg-[#faf8f5] p-4 sm:p-5 border border-[var(--grid-border)] rounded-xs">
+ <!-- SITUATION / STIMULUS: Prominent, larger serif text (Hero) -->
+ <div class="scenario-text text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed bg-[#faf8f5] p-5 sm:p-6 border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs">
  ${scenario.setup}
  </div>
 
- <!-- YOUR CHOICE -->
- <div class="space-y-2.5">
- <div class="text-[11px] uppercase tracking-wider text-black font-medium">Choose one response:</div>
+ <!-- YOUR TASK: Placed immediately before options -->
+ <div class="p-3 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs flex items-center gap-2">
+ <span class="w-2 h-2 rounded-full bg-[var(--accent-gold)] inline-block shrink-0"></span>
+ <div class="text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
+ <strong class="uppercase text-xs tracking-wider text-[var(--accent-gold)] mr-1">Your Task:</strong>
+ Read the situation above and pick what you would do.
+ </div>
+ </div>
+
+ <!-- OPTIONS -->
+ <div class="space-y-3">
  ${optionsHtml}
  </div>
 
  <!-- PRIMARY ACTION -->
- <div class="pt-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-[var(--grid-border)]">
- <span class="text-xs text-black order-2 sm:order-1 text-[11px]">Tip: Press keys 1-4 to choose</span>
- <button id="nextSjtBtn" ${selectedOptId ? '' : 'disabled'} class="w-full sm:w-auto min-h-[44px] px-7 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 disabled:hover:bg-[var(--text-primary)] shadow-sm rounded-xs order-1 sm:order-2">
- ${current === total ? 'Complete Judgment Section &rarr;' : 'Next Scenario &rarr;'}
+ <div class="pt-5 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-[var(--grid-border)]">
+ <span class="text-xs text-[var(--text-secondary)] order-2 sm:order-1 text-[11px]">Tip: Press keys 1 to 4 on your keyboard, or click an option</span>
+ <button id="nextSjtBtn" ${selectedOptId ? '' : 'disabled'} class="w-full sm:w-auto min-h-[44px] px-8 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 disabled:hover:bg-[var(--text-primary)] shadow-sm rounded-xs order-1 sm:order-2">
+ ${current === total ? 'Complete Section 1 &rarr;' : 'Next Scenario &rarr;'}
  </button>
  </div>
  </div>
@@ -891,41 +1209,48 @@ function renderSJT(app, progressBarFill) {
  logEvent('sjt', 'scenario_displayed', { scenario_id: scenario.id, index: current });
 
  // Option selection handlers
- app.querySelectorAll('.option-card').forEach(card => {
- card.addEventListener('click', () => {
- const optId = card.getAttribute('data-opt-id');
- state.sjtResponses[scenario.id] = optId;
- logEvent('sjt', 'option_selected', { scenario_id: scenario.id, option_id: optId });
- renderSJT(app, progressBarFill);
- });
- });
+   app.querySelectorAll('.option-card').forEach(card => {
+     card.addEventListener('click', () => {
+       const optId = card.getAttribute('data-opt-id');
+       selectSjtOption(scenario, optId, 'pointer');
+     });
+   });
 
- document.getElementById('nextSjtBtn')?.addEventListener('click', () => {
- if (state.sjtResponses[scenario.id]) {
- state.currentSjtIndex++;
- renderSJT(app, progressBarFill);
- }
- });
+   document.getElementById('nextSjtBtn')?.addEventListener('click', () => {
+     if (state.sjtResponses[scenario.id]) {
+       state.currentSjtIndex++;
+       if (sjtKeydownHandler) {
+         document.removeEventListener('keydown', sjtKeydownHandler);
+         sjtKeydownHandler = null;
+       }
+       renderSJT(app, progressBarFill);
+     }
+   });
 
- // Keyboard shortcut listener (1-4)
- const keyHandler = (e) => {
- if (['1', '2', '3', '4'].includes(e.key)) {
- const idx = parseInt(e.key) - 1;
- if (scenario.options[idx]) {
- state.sjtResponses[scenario.id] = scenario.options[idx].id;
- logEvent('sjt', 'option_selected_key', { scenario_id: scenario.id, option_id: scenario.options[idx].id });
- renderSJT(app, progressBarFill);
- }
- }
- };
- window.onkeydown = keyHandler;
+   if (sjtKeydownHandler) {
+     document.removeEventListener('keydown', sjtKeydownHandler);
+   }
+   sjtKeydownHandler = (e) => {
+     if (['1', '2', '3', '4'].includes(e.key)) {
+       const idx = parseInt(e.key) - 1;
+       if (scenario.options[idx]) {
+         selectSjtOption(scenario, scenario.options[idx].id, 'keyboard');
+       }
+     } else if (e.key === 'Enter') {
+       const nextBtn = document.getElementById('nextSjtBtn');
+       if (nextBtn && !nextBtn.disabled) {
+         nextBtn.click();
+       }
+     }
+   };
+   document.addEventListener('keydown', sjtKeydownHandler);
 }
 
 let isSubmittingSjt = false;
 async function submitSjtAndProceed() {
  if (isSubmittingSjt) return;
  isSubmittingSjt = true;
- window.onkeydown = null;
+ if (sjtKeydownHandler) { document.removeEventListener('keydown', sjtKeydownHandler); sjtKeydownHandler = null; }
  const app = document.getElementById('recruitApp');
  if (app) {
  app.innerHTML = `
@@ -948,7 +1273,7 @@ async function submitSjtAndProceed() {
  if (!res || !res.ok) {
  throw new Error(res ? `Server returned HTTP ${res.status}` : 'Connection failed');
  }
- state.screen = 'games';
+ state.screen = 'gba_briefing';
  state.currentWorldIndex = 0;
  state.currentMiniGameIndex = 0;
  logEvent('sjt', 'sjt_complete', { response_count: Object.keys(state.sjtResponses).length });
@@ -985,7 +1310,82 @@ async function submitSjtAndProceed() {
  }
 }
 
-// 5. Game Battery Container & Dispatcher
+// 6. Section 2 Orientation (GBA Briefing)
+function renderGbaBriefing(app) {
+ const segmentProgress = document.getElementById('segmentProgress');
+ if (segmentProgress) {
+ segmentProgress.innerHTML = '<span>Section 2 &middot; Overview</span>';
+ }
+ const progressBarFill = document.getElementById('progressBarFill');
+ if (progressBarFill) {
+ progressBarFill.style.width = `${(7 / 21) * 100}%`;
+ }
+
+ app.innerHTML = `
+ <div class="max-w-2xl mx-auto py-4 sm:py-6 space-y-6">
+ <!-- Header: English Left, Urdu Right -->
+ <div class="flex justify-between items-start pb-4 border-b border-[var(--grid-border)]">
+ <div>
+ <span class="act-badge">Section 2 &middot; Overview</span>
+ <h1 class="text-2xl sm:text-3xl font-serif text-[var(--text-primary)]">Interactive Studio Activities</h1>
+ </div>
+ <div class="text-right shrink-0">
+ <span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">عملی مشاغل</span>
+ <span class="text-[10px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider block mt-1">14 Activities</span>
+ </div>
+ </div>
+
+ <p class="text-sm sm:text-base text-[var(--text-primary)] leading-relaxed">
+ A series of 14 short interactive exercises across seven creative studio areas.
+ </p>
+
+ <!-- 3 Spacious Step Cards (Zero Construct Exposure) -->
+ <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">1</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">Seven Areas</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ You will visit 7 studio rooms (Sound, Archives, Canvas, Mosaic, etc.).
+ </p>
+ </div>
+
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">2</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">Simple Actions</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ Each activity has a simple 1-sentence task. Just click, tap, or drag.
+ </p>
+ </div>
+
+ <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-4 rounded-xs space-y-2">
+ <div class="w-7 h-7 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif">3</div>
+ <h3 class="text-sm font-semibold text-[var(--text-primary)]">Not a Speed Test</h3>
+ <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+ These are not video games. Fast reflexes are not needed. Take your time.
+ </p>
+ </div>
+ </div>
+
+ <!-- Pacing & Action Bar -->
+ <div class="pt-6 border-t border-[var(--grid-border)] flex flex-col sm:flex-row justify-between items-center gap-4">
+ <span class="text-xs text-[var(--text-secondary)]">14 short tasks (2 per area) &middot; 1 to 2 minutes each &middot; Self-paced</span>
+ <button id="startGbaBtn" class="w-full sm:w-auto min-h-[44px] px-8 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] shadow-sm rounded-xs">
+ Enter World 1: The Frequency &rarr;
+ </button>
+ </div>
+ </div>
+ `;
+
+ logEvent('gba_briefing', 'briefing_viewed');
+
+ document.getElementById('startGbaBtn')?.addEventListener('click', () => {
+ state.screen = 'games';
+ saveLocalState({ immediate: true });
+ renderScreen();
+ });
+}
+
+// 7. Game Battery Container & Dispatcher
 function renderGames(app, progressBarFill) {
  const currentWorldCode = state.worldSequence[state.currentWorldIndex];
  if (!currentWorldCode || state.currentWorldIndex >= state.worldSequence.length) {
@@ -1143,6 +1543,7 @@ async function finishAssessment() {
  state.screen = 'complete';
  state.telemetryTerminal = true;
  state.telemetryQueue = [];
+ TelemetryOutbox.clear().catch(e => console.warn(e));
  saveLocalState({ immediate: true });
  renderScreen();
  return;

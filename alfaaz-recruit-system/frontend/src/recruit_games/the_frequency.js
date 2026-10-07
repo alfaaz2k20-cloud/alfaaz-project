@@ -101,77 +101,91 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
  const t = trials[currentTrial];
 
  app.innerHTML = renderGameShell({
- worldCode: 'W1',
- worldIndex: 0,
- title: 'Tuning the Hall',
- subtitle: 'Adjust the hall sound to support the poetry reading.',
- instructionPrompt: 'Your Task',
- instruction: 'Read the sound note below. Pick your response and move the slider.',
- stimulusContent: `
- <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
- <div class="flex items-center gap-3">
- <div class="w-8 h-8 rounded-full bg-[var(--accent-gold)] text-white flex items-center justify-center text-sm font-semibold shrink-0">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
- </div>
- <div>
- <div class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-semibold">${t.title}</div>
- <div id="partnerSpeech" class="text-base text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${t.cue_text}</div>
- </div>
- </div>
- </div>
- `,
- interactionContent: `
- <div class="space-y-4">
- <div>
- <div class="text-base uppercase tracking-wider text-black mb-2 ">1. Choose your response:</div>
- <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'accommodate' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="accommodate">
- <div class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
- <span class="w-2 h-2 rounded-full ${selectedAction === 'accommodate' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
- Adjust Sound
- </div>
- <div class="text-[11px] text-black mt-1 leading-relaxed">Change the sound setting to help the speaker.</div>
- </button>
- <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'maintain_objective' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="maintain_objective">
- <div class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
- <span class="w-2 h-2 rounded-full ${selectedAction === 'maintain_objective' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
- Keep Baseline
- </div>
- <div class="text-[11px] text-black mt-1 leading-relaxed">Leave the current sound setting as it is.</div>
- </button>
- <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'clarify' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="clarify">
- <div class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
- <span class="w-2 h-2 rounded-full ${selectedAction === 'clarify' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
- Check Channel
- </div>
- <div class="text-[11px] text-black mt-1 leading-relaxed">Check the audio signal before changing settings.</div>
- </button>
- </div>
- </div>
+    worldCode: 'W1',
+    worldIndex: 0,
+    title: 'Tuning the Hall',
+    subtitle: 'Adjust the hall sound to support the poetry reading.',
+    instructionPrompt: 'Your Task',
+    instruction: 'Complete Step 1, then balance the volume in Step 2.',
+    interactionContent: `
+    <div class="space-y-4">
+      <!-- STEP 1: REPORT + ACTION CHOICES -->
+      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">1</span>
+          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 1: Read the report and choose an action</span>
+        </div>
+        <!-- Sound Report from Hall -->
+        <div class="p-3.5 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${t.title}</span>
+            <span class="text-xs text-[var(--text-secondary)] uppercase">Sound Report</span>
+          </div>
+          <div id="partnerSpeech" class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed italic">
+            ${t.cue_text}
+          </div>
+        </div>
+        <!-- Action Options -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'accommodate' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="accommodate">
+            <div class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full ${selectedAction === 'accommodate' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
+              Adjust Sound
+            </div>
+            <div class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">Change the sound level to help.</div>
+          </button>
+          <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'maintain_objective' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="maintain_objective">
+            <div class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full ${selectedAction === 'maintain_objective' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
+              Keep Same
+            </div>
+            <div class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">Leave the current sound as is.</div>
+          </button>
+          <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'clarify' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="clarify">
+            <div class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full ${selectedAction === 'clarify' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
+              Check Channel
+            </div>
+            <div class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">Check audio before changing.</div>
+          </button>
+        </div>
+      </div>
 
- <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-inner">
- <div class="text-base uppercase tracking-wider text-black mb-2 text-center">2. Adjust sound level:</div>
- <canvas id="waveCanvas" width="600" height="80" class="w-full h-20 bg-white border border-[var(--grid-border)] mb-3 rounded-xs"></canvas>
-
- <div class="w-full max-w-md mx-auto">
- <div class="flex justify-between items-center text-base text-black mb-2">
- <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-600 inline-block"></span> Soft (0)</span>
- <span class="text-sm font-semibold text-[var(--accent-gold)] bg-white px-3 py-1 border border-[var(--grid-border)] rounded-xs" id="sliderValDisplay">${sliderVal}</span>
- <span class="flex items-center gap-1">Bright (100) <span class="w-2 h-2 rounded-full bg-orange-500 inline-block"></span></span>
- </div>
- <input type="range" id="freqSlider" min="0" max="100" step="5" value="${sliderVal}" class="w-full accent-[#bd6f5d] cursor-pointer h-2 bg-stone-200 rounded-lg min-h-[44px]">
- </div>
- </div>
- </div>
- `,
- summaryContent: `
- <span>Your setting: <strong class="text-[var(--text-primary)]" id="choiceSummary">${selectedAction === 'accommodate' ? 'Adjust Sound' : (selectedAction === 'maintain_objective' ? 'Keep Baseline' : 'Check Channel')} (Level: ${sliderVal})</strong></span>
- <span class="text-sm text-black ">${currentTrial + 1} / 6</span>
- `,
- actionButtonId: 'lockFreqBtn',
- actionButtonText: currentTrial < 5 ? 'Confirm Setting &rarr;' : 'Confirm & Finish &rarr;',
- progressText: `Sound Note ${currentTrial + 1} of 6`
- });
+      <!-- TILE + STEP 2 AS ONE UNIT -->
+      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">2</span>
+          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 2: Adjust Volume Fader</span>
+        </div>
+        <!-- Visual Tile: Acoustic Monitor -->
+        <div class="p-2.5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs">
+          <div class="flex items-center justify-between mb-1.5 px-1">
+            <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">Hall Acoustic Monitor</span>
+            <span class="text-xs text-[var(--text-secondary)]">Live Waveform</span>
+          </div>
+          <canvas id="waveCanvas" width="600" height="80" class="w-full h-20 bg-stone-900 border border-stone-800 rounded-xs mb-1"></canvas>
+        </div>
+        <!-- Slider Control inside the unit -->
+        <div class="w-full max-w-md mx-auto pt-1">
+          <div class="flex justify-between items-center text-xs text-[var(--text-secondary)] mb-1 font-medium">
+            <span>Soft (0)</span>
+            <span class="text-xs font-semibold text-[var(--accent-gold)] bg-stone-100 px-3 py-1 border border-[var(--grid-border)] rounded-xs" id="sliderValDisplay">${sliderVal}</span>
+            <span>Bright (100)</span>
+          </div>
+          <input type="range" id="freqSlider" min="0" max="100" step="5" value="${sliderVal}" class="w-full accent-[#bd6f5d] cursor-pointer h-2 bg-stone-200 rounded-lg min-h-[44px]">
+          <div class="text-center text-xs text-[var(--text-secondary)] mt-1">Slide control left or right to balance the sound</div>
+        </div>
+      </div>
+    </div>
+    `,
+    summaryContent: `
+      <span>Your setting: <strong class="text-[var(--text-primary)]" id="choiceSummary">${selectedAction === 'accommodate' ? 'Adjust Sound' : (selectedAction === 'maintain_objective' ? 'Keep Baseline' : 'Check Channel')} (Level: ${sliderVal})</strong></span>
+      <span class="text-sm text-black ">${currentTrial + 1} / 6</span>
+    `,
+    actionButtonId: 'lockFreqBtn',
+    actionButtonText: currentTrial < 5 ? 'Confirm Setting &rarr;' : 'Confirm & Finish &rarr;',
+    progressText: `Sound Note ${currentTrial + 1} of 6`
+  });
 
  const canvas = document.getElementById('waveCanvas');
  const ctx = canvas?.getContext('2d');
@@ -402,34 +416,29 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
  title: 'The Gathering Voices',
  subtitle: 'Coordinate sound with your hall team.',
  instructionPrompt: 'Your Task',
- instruction: 'Read the message from your teammate. Pick the best response below.',
+ instruction: 'Choose how you want to respond right now:',
  stimulusContent: `
- <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs">
- <div class="flex items-center gap-3">
- <div class="w-8 h-8 rounded-full bg-[var(--accent-gold)] text-white flex items-center justify-center text-sm font-semibold shrink-0">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+ <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs">
+ <div class="flex items-center justify-between mb-2">
+ <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${t.speaker_role}</span>
+ <span class="text-xs text-[var(--text-secondary)] uppercase">${t.condition_label || 'Signal'}</span>
  </div>
- <div>
- <div class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-semibold">${t.speaker_role}</div>
- <div class="text-base text-[var(--text-primary)] font-medium mt-0.5 leading-relaxed">${t.cue_text}</div>
- </div>
+ <div class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed italic">
+ ${t.cue_text}
  </div>
  </div>
  `,
  interactionContent: `
- <div>
- <div class="text-base uppercase tracking-wider text-black mb-2 ">Pick your response:</div>
  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
  ${choices.map(c => `
  <div class="f2-card p-4 bg-white border ${selectedAction === c.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} cursor-pointer interactive-option space-y-1.5 rounded-xs min-h-[56px]" data-action="${c.id}" tabindex="0" role="button">
- <div class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+ <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
  <span class="w-2 h-2 rounded-full ${selectedAction === c.id ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
  ${c.title}
  </div>
- <div class="text-[11px] text-black leading-relaxed">${c.desc}</div>
+ <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${c.desc}</div>
  </div>
  `).join('')}
- </div>
  </div>
  `,
  summaryContent: `

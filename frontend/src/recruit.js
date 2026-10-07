@@ -1,3 +1,100 @@
+
+/* ==========================================================================
+   ALFAAZ CANDIDATE EXPERIENCE V2.1 — PLAIN ENGLISH SJT PRESENTATION
+   100% preserve scenario IDs, option IDs, weights, and telemetry.
+   ========================================================================== */
+const SJT_V2_1_COPY = {
+  S1: {
+    act_title_en: "The Exhibition",
+    act_title_ur: "نمائش",
+    setup: "The art exhibition opens in 2 hours. One artist's paintings have not arrived yet. The exhibition lead is very stressed while fixing the hall lights.",
+    options: {
+      S1A: "Quietly take over setup tasks and work quickly to give the lead space.",
+      S1B: "Suggest rearranging the room layout right now to hide the empty wall.",
+      S1C: "Go to the lead and ask directly how you can help them right now.",
+      S1D: "Start calling contacts yourself to find the artist or get backup art."
+    }
+  },
+  S2: {
+    act_title_en: "The Exhibition",
+    act_title_ur: "نمائش",
+    setup: "An artist, Faizan, is upset because his artwork was placed near the noisy entrance. He wants a quiet corner. Another artist, Meher, is already in the quiet corner and is happy there.",
+    options: {
+      S2A: "Bring Faizan and Meher together to talk and find an agreement.",
+      S2B: "Politely but firmly keep the original floor plan so things stay fair.",
+      S2C: "Walk through the building to find an empty, unused corner for Faizan.",
+      S2D: "Offer to stand near Faizan's artwork yourself to keep the crowd quiet."
+    }
+  },
+  S3: {
+    act_title_en: "The Exhibition",
+    act_title_ur: "نمائش",
+    setup: "A school teacher arrives without notice with 15 students. The room is still messy, with loose cables on the floor.",
+    options: {
+      S3A: "Gather the students in the entrance hall for a quick question-and-answer talk.",
+      S3B: "Politely remind the teacher of the opening time, but take their details to book a tour later.",
+      S3C: "Rope off a safe corner of the room and watch the students yourself.",
+      S3D: "Show them one piece of art safely without disturbing the setup work."
+    }
+  },
+  S4: {
+    act_title_en: "The Circle",
+    act_title_ur: "حلقہ",
+    setup: "During a group discussion, Zara, a new member, leans forward to speak but pulls back nervously.",
+    options: {
+      S4A: "Wait for a quiet moment and gently invite her to speak.",
+      S4B: "Notice what she is interested in and bring those topics up for the whole group.",
+      S4C: "Talk to her privately after the gathering to chat one-on-one.",
+      S4D: "Suggest a simple rule where everyone takes turns speaking in future meetings."
+    }
+  },
+  S5: {
+    act_title_en: "The Circle",
+    act_title_ur: "حلقہ",
+    setup: "A listener angrily interrupts a poet who is reading a sensitive, personal poem. The poet freezes.",
+    options: {
+      S5A: "Point to the community guidelines on respect and introduce the next reader.",
+      S5B: "Walk up to stand beside the poet right away so they feel safe.",
+      S5C: "Pause the event and let the angry person briefly explain what upset them.",
+      S5D: "Ask everyone in the room to sit in quiet reflection for one minute."
+    }
+  },
+  S6: {
+    act_title_en: "The Outreach",
+    act_title_ur: "رابطہ",
+    setup: "An 8-year-old boy refuses to paint. An experienced team volunteer whispers, 'Just leave him alone.'",
+    options: {
+      S6A: "Listen to your teammate's advice, but keep a watchful eye on the boy from where you stand.",
+      S6B: "Sit near him and draw quietly on your own paper so he feels no pressure.",
+      S6C: "Build a small tower out of paint jars to catch his interest.",
+      S6D: "Ask the full-time center staff what the boy usually enjoys doing."
+    }
+  },
+  S7: {
+    act_title_en: "The Outreach",
+    act_title_ur: "رابطہ",
+    setup: "You feel very tired from a long week. A close friend is visiting your town for only one day, but you promised earlier to help set up today's event.",
+    options: {
+      S7A: "Keep your full promise to work. Meet your friend only if work finishes early.",
+      S7B: "Call the team leader honestly and offer to take a harder shift next week instead.",
+      S7C: "Invite your friend to come with you and help out as a guest volunteer.",
+      S7D: "Work the two hardest hours, hand over your jobs clearly to the team, and then leave."
+    }
+  }
+};
+
+const FALLBACK_V2_1_SCENARIOS = Object.keys(SJT_V2_1_COPY).map((k, idx) => ({
+  id: k,
+  act: idx < 3 ? 1 : (idx < 5 ? 2 : 3),
+  act_title_en: SJT_V2_1_COPY[k].act_title_en,
+  act_title_ur: SJT_V2_1_COPY[k].act_title_ur,
+  setup: SJT_V2_1_COPY[k].setup,
+  options: Object.keys(SJT_V2_1_COPY[k].options).map(optId => ({
+    id: optId,
+    text: SJT_V2_1_COPY[k].options[optId]
+  }))
+}));
+
 /* ==========================================================================
  ALFAAZ RECRUIT — CANDIDATE EXPERIENCE & TELEMETRY CLIENT
  ========================================================================== */
@@ -887,7 +984,21 @@ function renderWarmup(app) {
  throw new Error(sjtResp ? `Server returned HTTP ${sjtResp.status}` : 'Network timeout');
  }
  const sjtData = await sjtResp.json();
- state.sjtScenarios = sjtData.scenarios || [];
+      const rawScenarios = (sjtData && sjtData.scenarios && sjtData.scenarios.length > 0) ? sjtData.scenarios : FALLBACK_V2_1_SCENARIOS;
+      state.sjtScenarios = rawScenarios.map(sc => {
+        const v21 = SJT_V2_1_COPY[sc.id];
+        if (!v21) return sc;
+        return {
+          ...sc,
+          act_title_en: v21.act_title_en || sc.act_title?.en || sc.act_title_en,
+          act_title_ur: v21.act_title_ur || sc.act_title?.ur || sc.act_title_ur,
+          setup: v21.setup || sc.setup,
+          options: (sc.options || []).map(opt => ({
+            ...opt,
+            text: (v21.options && v21.options[opt.id]) || opt.text
+          }))
+        };
+      });
  state.currentSjtIndex = 0;
  state.screen = 'sjt_briefing';
  saveLocalState({ immediate: true });

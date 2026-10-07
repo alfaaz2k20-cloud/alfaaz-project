@@ -88,7 +88,6 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
  title: "The Artisan's Basket",
  subtitle: 'Coordinate ceramic tiles with your workshop partner.',
  instructionPrompt: 'Your Task',
- instructionPrompt: 'Your Task',
     instruction: 'Check basket levels in Step 1. Use the + and &minus; buttons in Step 2 to choose tiles to share.',
  stimulusContent: `
     <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
@@ -284,7 +283,6 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
  worldIndex: 2,
  title: 'The Gallery Wall',
  subtitle: 'Coordinate artwork placement with your partner.',
- instructionPrompt: 'Your Task',
  instructionPrompt: 'Your Task',
     instruction: "Look at where your partner hung their piece. Click one open spot below to hang yours.",
  stimulusContent: `

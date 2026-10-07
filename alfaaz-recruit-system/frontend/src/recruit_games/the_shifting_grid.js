@@ -77,16 +77,19 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
  title: 'The Ceramic Mosaic',
  subtitle: 'Sort each ceramic tile into the matching container.',
  instructionPrompt: 'Your Task',
- instruction: 'Examine the tile below. Click Container 1 or 2 to file it.',
+    instruction: 'Look at the tile above. Click Container 1 or Container 2 below to sort it.',
  stimulusContent: `
- <div class="p-6 bg-white border border-[var(--grid-border)] text-center shadow-xs rounded-xs">
- <div class="text-5xl mb-2 ${t.color === 'Gold' ? 'text-[var(--accent-gold)]' : 'text-[var(--text-primary)]'}">
- ${t.icon}
- </div>
- <div class="text-sm font-semibold text-[var(--text-primary)]">${t.label}</div>
- <div class="text-[11px] text-black mt-0.5 uppercase">${t.color} &bull; ${t.shape}</div>
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs text-center space-y-2">
+      <div class="flex items-center justify-between text-xs text-[var(--accent-gold)] font-bold uppercase tracking-wider">
+        <span>Tile ${currentIdx + 1} of ${trials.length}</span>
+        <span class="text-[var(--text-secondary)] font-normal">${t.color} &bull; ${t.shape}</span>
+      </div>
+      <div class="text-5xl my-2 ${t.color === 'Gold' ? 'text-[var(--accent-gold)]' : 'text-[var(--text-primary)]'}">
+        ${t.icon}
+      </div>
+      <div class="text-base sm:text-lg font-serif font-semibold text-[var(--text-primary)]">${t.label}</div>
+    </div>
+  `,
  interactionContent: `
  <div class="grid grid-cols-2 gap-4">
  <button type="button" class="bin-btn p-5 bg-white border ${selectedChoice === 'container_1' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_1" tabindex="0">
@@ -97,7 +100,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
  <button type="button" class="bin-btn p-5 bg-white border ${selectedChoice === 'container_2' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
  <span class="text-2xl text-[var(--text-primary)] block mb-1">&#9632;</span>
  <span class="text-base font-semibold text-[var(--text-primary)] block">Container 2</span>
- <span class="text-sm text-black block mt-0.5 ">Reference: Sage Square</span>
+ <span class="text-sm text-black block mt-0.5 ">Reference: Green Square</span>
  </button>
  </div>
  `,
@@ -248,15 +251,18 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
  title: 'The Courtyard Setup',
  subtitle: 'Choose the best response when unexpected studio events happen.',
  instructionPrompt: 'Your Task',
- instruction: 'Read the situation below. Pick the most practical next step.',
+    instruction: 'Read the situation above. Choose the most practical step below.',
  stimulusContent: `
- <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs flex items-center justify-between">
- <span class="text-base text-[var(--text-primary)]">
- <strong>${s.title}:</strong> ${s.situation}
- </span>
- <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-medium">Scenario ${currentSeq + 1} of ${sequences.length}</span>
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${s.title}</span>
+        <span class="text-xs text-[var(--text-secondary)] uppercase">Scenario ${currentSeq + 1} of ${sequences.length}</span>
+      </div>
+      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
+        ${s.situation}
+      </p>
+    </div>
+  `,
  interactionContent: `
  <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
  <div class="text-sm text-black uppercase tracking-wider mb-2.5">Available Responses:</div>

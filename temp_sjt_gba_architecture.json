@@ -1,0 +1,3842 @@
+{
+  "_schema_and_metadata": {
+    "title": "Alfaaz Recruitment System — Complete Assessment Content & Architecture (SJTs & GBAs)",
+    "version": "2026-10-v2",
+    "generated_at": "2026-10-07T09:33:38.413Z",
+    "design_philosophy": "Minimalist, respectful, grounded in artisan & collective studio life. All items plain English (<=12 words/sentence). Zero construct exposure to candidates.",
+    "assessment_sections": {
+      "section_1": "Situational Judgement Tests (SJTs) — 7 Narrative Scenarios",
+      "section_2": "Game-Based Assessments (GBAs) — 7 Worlds, 14 Candidate Core Interactive Activities + 7 Research Bank Activities"
+    }
+  },
+  "psychometric_parameters": {
+    "empathy": {
+      "name": "Empathy",
+      "definition": "The capacity to recognize, interpret, and respond sensitively to the emotional and practical needs of others, particularly by reading subtle social and contextual cues."
+    },
+    "conscientiousness": {
+      "name": "Conscientiousness",
+      "definition": "The tendency to be reliable, methodical, and responsible, characterized by a willingness to verify information under uncertainty and follow through on commitments."
+    },
+    "collaborative_spirit": {
+      "name": "Collaborative Spirit",
+      "definition": "The willingness to share space, synchronize efforts, and adapt one's own pacing or goals to support an interdependent, collective outcome."
+    },
+    "emotional_agility": {
+      "name": "Emotional Agility",
+      "definition": "The ability to maintain composure, recover quickly from setbacks, and adapt constructively to ambiguous, sudden, or frustrating changes in the environment."
+    },
+    "curiosity": {
+      "name": "Curiosity",
+      "definition": "The intrinsic drive to seek out new information, explore alternative perspectives, and engage with the unknown, even when there is no immediate instrumental reward."
+    },
+    "creative_initiative": {
+      "name": "Creative Initiative",
+      "definition": "The readiness to experiment, iterate, and apply unconventional solutions when standard procedures, rules, or resources fail to solve a problem."
+    },
+    "motivation": {
+      "name": "Motivation",
+      "definition": "The willingness to sustain voluntary effort, persist through unglamorous or tedious tasks, and go beyond minimum requirements for the benefit of the collective."
+    }
+  },
+  "sjt_architecture": {
+    "overview": {
+      "total_scenarios": 7,
+      "options_per_scenario": 4,
+      "response_modality": "Keyboard (keys 1-4, Enter) or Pointer click",
+      "scoring_method": "Additive trait scoring. Each option contributes 0-3 points across the 7 parameters.",
+      "cryptographic_integrity_locks": {
+        "reference_file": "backend/config/sjt_items.json",
+        "locked_hashes_file": "backend/config/locked_hashes.json",
+        "sjt_reference_lf_sha256": "c098b401d37cc30b515139d307fef632047c048584e19771c0e014ef027e391d",
+        "sjt_reference_crlf_sha256": "be71fb2f4f0473034dccc5b9affac76ca93a553b50c54c155470ce1b50835890",
+        "sjt_keys_fingerprint": "0a1f21197968a9179eec6123b6b19beb8822902c5fdbb820aeb587a3a195e1b6"
+      }
+    },
+    "instructions_and_briefing": {
+      "backend_config": {
+        "version": "2026-10-v1",
+        "instruction_title": "Part 1: Community Scenarios & Dialogue",
+        "instruction_body": "You will encounter seven scenarios drawn from real moments across our collective—workshops, exhibitions, editorial curation, and community gatherings. For each situation, consider the context and select the response that feels most natural to you. There are no trick questions or hidden scoring traps; we value genuine, thoughtful perspectives.",
+        "timing_note": "Takes about 5 to 7 minutes. Move at a comfortable, unhurried pace."
+      },
+      "frontend_screen_copy": {
+        "section_badge": "Section 1 · Overview",
+        "heading_en": "Situational Scenarios",
+        "heading_ur": "تفہیم و ارادہ",
+        "badge_label": "7 Scenarios",
+        "intro_paragraph": "You will read 7 short situations from creative studio life, community events, and teamwork.",
+        "step_cards": [
+          {
+            "step": 1,
+            "title": "Read the Story",
+            "text": "Each card describes a real situation that took place in the studio."
+          },
+          {
+            "step": 2,
+            "title": "Pick Your Choice",
+            "text": "Choose the response that best matches what you would actually do."
+          },
+          {
+            "step": 3,
+            "title": "No Trick Questions",
+            "text": "There is no right or wrong answer. Pick what you would genuinely do."
+          }
+        ],
+        "pacing_note": "7 scenarios · Self-paced (approx. 6–8 mins) · Tap options or press keys 1–4",
+        "action_button_label": "Begin Section 1: Scenarios →"
+      }
+    },
+    "scenarios": [
+      {
+        "scenario_id": "S1",
+        "act": 1,
+        "act_title": {
+          "en": "The Exhibition",
+          "ur": "نمائش"
+        },
+        "setup_narrative": "The exhibition opens in 2 hours, but an artist's paintings haven't arrived. The curator is highly stressed managing lighting.",
+        "options": [
+          {
+            "option_id": "S1A",
+            "text": "Protect the curator's time by quietly taking over setup tasks, working double-speed.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "conscientiousness",
+                "score_weight": 3
+              },
+              {
+                "parameter": "motivation",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 1,
+              "conscientiousness": 3,
+              "collaborative_spirit": 0,
+              "emotional_agility": 0,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 3
+            }
+          },
+          {
+            "option_id": "S1B",
+            "text": "Suggest immediately pivoting the floor plan to hide the missing art.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "emotional_agility",
+                "score_weight": 3
+              },
+              {
+                "parameter": "creative_initiative",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 0,
+              "collaborative_spirit": 0,
+              "emotional_agility": 3,
+              "curiosity": 0,
+              "creative_initiative": 3,
+              "motivation": 1
+            }
+          },
+          {
+            "option_id": "S1C",
+            "text": "Approach the curator and ask directly how you can best support them right now.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "empathy",
+                "score_weight": 3
+              },
+              {
+                "parameter": "collaborative_spirit",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 3,
+              "conscientiousness": 0,
+              "collaborative_spirit": 3,
+              "emotional_agility": 1,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 0
+            }
+          },
+          {
+            "option_id": "S1D",
+            "text": "Take initiative to call members to track down the artist or backup art.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "collaborative_spirit",
+                "score_weight": 2
+              },
+              {
+                "parameter": "curiosity",
+                "score_weight": 2
+              },
+              {
+                "parameter": "motivation",
+                "score_weight": 2
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 1,
+              "collaborative_spirit": 2,
+              "emotional_agility": 0,
+              "curiosity": 2,
+              "creative_initiative": 1,
+              "motivation": 2
+            }
+          }
+        ]
+      },
+      {
+        "scenario_id": "S2",
+        "act": 1,
+        "act_title": {
+          "en": "The Exhibition",
+          "ur": "نمائش"
+        },
+        "setup_narrative": "An artist, Faizan, is upset his art is near the noisy entrance and demands a quiet corner. Meher is currently in the quiet corner and is happy.",
+        "options": [
+          {
+            "option_id": "S2A",
+            "text": "Bring Faizan and Meher together to mediate a conversation.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "empathy",
+                "score_weight": 3
+              },
+              {
+                "parameter": "collaborative_spirit",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 3,
+              "conscientiousness": 0,
+              "collaborative_spirit": 3,
+              "emotional_agility": 1,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 0
+            }
+          },
+          {
+            "option_id": "S2B",
+            "text": "Firmly but politely maintain the original floor plan to ensure fairness.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "conscientiousness",
+                "score_weight": 3
+              },
+              {
+                "parameter": "emotional_agility",
+                "score_weight": 2
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 3,
+              "collaborative_spirit": 0,
+              "emotional_agility": 2,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 1
+            }
+          },
+          {
+            "option_id": "S2C",
+            "text": "Scout the venue for an unconventional, unused space for Faizan.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "curiosity",
+                "score_weight": 2
+              },
+              {
+                "parameter": "creative_initiative",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 1,
+              "conscientiousness": 0,
+              "collaborative_spirit": 0,
+              "emotional_agility": 0,
+              "curiosity": 2,
+              "creative_initiative": 3,
+              "motivation": 0
+            }
+          },
+          {
+            "option_id": "S2D",
+            "text": "Offer to personally stand near Faizan's exhibit to manage crowd noise.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "empathy",
+                "score_weight": 2
+              },
+              {
+                "parameter": "motivation",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 2,
+              "conscientiousness": 1,
+              "collaborative_spirit": 0,
+              "emotional_agility": 0,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 3
+            }
+          }
+        ]
+      },
+      {
+        "scenario_id": "S3",
+        "act": 1,
+        "act_title": {
+          "en": "The Exhibition",
+          "ur": "نمائش"
+        },
+        "setup_narrative": "A school teacher arrives unannounced with 15 students while the space is still messy with cables.",
+        "options": [
+          {
+            "option_id": "S3A",
+            "text": "Gather the students in the lobby for an impromptu Q&A.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "emotional_agility",
+                "score_weight": 3
+              },
+              {
+                "parameter": "creative_initiative",
+                "score_weight": 3
+              },
+              {
+                "parameter": "motivation",
+                "score_weight": 2
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 1,
+              "conscientiousness": 0,
+              "collaborative_spirit": 0,
+              "emotional_agility": 3,
+              "curiosity": 0,
+              "creative_initiative": 3,
+              "motivation": 2
+            }
+          },
+          {
+            "option_id": "S3B",
+            "text": "Enforce the opening time, but take details to arrange a tour later.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "conscientiousness",
+                "score_weight": 3
+              },
+              {
+                "parameter": "collaborative_spirit",
+                "score_weight": 2
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 3,
+              "collaborative_spirit": 2,
+              "emotional_agility": 1,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 0
+            }
+          },
+          {
+            "option_id": "S3C",
+            "text": "Cordon a safe 'preview zone' and watch the students yourself.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "empathy",
+                "score_weight": 2
+              },
+              {
+                "parameter": "motivation",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 2,
+              "conscientiousness": 1,
+              "collaborative_spirit": 0,
+              "emotional_agility": 1,
+              "curiosity": 0,
+              "creative_initiative": 1,
+              "motivation": 3
+            }
+          },
+          {
+            "option_id": "S3D",
+            "text": "Show them one relevant artwork without disrupting the room.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "curiosity",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 0,
+              "collaborative_spirit": 1,
+              "emotional_agility": 0,
+              "curiosity": 3,
+              "creative_initiative": 1,
+              "motivation": 0
+            }
+          }
+        ]
+      },
+      {
+        "scenario_id": "S4",
+        "act": 2,
+        "act_title": {
+          "en": "The Circle",
+          "ur": "حلقہ"
+        },
+        "setup_narrative": "Zara, a new member, leans forward to speak but pulls back nervously.",
+        "options": [
+          {
+            "option_id": "S4A",
+            "text": "Wait for a pause and gently invite her to share.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "empathy",
+                "score_weight": 3
+              },
+              {
+                "parameter": "collaborative_spirit",
+                "score_weight": 2
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 3,
+              "conscientiousness": 0,
+              "collaborative_spirit": 2,
+              "emotional_agility": 0,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 0
+            }
+          },
+          {
+            "option_id": "S4B",
+            "text": "Observe her interests and bring those topics up broadly.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "emotional_agility",
+                "score_weight": 2
+              },
+              {
+                "parameter": "curiosity",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 1,
+              "conscientiousness": 0,
+              "collaborative_spirit": 0,
+              "emotional_agility": 2,
+              "curiosity": 3,
+              "creative_initiative": 1,
+              "motivation": 0
+            }
+          },
+          {
+            "option_id": "S4C",
+            "text": "Approach her privately after the event to meet 1-on-1.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "empathy",
+                "score_weight": 3
+              },
+              {
+                "parameter": "motivation",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 3,
+              "conscientiousness": 0,
+              "collaborative_spirit": 0,
+              "emotional_agility": 0,
+              "curiosity": 1,
+              "creative_initiative": 0,
+              "motivation": 3
+            }
+          },
+          {
+            "option_id": "S4D",
+            "text": "Propose a round-robin structural rule for future meetings.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "conscientiousness",
+                "score_weight": 3
+              },
+              {
+                "parameter": "creative_initiative",
+                "score_weight": 2
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 3,
+              "collaborative_spirit": 1,
+              "emotional_agility": 0,
+              "curiosity": 0,
+              "creative_initiative": 2,
+              "motivation": 1
+            }
+          }
+        ]
+      },
+      {
+        "scenario_id": "S5",
+        "act": 2,
+        "act_title": {
+          "en": "The Circle",
+          "ur": "حلقہ"
+        },
+        "setup_narrative": "An audience member angrily interrupts a poet reading a sensitive piece. The poet freezes.",
+        "options": [
+          {
+            "option_id": "S5A",
+            "text": "Reference guidelines on respect and transition to the next reader.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "conscientiousness",
+                "score_weight": 3
+              },
+              {
+                "parameter": "emotional_agility",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 3,
+              "collaborative_spirit": 0,
+              "emotional_agility": 3,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 1
+            }
+          },
+          {
+            "option_id": "S5B",
+            "text": "Go directly to the poet's side to ensure they feel safe.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "empathy",
+                "score_weight": 3
+              },
+              {
+                "parameter": "collaborative_spirit",
+                "score_weight": 2
+              },
+              {
+                "parameter": "motivation",
+                "score_weight": 2
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 3,
+              "conscientiousness": 0,
+              "collaborative_spirit": 2,
+              "emotional_agility": 0,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 2
+            }
+          },
+          {
+            "option_id": "S5C",
+            "text": "Pause the event and invite the angry member to explain briefly.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "collaborative_spirit",
+                "score_weight": 2
+              },
+              {
+                "parameter": "curiosity",
+                "score_weight": 2
+              },
+              {
+                "parameter": "creative_initiative",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 1,
+              "conscientiousness": 0,
+              "collaborative_spirit": 2,
+              "emotional_agility": 1,
+              "curiosity": 2,
+              "creative_initiative": 3,
+              "motivation": 0
+            }
+          },
+          {
+            "option_id": "S5D",
+            "text": "Ask the room to take one minute of silence to reflect.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "emotional_agility",
+                "score_weight": 2
+              },
+              {
+                "parameter": "curiosity",
+                "score_weight": 3
+              },
+              {
+                "parameter": "creative_initiative",
+                "score_weight": 2
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 0,
+              "collaborative_spirit": 1,
+              "emotional_agility": 2,
+              "curiosity": 3,
+              "creative_initiative": 2,
+              "motivation": 0
+            }
+          }
+        ]
+      },
+      {
+        "scenario_id": "S6",
+        "act": 3,
+        "act_title": {
+          "en": "The Outreach",
+          "ur": "رسائی"
+        },
+        "setup_narrative": "An 8-year-old boy refuses to paint. Your veteran co-volunteer whispers, 'Just leave him be.'",
+        "options": [
+          {
+            "option_id": "S6A",
+            "text": "Trust the co-volunteer, but keep a watchful eye from a distance.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "conscientiousness",
+                "score_weight": 3
+              },
+              {
+                "parameter": "collaborative_spirit",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 1,
+              "conscientiousness": 3,
+              "collaborative_spirit": 3,
+              "emotional_agility": 0,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 0
+            }
+          },
+          {
+            "option_id": "S6B",
+            "text": "Sit near him and doodle wordlessly as a low-pressure invitation.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "empathy",
+                "score_weight": 3
+              },
+              {
+                "parameter": "motivation",
+                "score_weight": 2
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 3,
+              "conscientiousness": 0,
+              "collaborative_spirit": 0,
+              "emotional_agility": 1,
+              "curiosity": 1,
+              "creative_initiative": 1,
+              "motivation": 2
+            }
+          },
+          {
+            "option_id": "S6C",
+            "text": "Build a 3D structure out of paint pots to spark his interest.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "curiosity",
+                "score_weight": 2
+              },
+              {
+                "parameter": "creative_initiative",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 0,
+              "collaborative_spirit": 0,
+              "emotional_agility": 0,
+              "curiosity": 2,
+              "creative_initiative": 3,
+              "motivation": 1
+            }
+          },
+          {
+            "option_id": "S6D",
+            "text": "Ask the full-time staff about the boy's usual interests.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "collaborative_spirit",
+                "score_weight": 2
+              },
+              {
+                "parameter": "curiosity",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 1,
+              "conscientiousness": 1,
+              "collaborative_spirit": 2,
+              "emotional_agility": 0,
+              "curiosity": 3,
+              "creative_initiative": 0,
+              "motivation": 0
+            }
+          }
+        ]
+      },
+      {
+        "scenario_id": "S7",
+        "act": 3,
+        "act_title": {
+          "en": "The Outreach",
+          "ur": "رسائی"
+        },
+        "setup_narrative": "You're burnt out, a friend is visiting town for one day, but you committed to setup.",
+        "options": [
+          {
+            "option_id": "S7A",
+            "text": "Honor the full commitment. Meet your friend only if it wraps up early.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "conscientiousness",
+                "score_weight": 3
+              },
+              {
+                "parameter": "motivation",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 3,
+              "collaborative_spirit": 1,
+              "emotional_agility": 1,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 3
+            }
+          },
+          {
+            "option_id": "S7B",
+            "text": "Call the lead honestly, and swap to a harder shift next week.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "empathy",
+                "score_weight": 2
+              },
+              {
+                "parameter": "collaborative_spirit",
+                "score_weight": 3
+              },
+              {
+                "parameter": "emotional_agility",
+                "score_weight": 2
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 2,
+              "conscientiousness": 1,
+              "collaborative_spirit": 3,
+              "emotional_agility": 2,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 0
+            }
+          },
+          {
+            "option_id": "S7C",
+            "text": "Bring your friend along as a 'guest volunteer'.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "creative_initiative",
+                "score_weight": 3
+              },
+              {
+                "parameter": "motivation",
+                "score_weight": 2
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 0,
+              "collaborative_spirit": 1,
+              "emotional_agility": 1,
+              "curiosity": 1,
+              "creative_initiative": 3,
+              "motivation": 2
+            }
+          },
+          {
+            "option_id": "S7D",
+            "text": "Do the hardest 2 hours, hand over your tasks smoothly, then leave.",
+            "primary_parameters_tapped": [
+              {
+                "parameter": "conscientiousness",
+                "score_weight": 2
+              },
+              {
+                "parameter": "collaborative_spirit",
+                "score_weight": 2
+              },
+              {
+                "parameter": "emotional_agility",
+                "score_weight": 3
+              }
+            ],
+            "all_parameter_weights": {
+              "empathy": 0,
+              "conscientiousness": 2,
+              "collaborative_spirit": 2,
+              "emotional_agility": 3,
+              "curiosity": 0,
+              "creative_initiative": 0,
+              "motivation": 1
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "gba_architecture": {
+    "overview": {
+      "total_worlds": 7,
+      "total_games_in_battery": 21,
+      "core_games_evaluated": 14,
+      "research_bank_games": 7,
+      "order_counterbalancing": "14-row Latin Square assignment ensuring equal presentation order and first-game transition balance",
+      "duration_budget_minutes": {
+        "target_min": 11,
+        "target_max": 13,
+        "design_ceiling": 14
+      }
+    },
+    "instructions_and_briefing": {
+      "frontend_screen_copy": {
+        "section_badge": "Section 2 · Overview",
+        "heading_en": "Interactive Studio Activities",
+        "heading_ur": "عملی مشاغل",
+        "badge_label": "14 Activities",
+        "intro_paragraph": "A series of 14 short interactive exercises across seven creative studio areas.",
+        "step_cards": [
+          {
+            "step": 1,
+            "title": "Seven Areas",
+            "text": "You will visit 7 studio rooms (Sound, Archives, Canvas, Mosaic, etc.)."
+          },
+          {
+            "step": 2,
+            "title": "Simple Actions",
+            "text": "Each activity has a simple 1-sentence task. Just click, tap, or drag."
+          },
+          {
+            "step": 3,
+            "title": "No Pressure",
+            "text": "Work at your own comfortable pace. No tricks or speed pressure."
+          }
+        ],
+        "pacing_note": "14 activities · Approx. 11–13 mins · Interactive workspace",
+        "action_button_label": "Begin Section 2: Studio Activities →"
+      }
+    },
+    "worlds": [
+      {
+        "world_id": "W1",
+        "world_name_en": "The Frequency",
+        "world_name_ur": "آواز",
+        "theme_subtitle": "Acoustics & Dialogue",
+        "associated_parameter": {
+          "id": "empathy",
+          "name": "Empathy",
+          "definition": "The capacity to recognize, interpret, and respond sensitively to the emotional and practical needs of others, particularly by reading subtle social and contextual cues."
+        },
+        "candidate_core_games": [
+          "F1",
+          "F2"
+        ],
+        "research_bank_games": [
+          "F3"
+        ],
+        "games": [
+          {
+            "game_id": "F1",
+            "title": "Tuning the Hall",
+            "subtitle": "Adjust the hall sound to support the poetry reading.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "empathy",
+              "name": "Empathy",
+              "facet": "attunement_to_cues"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 3,
+              "timeout_ceiling_ms": 30000,
+              "features": [
+                {
+                  "feature_id": "cue_response_latency_ms",
+                  "type": "duration_ms",
+                  "direction": "lower_is_faster",
+                  "exclude_in_accessibility_modes": [
+                    "screen_reader",
+                    "keyboard_navigation",
+                    "extended_time"
+                  ]
+                },
+                {
+                  "feature_id": "contextual_adjustment_accuracy",
+                  "type": "ratio",
+                  "direction": "lower_error_is_higher_precision",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Balance the room sound for the reading across 5 rounds.",
+              "steps": [
+                "Read the sound note from the hall.",
+                "Choose what to do: Adjust, Keep, or Check.",
+                "Move the volume slider if needed, then click Confirm."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Follow Step 1 and Step 2 below, then click Confirm.",
+            "interaction_mechanism": "Slider volume adjustment (Step 1) + Course action selection (Step 2: Accommodate / Maintain / Clarify)",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "F1_T1",
+                "condition_id": "strain_reverberant",
+                "condition_type": "accommodate",
+                "partner_state": "vocal_strain_high_reverb",
+                "expected_action": "attenuate_reverb"
+              },
+              {
+                "stimulus_id": "F1_T2",
+                "condition_id": "effortless_resonance",
+                "condition_type": "maintain_objective",
+                "partner_state": "acoustics_clear_effortless",
+                "expected_action": "maintain_baseline"
+              },
+              {
+                "stimulus_id": "F1_T3",
+                "condition_id": "whisper_passage",
+                "condition_type": "accommodate",
+                "partner_state": "quiet_verse_monitoring_deficit",
+                "expected_action": "boost_intelligibility"
+              },
+              {
+                "stimulus_id": "F1_T4",
+                "condition_id": "ambiguous_pause",
+                "condition_type": "clarify",
+                "partner_state": "dramatic_silence_vs_monitor_fault",
+                "expected_action": "clarify_channel"
+              },
+              {
+                "stimulus_id": "F1_T5",
+                "condition_id": "balanced_choral",
+                "condition_type": "maintain_objective",
+                "partner_state": "acoustics_stable_in_rhythm",
+                "expected_action": "maintain_baseline"
+              },
+              {
+                "stimulus_id": "F1_T6",
+                "condition_id": "projected_forte",
+                "condition_type": "accommodate",
+                "partner_state": "vocal_projection_peaking",
+                "expected_action": "dampen_harshness"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "F1_T1",
+                  "title": "Sound Note: Sharp Echo",
+                  "cue_text": "\"Front row sound has sharp treble and heavy wall echo.\"",
+                  "default_action": "accommodate"
+                },
+                {
+                  "stimulus_id": "F1_T2",
+                  "title": "Sound Note: Clear Hall",
+                  "cue_text": "\"Center hall sound is clear, balanced, and easy to hear.\"",
+                  "default_action": "maintain_objective"
+                },
+                {
+                  "stimulus_id": "F1_T3",
+                  "title": "Sound Note: Quiet Whisper",
+                  "cue_text": "\"The speaker is reciting a whisper. Words are hard to hear.\"",
+                  "default_action": "accommodate"
+                },
+                {
+                  "stimulus_id": "F1_T4",
+                  "title": "Sound Note: Sudden Silence",
+                  "cue_text": "\"A sudden quiet pause. Could be a dramatic silence or equipment issue.\"",
+                  "default_action": "clarify"
+                },
+                {
+                  "stimulus_id": "F1_T5",
+                  "title": "Sound Note: Group Singing",
+                  "cue_text": "\"Group singing is steady and balanced across the entire room.\"",
+                  "default_action": "maintain_objective"
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "F2",
+            "title": "The Gathering Voices",
+            "subtitle": "Coordinate sound with your hall team.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "empathy",
+              "name": "Empathy",
+              "facet": "cognitive_perspective_taking"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 2,
+              "timeout_ceiling_ms": 30000,
+              "features": [
+                {
+                  "feature_id": "clarification_vs_assumption_ratio",
+                  "type": "ratio",
+                  "direction": "higher_is_more_verifying",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Respond to teammate messages across 3 rounds.",
+              "steps": [
+                "Read the message from your teammate.",
+                "Choose your next step: Act, Ask, or Keep Course.",
+                "Click Confirm to save your choice."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Choose how you want to respond right now.",
+            "interaction_mechanism": "Card choice selection (Act Directly / Ask for Clarity / Keep Course)",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "F2_T1",
+                "condition_id": "clear_coordination_need",
+                "condition_type": "act",
+                "partner_state": "explicit_request_for_cue",
+                "expected_action": "support_cue"
+              },
+              {
+                "stimulus_id": "F2_T2",
+                "condition_id": "ambiguous_interpersonal_cue",
+                "condition_type": "clarify",
+                "partner_state": "hesitation_uncertainty",
+                "expected_action": "clarify_intent"
+              },
+              {
+                "stimulus_id": "F2_T3",
+                "condition_id": "misleading_surface_frustration",
+                "condition_type": "maintain",
+                "partner_state": "expressive_performance_intensity_not_distress",
+                "expected_action": "maintain_cadence"
+              },
+              {
+                "stimulus_id": "F2_T4",
+                "condition_id": "unspoken_timing_drift",
+                "condition_type": "act",
+                "partner_state": "tempo_misalignment_seeking_synchrony",
+                "expected_action": "realign_tempo"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "F2_T1",
+                  "speaker_role": "Stage Lead",
+                  "cue_text": "\"The poet gestures toward the side speaker, asking for sound help.\"",
+                  "condition_label": "Direct Request"
+                },
+                {
+                  "stimulus_id": "F2_T2",
+                  "speaker_role": "Hall Helper",
+                  "cue_text": "\"The speaker pauses with an uncertain look. No words are spoken.\"",
+                  "condition_label": "Ambiguous Signal"
+                },
+                {
+                  "stimulus_id": "F2_T3",
+                  "speaker_role": "Sound Helper",
+                  "cue_text": "\"The performer sings with intense emotion as part of the poem.\"",
+                  "condition_label": "Expressive Intensity"
+                }
+              ],
+              "available_choices": [
+                {
+                  "id": "act",
+                  "title": "Act Directly",
+                  "desc": "Take action right away to help the speaker."
+                },
+                {
+                  "id": "clarify",
+                  "title": "Ask for Clarity",
+                  "desc": "Check with the speaker before making any changes."
+                },
+                {
+                  "id": "maintain",
+                  "title": "Keep Course",
+                  "desc": "Stay on course without stepping in too early."
+                }
+              ],
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "F3",
+            "title": "The Echo of the Room",
+            "subtitle": "Adjust your choices when room sound changes.",
+            "tier": "Research Bank",
+            "connected_parameter": {
+              "id": "empathy",
+              "name": "Empathy",
+              "facet": "contextual_interpretation_updating"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 2,
+              "timeout_ceiling_ms": 35000,
+              "features": [
+                {
+                  "feature_id": "post_shift_adaptation_latency_ms",
+                  "type": "duration_ms",
+                  "direction": "lower_is_faster",
+                  "exclude_in_accessibility_modes": [
+                    "screen_reader",
+                    "keyboard_navigation",
+                    "extended_time"
+                  ]
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "See how the same performance needs a new response when the room changes.",
+              "steps": [
+                "Read what the performer does in the first room.",
+                "Pick your first response.",
+                "See the new room setting and pick an updated response."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Select initial response in baseline room, then adapt when room acoustics shift.",
+            "interaction_mechanism": "Two-phase selection: Baseline room action -> Acoustic context shift -> Updated room action",
+            "backend_trials_spec": [],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "F3_T1",
+                  "cue_id": "cue_expressive_crescendo",
+                  "title": "Round 1: Rising Voice Line",
+                  "cue_text": "\"The poet begins a rising, powerful verse.\"",
+                  "baseline_context": "Small Practice Room — Sound dies down quickly with no echo.",
+                  "baseline_options": [
+                    {
+                      "id": "support_volume",
+                      "label": "Support Volume",
+                      "desc": "Lift volume so sound carries across the room."
+                    },
+                    {
+                      "id": "dampen_level",
+                      "label": "Lower Level",
+                      "desc": "Turn volume down before the loud peak."
+                    },
+                    {
+                      "id": "neutral_hold",
+                      "label": "Keep Steady",
+                      "desc": "Keep room settings steady without changes."
+                    }
+                  ],
+                  "shifted_context": "Stone Hall — High stone walls bounce sound and create heavy echo.",
+                  "shifted_options": [
+                    {
+                      "id": "attenuate_reverb",
+                      "label": "Lower Echo",
+                      "desc": "Trim room echo so words stay clear."
+                    },
+                    {
+                      "id": "support_volume",
+                      "label": "Support Volume",
+                      "desc": "Keep the volume boost from the small room."
+                    },
+                    {
+                      "id": "neutral_hold",
+                      "label": "Keep Steady",
+                      "desc": "Make no changes for the stone room."
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "F3_T2",
+                  "cue_id": "cue_sotto_voce_pause",
+                  "title": "Round 2: Quiet Whisper",
+                  "cue_text": "\"The poet drops into a quiet whisper between lines.\"",
+                  "baseline_context": "Quiet Sitting Room — Audience sits close and easily hears every word.",
+                  "baseline_options": [
+                    {
+                      "id": "preserve_natural_intimacy",
+                      "label": "Keep Natural Tone",
+                      "desc": "Keep sound soft and clear without extra volume."
+                    },
+                    {
+                      "id": "boost_high_gain",
+                      "label": "High Boost",
+                      "desc": "Force the whisper to play at loud volume."
+                    },
+                    {
+                      "id": "cut_channel",
+                      "label": "Mute Feed",
+                      "desc": "Treat quiet verse as dead sound."
+                    }
+                  ],
+                  "shifted_context": "Courtyard Gate — Nearby street chatter and fountain water cover soft voices.",
+                  "shifted_options": [
+                    {
+                      "id": "boost_intelligibility",
+                      "label": "Boost Voice",
+                      "desc": "Lift the voice so outdoor chatter does not hide it."
+                    },
+                    {
+                      "id": "preserve_natural_intimacy",
+                      "label": "Keep Natural Tone",
+                      "desc": "Leave voice unboosted so whisper is hard to hear."
+                    },
+                    {
+                      "id": "cut_channel",
+                      "label": "Mute Feed",
+                      "desc": "Treat quiet sound as an equipment issue."
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "F3_T3",
+                  "cue_id": "cue_rhythmic_syncopation",
+                  "title": "Round 3: Pause Before Verse",
+                  "cue_text": "\"The poet pauses suddenly before the final line.\"",
+                  "baseline_context": "Solo Recital — A single speaker recites at a steady, driving pace.",
+                  "baseline_options": [
+                    {
+                      "id": "sustain_cadence",
+                      "label": "Keep Pace",
+                      "desc": "Keep the steady beat moving through the pause."
+                    },
+                    {
+                      "id": "halt_accompaniment",
+                      "label": "Stop Sound",
+                      "desc": "Stop all instruments abruptly on the pause."
+                    },
+                    {
+                      "id": "force_metronome",
+                      "label": "Speed Up",
+                      "desc": "Push the recital forward past the pause."
+                    }
+                  ],
+                  "shifted_context": "Group Singing — A chorus enters during the pause to sing an answer line.",
+                  "shifted_options": [
+                    {
+                      "id": "open_reciprocal_space",
+                      "label": "Make Space",
+                      "desc": "Pause instruments to let the chorus answer clearly."
+                    },
+                    {
+                      "id": "sustain_cadence",
+                      "label": "Keep Pace",
+                      "desc": "Play straight through without waiting for the chorus."
+                    },
+                    {
+                      "id": "force_metronome",
+                      "label": "Speed Up",
+                      "desc": "Rush the group tempo forward."
+                    }
+                  ]
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          }
+        ]
+      },
+      {
+        "world_id": "W2",
+        "world_name_en": "The Archive",
+        "world_name_ur": "دستاویز",
+        "theme_subtitle": "Manuscripts & Preservation",
+        "associated_parameter": {
+          "id": "conscientiousness",
+          "name": "Conscientiousness",
+          "definition": "The tendency to be reliable, methodical, and responsible, characterized by a willingness to verify information under uncertainty and follow through on commitments."
+        },
+        "candidate_core_games": [
+          "A1",
+          "A2"
+        ],
+        "research_bank_games": [
+          "A3"
+        ],
+        "games": [
+          {
+            "game_id": "A1",
+            "title": "The Manuscript Folios",
+            "subtitle": "Sort each historical page onto its proper shelf.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "conscientiousness",
+              "name": "Conscientiousness",
+              "facet": "rule_governed_classification"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 4,
+              "timeout_ceiling_ms": 35000,
+              "features": [
+                {
+                  "feature_id": "classification_rule_adherence_rate",
+                  "type": "ratio",
+                  "direction": "higher_is_more_accurate",
+                  "exclude_in_accessibility_modes": []
+                },
+                {
+                  "feature_id": "verification_duration_ratio",
+                  "type": "ratio",
+                  "direction": "higher_is_more_deliberate",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "File each document onto the correct shelf across 5 rounds.",
+              "steps": [
+                "Check the date and description on each document card.",
+                "Click the matching shelf to file it.",
+                "Open the shelf guide anytime if you need a reminder."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Pick the shelf below that matches this page sorting rule.",
+            "interaction_mechanism": "Rule-governed folder selection based on century, genre, or language",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "DOC_01",
+                "rule": "PERIOD",
+                "target_folder": "19th_century"
+              },
+              {
+                "stimulus_id": "DOC_02",
+                "rule": "GENRE",
+                "target_folder": "poetry"
+              },
+              {
+                "stimulus_id": "DOC_03",
+                "rule": "PERIOD",
+                "target_folder": "20th_century"
+              },
+              {
+                "stimulus_id": "DOC_04",
+                "rule": "LANGUAGE",
+                "target_folder": "kashmiri"
+              },
+              {
+                "stimulus_id": "DOC_05",
+                "rule": "GENRE",
+                "target_folder": "chronicle"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "id": "DOC_01",
+                  "title": "Old Calligraphy Book (1842)",
+                  "rule_prompt": "Sorting Rule: Sort by Century",
+                  "tags": [
+                    "Year: 1842",
+                    "19th Century",
+                    "Handmade Paper",
+                    "Poem Verse"
+                  ]
+                },
+                {
+                  "id": "DOC_02",
+                  "title": "Poetry Song Book",
+                  "rule_prompt": "Sorting Rule: Sort by Type",
+                  "tags": [
+                    "Type: Poetry",
+                    "Song Verses",
+                    "Urdu",
+                    "Paper Pages"
+                  ]
+                },
+                {
+                  "id": "DOC_03",
+                  "title": "Exhibition Visitor Book (1924)",
+                  "rule_prompt": "Sorting Rule: Sort by Century",
+                  "tags": [
+                    "Year: 1924",
+                    "20th Century",
+                    "Visitor List",
+                    "Signatures"
+                  ]
+                },
+                {
+                  "id": "DOC_04",
+                  "title": "Lal Ded Verses in Kashmiri",
+                  "rule_prompt": "Sorting Rule: Sort by Language",
+                  "tags": [
+                    "Language: Kashmiri",
+                    "Wise Verses",
+                    "Local Poetry"
+                  ]
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": [
+                {
+                  "id": "19th_century",
+                  "label": "19th Century Shelf",
+                  "icon": "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                },
+                {
+                  "id": "20th_century",
+                  "label": "20th Century Shelf",
+                  "icon": "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                },
+                {
+                  "id": "poetry",
+                  "label": "Poetry Shelf",
+                  "icon": "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                },
+                {
+                  "id": "chronicle",
+                  "label": "History Shelf",
+                  "icon": "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                },
+                {
+                  "id": "kashmiri",
+                  "label": "Kashmiri Language Shelf",
+                  "icon": "M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                }
+              ],
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "A2",
+            "title": "The Fragile Leaf",
+            "subtitle": "Examine page condition and choose a handling step.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "conscientiousness",
+              "name": "Conscientiousness",
+              "facet": "exception_handling"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 3,
+              "timeout_ceiling_ms": 35000,
+              "features": [
+                {
+                  "feature_id": "exception_flagging_precision",
+                  "type": "ratio",
+                  "direction": "higher_is_more_systematic",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Check the condition of 4 pages and choose how to handle them.",
+              "steps": [
+                "Look at the condition notes on the page.",
+                "Decide if the page is clean or damaged.",
+                "Choose whether to file normally, quarantine for repair, or consult."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Check the condition notes above. Choose how you want to handle this page below.",
+            "interaction_mechanism": "Exception flagging and preservation triage selection",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "EXC_01",
+                "condition_id": "catalog_anomaly_watermark",
+                "condition_type": "true_exception",
+                "expected_action": "flag_exception"
+              },
+              {
+                "stimulus_id": "EXC_02",
+                "condition_id": "standard_catalog_clean",
+                "condition_type": "clean_control",
+                "expected_action": "file_standard"
+              },
+              {
+                "stimulus_id": "EXC_03",
+                "condition_id": "catalog_anomaly_pagination",
+                "condition_type": "true_exception",
+                "expected_action": "flag_exception"
+              },
+              {
+                "stimulus_id": "EXC_04",
+                "condition_id": "catalog_anomaly_binding_split",
+                "condition_type": "true_exception",
+                "expected_action": "flag_exception"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "EXC_01",
+                  "title": "Kashmiri Poetry Page with Water Wear",
+                  "anomaly_description": "Water fading on lower margin. The accession year stamp is blurred and appears as \"18--\".",
+                  "type_note": "Physical Damage & Blurred Year"
+                },
+                {
+                  "stimulus_id": "EXC_02",
+                  "title": "Clean Persian Calligraphy Page (1890)",
+                  "anomaly_description": "Intact rag fiber paper, clear black ink, and standard accession stamp intact. No physical blemishes.",
+                  "type_note": "Standard Page Inspection"
+                },
+                {
+                  "stimulus_id": "EXC_03",
+                  "title": "Loose Book Page with Number Jump",
+                  "anomaly_description": "Binding threads severed. Margin numbering skips from Folio 14 directly to Folio 19 with missing text catchword.",
+                  "type_note": "Missing Pages & Loose Thread"
+                },
+                {
+                  "stimulus_id": "EXC_04",
+                  "title": "Illustrated Story Page with Split Binding",
+                  "anomaly_description": "Double folio split across signature gutter with inverted seal impressions and mismatched accession notation.",
+                  "type_note": "Broken Spine & Upside-Down Seal"
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": [
+                {
+                  "id": "flag_exception",
+                  "title": "Flag for Special Repair",
+                  "desc": "Place page in a protective sleeve for careful repair by a conservator.",
+                  "tag": "Special Repair"
+                },
+                {
+                  "id": "file_standard",
+                  "title": "Place on Regular Shelf",
+                  "desc": "Place page directly onto the standard open shelves.",
+                  "tag": "Regular Shelf"
+                },
+                {
+                  "id": "defer_review",
+                  "title": "Hold in Storage Box",
+                  "desc": "Hold page safely in storage until more background notes arrive.",
+                  "tag": "Hold in Box"
+                }
+              ],
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "A3",
+            "title": "The Exhibition Ledger",
+            "subtitle": "Review display cards for factual mistakes.",
+            "tier": "Research Bank",
+            "connected_parameter": {
+              "id": "conscientiousness",
+              "name": "Conscientiousness",
+              "facet": "proofreading_vigilance"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 1,
+              "timeout_ceiling_ms": 35000,
+              "features": [
+                {
+                  "feature_id": "error_detection_sensitivity",
+                  "type": "ratio",
+                  "direction": "higher_is_more_sensitive",
+                  "exclude_in_accessibility_modes": []
+                },
+                {
+                  "feature_id": "false_alarm_rate",
+                  "type": "ratio",
+                  "direction": "lower_is_more_precise",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Carefully proofread all 5 display records. Flag only those with clear errors.",
+              "steps": [
+                "Read each display card carefully.",
+                "Click the flag button on any card that contains an error.",
+                "Clean cards should remain unflagged.",
+                "Click verify when finished."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Carefully proofread display records. Flag only records containing factual errors.",
+            "interaction_mechanism": "Vigilance proofreading: Flag Error vs Confirm Accurate",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "REC_01",
+                "has_error": true,
+                "error_type": "transposition_error"
+              },
+              {
+                "stimulus_id": "REC_02",
+                "has_error": false,
+                "error_type": "clean_control"
+              },
+              {
+                "stimulus_id": "REC_03",
+                "has_error": true,
+                "error_type": "omission_error"
+              },
+              {
+                "stimulus_id": "REC_04",
+                "has_error": false,
+                "error_type": "clean_control"
+              },
+              {
+                "stimulus_id": "REC_05",
+                "has_error": true,
+                "error_type": "factual_error"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "id": "REC_01",
+                  "title": "Card 1: Habba Khatoon Poem",
+                  "text": "Poet: Habba Khatoon | Era: 16th Century | Birthplace: Chandhara (Recorded as: Chanhadra)",
+                  "note": "Folio Label Verification"
+                },
+                {
+                  "id": "REC_02",
+                  "title": "Card 2: Carved Walnut Pen Box",
+                  "text": "Artifact: Carved Walnut Calligraphy Pen Box | Dimensions: 24 cm x 6 cm | Medium: Seasoned Walnut",
+                  "note": "Object Metadata Verification"
+                },
+                {
+                  "id": "REC_03",
+                  "title": "Card 3: River Verse Excerpt",
+                  "text": "Verse Excerpt: \"The river remembers the boatman's song\" | Translator: [Not Specified / Blank]",
+                  "note": "Folio Label Verification"
+                },
+                {
+                  "id": "REC_04",
+                  "title": "Card 4: Kashmiri Vakh Lyric Leaf",
+                  "text": "Folio Leaf: Kashmiri Vakh Lyric Leaf | Script: Sharda & Persian | Accession: AR-1892",
+                  "note": "Manuscript Leaf Verification"
+                },
+                {
+                  "id": "REC_05",
+                  "title": "Card 5: Exhibition Opening Notice",
+                  "text": "Exhibition Opening Reception: February 31st, 2026 | Location: Main Pavilion",
+                  "note": "Public Schedule Verification"
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          }
+        ]
+      },
+      {
+        "world_id": "W3",
+        "world_name_en": "The Shared Canvas",
+        "world_name_ur": "مشترکہ کینوس",
+        "theme_subtitle": "Artisan Workshop",
+        "associated_parameter": {
+          "id": "collaborative_spirit",
+          "name": "Collaborative Spirit",
+          "definition": "The willingness to share space, synchronize efforts, and adapt one's own pacing or goals to support an interdependent, collective outcome."
+        },
+        "candidate_core_games": [
+          "C1",
+          "C2"
+        ],
+        "research_bank_games": [
+          "C3"
+        ],
+        "games": [
+          {
+            "game_id": "C1",
+            "title": "Resource Cooperation",
+            "subtitle": "Coordinate ceramic tiles with your workshop partner.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "collaborative_spirit",
+              "name": "Collaborative Spirit",
+              "facet": "need_sensitive_resource_sharing"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 2,
+              "timeout_ceiling_ms": 30000,
+              "features": [
+                {
+                  "feature_id": "need_sensitive_sharing_index",
+                  "type": "index",
+                  "direction": "higher_is_more_need_sensitive",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Share tiles with your partner across 2 rounds.",
+              "steps": [
+                "Check how many tiles you and your partner currently have.",
+                "Use plus and minus to move tiles if you wish.",
+                "Click Confirm to complete the round."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Check basket levels. Use + and - buttons to choose tiles to share.",
+            "interaction_mechanism": "Need-sensitive resource allocation via increment/decrement sharing controls",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "C1_R1",
+                "condition_id": "partner_deficit",
+                "condition_type": "share_needed",
+                "partner_state": "partner_short_by_3_tiles",
+                "expected_action": "allocate_tiles"
+              },
+              {
+                "stimulus_id": "C1_R2",
+                "condition_id": "balanced_need",
+                "condition_type": "equal_distribution",
+                "partner_state": "partner_adequate_materials",
+                "expected_action": "maintain_equal_distribution"
+              },
+              {
+                "stimulus_id": "C1_R3",
+                "condition_id": "self_deficit_retain",
+                "condition_type": "retain_needed",
+                "partner_state": "partner_holding_ample_tiles_user_critical_shortage",
+                "expected_action": "retain_resources"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "C1_R1",
+                  "title": "Round 1: Partner Needs Tiles",
+                  "description": "Your partner needs 3 more tiles to finish. You have 8 tiles.",
+                  "partner_initial": 2,
+                  "user_initial": 8,
+                  "default_transfer": 0,
+                  "context_note": "Partner Needs Help"
+                },
+                {
+                  "stimulus_id": "C1_R2",
+                  "title": "Round 2: Balanced Baskets",
+                  "description": "Both you and your partner have 5 tiles. Both have enough to finish.",
+                  "partner_initial": 5,
+                  "user_initial": 5,
+                  "default_transfer": 0,
+                  "context_note": "Both Have Enough"
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "C2",
+            "title": "The Gallery Wall (Coordination)",
+            "subtitle": "Coordinate artwork placement with your partner.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "collaborative_spirit",
+              "name": "Collaborative Spirit",
+              "facet": "coordinated_spatial_placement"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 2,
+              "timeout_ceiling_ms": 30000,
+              "features": [
+                {
+                  "feature_id": "coordination_collision_avoidance_rate",
+                  "type": "ratio",
+                  "direction": "higher_is_more_coordinated",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Choose a wall spot for your piece across 2 rounds.",
+              "steps": [
+                "See where your partner hung their artwork.",
+                "Choose an open wall spot from the options.",
+                "Click Confirm to hang your piece."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Look at where your partner hung their piece. Click one open spot below to hang yours.",
+            "interaction_mechanism": "Spatial wall placement avoiding collisions and synchronizing composition",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "C2_R1",
+                "condition_id": "open_canvas_turn",
+                "partner_state": "partner_placed_north_cluster",
+                "expected_action": "complementary_placement"
+              },
+              {
+                "stimulus_id": "C2_R2",
+                "condition_id": "restricted_wall_space",
+                "partner_state": "partner_framing_center",
+                "expected_action": "avoid_blocking_partner"
+              },
+              {
+                "stimulus_id": "C2_R3",
+                "condition_id": "dynamic_canvas_adjustment",
+                "partner_state": "partner_shifted_composition_south",
+                "expected_action": "align_composition"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "C2_R1",
+                  "title": "Round 1: Open Wall Space",
+                  "partner_desc": "Partner hung their painting on the top left corner.",
+                  "slots": [
+                    {
+                      "id": "SLOT_NORTH_RIGHT",
+                      "label": "Top Right (Even Spacing)"
+                    },
+                    {
+                      "id": "SLOT_OVERLAP_LEFT",
+                      "label": "Next to Partner (Tight Cluster)"
+                    },
+                    {
+                      "id": "SLOT_BOTTOM_CENTER",
+                      "label": "Bottom Center (Center Spot)"
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "C2_R2",
+                  "title": "Round 2: Keep Hallway Clear",
+                  "partner_desc": "Partner is framing the center hallway. Keep the doorway path clear.",
+                  "slots": [
+                    {
+                      "id": "SLOT_PERIMETER_EAST",
+                      "label": "East Wall (Keeps Path Open)"
+                    },
+                    {
+                      "id": "SLOT_CENTER_ADJACENT",
+                      "label": "Center Slot (Crowds the Hall)"
+                    },
+                    {
+                      "id": "SLOT_PERIMETER_WEST",
+                      "label": "West Wall (Keeps Path Open)"
+                    }
+                  ]
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "C3",
+            "title": "The Dual Lanterns (Collaboration Repair)",
+            "subtitle": "Resolve studio breakdowns to keep the hall ready.",
+            "tier": "Research Bank",
+            "connected_parameter": {
+              "id": "collaborative_spirit",
+              "name": "Collaborative Spirit",
+              "facet": "breakdown_repair"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 2,
+              "timeout_ceiling_ms": 35000,
+              "features": [
+                {
+                  "feature_id": "constructive_repair_score",
+                  "type": "ratio",
+                  "direction": "higher_is_more_constructive",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Find the work issue, pick a fix, and repair it together.",
+              "steps": [
+                "Examine the situation described in each round.",
+                "Identify the issue from the list.",
+                "Choose a helpful fix and apply the repair."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Find the work issue, pick a fix, and repair it together.",
+            "interaction_mechanism": "Breakdown repair choice selection (Collaborative fix vs Unilateral vs Delay)",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "C3_R1",
+                "condition_id": "lighting_imbalance",
+                "condition_type": "identify_and_repair",
+                "partner_state": "partner_lantern_circuit_dark",
+                "repair_steps": [
+                  "identify_fault",
+                  "adjust_conduit",
+                  "restore_power"
+                ]
+              },
+              {
+                "stimulus_id": "C3_R2",
+                "condition_id": "suspension_pulley_jam",
+                "condition_type": "identify_and_repair",
+                "partner_state": "partner_suspension_cable_jammed_in_pulley",
+                "repair_steps": [
+                  "identify_fault",
+                  "reseat_pulley_cable",
+                  "align_panel_height"
+                ]
+              },
+              {
+                "stimulus_id": "C3_R3",
+                "condition_id": "shadow_corridor_breakdown",
+                "condition_type": "identify_and_repair",
+                "partner_state": "partner_blindspot_obstruction",
+                "repair_steps": [
+                  "identify_fault",
+                  "shift_lantern",
+                  "illuminate_path"
+                ]
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "C3_R1",
+                  "title": "Opportunity 1: Partner Lantern is Dark",
+                  "partner_state": "Your partner's lantern turned dark during setup.",
+                  "condition_type": "identify_and_repair",
+                  "fault_options": [
+                    {
+                      "id": "fault_conduit_disconnected",
+                      "label": "The wire came loose at the connector"
+                    },
+                    {
+                      "id": "fault_bulb_broken",
+                      "label": "The glass bulb is broken"
+                    },
+                    {
+                      "id": "fault_switch_off",
+                      "label": "The main hall switch is off"
+                    }
+                  ],
+                  "repair_options": [
+                    {
+                      "id": "adjust_conduit",
+                      "label": "Reconnect the loose wire and tighten the clamp"
+                    },
+                    {
+                      "id": "call_help_desk",
+                      "label": "Call the main help desk"
+                    },
+                    {
+                      "id": "replace_lantern",
+                      "label": "Take down the entire lamp"
+                    }
+                  ],
+                  "execution_action": "restore_power"
+                },
+                {
+                  "stimulus_id": "C3_R2",
+                  "title": "Opportunity 2: Hanging Rope Stuck",
+                  "partner_state": "The hanging rope got caught in the wheel bracket.",
+                  "condition_type": "identify_and_repair",
+                  "fault_options": [
+                    {
+                      "id": "fault_cable_pulley_pinch",
+                      "label": "Rope is pinched between wheel and metal frame"
+                    },
+                    {
+                      "id": "fault_cable_snapped",
+                      "label": "The rope snapped completely"
+                    },
+                    {
+                      "id": "fault_wall_anchor_loose",
+                      "label": "The wall hook is loose"
+                    }
+                  ],
+                  "repair_options": [
+                    {
+                      "id": "reseat_pulley_cable",
+                      "label": "Loosen the lever and place the rope back on the wheel"
+                    },
+                    {
+                      "id": "call_facility_maintenance",
+                      "label": "File a general repair request"
+                    },
+                    {
+                      "id": "force_pull_cable",
+                      "label": "Pull the rope down hard"
+                    }
+                  ],
+                  "execution_action": "align_panel_height"
+                },
+                {
+                  "stimulus_id": "C3_R3",
+                  "title": "Opportunity 3: Shadow Blocks Artwork",
+                  "partner_state": "A movable wooden screen casts a dark shadow over your partner's painting.",
+                  "condition_type": "identify_and_repair",
+                  "fault_options": [
+                    {
+                      "id": "fault_blindspot_obstruction",
+                      "label": "Wooden screen blocks the spotlight beam"
+                    },
+                    {
+                      "id": "fault_color_distortion",
+                      "label": "The light color looks wrong"
+                    }
+                  ],
+                  "repair_options": [
+                    {
+                      "id": "shift_lantern",
+                      "label": "Turn the spotlight slightly to shine around the screen"
+                    },
+                    {
+                      "id": "generic_complaint",
+                      "label": "Submit a general lighting complaint"
+                    }
+                  ],
+                  "execution_action": "illuminate_path"
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          }
+        ]
+      },
+      {
+        "world_id": "W4",
+        "world_name_en": "The Shifting Grid",
+        "world_name_ur": "بدلتا گرڈ",
+        "theme_subtitle": "Mosaic & Rhythm",
+        "associated_parameter": {
+          "id": "emotional_agility",
+          "name": "Emotional Agility",
+          "definition": "The ability to maintain composure, recover quickly from setbacks, and adapt constructively to ambiguous, sudden, or frustrating changes in the environment."
+        },
+        "candidate_core_games": [
+          "E1",
+          "E2"
+        ],
+        "research_bank_games": [
+          "E3"
+        ],
+        "games": [
+          {
+            "game_id": "E1",
+            "title": "The Ceramic Mosaic (Rule Shift)",
+            "subtitle": "Sort each ceramic tile into the matching container.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "emotional_agility",
+              "name": "Emotional Agility",
+              "facet": "set_shifting_adaptation"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 12,
+              "timeout_ceiling_ms": 35000,
+              "features": [
+                {
+                  "feature_id": "perseverative_error_count",
+                  "type": "count",
+                  "direction": "lower_is_more_flexible",
+                  "exclude_in_accessibility_modes": []
+                },
+                {
+                  "feature_id": "trials_to_criterion_post_shift",
+                  "type": "count",
+                  "direction": "lower_is_faster_adaptation",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Sort 9 tiles into the matching containers.",
+              "steps": [
+                "Look at the tile shape and color.",
+                "Click Container 1 or Container 2 to place it.",
+                "Watch the feedback note to see if your choice fit the rule."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Look at the tile above. Click Container 1 or Container 2 below to sort it.",
+            "interaction_mechanism": "Wisconsin Card Sort analog: Categorize by Color/Shape; adapt when sorting rule shifts",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "E1_T1",
+                "rule": "COLOR",
+                "tile_color": "Gold",
+                "tile_shape": "Square",
+                "target_container": "container_1"
+              },
+              {
+                "stimulus_id": "E1_T2",
+                "rule": "COLOR",
+                "tile_color": "Sage",
+                "tile_shape": "Circle",
+                "target_container": "container_2"
+              },
+              {
+                "stimulus_id": "E1_T3",
+                "rule": "COLOR",
+                "tile_color": "Gold",
+                "tile_shape": "Circle",
+                "target_container": "container_1"
+              },
+              {
+                "stimulus_id": "E1_T4",
+                "rule": "SHAPE",
+                "tile_color": "Sage",
+                "tile_shape": "Square",
+                "target_container": "container_2",
+                "is_shift_point": true
+              },
+              {
+                "stimulus_id": "E1_T5",
+                "rule": "SHAPE",
+                "tile_color": "Gold",
+                "tile_shape": "Square",
+                "target_container": "container_2"
+              },
+              {
+                "stimulus_id": "E1_T6",
+                "rule": "SHAPE",
+                "tile_color": "Sage",
+                "tile_shape": "Circle",
+                "target_container": "container_1"
+              },
+              {
+                "stimulus_id": "E1_T7",
+                "rule": "SHAPE",
+                "tile_color": "Gold",
+                "tile_shape": "Circle",
+                "target_container": "container_1"
+              },
+              {
+                "stimulus_id": "E1_T8",
+                "rule": "SHAPE",
+                "tile_color": "Gold",
+                "tile_shape": "Square",
+                "target_container": "container_2"
+              },
+              {
+                "stimulus_id": "E1_T9",
+                "rule": "SHAPE",
+                "tile_color": "Sage",
+                "tile_shape": "Circle",
+                "target_container": "container_1"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "E1_T1",
+                  "color": "Gold",
+                  "shape": "Square",
+                  "icon": "&#9632;",
+                  "label": "Gold Square"
+                },
+                {
+                  "stimulus_id": "E1_T2",
+                  "color": "Sage",
+                  "shape": "Circle",
+                  "icon": "&#9679;",
+                  "label": "Sage Circle"
+                },
+                {
+                  "stimulus_id": "E1_T3",
+                  "color": "Gold",
+                  "shape": "Circle",
+                  "icon": "&#9679;",
+                  "label": "Gold Circle"
+                },
+                {
+                  "stimulus_id": "E1_T4",
+                  "color": "Sage",
+                  "shape": "Square",
+                  "icon": "&#9632;",
+                  "label": "Sage Square"
+                },
+                {
+                  "stimulus_id": "E1_T5",
+                  "color": "Gold",
+                  "shape": "Square",
+                  "icon": "&#9632;",
+                  "label": "Gold Square"
+                },
+                {
+                  "stimulus_id": "E1_T6",
+                  "color": "Sage",
+                  "shape": "Circle",
+                  "icon": "&#9679;",
+                  "label": "Sage Circle"
+                },
+                {
+                  "stimulus_id": "E1_T7",
+                  "color": "Gold",
+                  "shape": "Circle",
+                  "icon": "&#9679;",
+                  "label": "Gold Circle"
+                },
+                {
+                  "stimulus_id": "E1_T8",
+                  "color": "Gold",
+                  "shape": "Square",
+                  "icon": "&#9632;",
+                  "label": "Gold Square"
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "E2",
+            "title": "The Courtyard Setup (Setback Recovery)",
+            "subtitle": "Choose the best response when unexpected studio events happen.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "emotional_agility",
+              "name": "Emotional Agility",
+              "facet": "disruption_recovery"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 2,
+              "timeout_ceiling_ms": 30000,
+              "features": [
+                {
+                  "feature_id": "cadence_stability_ratio",
+                  "type": "ratio",
+                  "direction": "closer_to_one_is_more_stable",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Respond to unexpected workshop situations across 3 rounds.",
+              "steps": [
+                "Read what just happened in the workshop.",
+                "Pick what you would do next from the 3 options.",
+                "Click Confirm to move to the next situation."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Read the situation above. Choose the most practical step below.",
+            "interaction_mechanism": "Disruption recovery option choice (constructive adaptation under setbacks)",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "E2_S1",
+                "has_disruption": true,
+                "disruption_type": "ink_spill_masking_workspace",
+                "target_action": "clear_workspace"
+              },
+              {
+                "stimulus_id": "E2_S2",
+                "has_disruption": false,
+                "disruption_type": "undisrupted_control",
+                "target_action": "standard_sequence"
+              },
+              {
+                "stimulus_id": "E2_S3",
+                "has_disruption": true,
+                "disruption_type": "draft_blows_reference_card",
+                "target_action": "stabilize_reference"
+              },
+              {
+                "stimulus_id": "E2_S4",
+                "has_disruption": true,
+                "disruption_type": "misplaced_pigment_tray",
+                "target_action": "reposition_tray"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "E2_S1",
+                  "title": "Sequence 1: Ink Spill on Desk",
+                  "situation": "A small drop of ink spilled onto your active pattern card.",
+                  "has_disruption": true,
+                  "disruption_type": "ink_spill_masking_workspace",
+                  "options": [
+                    {
+                      "id": "clear_workspace",
+                      "label": "Dab ink with a cloth and straighten your card",
+                      "note": "Calm cleanup"
+                    },
+                    {
+                      "id": "rush_uncleaned",
+                      "label": "Keep placing tiles around the wet ink",
+                      "note": "Rushed step"
+                    },
+                    {
+                      "id": "pause_idle",
+                      "label": "Step away and wait for help",
+                      "note": "Long wait"
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "E2_S2",
+                  "title": "Sequence 2: Calm Studio Work",
+                  "situation": "The workbench is clean, tidy, and well lit.",
+                  "has_disruption": false,
+                  "disruption_type": "undisrupted_control",
+                  "options": [
+                    {
+                      "id": "standard_sequence",
+                      "label": "Continue placing tiles according to plan",
+                      "note": "Steady step"
+                    },
+                    {
+                      "id": "unnecessary_rework",
+                      "label": "Take tiles apart to re-check for no reason",
+                      "note": "Unneeded check"
+                    },
+                    {
+                      "id": "pause_idle",
+                      "label": "Stop and wait before continuing",
+                      "note": "Unneeded pause"
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "E2_S3",
+                  "title": "Sequence 3: Breeze Blows Paper",
+                  "situation": "A sudden breeze blew your reference drawing off the table.",
+                  "has_disruption": true,
+                  "disruption_type": "draft_blows_reference_card",
+                  "options": [
+                    {
+                      "id": "stabilize_reference",
+                      "label": "Pick up paper and weigh it down with a stone",
+                      "note": "Fix and secure"
+                    },
+                    {
+                      "id": "guess_motif",
+                      "label": "Place tiles from memory without looking at plan",
+                      "note": "Guessing"
+                    },
+                    {
+                      "id": "pause_idle",
+                      "label": "Wait for the wind to stop",
+                      "note": "Waiting"
+                    }
+                  ]
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "E3",
+            "title": "The Shifting Medium (Changing Conditions)",
+            "subtitle": "Adapt design layout when studio materials change.",
+            "tier": "Research Bank",
+            "connected_parameter": {
+              "id": "emotional_agility",
+              "name": "Emotional Agility",
+              "facet": "constraint_adaptation"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 3,
+              "timeout_ceiling_ms": 35000,
+              "features": [
+                {
+                  "feature_id": "strategy_shift_efficiency",
+                  "type": "ratio",
+                  "direction": "higher_is_more_efficient",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Adapt your mosaic design strategy to match shifting studio constraints.",
+              "steps": [
+                "Examine the active studio condition in each round.",
+                "Choose the layout option that matches the condition.",
+                "Confirm your choice across all 3 rounds."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Adapt your mosaic design strategy to match shifting studio constraints.",
+            "interaction_mechanism": "Strategy selection under evolving material constraints",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "E3_C1",
+                "constraint_state": "standard_three_color_palette",
+                "target_action": "standard_layout"
+              },
+              {
+                "stimulus_id": "E3_C2",
+                "constraint_state": "monochrome_indigo_only",
+                "target_action": "tonal_adaptation"
+              },
+              {
+                "stimulus_id": "E3_C3",
+                "constraint_state": "boundary_constricted_half_grid",
+                "target_action": "compact_adaptation"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "E3_C1",
+                  "title": "Condition 1: Three Colors Available",
+                  "constraint_state": "standard_three_color_palette",
+                  "description": "Gold, sage, and terracotta colors are all on the table.",
+                  "options": [
+                    {
+                      "id": "standard_layout",
+                      "label": "Three-Color Pattern (Balanced three-color arrangement)"
+                    },
+                    {
+                      "id": "tonal_adaptation",
+                      "label": "Single Color Shades (One shade only)"
+                    },
+                    {
+                      "id": "compact_adaptation",
+                      "label": "Half-Grid Squeeze"
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "E3_C2",
+                  "title": "Condition 2: Only Indigo Blue Available",
+                  "constraint_state": "monochrome_indigo_only",
+                  "description": "Only one blue color is available on the table.",
+                  "options": [
+                    {
+                      "id": "tonal_adaptation",
+                      "label": "Light and Dark Shading (Create depth using light and dark tones)"
+                    },
+                    {
+                      "id": "standard_layout",
+                      "label": "Try Three Colors (Cannot be done with one color)"
+                    },
+                    {
+                      "id": "compact_adaptation",
+                      "label": "Small Stamp Layout"
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "E3_C3",
+                  "title": "Condition 3: Half-Size Wall Space",
+                  "constraint_state": "boundary_constricted_half_grid",
+                  "description": "The wall space is cut in half. The artwork must fit smaller dimensions.",
+                  "options": [
+                    {
+                      "id": "compact_adaptation",
+                      "label": "Compact Small Design (Scale down pattern to fit half wall)"
+                    },
+                    {
+                      "id": "standard_layout",
+                      "label": "Full Size Layout (Too wide for the small wall)"
+                    },
+                    {
+                      "id": "tonal_adaptation",
+                      "label": "Unscaled Shading Layout"
+                    }
+                  ]
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          }
+        ]
+      },
+      {
+        "world_id": "W5",
+        "world_name_en": "The Hidden Gallery",
+        "world_name_ur": "پوشیدہ گیلری",
+        "theme_subtitle": "Exhibition Discovery",
+        "associated_parameter": {
+          "id": "curiosity",
+          "name": "Curiosity",
+          "definition": "The intrinsic drive to seek out new information, explore alternative perspectives, and engage with the unknown, even when there is no immediate instrumental reward."
+        },
+        "candidate_core_games": [
+          "Q1",
+          "Q2"
+        ],
+        "research_bank_games": [
+          "Q3"
+        ],
+        "games": [
+          {
+            "game_id": "Q1",
+            "title": "Information Seeking (The Alcove Archives)",
+            "subtitle": "Choose the best way to care for each historic item.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "curiosity",
+              "name": "Curiosity",
+              "facet": "information_seeking"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 1,
+              "timeout_ceiling_ms": 35000,
+              "features": [
+                {
+                  "feature_id": "optional_alcove_exploration_rate",
+                  "type": "ratio",
+                  "direction": "higher_is_more_exploratory",
+                  "exclude_in_accessibility_modes": []
+                },
+                {
+                  "feature_id": "epistemic_dwell_duration_ratio",
+                  "type": "ratio",
+                  "direction": "higher_is_deeper_dwell",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Make preservation choices for 3 historic items.",
+              "steps": [
+                "Read the artifact prompt and choose your option.",
+                "Click optional research notes if you want more background.",
+                "Click Confirm when you are ready to continue."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Choose a preservation action below. You can open optional reference notes if you wish.",
+            "interaction_mechanism": "Voluntary inspection of optional reference alcove notes before committing action",
+            "backend_trials_spec": [],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "Q1_D1",
+                  "title": "Antique Gold-Leaf Manuscript Leaf",
+                  "scenario": "Choose the binding method for a fragile 19th-century manuscript page.",
+                  "options": [
+                    {
+                      "id": "flexible_cord_binding",
+                      "label": "Sewn Flexible Cord (Allows spine to bend safely)"
+                    },
+                    {
+                      "id": "tight_adhesive_clamp",
+                      "label": "Rigid Glue Clamp (Firm hold on spine)"
+                    },
+                    {
+                      "id": "unbound_portfolio",
+                      "label": "Loose Archival Folder (Kept as separate sheets)"
+                    }
+                  ],
+                  "optional_resources": [
+                    {
+                      "id": "OPT_USEFUL_1",
+                      "topic": "Binding Methods Note",
+                      "info_value": "high",
+                      "summary": "Srinagar bookbinders used soft vegetable cord to protect delicate gold borders."
+                    },
+                    {
+                      "id": "OPT_CONTROL_1",
+                      "topic": "Library Stamp Dates",
+                      "info_value": "low",
+                      "summary": "City library accession stamps began in late October 1888."
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "Q1_D2",
+                  "title": "Papier-Mâché Pen Case (Qalamdan)",
+                  "scenario": "Select a protective surface coating for this painted lacquer case.",
+                  "options": [
+                    {
+                      "id": "curing_linseed_glaze",
+                      "label": "Linseed Oil & Amber Varnish (Traditional slow curing glaze)"
+                    },
+                    {
+                      "id": "quick_synthetic_seal",
+                      "label": "Quick Synthetic Clear Spray (Modern fast-drying finish)"
+                    },
+                    {
+                      "id": "wax_buff_only",
+                      "label": "Dry Wax Polish (Gentle surface buffing)"
+                    }
+                  ],
+                  "optional_resources": [
+                    {
+                      "id": "OPT_USEFUL_2",
+                      "topic": "Papier-Mâché Care Guide",
+                      "info_value": "high",
+                      "summary": "Slow drying with natural amber resin keeps natural mineral colors bright."
+                    },
+                    {
+                      "id": "OPT_CONTROL_2",
+                      "topic": "Cabinet Hinge Maintenance",
+                      "info_value": "low",
+                      "summary": "Brass display cabinet hinges need oiling twice each year."
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "Q1_D3",
+                  "title": "Workshop Artisan Register",
+                  "scenario": "Identify the origin of this undated Persian artisan register.",
+                  "options": [
+                    {
+                      "id": "guild_ledger_verified",
+                      "label": "Official Guild Register (Bears official guildmaster seal)"
+                    },
+                    {
+                      "id": "private_merchant_tally",
+                      "label": "Merchant Shop Notebook (Informal daily trade tally)"
+                    },
+                    {
+                      "id": "state_excise_record",
+                      "label": "Treasury Tax Record (Official tax register)"
+                    }
+                  ],
+                  "optional_resources": [
+                    {
+                      "id": "OPT_USEFUL_1",
+                      "topic": "Register Stitching Styles",
+                      "info_value": "high",
+                      "summary": "Crimson thread stitching was reserved for registered royal guilds."
+                    },
+                    {
+                      "id": "OPT_CONTROL_1",
+                      "topic": "Filing Code Reference",
+                      "info_value": "low",
+                      "summary": "Old municipal tax files use code series B."
+                    }
+                  ]
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "Q2",
+            "title": "Investigation Under Uncertainty (The Relic Anomaly)",
+            "subtitle": "Inspect physical clues to identify each historic object.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "curiosity",
+              "name": "Curiosity",
+              "facet": "investigation_under_uncertainty"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 2,
+              "timeout_ceiling_ms": 30000,
+              "features": [
+                {
+                  "feature_id": "anomaly_investigation_depth",
+                  "type": "ratio",
+                  "direction": "higher_is_deeper_inquiry",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Inspect 4 historic relics to identify where they came from.",
+              "steps": [
+                "Read the description of the relic.",
+                "Click any clues you want to inspect.",
+                "Pick your conclusion and click Confirm."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Inspect any clues you wish. Then choose where this object came from below.",
+            "interaction_mechanism": "Multi-layer clue exploration and origin attribution under ambiguity",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "Q2_T1",
+                "uncertainty_level": "moderate",
+                "expected_value": "high",
+                "artifact_id": "manuscript_seal_1"
+              },
+              {
+                "stimulus_id": "Q2_T2",
+                "uncertainty_level": "high",
+                "expected_value": "high",
+                "artifact_id": "ciphered_marginalia_2"
+              },
+              {
+                "stimulus_id": "Q2_T3",
+                "uncertainty_level": "low",
+                "expected_value": "low_control",
+                "artifact_id": "standard_receipt_3"
+              },
+              {
+                "stimulus_id": "Q2_T4",
+                "uncertainty_level": "high",
+                "expected_value": "moderate",
+                "artifact_id": "unknown_crest_impression_4"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "Q2_T1",
+                  "artifact_id": "manuscript_seal_1",
+                  "title": "Relic 1: Wax Seal on Parchment",
+                  "description": "A dark red wax seal stamped onto an old parchment document.",
+                  "uncertainty_level": "moderate",
+                  "expected_value": "high",
+                  "clues": [
+                    {
+                      "id": "CLUE_SEAL_INTAGLIO",
+                      "label": "Carved Seal Border Script",
+                      "detail": "Shows the official stamp of the Srinagar city office from 1862."
+                    },
+                    {
+                      "id": "CLUE_WAX_RESIN",
+                      "label": "Wax Material Analysis",
+                      "detail": "Made with local pine resin rather than imported European wax."
+                    },
+                    {
+                      "id": "CLUE_PARCHMENT_GRAIN",
+                      "label": "Parchment Skin Grain",
+                      "detail": "Mountain goatskin with hand-scraped natural grain."
+                    }
+                  ],
+                  "attributions": [
+                    {
+                      "id": "attr_imperial_registrar_srinagar",
+                      "label": "City Office of Srinagar (1860s)"
+                    },
+                    {
+                      "id": "attr_commercial_trader",
+                      "label": "River Trader Shipping Record"
+                    },
+                    {
+                      "id": "attr_modern_reproduction",
+                      "label": "Modern Souvenir Copy"
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "Q2_T2",
+                  "artifact_id": "ciphered_marginalia_2",
+                  "title": "Relic 2: Star Chart with Handwritten Notes",
+                  "description": "Handwritten notes written in old cursive script along a star chart.",
+                  "uncertainty_level": "high",
+                  "expected_value": "high",
+                  "clues": [
+                    {
+                      "id": "CLUE_CIPHER_DIACRITIC",
+                      "label": "Script Number Marks",
+                      "detail": "Notes record the date of an eclipse in 1845."
+                    },
+                    {
+                      "id": "CLUE_SCRIBE_HAND",
+                      "label": "Penmanship Style",
+                      "detail": "Matches the private notebook of court scholar Mir Habib."
+                    },
+                    {
+                      "id": "CLUE_GALL_INK_CORROSION",
+                      "label": "Ink Aging Depth",
+                      "detail": "Natural ink aging shows paper is over 170 years old."
+                    }
+                  ],
+                  "attributions": [
+                    {
+                      "id": "attr_court_astrologer_notebook",
+                      "label": "Court Scholar Personal Notebook"
+                    },
+                    {
+                      "id": "attr_apothecary_recipe",
+                      "label": "Herbal Medicine Recipe"
+                    },
+                    {
+                      "id": "attr_random_scribble",
+                      "label": "Scribe Practice Scratches"
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "Q2_T3",
+                  "artifact_id": "standard_receipt_3",
+                  "title": "Relic 3: City Transit Toll Receipt (Control)",
+                  "description": "A printed paper slip with standard columns and serial numbers.",
+                  "uncertainty_level": "low",
+                  "expected_value": "low_control",
+                  "clues": [
+                    {
+                      "id": "CLUE_PRINT_TYPE",
+                      "label": "Standard Moveable Type",
+                      "detail": "Mass-printed transit slip used for routine city transport."
+                    },
+                    {
+                      "id": "CLUE_STAMP_INK",
+                      "label": "Routine Blue Ink Stamp",
+                      "detail": "Common government office stamp with standard numbering."
+                    }
+                  ],
+                  "attributions": [
+                    {
+                      "id": "attr_standard_tax_slip",
+                      "label": "City Transit Pass Receipt"
+                    },
+                    {
+                      "id": "attr_royal_chancery_grant",
+                      "label": "Palace Land Grant"
+                    },
+                    {
+                      "id": "attr_secret_monastery_order",
+                      "label": "Monastic Travel Permission"
+                    }
+                  ]
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "Q3",
+            "title": "Knowledge Integration",
+            "subtitle": "Connect archival clues to solve catalog questions across 3 episodes.",
+            "tier": "Research Bank",
+            "connected_parameter": {
+              "id": "curiosity",
+              "name": "Curiosity",
+              "facet": "downstream_knowledge_integration"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 2,
+              "timeout_ceiling_ms": 30000,
+              "features": [
+                {
+                  "feature_id": "integrated_insight_utilization",
+                  "type": "ratio",
+                  "direction": "higher_is_more_integrated",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Connect archival clues to solve catalog questions across 3 episodes.",
+              "steps": [
+                "Read the historical question in each episode.",
+                "Click to open the archival research note if you need facts.",
+                "Select your catalog conclusion.",
+                "Click confirm to finish World 5."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Connect archival clues to solve catalog questions across 3 episodes.",
+            "interaction_mechanism": "Cross-clue synthesis and historical verification",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "Q3_E1",
+                "ambiguity_type": "unattributed_artisan_folio",
+                "optional_context_available": true,
+                "context_id": "provenance_context_1"
+              },
+              {
+                "stimulus_id": "Q3_E2",
+                "ambiguity_type": "mismatched_period_provenance",
+                "optional_context_available": true,
+                "context_id": "provenance_context_2"
+              },
+              {
+                "stimulus_id": "Q3_E3",
+                "ambiguity_type": "regional_dialect_verse_origin",
+                "optional_context_available": true,
+                "context_id": "provenance_context_3"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "Q3_E1",
+                  "title": "Episode 1: The Master Painter’s Folio",
+                  "ambiguity_type": "unattributed_artisan_folio",
+                  "ambiguity_text": "An illuminated folio has gold dust borders and charcoal sketches. Two master painters worked during this era.",
+                  "context_id": "provenance_context_1",
+                  "context_title": "Rainawari Workshop Records (1870–1885)",
+                  "context_text": "Records confirm Master Sadiq worked in Rainawari. He used willow-branch charcoal sketches and lapis blue borders.",
+                  "decision_question": "Attribute the folio maker and technique lineage:",
+                  "choices": [
+                    {
+                      "id": "choice_sadiq_rainawari",
+                      "label": "Master Sadiq (Rainawari workshop — willow charcoal sketch)"
+                    },
+                    {
+                      "id": "choice_habib_court",
+                      "label": "Master Habib (Palace court — imported graphite pencil)"
+                    },
+                    {
+                      "id": "choice_generic_bazaar",
+                      "label": "General City Market Production"
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "Q3_E2",
+                  "title": "Episode 2: The Exhibition Pavilion Ceiling",
+                  "ambiguity_type": "mismatched_period_provenance",
+                  "ambiguity_text": "A carved ceiling panel displays woodwork styles from two different rebuilding periods.",
+                  "context_id": "provenance_context_2",
+                  "context_title": "Dal Lake Pavilion Repair Notes (1902)",
+                  "context_text": "Following the 1902 Dal Lake flood, builders used seasoned cedar wood. Earlier builders used soft river pine.",
+                  "decision_question": "Identify the structural timber and repair era:",
+                  "choices": [
+                    {
+                      "id": "choice_post_flood_cedar",
+                      "label": "Post-1902 Flood Repair (Seasoned mountain cedar wood)"
+                    },
+                    {
+                      "id": "choice_pre_flood_pine",
+                      "label": "Original Pre-Flood Building (Soft river pine wood)"
+                    },
+                    {
+                      "id": "choice_modern_concrete",
+                      "label": "Twentieth Century Replica"
+                    }
+                  ]
+                },
+                {
+                  "stimulus_id": "Q3_E3",
+                  "title": "Episode 3: The Woven Silk Couplet",
+                  "ambiguity_type": "regional_dialect_verse_origin",
+                  "ambiguity_text": "A woven silk pashmina scarf has an old Kashmiri verse embroidered on it.",
+                  "context_id": "provenance_context_3",
+                  "context_title": "Valley Poetry Records (Lalla-Ded Shrines)",
+                  "context_text": "Verses with this 4-beat pattern come from southern valley shrines (Pampore and Tral).",
+                  "decision_question": "Select the verified cultural origin of this verse:",
+                  "choices": [
+                    {
+                      "id": "choice_southern_vakh_shrine",
+                      "label": "Southern Valley Shrine Verse (Traditional 4-beat rhythm)"
+                    },
+                    {
+                      "id": "choice_urban_court_ghazal",
+                      "label": "Palace Court Scribe Poem (Formal Persian rhyming meter)"
+                    },
+                    {
+                      "id": "choice_folk_bazaar_song",
+                      "label": "Traveling Caravan Folk Song"
+                    }
+                  ]
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          }
+        ]
+      },
+      {
+        "world_id": "W6",
+        "world_name_en": "The Broken Tool",
+        "world_name_ur": "ٹوٹا آلہ",
+        "theme_subtitle": "Material Assembly",
+        "associated_parameter": {
+          "id": "creative_initiative",
+          "name": "Creative Initiative",
+          "definition": "The readiness to experiment, iterate, and apply unconventional solutions when standard procedures, rules, or resources fail to solve a problem."
+        },
+        "candidate_core_games": [
+          "CR1",
+          "CR3"
+        ],
+        "research_bank_games": [
+          "CR2"
+        ],
+        "games": [
+          {
+            "game_id": "CR1",
+            "title": "The Artisan's Assembly",
+            "subtitle": "Fix the broken part using items on the workbench.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "creative_initiative",
+              "name": "Creative Initiative",
+              "facet": "functional_assembly_under_constraint"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 1,
+              "timeout_ceiling_ms": 35000,
+              "features": [
+                {
+                  "feature_id": "solution_uniqueness_index",
+                  "type": "index",
+                  "direction": "higher_is_more_novel",
+                  "exclude_in_accessibility_modes": []
+                },
+                {
+                  "feature_id": "attempt_chain_progression",
+                  "type": "index",
+                  "direction": "higher_is_more_varied_iteration",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Build a working replacement tool across 2 stages.",
+              "steps": [
+                "Read what needs to be fixed.",
+                "Click items on the workbench to add or remove them.",
+                "Click Test to check your setup, then click Confirm."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Follow Step 1 and Step 2 below to assemble and test your replacement tool.",
+            "interaction_mechanism": "Multi-part material assembly, trial testing workbench, and functional validation",
+            "backend_trials_spec": [],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stage_id": "CR1_S1",
+                  "title": "Stage 1: The Weaving Shuttle Rig",
+                  "constraint": "missing_crossbar_shuttle",
+                  "scenario": "A walnut loom shuttle crossbar has cracked. Build a working replacement with studio parts.",
+                  "materials": [
+                    {
+                      "id": "M_SPLIT_BAMBOO",
+                      "name": "Split Bamboo Rib",
+                      "icon": "&#127883;",
+                      "role": "Flexible wooden bar"
+                    },
+                    {
+                      "id": "M_BRASS_ROD",
+                      "name": "Slotted Brass Rod",
+                      "icon": "&#128296;",
+                      "role": "Stiff metal bar"
+                    },
+                    {
+                      "id": "M_CARVED_PINE",
+                      "name": "Carved Pine Peg",
+                      "icon": "&#129685;",
+                      "role": "Lightweight wooden pin"
+                    },
+                    {
+                      "id": "M_WAXED_CORD",
+                      "name": "Waxed Linen Cord",
+                      "icon": "&#129526;",
+                      "role": "Strong binding string"
+                    },
+                    {
+                      "id": "M_CERAMIC_WEIGHT",
+                      "name": "Ceramic Weight",
+                      "icon": "&#9711;",
+                      "role": "Small balancing weight"
+                    }
+                  ],
+                  "valid_combinations": [
+                    [
+                      "M_SPLIT_BAMBOO",
+                      "M_WAXED_CORD"
+                    ],
+                    [
+                      "M_BRASS_ROD"
+                    ],
+                    [
+                      "M_CARVED_PINE",
+                      "M_CERAMIC_WEIGHT"
+                    ]
+                  ]
+                },
+                {
+                  "stage_id": "CR1_S2",
+                  "title": "Stage 2: The Warp Tension Anchor",
+                  "constraint": "tension_wire_unanchored",
+                  "scenario": "The side tension cord needs an anchor point. Assemble a secure tie-down rig.",
+                  "materials": [
+                    {
+                      "id": "M_LEATHER_STRAP",
+                      "name": "Leather Cinch Strap",
+                      "icon": "&#129526;",
+                      "role": "Firm gripping strap"
+                    },
+                    {
+                      "id": "M_NOTCHED_PEG",
+                      "name": "Hardwood Anchor Peg",
+                      "icon": "&#129685;",
+                      "role": "Notched wooden wedge"
+                    },
+                    {
+                      "id": "M_COPPER_WIRE",
+                      "name": "Flexible Copper Wire",
+                      "icon": "&#9874;",
+                      "role": "Bendable wrapping wire"
+                    },
+                    {
+                      "id": "M_STONE_COUNTER",
+                      "name": "Counterweight Stone",
+                      "icon": "&#11044;",
+                      "role": "Heavy balance stone"
+                    }
+                  ],
+                  "valid_combinations": [
+                    [
+                      "M_LEATHER_STRAP",
+                      "M_NOTCHED_PEG"
+                    ],
+                    [
+                      "M_COPPER_WIRE"
+                    ],
+                    [
+                      "M_LEATHER_STRAP",
+                      "M_STONE_COUNTER"
+                    ]
+                  ]
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "CR3",
+            "title": "The Improvised Tool",
+            "subtitle": "Choose a tool and action to solve the craft problem.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "creative_initiative",
+              "name": "Creative Initiative",
+              "facet": "affordance_synthesis"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 2,
+              "timeout_ceiling_ms": 30000,
+              "features": [
+                {
+                  "feature_id": "functional_fixedness_overcome_rate",
+                  "type": "ratio",
+                  "direction": "higher_is_more_flexible_affordance",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Choose and test tools for craft tasks across 2 rounds.",
+              "steps": [
+                "Read the craft goal on the workbench.",
+                "Pick a tool and choose how you will use it.",
+                "Click Test Technique to see the result, then click Confirm."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Follow Step 1, Step 2, and Step 3 below to complete the craft task.",
+            "interaction_mechanism": "Tool selection + action selection overcoming functional fixedness",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "CR3_T1",
+                "tool_options": [
+                  "bone_folder",
+                  "metal_stylus",
+                  "bamboo_wedge"
+                ],
+                "target_motif": "burnished_crease"
+              },
+              {
+                "stimulus_id": "CR3_T2",
+                "tool_options": [
+                  "horsehair_brush",
+                  "sponge_block",
+                  "linen_swab"
+                ],
+                "target_motif": "fine_stipple"
+              },
+              {
+                "stimulus_id": "CR3_T3",
+                "tool_options": [
+                  "agate_stone",
+                  "polished_wood",
+                  "copper_burnisher"
+                ],
+                "target_motif": "gold_leaf_seal"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "CR3_T1",
+                  "title": "Trial 1: The Crisp Paper Fold",
+                  "target_motif": "burnished_crease",
+                  "objective": "Form a sharp, smooth crease on thick paper without tearing surface fibers.",
+                  "tools": [
+                    {
+                      "id": "bone_folder",
+                      "name": "Polished Bone Tool",
+                      "icon": "&#129685;",
+                      "affordance": "Smooth curved edge that applies friction gently"
+                    },
+                    {
+                      "id": "metal_stylus",
+                      "name": "Steel Scribe Stylus",
+                      "icon": "&#128296;",
+                      "affordance": "Hard pointed needle tip for sharp indentation"
+                    },
+                    {
+                      "id": "bamboo_wedge",
+                      "name": "Beveled Bamboo Scraper",
+                      "icon": "&#127883;",
+                      "affordance": "Broad flat wooden face for broad surface pressure"
+                    }
+                  ],
+                  "methods": [
+                    {
+                      "id": "firm_edge_pass",
+                      "name": "Firm Edge Pass",
+                      "desc": "Slide rounded edge along ruler with continuous diagonal pressure."
+                    },
+                    {
+                      "id": "flat_face_rub",
+                      "name": "Flat Face Rub",
+                      "desc": "Distribute wide surface friction across fold line."
+                    },
+                    {
+                      "id": "sharp_point_drag",
+                      "name": "Sharp Point Drag",
+                      "desc": "Draw tip directly across surface to score the fiber line."
+                    }
+                  ],
+                  "feedback_map": {
+                    "bone_folder:firm_edge_pass": {
+                      "success": true,
+                      "text": "Clean, crisp burnished crease formed with zero surface abrasion."
+                    },
+                    "bamboo_wedge:flat_face_rub": {
+                      "success": true,
+                      "text": "Smooth, even flattened fold achieved without marring surface grain."
+                    },
+                    "metal_stylus:sharp_point_drag": {
+                      "success": false,
+                      "text": "Paper fibers sliced; sharp point cut through the paper fold."
+                    },
+                    "metal_stylus:firm_edge_pass": {
+                      "success": false,
+                      "text": "Metal edge left dark metallic friction scuffs across the parchment."
+                    },
+                    "bone_folder:flat_face_rub": {
+                      "success": true,
+                      "text": "Gentle, even crease formed; fibers compressed smoothly."
+                    },
+                    "bamboo_wedge:firm_edge_pass": {
+                      "success": true,
+                      "text": "Uniform clean fold line established with natural wood contour."
+                    },
+                    "bone_folder:sharp_point_drag": {
+                      "success": false,
+                      "text": "Uneven dragging motion; point dented paper surface."
+                    },
+                    "bamboo_wedge:sharp_point_drag": {
+                      "success": false,
+                      "text": "Wood corner snagged on rough paper grain."
+                    },
+                    "metal_stylus:flat_face_rub": {
+                      "success": false,
+                      "text": "Insufficient surface area; uneven pressure indentation."
+                    }
+                  }
+                },
+                {
+                  "stimulus_id": "CR3_T2",
+                  "title": "Trial 2: Mulberry Paper Stipple",
+                  "target_motif": "fine_stipple",
+                  "objective": "Produce an even scatter of tiny ink drops on fibrous paper.",
+                  "tools": [
+                    {
+                      "id": "horsehair_brush",
+                      "name": "Stiff Hair Brush",
+                      "icon": "&#128396;",
+                      "affordance": "Springy stiff bristles that snap back easily"
+                    },
+                    {
+                      "id": "sponge_block",
+                      "name": "Natural Sea Sponge",
+                      "icon": "&#9711;",
+                      "affordance": "Soft porous texture that dabs damp color"
+                    },
+                    {
+                      "id": "linen_swab",
+                      "name": "Rolled Cloth Swab",
+                      "icon": "&#129526;",
+                      "affordance": "Rolled fabric tip that absorbs liquid quickly"
+                    }
+                  ],
+                  "methods": [
+                    {
+                      "id": "textured_flick",
+                      "name": "Bristle Flick",
+                      "desc": "Pull loaded bristles back with thumb to release fine mist."
+                    },
+                    {
+                      "id": "mottled_dab",
+                      "name": "Surface Dab",
+                      "desc": "Light stamp of textured surface directly on paper."
+                    },
+                    {
+                      "id": "drag_stroke",
+                      "name": "Smooth Sweep",
+                      "desc": "Draw applicator steadily across page in sweeping stroke."
+                    }
+                  ],
+                  "feedback_map": {
+                    "horsehair_brush:textured_flick": {
+                      "success": true,
+                      "text": "Fine, even constellation of organic micro-droplets dispersed across parchment."
+                    },
+                    "sponge_block:mottled_dab": {
+                      "success": true,
+                      "text": "Rich textured tonal stipple with soft, organic cellular grain."
+                    },
+                    "linen_swab:drag_stroke": {
+                      "success": false,
+                      "text": "Produced a single continuous solid streak; zero stipple effect."
+                    },
+                    "linen_swab:textured_flick": {
+                      "success": false,
+                      "text": "Fabric has no elastic bristle snap; pigment remained bound in swab."
+                    },
+                    "sponge_block:drag_stroke": {
+                      "success": false,
+                      "text": "Smeared broad irregular smudge across paper."
+                    },
+                    "horsehair_brush:drag_stroke": {
+                      "success": false,
+                      "text": "Solid brushstroke line created; no dispersed speckling."
+                    },
+                    "horsehair_brush:mottled_dab": {
+                      "success": true,
+                      "text": "Bristle tips formed delicate speckled texture upon contact."
+                    },
+                    "sponge_block:textured_flick": {
+                      "success": false,
+                      "text": "Sponge cannot be flicked; dropped heavy inconsistent blot."
+                    },
+                    "linen_swab:mottled_dab": {
+                      "success": false,
+                      "text": "Dense blot soaked through fiber without texture."
+                    }
+                  }
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "CR2",
+            "title": "The Spatial Pivot",
+            "subtitle": "Pick a layout strategy, then adapt your plan when a space condition changes.",
+            "tier": "Research Bank",
+            "connected_parameter": {
+              "id": "creative_initiative",
+              "name": "Creative Initiative",
+              "facet": "spatial_reframing"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 1,
+              "timeout_ceiling_ms": 35000,
+              "features": [
+                {
+                  "feature_id": "creative_pivot_latency_ms",
+                  "type": "duration_ms",
+                  "direction": "lower_is_faster",
+                  "exclude_in_accessibility_modes": [
+                    "screen_reader",
+                    "keyboard_navigation",
+                    "extended_time"
+                  ]
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Pick a layout strategy, then adapt your plan when a space condition changes.",
+              "steps": [
+                "Review the gallery space and pick an initial floor plan.",
+                "A structural change will appear in the room.",
+                "Choose how to adapt your plan to the new condition.",
+                "Confirm your choice across 3 episodes."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Pick a layout strategy, then adapt your plan when a space condition changes.",
+            "interaction_mechanism": "Spatial plan formulation -> unexpected obstacle pivot -> adapted layout selection",
+            "backend_trials_spec": [],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "episode_id": "CR2_E1",
+                  "title": "Episode 1: The Central Pillar Chamber",
+                  "pre_context": "Plan visitor walking paths through the grand exhibition hall.",
+                  "pre_strategies": [
+                    {
+                      "id": "S_CENTRAL_AVENUE",
+                      "label": "Central Promenade",
+                      "desc": "Single straight walkway down the center."
+                    },
+                    {
+                      "id": "S_PERIMETER_LOOP",
+                      "label": "Outer Wall Loop",
+                      "desc": "Continuous gentle loop along outer walls."
+                    },
+                    {
+                      "id": "S_ALCOVE_ISLANDS",
+                      "label": "Display Islands",
+                      "desc": "Separate display clusters across the floor."
+                    }
+                  ],
+                  "constraint_change": "central_pillar_blocks_corridor",
+                  "shift_description": "Notice: A large carved stone pillar blocks the direct central pathway.",
+                  "post_strategies": [
+                    {
+                      "id": "split_flow",
+                      "label": "Twin Walking Corridors (Split visitors smoothly around both sides of the pillar)",
+                      "note": "Adapted Flow"
+                    },
+                    {
+                      "id": "linear_flow",
+                      "label": "Single Left Path (Route all visitors down the left aisle)",
+                      "note": "Linear Channel"
+                    },
+                    {
+                      "id": "stop_gap",
+                      "label": "Central Waiting Area (Pause visitors and let small groups enter in turns)",
+                      "note": "Batch Entry"
+                    }
+                  ]
+                },
+                {
+                  "episode_id": "CR2_E2",
+                  "title": "Episode 2: West Gallery Safety Clearance",
+                  "pre_context": "Arrange display stands across the wide western gallery corridor.",
+                  "pre_strategies": [
+                    {
+                      "id": "S_WALL_PANORAMA",
+                      "label": "Wall Art Series",
+                      "desc": "Continuous artwork hung along the west wall."
+                    },
+                    {
+                      "id": "S_TRANSVERSE_SCREENS",
+                      "label": "Crosswise Screens",
+                      "desc": "Folding screens set across the corridor."
+                    },
+                    {
+                      "id": "S_PAIRED_PLINTHS",
+                      "label": "Center Display Stands",
+                      "desc": "Two rows of waist-high display stands."
+                    }
+                  ],
+                  "constraint_change": "emergency_exit_clearance_widened",
+                  "shift_description": "Safety rule: Keep a 3-meter wide open walkway along the west wall.",
+                  "post_strategies": [
+                    {
+                      "id": "perimeter_flow",
+                      "label": "Clear Wall Pathway (Move displays inward to leave the west wall open)",
+                      "note": "Adapted Flow"
+                    },
+                    {
+                      "id": "central_cluster",
+                      "label": "Center Grouping (Gather all stands tightly in the room center)",
+                      "note": "Center Group"
+                    },
+                    {
+                      "id": "diagonal_crossing",
+                      "label": "Diagonal Zigzag (Weave walking paths between the doorways)",
+                      "note": "Zigzag Path"
+                    }
+                  ]
+                },
+                {
+                  "episode_id": "CR2_E3",
+                  "title": "Episode 3: North Archway Clearance",
+                  "pre_context": "Display vertical banners and artwork in the north wing.",
+                  "pre_strategies": [
+                    {
+                      "id": "S_TALL_STELAE",
+                      "label": "Tall Wooden Posts",
+                      "desc": "Four-meter tall vertical banner posts."
+                    },
+                    {
+                      "id": "S_HORIZONTAL_VITRINES",
+                      "label": "Low Table Vitrines",
+                      "desc": "Flat glass vitrines at waist height."
+                    },
+                    {
+                      "id": "S_CEILING_SUSPENSION",
+                      "label": "Ceiling Silk Banners",
+                      "desc": "Flowing fabric banners hung from rafters."
+                    }
+                  ],
+                  "constraint_change": "low_ceiling_arch_support",
+                  "shift_description": "Structural inspection: Low wooden ceiling beams limit overhead room to 2.2 meters.",
+                  "post_strategies": [
+                    {
+                      "id": "linear_flow",
+                      "label": "Low Table Vitrines (Use waist-high displays to preserve headroom)",
+                      "note": "Adapted Flow"
+                    },
+                    {
+                      "id": "canopy_tent",
+                      "label": "Hanging Fabric Canopy (Drape thin cloth below the beams)",
+                      "note": "Low Drapery"
+                    },
+                    {
+                      "id": "staggered_alcoves",
+                      "label": "Wall Post Leaning (Lean tall banner boards against walls)",
+                      "note": "Wall Lean"
+                    }
+                  ]
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          }
+        ]
+      },
+      {
+        "world_id": "W7",
+        "world_name_en": "The Repetition",
+        "world_name_ur": "دہرائی",
+        "theme_subtitle": "Readiness & Ceremony",
+        "associated_parameter": {
+          "id": "motivation",
+          "name": "Motivation",
+          "definition": "The willingness to sustain voluntary effort, persist through unglamorous or tedious tasks, and go beyond minimum requirements for the benefit of the collective."
+        },
+        "candidate_core_games": [
+          "M1",
+          "M2"
+        ],
+        "research_bank_games": [
+          "M3"
+        ],
+        "games": [
+          {
+            "game_id": "M1",
+            "title": "The Ceremonial Seal",
+            "subtitle": "Apply wax seals to event invitations.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "motivation",
+              "name": "Motivation",
+              "facet": "baseline_diligence"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 3,
+              "timeout_ceiling_ms": 30000,
+              "features": [
+                {
+                  "feature_id": "mandatory_cadence_consistency",
+                  "type": "ratio",
+                  "direction": "lower_is_more_consistent",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Apply wax seals to 3 invitation envelopes.",
+              "steps": [
+                "Look at the named recipient on the envelope.",
+                "Click the button to apply the wax seal.",
+                "Completing all 3 envelopes finishes this activity."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Click the button below to apply the wax seal. Completing all 3 fulfills this activity.",
+            "interaction_mechanism": "Steady cadence execution across 3 required units",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "M1_U1",
+                "unit_index": 0,
+                "title": "Invitation Folio 1"
+              },
+              {
+                "stimulus_id": "M1_U2",
+                "unit_index": 1,
+                "title": "Invitation Folio 2"
+              },
+              {
+                "stimulus_id": "M1_U3",
+                "unit_index": 2,
+                "title": "Invitation Folio 3"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "M1_U1",
+                  "recipient": "Master Ghulam — Calligraphy Diwan",
+                  "note": "Formal invitation envelope 1"
+                },
+                {
+                  "stimulus_id": "M1_U2",
+                  "recipient": "Valley Youth Literary Guild",
+                  "note": "Formal invitation envelope 2"
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          },
+          {
+            "game_id": "M2",
+            "title": "The Courtesy Sleeves",
+            "subtitle": "Prepare courtesy sleeves for event attendees.",
+            "tier": "Candidate Core",
+            "connected_parameter": {
+              "id": "motivation",
+              "name": "Motivation",
+              "facet": "voluntary_continuation"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 1,
+              "timeout_ceiling_ms": 40000,
+              "features": [
+                {
+                  "feature_id": "optional_units_completed",
+                  "type": "count",
+                  "direction": "higher_is_more_persistent",
+                  "exclude_in_accessibility_modes": []
+                },
+                {
+                  "feature_id": "voluntary_duration_ms",
+                  "type": "duration_ms",
+                  "direction": "higher_is_longer_voluntary_effort",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Stamp 2 required folders, then decide if you want to continue.",
+              "steps": [
+                "Stamp the 2 required guest folders.",
+                "After folder 2, you choose whether to finish or do optional extras.",
+                "Stopping after 2 is completely fine and has no penalty."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Assemble the required folder below. Two required folders are needed; extra are optional.",
+            "interaction_mechanism": "Voluntary continuation beyond mandatory baseline without explicit extrinsic reward",
+            "backend_trials_spec": [],
+            "frontend_content": {
+              "stimuli_and_trials": null,
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": [
+                {
+                  "stimulus_id": "M2_M1",
+                  "label": "Guest Folder 1: Artisan Guild",
+                  "is_mandatory": true
+                },
+                {
+                  "stimulus_id": "M2_M2",
+                  "label": "Guest Folder 2: Regional Patrons",
+                  "is_mandatory": true
+                }
+              ],
+              "optional_units": [
+                {
+                  "stimulus_id": "M2_O1",
+                  "label": "Extra Folder 1: Visiting Students",
+                  "is_mandatory": false
+                },
+                {
+                  "stimulus_id": "M2_O2",
+                  "label": "Extra Folder 2: Community Observers",
+                  "is_mandatory": false
+                }
+              ]
+            }
+          },
+          {
+            "game_id": "M3",
+            "title": "The Evening Registry",
+            "subtitle": "Verify checklist rows for gallery preparation. A minimum of 3 rows is required.",
+            "tier": "Research Bank",
+            "connected_parameter": {
+              "id": "motivation",
+              "name": "Motivation",
+              "facet": "persistence_under_reduced_feedback"
+            },
+            "performance_metrics": {
+              "minimum_observations_required": 1,
+              "timeout_ceiling_ms": 30000,
+              "features": [
+                {
+                  "feature_id": "reduced_feedback_persistence_count",
+                  "type": "count",
+                  "direction": "higher_is_more_sustained_under_low_salience",
+                  "exclude_in_accessibility_modes": []
+                }
+              ]
+            },
+            "tutorial_card": {
+              "goal": "Verify checklist rows for gallery preparation. A minimum of 3 rows is required.",
+              "steps": [
+                "Mandatory requirement: Exactly 3 checklist rows.",
+                "Completing 3 rows satisfies this activity.",
+                "You may conclude at any time after row 3, or continue. Stopping is neutral.",
+                "Feedback messages become shorter on later rows. This is normal and intentional."
+              ]
+            },
+            "task_instruction_copy": "Your Task: Verify checklist rows for gallery preparation. A minimum of 3 rows is required.",
+            "interaction_mechanism": "Checklist verification persistence under fading/reduced visual reinforcement",
+            "backend_trials_spec": [
+              {
+                "stimulus_id": "M3_U1",
+                "unit_index": 0,
+                "is_mandatory": true,
+                "title": "Gallery Register Verification 1"
+              },
+              {
+                "stimulus_id": "M3_U2",
+                "unit_index": 1,
+                "is_mandatory": true,
+                "title": "Gallery Register Verification 2"
+              },
+              {
+                "stimulus_id": "M3_U3",
+                "unit_index": 2,
+                "is_mandatory": true,
+                "title": "Gallery Register Verification 3"
+              },
+              {
+                "stimulus_id": "M3_U4",
+                "unit_index": 3,
+                "is_mandatory": false,
+                "title": "Voluntary Register Verification 4"
+              },
+              {
+                "stimulus_id": "M3_U5",
+                "unit_index": 4,
+                "is_mandatory": false,
+                "title": "Voluntary Register Verification 5"
+              },
+              {
+                "stimulus_id": "M3_U6",
+                "unit_index": 5,
+                "is_mandatory": false,
+                "title": "Voluntary Register Verification 6"
+              }
+            ],
+            "frontend_content": {
+              "stimuli_and_trials": [
+                {
+                  "stimulus_id": "M3_U1",
+                  "is_mandatory": true,
+                  "row_name": "Gallery Row 1: Lighting & Illumination Alignment",
+                  "feedback_type": "salient"
+                },
+                {
+                  "stimulus_id": "M3_U2",
+                  "is_mandatory": true,
+                  "row_name": "Gallery Row 2: Poetry Anthologies Welcome Stand",
+                  "feedback_type": "moderate"
+                },
+                {
+                  "stimulus_id": "M3_U3",
+                  "is_mandatory": true,
+                  "row_name": "Gallery Row 3: Courtyard Entry Floral Registry",
+                  "feedback_type": "minimal"
+                },
+                {
+                  "stimulus_id": "M3_U4",
+                  "is_mandatory": false,
+                  "row_name": "Gallery Row 4: Auxiliary Bench Linen Inspection",
+                  "feedback_type": "none"
+                },
+                {
+                  "stimulus_id": "M3_U5",
+                  "is_mandatory": false,
+                  "row_name": "Gallery Row 5: Outer Colonnade Lantern Wick Inspection",
+                  "feedback_type": "none"
+                },
+                {
+                  "stimulus_id": "M3_U6",
+                  "is_mandatory": false,
+                  "row_name": "Gallery Row 6: Perimeter Garden Urn Water Check",
+                  "feedback_type": "none"
+                }
+              ],
+              "available_choices": null,
+              "shelf_destinations": null,
+              "available_handling_actions": null,
+              "mandatory_units": null,
+              "optional_units": null
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

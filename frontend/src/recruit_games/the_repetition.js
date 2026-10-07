@@ -74,7 +74,6 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
  title: 'The Ceremonial Seal',
  subtitle: 'Apply wax seals to event invitations.',
  instructionPrompt: 'Your Task',
- instructionPrompt: 'Your Task',
     instruction: 'Click the button below to apply the wax seal. Completing all 3 fulfills this activity.',
  stimulusContent: `
     <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs text-center space-y-2">

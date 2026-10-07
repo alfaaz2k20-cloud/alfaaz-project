@@ -240,21 +240,21 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIn
  },
  {
  stimulus_id: 'EXC_02',
- title: 'Clean Persian Calligraphy Page (1890)',
- anomaly_description: 'Intact rag fiber paper, clear black ink, and standard accession stamp intact. No physical blemishes.',
- type_note: 'Standard Page Inspection'
+ title: 'Clean Calligraphy Page (1890)',
+ anomaly_description: 'The paper is clean, smooth, and strong. The black ink is clear with no stains or marks.',
+ type_note: 'Clean Page Inspection'
  },
  {
  stimulus_id: 'EXC_03',
  title: 'Loose Book Page with Number Jump',
- anomaly_description: 'Binding threads severed. Margin numbering skips from Folio 14 directly to Folio 19 with missing text catchword.',
+ anomaly_description: 'The binding threads are broken. The page numbers skip directly from page 14 to page 19.',
  type_note: 'Missing Pages & Loose Thread'
  },
  {
  stimulus_id: 'EXC_04',
- title: 'Illustrated Story Page with Split Binding',
- anomaly_description: 'Double folio split across signature gutter with inverted seal impressions and mismatched accession notation.',
- type_note: 'Broken Spine & Upside-Down Seal'
+ title: 'Story Page with Split Binding',
+ anomaly_description: 'The middle fold is split down the center, and the red stamp is upside down.',
+ type_note: 'Broken Spine & Upside-Down Stamp'
  }
  ];
 
@@ -263,7 +263,7 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIn
  {
  id: 'flag_exception',
  title: 'Flag for Special Repair',
- desc: 'Place page in a protective sleeve for careful repair by a conservator.',
+ desc: 'Place page in a clean protective folder for careful repair.',
  tag: 'Special Repair'
  },
  {

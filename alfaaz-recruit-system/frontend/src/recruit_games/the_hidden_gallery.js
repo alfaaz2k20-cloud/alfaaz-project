@@ -37,43 +37,43 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
  const decisions = [
  {
  stimulus_id: 'Q1_D1',
- title: 'Antique Gold-Leaf Manuscript Leaf',
- scenario: 'Choose the binding method for a fragile 19th-century manuscript page.',
+ title: 'Old Handwritten Manuscript Page',
+ scenario: 'Choose the best way to protect this delicate 19th-century manuscript page.',
  options: [
- { id: 'flexible_cord_binding', label: 'Sewn Flexible Cord (Allows spine to bend safely)' },
- { id: 'tight_adhesive_clamp', label: 'Rigid Glue Clamp (Firm hold on spine)' },
- { id: 'unbound_portfolio', label: 'Loose Archival Folder (Kept as separate sheets)' }
+ { id: 'flexible_cord_binding', label: 'Soft Cord Binding (Allows the spine to bend gently)' },
+ { id: 'tight_adhesive_clamp', label: 'Firm Glue Clamp (Holds the edge tight and stiff)' },
+ { id: 'unbound_portfolio', label: 'Clean Paper Folder (Kept loose inside a safe folder)' }
  ],
  optional_resources: [
- { id: 'OPT_USEFUL_1', topic: 'Binding Methods Note', info_value: 'high', summary: 'Srinagar bookbinders used soft vegetable cord to protect delicate gold borders.' },
- { id: 'OPT_CONTROL_1', topic: 'Library Stamp Dates', info_value: 'low', summary: 'City library accession stamps began in late October 1888.' }
+ { id: 'OPT_USEFUL_1', topic: 'Binding Methods Note', info_value: 'high', summary: 'Local bookbinders used soft cord to protect delicate paper borders.' },
+ { id: 'OPT_CONTROL_1', topic: 'Library Stamp Dates', info_value: 'low', summary: 'City library stamps began in late October 1888.' }
  ]
  },
  {
  stimulus_id: 'Q1_D2',
- title: 'Papier-Mâché Pen Case (Qalamdan)',
- scenario: 'Select a protective surface coating for this painted lacquer case.',
+ title: 'Painted Wooden Pen Case',
+ scenario: 'The paint is old and tiny pieces of shiny coat are peeling off. Choose how to care for it.',
  options: [
- { id: 'curing_linseed_glaze', label: 'Linseed Oil & Amber Varnish (Traditional slow curing glaze)' },
- { id: 'quick_synthetic_seal', label: 'Quick Synthetic Clear Spray (Modern fast-drying finish)' },
- { id: 'wax_buff_only', label: 'Dry Wax Polish (Gentle surface buffing)' }
+ { id: 'curing_linseed_glaze', label: 'Natural Plant Oil (Wipes gently and dries slowly)' },
+ { id: 'quick_synthetic_seal', label: 'Quick Spray Polish (Dries fast with a shiny coat)' },
+ { id: 'wax_buff_only', label: 'Clean Dry Cloth (Gentle dry rub with soft cloth)' }
  ],
  optional_resources: [
- { id: 'OPT_USEFUL_2', topic: 'Papier-Mâché Care Guide', info_value: 'high', summary: 'Slow drying with natural amber resin keeps natural mineral colors bright.' },
+ { id: 'OPT_USEFUL_2', topic: 'Pen Case Care Note', info_value: 'high', summary: 'Natural oil dries slowly and keeps paint bright without cracking.' },
  { id: 'OPT_CONTROL_2', topic: 'Cabinet Hinge Maintenance', info_value: 'low', summary: 'Brass display cabinet hinges need oiling twice each year.' }
  ]
  },
  {
  stimulus_id: 'Q1_D3',
- title: 'Workshop Artisan Register',
- scenario: 'Identify the origin of this undated Persian artisan register.',
+ title: 'Artisan Workshop Register',
+ scenario: 'Identify the origin of this undated workshop record book.',
  options: [
- { id: 'guild_ledger_verified', label: 'Official Guild Register (Bears official guildmaster seal)' },
- { id: 'private_merchant_tally', label: 'Merchant Shop Notebook (Informal daily trade tally)' },
- { id: 'state_excise_record', label: 'Treasury Tax Record (Official tax register)' }
+ { id: 'guild_ledger_verified', label: 'Crafts Guild Register (Has official guild stamp)' },
+ { id: 'private_merchant_tally', label: 'Shopkeeper Daily Notebook (Informal daily sales notes)' },
+ { id: 'state_excise_record', label: 'City Tax Register (Official tax collection book)' }
  ],
  optional_resources: [
- { id: 'OPT_USEFUL_1', topic: 'Register Stitching Styles', info_value: 'high', summary: 'Crimson thread stitching was reserved for registered royal guilds.' },
+ { id: 'OPT_USEFUL_1', topic: 'Register Stitching Styles', info_value: 'high', summary: 'Red thread stitching was reserved for registered craft guilds.' },
  { id: 'OPT_CONTROL_1', topic: 'Filing Code Reference', info_value: 'low', summary: 'Old municipal tax files use code series B.' }
  ]
  }
@@ -116,17 +116,18 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
  title: 'The Curatorial Dossier',
  subtitle: 'Choose the best way to care for each historic item.',
  instructionPrompt: 'Your Task',
- instruction: 'Review the artifact below. Choose an action. Optional reference notes are available if you want them.',
+    instruction: 'Choose a preservation action below. You can open optional reference notes if you wish.',
  stimulusContent: `
- <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
- <div class="flex items-center justify-between mb-2">
- <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Artifact Record</span>
- <span class="text-sm text-[var(--accent-gold)] uppercase font-medium">Record ${currentDecision + 1} of ${decisions.length}</span>
- </div>
- <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)]">${d.title}</div>
- <div class="text-base text-black mt-1.5 leading-relaxed">${d.scenario}</div>
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${d.title}</span>
+        <span class="text-xs text-[var(--text-secondary)] uppercase">Record ${currentDecision + 1} of ${decisions.length}</span>
+      </div>
+      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
+        ${d.scenario}
+      </p>
+    </div>
+  `,
  interactionContent: `
  <div class="space-y-4">
  <!-- Optional Reference Notes -->
@@ -350,17 +351,18 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
  title: 'The Antiquarian’s Bench',
  subtitle: 'Inspect physical clues to identify each historic object.',
  instructionPrompt: 'Your Task',
- instruction: 'Examine the relic below. Inspect any clues you wish. Then choose its origin.',
+    instruction: 'Inspect any clues you wish. Then choose where this object came from below.',
  stimulusContent: `
- <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
- <div class="flex items-center justify-between mb-2">
- <span class="text-sm uppercase tracking-wider text-[var(--accent-gold)] font-semibold">Relic Specimen</span>
- <span class="text-sm text-[var(--accent-gold)] uppercase font-medium">Specimen ${currentTrial + 1} of ${relics.length}</span>
- </div>
- <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)]">${r.title}</div>
- <div class="text-base text-black mt-1.5 leading-relaxed">${r.description}</div>
- </div>
- `,
+    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${r.title}</span>
+        <span class="text-xs text-[var(--text-secondary)] uppercase">Specimen ${currentTrial + 1} of ${relics.length}</span>
+      </div>
+      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
+        ${r.description}
+      </p>
+    </div>
+  `,
  interactionContent: `
  <div class="space-y-4">
  <!-- Clues Inspection Grid -->

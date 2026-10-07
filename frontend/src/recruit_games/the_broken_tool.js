@@ -111,7 +111,6 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
  title: "The Artisan's Assembly",
  subtitle: 'Fix the broken part using items on the workbench.',
  instructionPrompt: 'Your Task',
- instructionPrompt: 'Your Task',
     instruction: 'Follow Step 1 and Step 2 below to assemble and test your replacement tool.',
  stimulusContent: `
     <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
@@ -616,9 +615,9 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
  { id: 'bamboo_wedge', name: 'Beveled Bamboo Scraper', icon: '&#127883;', affordance: 'Broad flat wooden face for broad surface pressure' }
  ],
  methods: [
- { id: 'firm_edge_pass', name: 'Firm Edge Pass', desc: 'Slide rounded edge along ruler with continuous diagonal pressure.' },
- { id: 'flat_face_rub', name: 'Flat Face Rub', desc: 'Distribute wide surface friction across fold line.' },
- { id: 'sharp_point_drag', name: 'Sharp Point Drag', desc: 'Draw tip directly across surface to score the fiber line.' }
+ { id: 'firm_edge_pass', name: 'Firm Edge Pass', desc: 'Slide smooth rounded edge along fold with gentle pressure.' },
+ { id: 'flat_face_rub', name: 'Flat Face Rub', desc: 'Rub flat face firmly across fold line.' },
+ { id: 'sharp_point_drag', name: 'Sharp Point Drag', desc: 'Drag sharp tip across paper to scratch fold.' }
  ],
  feedback_map: {
  'bone_folder:firm_edge_pass': { success: true, text: 'Clean, crisp burnished crease formed with zero surface abrasion.' },
@@ -701,7 +700,6 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
  worldIndex: 5,
  title: 'The Improvised Tool',
  subtitle: 'Choose a tool and action to solve the craft problem.',
- instructionPrompt: 'Your Task',
  instructionPrompt: 'Your Task',
     instruction: 'Follow Step 1, Step 2, and Step 3 below to complete the craft task.',
  stimulusContent: `
