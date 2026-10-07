@@ -103,82 +103,101 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
  return;
  }
 
- const st = stages[currentStageIdx];
+  const st = stages[currentStageIdx];
 
- app.innerHTML = renderGameShell({
- worldCode: 'W6',
- worldIndex: 5,
- title: "The Artisan's Assembly",
- subtitle: 'Fix the broken part using items on the workbench.',
- instructionPrompt: 'Your Task',
-    instruction: 'Follow Step 1 and Step 2 below to assemble and test your replacement tool.',
- stimulusContent: `
-    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
-      <div class="flex items-center justify-between">
-        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${st.title}</span>
-        <span class="text-xs text-[var(--text-secondary)] uppercase">Stage ${currentStageIdx + 1} of ${stages.length}</span>
-      </div>
-      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
-        ${st.scenario}
-      </p>
-    </div>
-  `,
- interactionContent: `
-    <div class="space-y-4">
-      <!-- STEP 1 -->
-      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
-        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
-          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">1</span>
-          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 1: Click pieces to add or remove</span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-          ${st.materials.map(m => {
-            const isSelected = selectedParts.includes(m.id);
-            return `
-            <div class="part-card p-3.5 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-sm sm:text-base flex flex-col justify-between min-h-[72px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
-              <div>
-                <div class="text-lg mb-1">${m.icon}</div>
-                <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
-                <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${m.role}</div>
-              </div>
-              <div class="mt-2 text-right">
-                <span class="text-xs font-bold ${isSelected ? 'text-[var(--accent-gold)]' : 'text-stone-400'}">${isSelected ? '&#10003; EQUIPPED' : '+ ADD'}</span>
-              </div>
-            </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-
-      <!-- STEP 2 -->
-      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
-        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
-          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">2</span>
-          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 2: Test your assembled parts</span>
-        </div>
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-          <div class="text-xs sm:text-sm text-[var(--text-secondary)]">
-            Equipped: <strong class="text-[var(--text-primary)]">${selectedParts.length > 0 ? selectedParts.map(id => st.materials.find(m => m.id === id)?.name).join(' + ') : 'None selected'}</strong>
+  app.innerHTML = renderGameShell({
+    worldCode: 'W6',
+    worldIndex: 5,
+    title: "The Artisan's Assembly",
+    goal: 'Assemble working loom parts to replace a cracked shuttle crossbar.',
+    subtitle: 'Fix the broken part using items on the workbench.',
+    instructionPrompt: 'Your Task',
+    instruction: 'Equip parts from the workbench below, test your setup, and confirm.',
+    stimulusContent: `
+      <div class="stage-content">
+        <div class="loom-rig-preview">
+          <div style="font-size:0.72rem; text-transform:uppercase; color:#baa088; font-weight:700;">Weaving Loom Workbench</div>
+          <div style="font-size:0.88rem; color:#f0e5d8; margin:2px 0;">${st.scenario}</div>
+          <div class="rig-parts-row" id="equippedList">
+            ${selectedParts.length === 0 ? '<span style="color:#8a7968; font-size:0.75rem;">No items equipped yet</span>' : selectedParts.map(id => '<span class="equipped-pill">' + (st.materials.find(m=>m.id===id)?.name || id) + '</span>').join(' ')}
           </div>
-          <button type="button" id="testAssemblyBtn" ${selectedParts.length > 0 ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px] font-bold">
-            Test Assembly
+        </div>
+        <div class="tile-bottom-guide">⬇ Equip parts below, then click Test Setup</div>
+      </div>
+    `,
+    interactionContent: `
+      <div class="space-y-4">
+        <!-- Step 1: Materials Options on Workbench -->
+        <div class="space-y-2">
+          <div class="options-directive">
+            <span>Tap items below to equip or remove from workbench:</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Add or remove</span>
+          </div>
+          <div class="materials-chip-grid" id="matGrid">
+            ${st.materials.map(m => {
+              const isSelected = selectedParts.includes(m.id);
+              return `
+                <div class="material-chip part-card ${isSelected ? 'equipped' : ''}" data-id="${m.id}" tabindex="0" role="button">
+                  <div>
+                    <div class="font-bold text-sm sm:text-base text-[var(--text-primary)]">${m.name}</div>
+                    <div style="font-size:0.75rem; color:var(--text-secondary);">${m.role}</div>
+                  </div>
+                  <span class="chip-state">${isSelected ? '✓ Added' : '+ Add'}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Step 2: Dedicated Test Setup Area Placed AFTER Options and BEFORE Confirm Button -->
+        <div style="background:var(--card); border:1.5px solid var(--grid-border); border-radius:var(--radius-md); padding:14px; margin-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div style="font-weight:700; font-size:0.92rem; color:var(--text-primary);">Test Your Assembled Parts</div>
+            <div style="font-size:0.8rem; color:var(--text-secondary);" id="testStatusText">
+              ${testFeedback ? (testFeedback.valid ? '✓ Setup works! Loom parts hold firmly.' : testFeedback.message) : (selectedParts.length > 0 ? 'Parts equipped. Click Test Setup.' : 'Equip parts above, then test.')}
+            </div>
+          </div>
+          <button type="button" class="btn" id="btnTestRig" style="background:#4a392b; color:#ffffff; border:1px solid #68523e; padding:8px 18px; font-weight:700; border-radius:var(--radius-sm);" ${selectedParts.length === 0 ? 'disabled' : ''}>
+            🔧 Test Setup
           </button>
         </div>
-
-        ${testFeedback ? `
-        <div class="mt-2 p-3 bg-white border ${testFeedback.valid ? 'border-emerald-600/40 text-[var(--text-primary)]' : 'border-amber-600/40 text-[var(--text-primary)]'} text-xs sm:text-sm rounded-xs leading-relaxed">
-          <span class="text-xs uppercase font-bold block mb-0.5">${testFeedback.valid ? 'Assembly Test: Passed &#10003;' : 'Assembly Test: Observation'}</span>
-          ${testFeedback.message}
-        </div>
-        ` : ''}
       </div>
-    </div>
-  `,
- actionButtonId: 'confirmStageBtn',
- actionButtonText: currentStageIdx < stages.length - 1 ? 'Confirm Assembly &rarr;' : 'Confirm & Finish &rarr;',
- actionButtonDisabled: selectedParts.length === 0,
- progressText: `Stage ${currentStageIdx + 1} of ${stages.length}`
- });
+    `,
+    summaryContent: `
+      <span>Equipped: <strong class="text-[var(--text-primary)]">${selectedParts.length > 0 ? selectedParts.map(id => st.materials.find(m => m.id === id)?.name).join(' + ') : 'None'}</strong></span>
+      <span class="text-sm text-black">Stage ${currentStageIdx + 1} of ${stages.length}</span>
+    `,
+    actionButtonId: 'confirmStageBtn',
+    actionButtonText: currentStageIdx < stages.length - 1 ? 'Confirm Assembly &rarr;' : 'Confirm & Finish &rarr;',
+    actionButtonDisabled: selectedParts.length === 0,
+    progressText: `Stage ${currentStageIdx + 1} of ${stages.length}`
+  });
+
+  const testBtn = document.getElementById('btnTestRig');
+  if (testBtn) {
+    testBtn.onclick = () => {
+      lastInputModality = 'mouse';
+      const validCombo = st.valid_combinations.some(combo =>
+        combo.length === selectedParts.length && combo.every(id => selectedParts.includes(id))
+      );
+
+      testFeedback = {
+        valid: validCombo,
+        message: validCombo ? '✓ Setup works! Loom parts hold firmly.' : 'Observation: Parts wobble without string to tie them.'
+      };
+
+      logEvent('assembly_tested', {
+        stage_id: st.stage_id,
+        trial_index: currentStageIdx,
+        selected_parts: [...selectedParts],
+        is_functional: validCombo,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
+      });
+
+      render();
+    };
+  }
 
  app.querySelectorAll('.part-card').forEach(card => {
  const toggle = (modality) => {
@@ -693,98 +712,118 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
  return;
  }
 
- const tr = trials[currentTrial];
+  const tr = trials[currentTrial];
 
- app.innerHTML = renderGameShell({
- worldCode: 'W6',
- worldIndex: 5,
- title: 'The Improvised Tool',
- subtitle: 'Choose a tool and action to solve the craft problem.',
- instructionPrompt: 'Your Task',
-    instruction: 'Follow Step 1, Step 2, and Step 3 below to complete the craft task.',
- stimulusContent: `
-    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
-      <div class="flex items-center justify-between">
-        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${tr.title}</span>
-        <span class="text-xs text-[var(--text-secondary)] uppercase">Round ${currentTrial + 1} of ${trials.length}</span>
-      </div>
-      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
-        ${tr.objective}
-      </p>
-    </div>
-  `,
- interactionContent: `
-    <div class="space-y-4">
-      <!-- STEP 1 -->
-      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
-        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
-          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">1</span>
-          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 1: Pick an implement</span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-          ${tr.tools.map(t => {
-            const isSelected = selectedTool === t.id;
-            return `
-            <div class="cr3-tool-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-sm sm:text-base min-h-[64px]" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.name}">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-lg">${t.icon}</span>
-                <span class="font-medium text-[var(--text-primary)]">${t.name}</span>
-              </div>
-              <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${t.affordance}</div>
-            </div>
-            `;
-          }).join('')}
+  app.innerHTML = renderGameShell({
+    worldCode: 'W6',
+    worldIndex: 5,
+    title: 'The Improvised Tool',
+    goal: 'Form a sharp, clean fold without tearing paper fibers.',
+    subtitle: 'Choose a tool and action to solve the craft problem.',
+    instructionPrompt: 'Your Task',
+    instruction: 'Choose your tool and technique below. Test your crease before confirming.',
+    stimulusContent: `
+      <div class="stage-content">
+        <div class="folio-sheet" style="width:92%; min-height:120px; text-align:center; margin:0 auto;">
+          <div style="font-size:0.72rem; text-transform:uppercase; color:#855c3c; font-weight:700;">Paper Workbench</div>
+          <div style="font-size:0.95rem; font-weight:700; color:#2a2016; margin:4px 0;">Thick Paper Sheet</div>
+          <div style="height:3px; background:${feedbackText ? (feedbackText.includes('Clean') || feedbackText.includes('Smooth') || feedbackText.includes('Fine') ? '#487352' : '#8c4740') : '#baa58c'}; width:80%; margin:8px auto; border-radius:2px;" id="creaseVisual"></div>
+          <div style="font-size:0.82rem; color:#6d5b48;" id="creaseFeedback">${feedbackText ? feedbackText : 'Goal: Form a sharp, clean fold without tearing paper fibers.'}</div>
         </div>
       </div>
-
-      <!-- STEP 2 -->
-      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
-        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
-          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">2</span>
-          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 2: Choose an action</span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-          ${tr.methods.map(m => {
-            const isSelected = selectedMethod === m.id;
-            return `
-            <div class="cr3-method-card p-3.5 sm:p-4 bg-white border ${isSelected ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-sm sm:text-base min-h-[64px]" data-id="${m.id}" tabindex="0" role="button" aria-label="${m.name}">
-              <div class="font-medium text-[var(--text-primary)] mb-0.5">${m.name}</div>
-              <div class="text-xs text-[var(--text-secondary)] leading-relaxed">${m.desc}</div>
-            </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-
-      <!-- STEP 3 -->
-      <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
-        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
-          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">3</span>
-          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 3: Test your technique</span>
-        </div>
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-          <div class="text-xs sm:text-sm text-[var(--text-secondary)]">
-            Active Pairing: <strong class="text-[var(--text-primary)]">${selectedTool ? tr.tools.find(t => t.id === selectedTool)?.name : 'None'} + ${selectedMethod ? tr.methods.find(m => m.id === selectedMethod)?.name : 'None'}</strong>
+    `,
+    interactionContent: `
+      <div class="space-y-4">
+        <!-- Step 1: Pick Implement -->
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+          <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+            <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">1</span>
+            <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 1: Pick an implement</span>
           </div>
-          <button type="button" id="applyTechniqueBtn" ${selectedTool && selectedMethod ? '' : 'disabled'} class="px-5 py-2.5 bg-stone-100 border border-stone-300 text-[var(--text-primary)] text-xs uppercase tracking-wider disabled:opacity-40 interactive-option rounded-xs min-h-[44px] font-bold">
-            Test Technique
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            ${tr.tools.map((t, idx) => {
+              const isSelected = selectedTool === t.id;
+              const bullet = String.fromCharCode(65 + idx);
+              return `
+                <button type="button" class="outside-opt-card cr3-tool-card ${isSelected ? 'selected' : ''}" data-id="${t.id}" tabindex="0">
+                  <div class="opt-bullet">${bullet}</div>
+                  <div style="flex:1;">
+                    <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)]">${t.name}</div>
+                    <div class="text-xs text-[var(--text-secondary)] mt-0.5">${t.affordance}</div>
+                  </div>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Step 2: Choose Technique -->
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+          <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+            <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">2</span>
+            <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 2: Choose action method</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            ${tr.methods.map((m, idx) => {
+              const isSelected = selectedMethod === m.id;
+              const bullet = String.fromCharCode(65 + idx);
+              return `
+                <button type="button" class="outside-opt-card cr3-method-card ${isSelected ? 'selected' : ''}" data-id="${m.id}" tabindex="0">
+                  <div class="opt-bullet">${bullet}</div>
+                  <div style="flex:1;">
+                    <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)]">${m.name}</div>
+                    <div class="text-xs text-[var(--text-secondary)] mt-0.5">${m.desc}</div>
+                  </div>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Step 3: Test Technique -->
+        <div style="background:var(--card); border:1.5px solid var(--grid-border); border-radius:var(--radius-md); padding:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div style="font-weight:700; font-size:0.92rem; color:var(--text-primary);">Test Your Technique</div>
+            <div style="font-size:0.8rem; color:var(--text-secondary);">
+              ${feedbackText ? feedbackText : (selectedTool && selectedMethod ? 'Tool and method chosen. Click Test Technique.' : 'Pick tool and method above, then test.')}
+            </div>
+          </div>
+          <button type="button" class="btn" id="testTechniqueBtn" style="background:#4a392b; color:#ffffff; border:1px solid #68523e; padding:8px 18px; font-weight:700; border-radius:var(--radius-sm);" ${selectedTool && selectedMethod ? '' : 'disabled'}>
+            🔧 Test Technique
           </button>
         </div>
-
-        ${feedbackText ? `
-        <div class="mt-2 p-3 bg-white border ${feedbackText.success ? 'border-emerald-600/40 text-[var(--text-primary)]' : 'border-amber-600/40 text-[var(--text-primary)]'} text-xs sm:text-sm rounded-xs leading-relaxed">
-          <div class="text-xs uppercase font-bold mb-1 ${feedbackText.success ? 'text-emerald-700' : 'text-amber-700'}">Outcome Result</div>
-          <div>${feedbackText.text}</div>
-        </div>
-        ` : ''}
       </div>
-    </div>
-  `,
- actionButtonId: 'confirmTrialBtn',
- actionButtonText: currentTrial < trials.length - 1 ? 'Confirm Technique &rarr;' : 'Confirm & Finish &rarr;',
- actionButtonDisabled: !(selectedTool && selectedMethod),
- progressText: `Trial ${currentTrial + 1} of ${trials.length}`
- });
+    `,
+    summaryContent: `
+      <span>Technique: <strong class="text-[var(--text-primary)]">${selectedTool && selectedMethod ? 'Ready to confirm' : 'In progress'}</strong></span>
+      <span class="text-sm text-black">Round ${currentTrial + 1} of ${trials.length}</span>
+    `,
+    actionButtonId: 'confirmToolUseBtn',
+    actionButtonText: currentTrial < trials.length - 1 ? 'Confirm Action &rarr;' : 'Confirm & Finish &rarr;',
+    actionButtonDisabled: !selectedTool || !selectedMethod,
+    progressText: `Round ${currentTrial + 1} of ${trials.length}`
+  });
+
+  const testTechBtn = document.getElementById('testTechniqueBtn');
+  if (testTechBtn) {
+    testTechBtn.onclick = () => {
+      lastInputModality = 'mouse';
+      const key = `${selectedTool}:${selectedMethod}`;
+      const fb = tr.feedback_map[key] || { success: false, text: 'Observation: The technique produced an uneven result.' };
+      feedbackText = fb.text;
+      hasObservedFeedback = true;
+      logEvent('technique_tested', {
+        stimulus_id: tr.stimulus_id,
+        trial_index: currentTrial,
+        tool_id: selectedTool,
+        method_id: selectedMethod,
+        success: fb.success,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
+      });
+      render();
+    };
+  }
 
  app.querySelectorAll('.cr3-tool-card').forEach(card => {
  const select = (modality) => {

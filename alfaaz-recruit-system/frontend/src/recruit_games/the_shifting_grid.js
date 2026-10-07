@@ -69,89 +69,96 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
  return;
  }
 
- const t = trials[currentIdx];
+  const t = trials[currentIdx];
 
- app.innerHTML = renderGameShell({
- worldCode: 'W4',
- worldIndex: 3,
- title: 'The Ceramic Mosaic',
- subtitle: 'Sort each ceramic tile into the matching container.',
- instructionPrompt: 'Your Task',
-    instruction: 'Look at the tile above. Click Container 1 or Container 2 below to sort it.',
- stimulusContent: `
-    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs text-center space-y-2">
-      <div class="flex items-center justify-between text-xs text-[var(--accent-gold)] font-bold uppercase tracking-wider">
-        <span>Tile ${currentIdx + 1} of ${trials.length}</span>
-        <span class="text-[var(--text-secondary)] font-normal">${t.color} &bull; ${t.shape}</span>
+  app.innerHTML = renderGameShell({
+    worldCode: 'W4',
+    worldIndex: 3,
+    title: 'The Ceramic Mosaic',
+    goal: 'Sort each tile into the matching container.',
+    subtitle: 'Sort each ceramic tile into the matching container.',
+    instructionPrompt: 'Your Task',
+    instruction: 'Tap Container 1 or Container 2 below to place this tile now.',
+    stimulusContent: `
+      <div class="stage-content">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:#baa890; margin-bottom:6px;">Tile to Sort (${currentIdx + 1} of ${trials.length})</div>
+        <div style="width:72px; height:72px; background:${t.color === 'Gold' ? '#b38b4d' : '#487352'}; border-radius:10px; border:2px solid #5a421b; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(0,0,0,0.4); margin:0 auto;">
+          <span style="font-size:2.4rem; color:#fff;">${t.shape === 'Square' ? '■' : '●'}</span>
+        </div>
+        <div style="font-size:1rem; color:#f6efe5; margin-top:8px; font-weight:700;">${t.color} ${t.shape}</div>
       </div>
-      <div class="text-5xl my-2 ${t.color === 'Gold' ? 'text-[var(--accent-gold)]' : 'text-[var(--text-primary)]'}">
-        ${t.icon}
+    `,
+    interactionContent: `
+      <div class="space-y-3">
+        <div class="options-directive">
+          <span>Tap Container 1 or Container 2 to place tile now:</span>
+          <span style="font-size:0.75rem; color:var(--text-secondary);">Direct tap to sort</span>
+        </div>
+        <div class="mosaic-containers-row">
+          <button type="button" class="container-box-btn bin-btn" data-choice="container_1" id="btnContainer1" tabindex="0">
+            <div style="font-size:2.2rem; color:var(--accent-gold); line-height:1;">●</div>
+            <div style="font-weight:700; font-size:1rem; margin-top:6px;">Container 1</div>
+            <div style="font-size:0.8rem; color:var(--text-secondary);">Reference: Gold Circle</div>
+          </button>
+          <button type="button" class="container-box-btn bin-btn" data-choice="container_2" id="btnContainer2" tabindex="0">
+            <div style="font-size:2.2rem; color:#487352; line-height:1;">■</div>
+            <div style="font-weight:700; font-size:1rem; margin-top:6px;">Container 2</div>
+            <div style="font-size:0.8rem; color:var(--text-secondary);">Reference: Green Square</div>
+          </button>
+        </div>
       </div>
-      <div class="text-base sm:text-lg font-serif font-semibold text-[var(--text-primary)]">${t.label}</div>
-    </div>
-  `,
- interactionContent: `
- <div class="grid grid-cols-2 gap-4">
- <button type="button" class="bin-btn p-5 bg-white border ${selectedChoice === 'container_1' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_1" tabindex="0">
- <span class="text-2xl text-[var(--accent-gold)] block mb-1">&#9679;</span>
- <span class="text-base font-semibold text-[var(--text-primary)] block">Container 1</span>
- <span class="text-sm text-black block mt-0.5 ">Reference: Gold Circle</span>
- </button>
- <button type="button" class="bin-btn p-5 bg-white border ${selectedChoice === 'container_2' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} text-center shadow-xs rounded-xs min-h-[80px]" data-choice="container_2" tabindex="0">
- <span class="text-2xl text-[var(--text-primary)] block mb-1">&#9632;</span>
- <span class="text-base font-semibold text-[var(--text-primary)] block">Container 2</span>
- <span class="text-sm text-black block mt-0.5 ">Reference: Green Square</span>
- </button>
- </div>
- `,
- summaryContent: `
- <span>${selectedChoice ? `You selected: <strong class="text-[var(--text-primary)]">${selectedChoice === 'container_1' ? 'Container 1' : 'Container 2'}</strong>` : 'Choose the option to continue.'}</span>
- <span class="text-sm text-black ">${currentIdx + 1} / ${trials.length}</span>
- `,
- actionButtonId: 'confirmE1Btn',
- actionButtonText: currentIdx < trials.length - 1 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
- actionButtonDisabled: !selectedChoice,
- progressText: `Tile ${currentIdx + 1} of ${trials.length}`
- });
+    `,
+    summaryContent: `
+      <span>Sorting progress:</span>
+      <span class="text-sm text-black">${currentIdx + 1} / ${trials.length}</span>
+    `,
+    progressText: `Tile ${currentIdx + 1} of ${trials.length}`
+  });
 
- app.querySelectorAll('.bin-btn').forEach(btn => {
- const handleSort = (modality) => {
- lastInputModality = modality;
- selectedChoice = btn.getAttribute('data-choice');
- render();
- };
- btn.addEventListener('click', () => handleSort('mouse'));
- btn.addEventListener('keydown', (e) => {
- if (e.key === 'Enter' || e.key === ' ') {
- e.preventDefault();
- handleSort('keyboard');
- }
- });
- });
+  app.querySelectorAll('.bin-btn').forEach(btn => {
+    const handleDirectSort = (modality) => {
+      lastInputModality = modality;
+      const choice = btn.getAttribute('data-choice');
+      btn.style.borderColor = 'var(--accent-gold)';
+      const latency = Math.round(performance.now() - trialStartTime);
 
- document.getElementById('confirmE1Btn')?.addEventListener('click', () => {
- logEvent('tile_sorted', {
- trial_index: currentIdx,
- stimulus_id: t.stimulus_id,
- choice: selectedChoice,
- input_modality: lastInputModality,
- task_def_version: '1.0'
- });
+      logEvent('tile_sorted', {
+        trial_index: currentIdx,
+        stimulus_id: t.stimulus_id,
+        choice: choice,
+        latency_ms: latency,
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
+      });
 
- if (currentIdx < trials.length - 1) {
- currentIdx++;
- selectedChoice = null;
- trialStartTime = performance.now();
- logTrialPresented();
- render();
- } else {
- onComplete({
- mini_game: 'E1',
- observations_count: trials.length
- });
- }
- });
- }
+      setTimeout(() => {
+        if (currentIdx < trials.length - 1) {
+          currentIdx++;
+          selectedChoice = null;
+          trialStartTime = performance.now();
+          logTrialPresented();
+          render();
+        } else {
+          onComplete({
+            mini_game: 'E1',
+            observations_count: trials.length
+          });
+        }
+      }, 220);
+    };
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleDirectSort('mouse');
+    });
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleDirectSort('keyboard');
+      }
+    });
+  });
+  }
 
  function logTrialPresented() {
  const t = trials[currentIdx];
@@ -242,52 +249,74 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
  return;
  }
 
- const s = sequences[currentSeq];
- const activeOpt = s.options.find(o => o.id === selectedAction);
+  const s = sequences[currentSeq];
+  const activeOpt = s.options.find(o => o.id === selectedAction);
 
- app.innerHTML = renderGameShell({
- worldCode: 'W4',
- worldIndex: 3,
- title: 'The Courtyard Setup',
- subtitle: 'Choose the best response when unexpected studio events happen.',
- instructionPrompt: 'Your Task',
-    instruction: 'Read the situation above. Choose the most practical step below.',
- stimulusContent: `
-    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
-      <div class="flex items-center justify-between">
-        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${s.title}</span>
-        <span class="text-xs text-[var(--text-secondary)] uppercase">Scenario ${currentSeq + 1} of ${sequences.length}</span>
+  app.innerHTML = renderGameShell({
+    worldCode: 'W4',
+    worldIndex: 3,
+    title: 'The Courtyard Setup',
+    goal: 'Respond calmly when unexpected studio events happen.',
+    subtitle: 'Choose the best response when unexpected studio events happen.',
+    instructionPrompt: 'Your Task',
+    instruction: 'Read what happened in the studio above. Choose your immediate response below.',
+    stimulusContent: `
+      <div class="stage-content">
+        <div class="realistic-ink-desk">
+          <div class="desk-sheet">
+            <div style="font-size:0.75rem; text-transform:uppercase; color:#786653; font-weight:700;">Studio Drawing Sheet</div>
+            <div style="font-size:0.95rem; font-weight:700; margin:3px 0;">Handmade Drawing Paper</div>
+            <div style="font-size:0.82rem; color:#5c4e3f;">You were drawing lines when an ink bottle tipped...</div>
+            <!-- Truly Random Organic Ink Splatter SVG (No Heart Resemblance) -->
+            <svg style="position:absolute; right:20px; bottom:10px; width:125px; height:95px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6));" viewBox="0 0 120 90">
+              <path d="M50,42 C38,30 22,38 18,50 C14,64 30,72 45,68 C58,65 65,74 78,70 C92,65 105,52 98,38 C92,25 78,20 68,32 C62,38 56,34 50,42 Z" fill="#0b0c0f"/>
+              <path d="M72,30 C80,18 92,22 86,34 Z" fill="#0b0c0f"/>
+              <circle cx="16" cy="36" r="3.2" fill="#0b0c0f"/>
+              <circle cx="28" cy="22" r="2.4" fill="#0b0c0f"/>
+              <circle cx="85" cy="18" r="3.8" fill="#0b0c0f"/>
+              <circle cx="106" cy="46" r="2.8" fill="#0b0c0f"/>
+              <circle cx="62" cy="78" r="3" fill="#0b0c0f"/>
+              <circle cx="40" cy="80" r="2.2" fill="#0b0c0f"/>
+            </svg>
+          </div>
+        </div>
+        <div class="text-xs text-center text-[var(--text-secondary)] mt-2">
+          ${s.situation}
+        </div>
       </div>
-      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
-        ${s.situation}
-      </p>
-    </div>
-  `,
- interactionContent: `
- <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
- <div class="text-sm text-black uppercase tracking-wider mb-2.5">Available Responses:</div>
- <div class="space-y-2.5">
- ${s.options.map(opt => `
- <div class="e2-opt p-3.5 bg-white border ${selectedAction === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base flex items-center justify-between min-h-[48px]" data-action="${opt.id}" tabindex="0" role="button">
- <span class="flex items-center gap-2">
- <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${selectedAction === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAction === opt.id ? '✓' : ''}</span>
- <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
- </span>
- 
- </div>
- `).join('')}
- </div>
- </div>
- `,
- summaryContent: `
- <span>${selectedAction ? `You selected: <strong class="text-[var(--text-primary)]">${activeOpt?.label}</strong>` : 'Select an option above to continue.'}</span>
- <span class="text-sm text-black ">${currentSeq + 1} / ${sequences.length}</span>
- `,
- actionButtonId: 'confirmE2Btn',
- actionButtonText: currentSeq < sequences.length - 1 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
- actionButtonDisabled: !selectedAction,
- progressText: `Scenario ${currentSeq + 1} of ${sequences.length}`
- });
+    `,
+    interactionContent: `
+      <div class="space-y-3">
+        <div class="options-directive">
+          <span>Choose what you would do right now:</span>
+          <span style="font-size:0.75rem; color:var(--text-secondary);">Tap to select</span>
+        </div>
+        <div class="outside-options space-y-2.5">
+          ${s.options.map((opt, idx) => {
+            const bullet = String.fromCharCode(65 + idx);
+            const isSelected = selectedAction === opt.id;
+            return `
+              <button type="button" class="outside-opt-card e2-opt ${isSelected ? 'selected' : ''}" data-action="${opt.id}" tabindex="0">
+                <div class="opt-bullet">${bullet}</div>
+                <div style="flex:1;">
+                  <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)]">${opt.label}</div>
+                  <div class="text-xs text-[var(--text-secondary)] mt-0.5">${opt.note || ''}</div>
+                </div>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `,
+    summaryContent: `
+      <span>${selectedAction ? `You selected: <strong class="text-[var(--text-primary)]">${activeOpt?.label}</strong>` : 'Select an option above to continue.'}</span>
+      <span class="text-sm text-black">${currentSeq + 1} / ${sequences.length}</span>
+    `,
+    actionButtonId: 'confirmE2Btn',
+    actionButtonText: currentSeq < sequences.length - 1 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
+    actionButtonDisabled: !selectedAction,
+    progressText: `Scenario ${currentSeq + 1} of ${sequences.length}`
+  });
 
  app.querySelectorAll('.e2-opt').forEach(opt => {
  const chooseAction = (modality) => {

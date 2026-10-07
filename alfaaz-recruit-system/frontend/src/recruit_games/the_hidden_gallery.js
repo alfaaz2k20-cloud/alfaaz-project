@@ -108,74 +108,88 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
  return;
  }
 
- const d = decisions[currentDecision];
+  const d = decisions[currentDecision];
+  const hasTipOpened = Object.keys(viewedResources).length > 0;
 
- app.innerHTML = renderGameShell({
- worldCode: 'W5',
- worldIndex: 4,
- title: 'The Curatorial Dossier',
- subtitle: 'Choose the best way to care for each historic item.',
- instructionPrompt: 'Your Task',
-    instruction: 'Choose a preservation action below. You can open optional reference notes if you wish.',
- stimulusContent: `
-    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
-      <div class="flex items-center justify-between">
-        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${d.title}</span>
-        <span class="text-xs text-[var(--text-secondary)] uppercase">Record ${currentDecision + 1} of ${decisions.length}</span>
+  app.innerHTML = renderGameShell({
+    worldCode: 'W5',
+    worldIndex: 4,
+    title: 'The Curatorial Dossier',
+    goal: 'Choose the best way to care for old objects.',
+    subtitle: 'Choose the best way to care for each historic item.',
+    instructionPrompt: 'Your Task',
+    instruction: 'Review the object and choose the best care action below. Open the research tip if helpful.',
+    stimulusContent: `
+      <div class="stage-content">
+        <div style="width:92%; background:#2c241d; border:1px solid #4a3d31; border-radius:10px; padding:16px; margin:0 auto; text-align:left;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+            <span style="font-size:0.75rem; color:#d8baa0; text-transform:uppercase; font-weight:700;">Old Object ${currentDecision + 1} of ${decisions.length}</span>
+            <button type="button" class="btn ${hasTipOpened ? '' : 'pulse-btn'}" id="btnResearchNote" style="padding:6px 12px; font-size:0.78rem; background:#4a392b; color:#ffffff; border:1.5px solid var(--accent-gold);">
+              ${hasTipOpened ? '📖 Research Tip Opened' : '📖 Open Research Tip'}
+            </button>
+          </div>
+          <div style="font-size:1.05rem; font-weight:700; color:#fff; margin-bottom:6px;">${d.title}</div>
+          <p style="font-size:0.88rem; color:#cfc2b2; margin:0; line-height:1.5;">
+            ${d.scenario}
+          </p>
+          <div id="tipBox" style="display:${hasTipOpened ? 'block' : 'none'}; margin-top:12px; padding:10px 14px; background:#1e1712; border-left:3px solid var(--accent-gold); font-size:0.84rem; color:#e0d0b8; border-radius:4px;">
+            <b>Tip from old makers:</b> ${d.optional_resources[0]?.summary || 'Natural tree oil dries slowly and keeps paint bright without cracking.'}
+          </div>
+        </div>
       </div>
-      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
-        ${d.scenario}
-      </p>
-    </div>
-  `,
- interactionContent: `
- <div class="space-y-4">
- <!-- Optional Reference Notes -->
- <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
- <div class="text-sm uppercase text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
- <span>Optional Reference Notes (Click to Open)</span>
- <span class="text-[9px] text-black font-normal">Voluntary consultation</span>
- </div>
- <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
- ${d.optional_resources.map(res => `
- <div class="opt-res-card p-3 bg-white border ${viewedResources[res.id] ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base min-h-[48px] flex flex-col justify-center" data-res="${res.id}">
- <div class="flex items-center justify-between">
- <span class="font-medium text-[var(--text-primary)] flex items-center gap-1.5">
- <svg class="w-3.5 h-3.5 text-[var(--accent-gold)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
- ${res.topic}
- </span>
- <span class="text-[9px] uppercase text-black">${viewedResources[res.id] ? 'Opened' : 'Inspect'}</span>
- </div>
- ${viewedResources[res.id] ? `<p class="mt-2 text-[11px] text-black leading-relaxed border-t border-[var(--grid-border)] pt-2 ">${res.summary}</p>` : ''}
- </div>
- `).join('')}
- </div>
- </div>
+    `,
+    interactionContent: `
+      <div class="space-y-4">
+        <!-- Outside Actions with A, B, C bullets -->
+        <div class="space-y-3">
+          <div class="options-directive">
+            <span>Choose how to care for this object:</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Tap to select</span>
+          </div>
+          <div class="outside-options space-y-2.5">
+            ${d.options.map((opt, idx) => {
+              const bullet = String.fromCharCode(65 + idx);
+              const isSelected = selectedChoice === opt.id;
+              return `
+                <button type="button" class="outside-opt-card q1-opt ${isSelected ? 'selected' : ''}" data-choice="${opt.id}" tabindex="0">
+                  <div class="opt-bullet">${bullet}</div>
+                  <div style="flex:1;">
+                    <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)]">${opt.label}</div>
+                    <div class="text-xs text-[var(--text-secondary)] mt-0.5">Action ${bullet}</div>
+                  </div>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    `,
+    summaryContent: `
+      <span>${selectedChoice ? `You selected: <strong class="text-[var(--text-primary)]">${d.options.find(o => o.id === selectedChoice)?.label}</strong>` : 'Select an action above to continue.'}</span>
+      <span class="text-sm text-black">${currentDecision + 1} / ${decisions.length}</span>
+    `,
+    actionButtonId: 'confirmQ1Btn',
+    actionButtonText: currentDecision < decisions.length - 1 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
+    actionButtonDisabled: !selectedChoice,
+    progressText: `Record ${currentDecision + 1} of ${decisions.length}`
+  });
 
- <!-- Curatorial Actions -->
- <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
- <div class="text-sm text-black uppercase tracking-wider mb-2.5">Choose Preservation Action:</div>
- <div class="space-y-2.5">
- ${d.options.map(opt => `
- <div class="q1-opt p-3.5 bg-white border ${selectedChoice === opt.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base flex items-center justify-between min-h-[48px]" data-choice="${opt.id}" tabindex="0" role="button">
- <span class="flex items-center gap-2.5">
- <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-sm shrink-0 ${selectedChoice === opt.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedChoice === opt.id ? '✓' : ''}</span>
- <span class="text-[var(--text-primary)] font-medium">${opt.label}</span>
- </span>
- <span class="text-sm text-[var(--accent-gold)] uppercase font-medium shrink-0">Action ${String.fromCharCode(65 + d.options.indexOf(opt))}</span>
- </div>
- `).join('')}
- </div>
- </div>
- </div>
- `,
- actionButtonId: 'confirmQ1Btn',
- actionButtonText: currentDecision < decisions.length - 1 ? 'Confirm Decision &rarr;' : 'Confirm & Finish &rarr;',
- actionButtonDisabled: !selectedChoice,
- progressText: `Record ${currentDecision + 1} of ${decisions.length}`
- });
+  const tipBtn = document.getElementById('btnResearchNote');
+  if (tipBtn) {
+    tipBtn.onclick = () => {
+      const resId = d.optional_resources[0]?.id || 'OPT_USEFUL_1';
+      viewedResources[resId] = true;
+      logEvent('optional_resource_viewed', {
+        trial_index: currentDecision,
+        stimulus_id: d.stimulus_id,
+        resource_id: resId,
+        input_modality: 'mouse',
+        task_def_version: '1.0'
+      });
+      render();
+    };
+  }
 
- // Handler for optional resources
  app.querySelectorAll('.opt-res-card').forEach(card => {
  card.addEventListener('click', () => {
  lastInputModality = 'mouse';
@@ -343,69 +357,83 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
  return;
  }
 
- const r = relics[currentTrial];
+  const r = relics[currentTrial];
+  const lastClueId = Object.keys(inspectedClues).pop();
+  const lastClue = lastClueId ? r.clues.find(c => c.id === lastClueId) : null;
 
- app.innerHTML = renderGameShell({
- worldCode: 'W5',
- worldIndex: 4,
- title: 'The Antiquarian’s Bench',
- subtitle: 'Inspect physical clues to identify each historic object.',
- instructionPrompt: 'Your Task',
-    instruction: 'Inspect any clues you wish. Then choose where this object came from below.',
- stimulusContent: `
-    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
-      <div class="flex items-center justify-between">
-        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${r.title}</span>
-        <span class="text-xs text-[var(--text-secondary)] uppercase">Specimen ${currentTrial + 1} of ${relics.length}</span>
+  app.innerHTML = renderGameShell({
+    worldCode: 'W5',
+    worldIndex: 4,
+    title: 'The Relic Anomaly',
+    goal: 'Inspect clues on the old object to find where it came from.',
+    subtitle: 'Inspect physical clues to identify each historic object.',
+    instructionPrompt: 'Your Task',
+    instruction: 'Complete Step 1 by inspecting clues. Then choose where this stamp came from in Step 2.',
+    stimulusContent: `
+      <div class="stage-content">
+        <div style="width:86%; background:#292019; border:1.5px solid #48392d; border-radius:10px; padding:16px; text-align:center; margin:0 auto;">
+          <div style="font-size:0.75rem; color:#d8baa0; text-transform:uppercase; font-weight:700;">Historical Artifact on Velvet Pad</div>
+          <div style="width:52px; height:52px; border-radius:50%; background:#963728; margin:10px auto; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.75rem; font-weight:800; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:2px solid #5a1c12;">
+            STAMP
+          </div>
+          <div style="font-size:0.88rem; color:#f0e2d2; font-weight:600;">Old Wax Seal on Goatskin Parchment</div>
+          <div style="font-size:0.78rem; color:#ad9e8e; margin-top:2px;">Origin unknown · Inspect clues below to identify</div>
+        </div>
       </div>
-      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
-        ${r.description}
-      </p>
-    </div>
-  `,
- interactionContent: `
- <div class="space-y-4">
- <!-- Clues Inspection Grid -->
- <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
- <div class="text-sm uppercase text-[var(--accent-gold)] font-semibold tracking-wider mb-2 flex items-center justify-between">
- <span>Physical Clues Available for Inspection</span>
- <span class="text-[9px] text-black font-normal">Click clue to examine</span>
- </div>
- <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
- ${r.clues.map(c => `
- <div class="clue-btn p-3.5 bg-white border ${inspectedClues[c.id] ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base min-h-[48px] flex flex-col justify-between" data-clue="${c.id}" tabindex="0" role="button">
- <div class="font-medium text-[var(--text-primary)] flex items-center justify-between">
- <span>${c.label}</span>
- <span class="text-[9px] uppercase text-black">${inspectedClues[c.id] ? 'Inspected' : 'Inspect'}</span>
- </div>
- ${inspectedClues[c.id] ? `<p class="mt-2 text-[11px] text-black leading-relaxed border-t border-[var(--grid-border)] pt-2 ">${c.detail}</p>` : ''}
- </div>
- `).join('')}
- </div>
- </div>
+    `,
+    interactionContent: `
+      <div class="space-y-4">
+        <!-- Step 1 Outside Tile: Clues Inspection Grid -->
+        <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+          <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
+            <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">1</span>
+            <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 1: Tap to check clues on this old stamp</span>
+          </div>
+          <div class="flex gap-2 flex-wrap" id="clueRow">
+            ${r.clues.map(c => `
+              <button type="button" class="btn clue-btn ${inspectedClues[c.id] ? 'selected bg-amber-50/70 border-[var(--accent-gold)]' : 'bg-white border-[var(--grid-border)]'}" style="flex:1; min-width:120px; padding:8px 10px; font-size:0.8rem;" data-clue="${c.id}">
+                🔍 ${c.label}
+              </button>
+            `).join('')}
+          </div>
+          <div id="clueNoteBox" class="text-xs sm:text-sm text-[var(--text-primary)] p-2.5 bg-[#faf8f5] rounded-xs border border-[var(--grid-border)]">
+            ${lastClue ? `<b>${lastClue.label}:</b> ${lastClue.detail}` : 'Tap any clue button above to inspect physical details.'}
+          </div>
+        </div>
 
- <!-- Attribution Selection -->
- <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] shadow-xs rounded-xs">
- <div class="text-sm text-black uppercase tracking-wider mb-2.5">Conclude Historical Origin:</div>
- <div class="space-y-2.5">
- ${r.attributions.map(attr => `
- <div class="q2-attr p-3.5 bg-white border ${selectedAttribution === attr.id ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)]'} rounded-xs cursor-pointer interactive-option text-base flex items-center justify-between min-h-[48px]" data-attr="${attr.id}" tabindex="0" role="button">
- <span class="flex items-center gap-2.5">
- <span class="w-4 h-4 rounded-full border border-current flex items-center justify-center text-sm shrink-0 ${selectedAttribution === attr.id ? 'bg-[var(--accent-gold)] text-white' : 'text-stone-300'}">${selectedAttribution === attr.id ? '✓' : ''}</span>
- <span class="text-[var(--text-primary)] font-medium">${attr.label}</span>
- </span>
- <span class="text-sm text-[var(--accent-gold)] uppercase font-medium shrink-0">Origin ${String.fromCharCode(65 + r.attributions.indexOf(attr))}</span>
- </div>
- `).join('')}
- </div>
- </div>
- </div>
- `,
- actionButtonId: 'confirmQ2Btn',
- actionButtonText: currentTrial < relics.length - 1 ? 'Confirm Origin &rarr;' : 'Confirm & Finish &rarr;',
- actionButtonDisabled: !selectedAttribution,
- progressText: `Relic ${currentTrial + 1} of ${relics.length}`
- });
+        <!-- Step 2 Outside Tile: Origin Attributions -->
+        <div class="space-y-3">
+          <div class="options-directive">
+            <span>Step 2: Choose where this stamp came from:</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Tap to select</span>
+          </div>
+          <div class="outside-options space-y-2.5">
+            ${r.attributions.map((attr, idx) => {
+              const bullet = String.fromCharCode(65 + idx);
+              const isSelected = selectedAttribution === attr.id;
+              return `
+                <button type="button" class="outside-opt-card q2-attr ${isSelected ? 'selected' : ''}" data-attr="${attr.id}" tabindex="0">
+                  <div class="opt-bullet">${bullet}</div>
+                  <div style="flex:1;">
+                    <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)]">${attr.label}</div>
+                    <div class="text-xs text-[var(--text-secondary)] mt-0.5">Origin ${bullet}</div>
+                  </div>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    `,
+    summaryContent: `
+      <span>${selectedAttribution ? `You selected: <strong class="text-[var(--text-primary)]">${r.attributions.find(a => a.id === selectedAttribution)?.label}</strong>` : 'Inspect clues and select an origin.'}</span>
+      <span class="text-sm text-black">${currentTrial + 1} / ${relics.length}</span>
+    `,
+    actionButtonId: 'confirmQ2Btn',
+    actionButtonText: currentTrial < relics.length - 1 ? 'Confirm Origin &rarr;' : 'Confirm & Finish &rarr;',
+    actionButtonDisabled: !selectedAttribution,
+    progressText: `Relic ${currentTrial + 1} of ${relics.length}`
+  });
 
  app.querySelectorAll('.clue-btn').forEach(btn => {
  const inspect = (modality) => {

@@ -1,0 +1,1661 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+<title>Alfaaz Collective · Candidate Experience V2.1 (Final Draft)</title>
+<style>
+:root {
+  --ink: #1c1a17;
+  --muted: #66615b;
+  --paper: #f8f5ee;
+  --card: #ffffff;
+  --card-tint: #fcfaf4;
+  --line: #e0d8ca;
+  --line-light: #eee7db;
+  --accent: #876742;
+  --accent-gold: #b38b4d;
+  --accent-soft: #f1e4d0;
+  --wood: #43362a;
+  --wood-dark: #2e241c;
+  --green: #487352;
+  --gold: #b38b4d;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 2px 8px rgba(35, 30, 24, 0.05);
+  --shadow-md: 0 10px 30px rgba(35, 30, 24, 0.08);
+  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+button, input { font: inherit; }
+button { cursor: pointer; touch-action: manipulation; }
+
+/* Top Reviewer Nav */
+.top-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(248, 245, 238, 0.95);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  padding: 8px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.85rem;
+}
+.brand-title {
+  font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  font-size: 0.78rem; color: var(--accent);
+}
+.top-nav-actions { display: flex; align-items: center; gap: 8px; }
+.top-nav select {
+  font-size: 0.8rem; padding: 5px 8px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+  max-width: 175px;
+}
+.telemetry-pill-btn {
+  font-size: 0.75rem; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--card); color: var(--muted);
+  display: inline-flex; align-items: center; gap: 4px;
+}
+
+/* App Container */
+.app-shell {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 14px 16px 80px;
+}
+
+/* Hero Section */
+.hero-header { padding: 14px 0 16px; }
+.hero-tag {
+  display: inline-block; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 4px;
+}
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 4vw, 2.3rem);
+  line-height: 1.15; margin: 0 0 6px;
+}
+.hero-desc {
+  color: var(--muted); font-size: 0.95rem; line-height: 1.45;
+  margin: 0; max-width: 620px;
+}
+.progress-bar-wrap {
+  margin-top: 14px; height: 5px; width: 100%;
+  background: var(--line-light); border-radius: 999px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; width: 5%; background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+/* Card Shell */
+.screen-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  margin-top: 10px;
+}
+@media (max-width: 600px) {
+  .screen-card { padding: 14px; border-radius: var(--radius-md); }
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 12px 20px; border-radius: var(--radius-md);
+  font-size: 0.94rem; font-weight: 600; min-height: 48px;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+  transition: all 0.15s ease; user-select: none;
+}
+.btn:hover { border-color: var(--accent); background: #faf7f0; }
+.btn:active { transform: scale(0.98); }
+.btn.primary {
+  background: var(--ink); color: #ffffff; border-color: var(--ink);
+}
+.btn.primary:hover { background: #35312b; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn.full { width: 100%; }
+
+/* Flow Directives & Goals */
+.gba-goal-banner {
+  background: #f7f1e6;
+  border-left: 4px solid var(--accent-gold);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  color: var(--ink);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.goal-badge {
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 3px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.goal-text { font-weight: 600; line-height: 1.35; }
+
+.options-directive {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin: 16px 0 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* Graphical Studio Stage */
+.studio-stage {
+  position: relative;
+  width: 100%;
+  min-height: 220px;
+  max-height: 310px;
+  background: radial-gradient(ellipse at center, #352c24 0%, #211a14 100%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+  overflow: hidden;
+  color: #f6efe6;
+  display: flex; flex-direction: column;
+}
+@media (min-width: 601px) {
+  .studio-stage { min-height: 250px; max-height: 320px; }
+}
+
+.stage-content {
+  position: relative; flex: 1; width: 100%; height: 100%;
+  padding: 14px; display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+}
+
+/* Outside Options Grid */
+.outside-options {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+.outside-opt-card {
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 13px 15px;
+  display: flex; align-items: center; gap: 12px;
+  min-height: 52px;
+  transition: all 0.15s ease;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.outside-opt-card:hover {
+  border-color: var(--accent);
+  background: #fdfaf4;
+}
+.outside-opt-card.selected {
+  border-color: var(--accent-gold);
+  background: #fdf6ea;
+  box-shadow: 0 0 0 1px var(--accent-gold);
+}
+.opt-bullet {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--card-tint);
+  font-weight: 700; font-size: 0.78rem;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); flex-shrink: 0;
+}
+.outside-opt-card.selected .opt-bullet {
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
+  color: #ffffff;
+}
+
+/* Game Header Top Bar */
+.game-header-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-light);
+}
+.game-world-tag {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--accent); margin-bottom: 2px;
+}
+.game-main-heading {
+  font-family: var(--font-serif);
+  font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+  margin: 0; line-height: 1.2;
+}
+.game-step-counter {
+  font-size: 0.78rem; color: var(--muted); font-weight: 600;
+  background: var(--paper); padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line); flex-shrink: 0;
+}
+
+/* Action Footer */
+.action-footer {
+  margin-top: 18px;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px;
+}
+@media (max-width: 500px) {
+  .action-footer { flex-direction: column; align-items: stretch; }
+  .action-footer .btn { width: 100%; }
+}
+
+/* Sound Wave Canvas */
+.waveform-box {
+  width: 90%; height: 70px;
+  display: flex; align-items: center; justify-content: space-evenly;
+  background: rgba(0,0,0,0.3); border-radius: 12px; padding: 0 10px;
+}
+.wave-bar {
+  width: 5px; background: var(--accent-gold); border-radius: 4px;
+  height: 20px; transition: height 0.15s ease;
+}
+
+/* Tuning Step 2 Slider Box (Explicit & Outside Tile) */
+.tuning-slider-card {
+  background: var(--card); border: 1.5px solid var(--line);
+  border-radius: var(--radius-md); padding: 16px; margin-top: 12px;
+}
+.slider-guide-label {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.82rem; color: var(--muted); margin-bottom: 8px; font-weight: 600;
+}
+.tuning-slider-input {
+  width: 100%; accent-color: var(--accent-gold); height: 10px;
+  cursor: ew-resize; margin: 4px 0 10px;
+}
+
+/* Folio Paper (Simple Human Design) */
+.folio-sheet {
+  background: #f4ecdc; color: #2e261f;
+  padding: 16px; border-radius: 10px; width: 92%; max-width: 440px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4); border: 1px solid #d4c6b2;
+  position: relative;
+}
+.water-stain {
+  position: absolute; bottom: 8px; left: 16px;
+  width: 75px; height: 30px; background: rgba(140,105,65,0.25);
+  border-radius: 50%; filter: blur(3px);
+}
+
+/* Realistic Ink Spill Canvas (Completely Random Organic Blob) */
+.realistic-ink-desk {
+  width: 94%; height: 160px;
+  background: #ecdcc3; border: 2px solid #b89b72;
+  border-radius: 10px; position: relative; overflow: hidden;
+  box-shadow: inset 0 2px 10px rgba(70,40,20,0.2), 0 4px 14px rgba(0,0,0,0.4);
+}
+.desk-sheet {
+  position: absolute; inset: 12px;
+  background: #fffdf8; border: 1px solid #dfd6c6; border-radius: 6px;
+  padding: 10px; color: #3c3228;
+}
+
+/* Dual Ceramic Mosaic Boards with +/- */
+.dual-boards {
+  display: flex; width: 94%; justify-content: space-around; gap: 12px;
+}
+.board-box {
+  flex: 1; background: rgba(0,0,0,0.35); border: 1.5px dashed rgba(255,255,255,0.2);
+  border-radius: 10px; padding: 10px; text-align: center;
+}
+.board-title {
+  font-size: 0.74rem; text-transform: uppercase; color: #d6caa7;
+  letter-spacing: 0.05em; font-weight: 700; margin-bottom: 6px;
+}
+.tiles-grid {
+  display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; min-height: 44px;
+}
+.tile-chip {
+  width: 22px; height: 22px; background: var(--accent-gold);
+  border: 1px solid #785a26; border-radius: 4px;
+}
+.tile-chip.partner { background: #487352; border-color: #27472e; }
+
+.counter-controls {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  margin-top: 12px;
+}
+.counter-btn {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 2px solid var(--line); background: var(--card);
+  font-size: 1.5rem; font-weight: 800; color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s ease;
+}
+.counter-btn:hover { border-color: var(--accent); background: #faf5eb; }
+.counter-btn:active { transform: scale(0.92); }
+
+/* Wall Hanging Spots */
+.wall-spots-canvas {
+  width: 92%; height: 160px; position: relative;
+  background: #3e3328; border-radius: 10px; border: 1px solid #5a4b3c;
+}
+.partner-frame {
+  position: absolute; left: 16px; top: 24px; width: 68px; height: 90px;
+  background: #7d6342; border: 4px solid #bba37f; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; color: #ffffff; text-align: center; padding: 4px;
+}
+.hanging-spot-marker {
+  position: absolute; border: 2px dashed rgba(255,255,255,0.4);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700; color: #ebdcc4;
+  transition: all 0.2s ease;
+}
+.hanging-spot-marker.active {
+  background: rgba(179,139,77,0.7); border-color: #f1e4d0; color: #fff;
+}
+
+/* Ceramic Mosaic Containers */
+.mosaic-containers-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%;
+}
+.container-box-btn {
+  background: var(--card); border: 2px solid var(--line); border-radius: var(--radius-md);
+  padding: 16px; text-align: center; transition: all 0.15s ease;
+}
+.container-box-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+.container-box-btn:active { transform: scale(0.98); }
+
+/* Pulse animation for Research Tip button */
+@keyframes gentlePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(179, 139, 77, 0.5); border-color: var(--accent-gold); }
+  50% { box-shadow: 0 0 0 7px rgba(179, 139, 77, 0); border-color: #f1dfc4; }
+}
+.pulse-btn {
+  animation: gentlePulse 2s infinite ease-in-out;
+}
+
+/* Loom Shuttle Rig & Tile Bottom Guide */
+.loom-rig-preview {
+  width: 90%; background: #2b221a; border: 1px solid #4a3c2f;
+  border-radius: 10px; padding: 12px; margin-bottom: 8px; text-align: center;
+}
+.rig-parts-row {
+  display: flex; justify-content: center; gap: 8px; margin-top: 6px; flex-wrap: wrap;
+}
+.equipped-pill {
+  font-size: 0.72rem; background: var(--accent-gold); color: #fff;
+  padding: 3px 8px; border-radius: 999px; font-weight: 600;
+}
+.tile-bottom-guide {
+  margin-top: 8px; font-size: 0.8rem; color: #e6be82; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+
+/* Materials Chip Grid */
+.materials-chip-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px; width: 100%; margin-top: 10px;
+}
+.material-chip {
+  background: var(--card); border: 1.5px solid var(--line);
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  font-size: 0.86rem; display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; transition: all 0.15s ease;
+}
+.material-chip.equipped {
+  border-color: var(--accent-gold); background: #fdf7eb; font-weight: 700;
+}
+
+/* Telemetry Drawer */
+.telemetry-drawer {
+  position: fixed; bottom: 0; right: 0; left: 0;
+  background: #181614; color: #d8d0c5;
+  border-top: 2px solid var(--accent);
+  max-height: 260px; display: none; flex-direction: column;
+  z-index: 1000; font-family: var(--font-mono); font-size: 0.75rem;
+}
+.telemetry-drawer.open { display: flex; }
+.telemetry-head {
+  padding: 8px 14px; background: #221f1c; border-bottom: 1px solid #332e2a;
+  display: flex; justify-content: space-between; align-items: center;
+  font-weight: 700; color: var(--accent-gold);
+}
+.telemetry-log {
+  padding: 10px 14px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 4px;
+}
+
+.screen { display: none; }
+.screen.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- Top Reviewer Bar -->
+<header class="top-nav">
+  <div class="brand-title">Alfaaz Collective · V2.1</div>
+  <div class="top-nav-actions">
+    <select id="jumpSelector" title="Quick Navigation">
+      <option value="">Jump Activity ▾</option>
+      <optgroup label="Section 1: SJTs">
+        <option value="sjt-0">S1: The Exhibition</option>
+        <option value="sjt-1">S2: The Exhibition</option>
+        <option value="sjt-2">S3: The Exhibition</option>
+        <option value="sjt-3">S4: The Circle</option>
+        <option value="sjt-4">S5: The Circle</option>
+        <option value="sjt-5">S6: The Outreach</option>
+        <option value="sjt-6">S7: The Outreach</option>
+      </optgroup>
+      <optgroup label="Section 2: GBAs">
+        <option value="gba-0">F1: Tuning the Hall</option>
+        <option value="gba-1">F2: The Gathering Voices</option>
+        <option value="gba-2">A1: The Manuscript Folios</option>
+        <option value="gba-3">A2: The Fragile Leaf</option>
+        <option value="gba-4">C1: Resource Cooperation</option>
+        <option value="gba-5">C2: The Gallery Wall</option>
+        <option value="gba-6">G1: The Ceramic Mosaic</option>
+        <option value="gba-7">G2: The Courtyard Setup</option>
+        <option value="gba-8">H1: The Curatorial Dossier</option>
+        <option value="gba-9">H2: The Relic Anomaly</option>
+        <option value="gba-10">B1: The Artisan's Assembly</option>
+        <option value="gba-11">B2: The Improvised Tool</option>
+        <option value="gba-12">M1: The Ceremonial Seal</option>
+        <option value="gba-13">M2: The Courtesy Sleeves</option>
+      </optgroup>
+    </select>
+    <button class="telemetry-pill-btn" id="btnOpenTelemetry">
+      <span>⚡</span> Telemetry
+    </button>
+  </div>
+</header>
+
+<div class="app-shell">
+  <!-- Dynamic Progress Bar -->
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+
+  <!-- Screen 1: SJT Onboarding Intro -->
+  <section class="screen active" id="screenIntro">
+    <div class="hero-header">
+      <span class="hero-tag">Section 1 · Everyday Scenarios</span>
+      <h1 class="hero-title">Studio Moments</h1>
+      <p class="hero-desc">You will read 7 short stories about everyday moments in our studio, workshops, and community events.</p>
+    </div>
+
+    <div class="screen-card">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:12px; margin-bottom:20px;">
+        <div style="padding:14px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--card-tint);">
+          <b style="font-size:0.95rem; display:block; margin-bottom:4px;">Read the Story</b>
+          <span style="font-size:0.86rem; color:var(--muted); line-height:1.4;">Each card shares a real situation from the studio.</span>
+        </div>
+        <div style="padding:14px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--card-tint);">
+          <b style="font-size:0.95rem; display:block; margin-bottom:4px;">Pick Your Choice</b>
+          <span style="font-size:0.86rem; color:var(--muted); line-height:1.4;">Choose what best matches what you would really do.</span>
+        </div>
+        <div style="padding:14px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--card-tint);">
+          <b style="font-size:0.95rem; display:block; margin-bottom:4px;">No Trick Questions</b>
+          <span style="font-size:0.86rem; color:var(--muted); line-height:1.4;">There are no right or wrong answers. Be honest and natural.</span>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <span style="font-size:0.82rem; color:var(--muted);">7 stories · 6 to 8 minutes · Go at your own comfortable pace</span>
+        <button class="btn primary" id="btnStartSjt">Begin Section 1: Scenarios →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen 2: SJT Scenario Player -->
+  <section class="screen" id="screenSjt">
+    <div class="screen-card">
+      <div class="game-header-top">
+        <div>
+          <div class="game-world-tag" id="sjtActBadge">Act 1: The Exhibition</div>
+          <h2 class="game-main-heading" id="sjtHeading">The Exhibition</h2>
+        </div>
+        <span class="game-step-counter" id="sjtCounter">Story 1 of 7</span>
+      </div>
+
+      <!-- Story Stimulus Box -->
+      <div style="padding:16px; background:var(--card-tint); border:1px solid var(--line-light); border-radius:var(--radius-md); margin-bottom:14px;">
+        <p id="sjtSetupText" style="font-size:1.02rem; line-height:1.55; margin:0; color:var(--ink); font-weight:500;">
+          The art exhibition opens in 2 hours. One artist's paintings have not arrived yet. The exhibition lead is very stressed while fixing the hall lights.
+        </p>
+      </div>
+
+      <!-- Outside Options Container -->
+      <div class="options-directive">
+        <span>Choose what you would do:</span>
+        <span style="font-size:0.75rem; color:var(--muted); text-transform:none;">Tap an option or press 1–4</span>
+      </div>
+
+      <div class="outside-options" id="sjtOptionsContainer"></div>
+
+      <div class="action-footer">
+        <span style="font-size:0.8rem; color:var(--muted);">Select one option to continue</span>
+        <button class="btn primary" id="btnNextSjt" disabled>Continue →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen 3: GBA Transition Screen -->
+  <section class="screen" id="screenGbaIntro">
+    <div class="hero-header">
+      <span class="hero-tag">Section 2 · Hands-On Activities</span>
+      <h1 class="hero-title">Studio Activities</h1>
+      <p class="hero-desc">You will visit 7 studio rooms (Sound, Archives, Workshop, Mosaic, and Labs) and complete 14 short hands-on activities.</p>
+    </div>
+
+    <div class="screen-card">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:12px; margin-bottom:20px;">
+        <div style="padding:14px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--card-tint);">
+          <b style="font-size:0.95rem; display:block; margin-bottom:4px;">Seven Creative Rooms</b>
+          <span style="font-size:0.86rem; color:var(--muted); line-height:1.4;">Explore different creative areas of the studio.</span>
+        </div>
+        <div style="padding:14px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--card-tint);">
+          <b style="font-size:0.95rem; display:block; margin-bottom:4px;">Simple Clear Actions</b>
+          <span style="font-size:0.86rem; color:var(--muted); line-height:1.4;">Each activity has one clear goal. Tap, inspect, or choose.</span>
+        </div>
+        <div style="padding:14px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--card-tint);">
+          <b style="font-size:0.95rem; display:block; margin-bottom:4px;">No Pressure</b>
+          <span style="font-size:0.86rem; color:var(--muted); line-height:1.4;">Take your time. No tricky traps and no timer pressure.</span>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <span style="font-size:0.82rem; color:var(--muted);">14 activities · 11 to 13 minutes · Interactive screens</span>
+        <button class="btn primary" id="btnStartGba">Begin Section 2: Studio Activities →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen 4: GBA Interactive Screen -->
+  <section class="screen" id="screenGba">
+    <div class="screen-card">
+      <!-- 1. Header (Clean - NO wordy subtitles!) -->
+      <div class="game-header-top">
+        <div>
+          <div class="game-world-tag" id="gbaRoomTag">World 1: The Sound Room</div>
+          <h2 class="game-main-heading" id="gbaMainHeading">Tuning the Hall</h2>
+        </div>
+        <span class="game-step-counter" id="gbaCounter">Activity 1 of 14</span>
+      </div>
+
+      <!-- 2. Goal Banner (FIRST - before the stimulus!) -->
+      <div class="gba-goal-banner">
+        <span class="goal-badge">Goal</span>
+        <span class="goal-text" id="gbaGoalText">Balance the room sound across 5 rounds.</span>
+      </div>
+
+      <!-- 3. Graphical Scene / Stimulus Tile -->
+      <div class="studio-stage" id="studioStage"></div>
+
+      <!-- 4. Interactive Outside Section (Step 1 or Step 2 Containers) -->
+      <div id="gbaOutsidePreZone"></div>
+
+      <div class="options-directive" id="gbaDirective">
+        <span>Choose your option:</span>
+        <span style="font-size:0.75rem; color:var(--muted); text-transform:none;">Tap to select</span>
+      </div>
+
+      <div class="outside-options" id="gbaOutsideOptions"></div>
+
+      <div id="gbaOutsidePostZone"></div>
+
+      <!-- 5. Navigation Action -->
+      <div class="action-footer" id="gbaActionFooter">
+        <span style="font-size:0.8rem; color:var(--muted);" id="gbaHintFoot">Make your choice to proceed</span>
+        <button class="btn primary" id="btnNextGba" disabled>Confirm & Next Activity →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen 5: Completion Screen -->
+  <section class="screen" id="screenComplete">
+    <div class="screen-card" style="text-align:center; padding:38px 20px;">
+      <span class="hero-tag">Completed</span>
+      <h2 style="font-family:var(--font-serif); font-size:2.2rem; margin:8px 0 12px;">Assessment Finished</h2>
+      <p style="color:var(--muted); font-size:1rem; line-height:1.55; max-width:520px; margin:0 auto 24px;">
+        Thank you for participating. All your responses and behavioral telemetry have been recorded cleanly.
+      </p>
+      <div style="display:inline-flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+        <button class="btn primary" id="btnRestart">Restart Assessment</button>
+        <button class="btn" onclick="document.getElementById('telemetryDrawer').classList.add('open')">View Telemetry Log</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Telemetry Inspector Drawer -->
+  <div class="telemetry-drawer" id="telemetryDrawer">
+    <div class="telemetry-head">
+      <span>Telemetry & Integrity Inspector (Unchanged Calculations)</span>
+      <button style="background:none; border:none; color:#fff; cursor:pointer;" onclick="document.getElementById('telemetryDrawer').classList.remove('open')">✕ Close</button>
+    </div>
+    <div class="telemetry-log" id="telemetryLog">
+      <div style="color:#777;">System initialized. Telemetry stream ready.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   ALFAAZ CANDIDATE EXPERIENCE V2.1 — FINAL PRODUCTION CANDIDATE DRAFT
+   Zero technical jargon from candidate POV.
+   Calculations and telemetry remain 100% untouched.
+   ========================================================================== */
+
+const DATA = {
+  sjts: [
+    {
+      id: "S1", act: 1, act_title: "Act 1: The Exhibition",
+      main_heading: "The Exhibition",
+      setup: "The art exhibition opens in 2 hours. One artist's paintings have not arrived yet. The exhibition lead is very stressed while fixing the hall lights.",
+      options: [
+        { id: "S1A", text: "Quietly take over setup tasks and work quickly to give the lead space.", weights: { empathy: 1, conscientiousness: 3, collaborative_spirit: 0, emotional_agility: 0, curiosity: 0, creative_initiative: 0, motivation: 3 } },
+        { id: "S1B", text: "Suggest rearranging the room layout right now to hide the empty wall.", weights: { empathy: 0, conscientiousness: 0, collaborative_spirit: 0, emotional_agility: 3, curiosity: 0, creative_initiative: 3, motivation: 1 } },
+        { id: "S1C", text: "Go to the lead and ask directly how you can help them right now.", weights: { empathy: 3, conscientiousness: 0, collaborative_spirit: 3, emotional_agility: 1, curiosity: 0, creative_initiative: 0, motivation: 0 } },
+        { id: "S1D", text: "Start calling contacts yourself to find the artist or get backup art.", weights: { empathy: 0, conscientiousness: 1, collaborative_spirit: 2, emotional_agility: 0, curiosity: 2, creative_initiative: 1, motivation: 2 } }
+      ]
+    },
+    {
+      id: "S2", act: 1, act_title: "Act 1: The Exhibition",
+      main_heading: "The Exhibition",
+      setup: "An artist, Faizan, is upset because his artwork was placed near the noisy entrance. He wants a quiet corner. Another artist, Meher, is already in the quiet corner and is happy there.",
+      options: [
+        { id: "S2A", text: "Bring Faizan and Meher together to talk and find an agreement.", weights: { empathy: 3, conscientiousness: 0, collaborative_spirit: 3, emotional_agility: 1, curiosity: 0, creative_initiative: 0, motivation: 0 } },
+        { id: "S2B", text: "Politely but firmly keep the original floor plan so things stay fair.", weights: { empathy: 0, conscientiousness: 3, collaborative_spirit: 0, emotional_agility: 2, curiosity: 0, creative_initiative: 0, motivation: 1 } },
+        { id: "S2C", text: "Walk through the building to find an empty, unused corner for Faizan.", weights: { empathy: 1, conscientiousness: 0, collaborative_spirit: 0, emotional_agility: 0, curiosity: 2, creative_initiative: 3, motivation: 0 } },
+        { id: "S2D", text: "Offer to stand near Faizan's artwork yourself to keep the crowd quiet.", weights: { empathy: 2, conscientiousness: 1, collaborative_spirit: 0, emotional_agility: 0, curiosity: 0, creative_initiative: 0, motivation: 3 } }
+      ]
+    },
+    {
+      id: "S3", act: 1, act_title: "Act 1: The Exhibition",
+      main_heading: "The Exhibition",
+      setup: "A school teacher arrives without notice with 15 students. The room is still messy, with loose cables on the floor.",
+      options: [
+        { id: "S3A", text: "Gather the students in the entrance hall for a quick question-and-answer talk.", weights: { empathy: 1, conscientiousness: 0, collaborative_spirit: 0, emotional_agility: 3, curiosity: 0, creative_initiative: 3, motivation: 2 } },
+        { id: "S3B", text: "Politely remind the teacher of the opening time, but take their details to book a tour later.", weights: { empathy: 0, conscientiousness: 3, collaborative_spirit: 2, emotional_agility: 1, curiosity: 0, creative_initiative: 0, motivation: 0 } },
+        { id: "S3C", text: "Rope off a safe corner of the room and watch the students yourself.", weights: { empathy: 2, conscientiousness: 1, collaborative_spirit: 0, emotional_agility: 1, curiosity: 0, creative_initiative: 1, motivation: 3 } },
+        { id: "S3D", text: "Show them one piece of art safely without disturbing the setup work.", weights: { empathy: 0, conscientiousness: 0, collaborative_spirit: 1, emotional_agility: 0, curiosity: 3, creative_initiative: 1, motivation: 0 } }
+      ]
+    },
+    {
+      id: "S4", act: 2, act_title: "Act 2: The Circle",
+      main_heading: "The Circle",
+      setup: "During a group discussion, Zara, a new member, leans forward to speak but pulls back nervously.",
+      options: [
+        { id: "S4A", text: "Wait for a quiet moment and gently invite her to speak.", weights: { empathy: 3, conscientiousness: 0, collaborative_spirit: 2, emotional_agility: 0, curiosity: 0, creative_initiative: 0, motivation: 0 } },
+        { id: "S4B", text: "Notice what she is interested in and bring those topics up for the whole group.", weights: { empathy: 1, conscientiousness: 0, collaborative_spirit: 0, emotional_agility: 2, curiosity: 3, creative_initiative: 1, motivation: 0 } },
+        { id: "S4C", text: "Talk to her privately after the gathering to chat one-on-one.", weights: { empathy: 3, conscientiousness: 0, collaborative_spirit: 0, emotional_agility: 0, curiosity: 1, creative_initiative: 0, motivation: 3 } },
+        { id: "S4D", text: "Suggest a simple rule where everyone takes turns speaking in future meetings.", weights: { empathy: 0, conscientiousness: 3, collaborative_spirit: 1, emotional_agility: 0, curiosity: 0, creative_initiative: 2, motivation: 1 } }
+      ]
+    },
+    {
+      id: "S5", act: 2, act_title: "Act 2: The Circle",
+      main_heading: "The Circle",
+      setup: "A listener angrily interrupts a poet who is reading a sensitive, personal poem. The poet freezes.",
+      options: [
+        { id: "S5A", text: "Point to the community guidelines on respect and introduce the next reader.", weights: { empathy: 0, conscientiousness: 3, collaborative_spirit: 0, emotional_agility: 3, curiosity: 0, creative_initiative: 0, motivation: 1 } },
+        { id: "S5B", text: "Walk up to stand beside the poet right away so they feel safe.", weights: { empathy: 3, conscientiousness: 0, collaborative_spirit: 2, emotional_agility: 0, curiosity: 0, creative_initiative: 0, motivation: 2 } },
+        { id: "S5C", text: "Pause the event and let the angry person briefly explain what upset them.", weights: { empathy: 1, conscientiousness: 0, collaborative_spirit: 2, emotional_agility: 1, curiosity: 2, creative_initiative: 3, motivation: 0 } },
+        { id: "S5D", text: "Ask everyone in the room to sit in quiet reflection for one minute.", weights: { empathy: 0, conscientiousness: 0, collaborative_spirit: 1, emotional_agility: 2, curiosity: 3, creative_initiative: 2, motivation: 0 } }
+      ]
+    },
+    {
+      id: "S6", act: 3, act_title: "Act 3: The Outreach",
+      main_heading: "The Outreach",
+      setup: "An 8-year-old boy refuses to paint. An experienced team volunteer whispers, 'Just leave him alone.'",
+      options: [
+        { id: "S6A", text: "Listen to your teammate's advice, but keep a watchful eye on the boy from where you stand.", weights: { empathy: 2, conscientiousness: 2, collaborative_spirit: 1, emotional_agility: 1, curiosity: 0, creative_initiative: 0, motivation: 1 } },
+        { id: "S6B", text: "Sit near him and draw quietly on your own paper so he feels no pressure.", weights: { empathy: 3, conscientiousness: 0, collaborative_spirit: 0, emotional_agility: 1, curiosity: 1, creative_initiative: 1, motivation: 2 } },
+        { id: "S6C", text: "Build a small tower out of paint jars to catch his interest.", weights: { empathy: 0, conscientiousness: 0, collaborative_spirit: 0, emotional_agility: 0, curiosity: 2, creative_initiative: 3, motivation: 1 } },
+        { id: "S6D", text: "Ask the full-time center staff what the boy usually enjoys doing.", weights: { empathy: 1, conscientiousness: 1, collaborative_spirit: 2, emotional_agility: 0, curiosity: 3, creative_initiative: 0, motivation: 0 } }
+      ]
+    },
+    {
+      id: "S7", act: 3, act_title: "Act 3: The Outreach",
+      main_heading: "The Outreach",
+      setup: "You feel very tired from a long week. A close friend is visiting your town for only one day, but you promised earlier to help set up today's event.",
+      options: [
+        { id: "S7A", text: "Keep your full promise to work. Meet your friend only if work finishes early.", weights: { empathy: 0, conscientiousness: 3, collaborative_spirit: 1, emotional_agility: 1, curiosity: 0, creative_initiative: 0, motivation: 3 } },
+        { id: "S7B", text: "Call the team leader honestly and offer to take a harder shift next week instead.", weights: { empathy: 2, conscientiousness: 1, collaborative_spirit: 3, emotional_agility: 2, curiosity: 0, creative_initiative: 0, motivation: 0 } },
+        { id: "S7C", text: "Invite your friend to come with you and help out as a guest volunteer.", weights: { empathy: 0, conscientiousness: 0, collaborative_spirit: 1, emotional_agility: 1, curiosity: 1, creative_initiative: 3, motivation: 2 } },
+        { id: "S7D", text: "Work the two hardest hours, hand over your jobs clearly to the team, and then leave.", weights: { empathy: 0, conscientiousness: 2, collaborative_spirit: 2, emotional_agility: 3, curiosity: 0, creative_initiative: 0, motivation: 1 } }
+      ]
+    }
+  ],
+
+  games: [
+    { id: "F1", world: "World 1 · The Sound Room", main_heading: "Tuning the Hall", goal: "Balance the room sound across 5 rounds.", type: "tuning_hall" },
+    { id: "F2", world: "World 1 · The Sound Room", main_heading: "The Gathering Voices", goal: "Coordinate sound choices with your team in the hall.", type: "gathering_voices" },
+    { id: "A1", world: "World 2 · The Archive", main_heading: "The Manuscript Folios", goal: "Put each old document onto the right shelf.", type: "manuscript_folios" },
+    { id: "A2", world: "World 2 · The Archive", main_heading: "The Fragile Leaf", goal: "Inspect page condition and choose the right care for each page.", type: "fragile_leaf" },
+    { id: "C1", world: "World 3 · The Workshop", main_heading: "Resource Cooperation", goal: "Share ceramic tiles so both you and your partner have enough to finish.", type: "resource_cooperation" },
+    { id: "C2", world: "World 3 · The Workshop", main_heading: "The Gallery Wall", goal: "Choose where to hang your artwork alongside your partner's painting.", type: "gallery_wall" },
+    { id: "G1", world: "World 4 · The Mosaic Studio", main_heading: "The Ceramic Mosaic", goal: "Sort tiles into the matching containers as rules change.", type: "ceramic_mosaic" },
+    { id: "G2", world: "World 4 · The Mosaic Studio", main_heading: "The Courtyard Setup", goal: "Respond calmly when unexpected studio events happen.", type: "courtyard_setup" },
+    { id: "H1", world: "World 5 · The Hidden Gallery", main_heading: "The Curatorial Dossier", goal: "Choose the best way to care for old objects.", type: "curatorial_dossier" },
+    { id: "H2", world: "World 5 · The Hidden Gallery", main_heading: "The Relic Anomaly", goal: "Inspect clues on the old object to find where it came from.", type: "relic_anomaly" },
+    { id: "B1", world: "World 6 · The Broken Tool", main_heading: "The Artisan's Assembly", goal: "Fix the broken part using items on the workbench.", type: "artisans_assembly" },
+    { id: "B2", world: "World 6 · The Broken Tool", main_heading: "The Improvised Tool", goal: "Form a sharp, clean fold without tearing paper fibers.", type: "improvised_tool" },
+    { id: "M1", world: "World 7 · The Repetition", main_heading: "The Ceremonial Seal", goal: "Apply wax seals to event invitations across 3 rounds.", type: "ceremonial_seal" },
+    { id: "M2", world: "World 7 · The Repetition", main_heading: "The Courtesy Sleeves", goal: "Assemble 2 required folders, then decide if you want to do extra.", type: "courtesy_sleeves" }
+  ]
+};
+
+const state = {
+  screen: 'screenIntro',
+  sjtIndex: 0,
+  sjtSelectedOpt: null,
+  sjtScores: { empathy: 0, conscientiousness: 0, collaborative_spirit: 0, emotional_agility: 0, curiosity: 0, creative_initiative: 0, motivation: 0 },
+  gameIndex: 0,
+  gbaSelectedOption: null,
+  startTrialTime: 0
+};
+
+function logTelemetry(type, data) {
+  const logEl = document.getElementById('telemetryLog');
+  const row = document.createElement('div');
+  row.style.borderBottom = '1px solid #2a2622';
+  row.style.padding = '3px 0';
+  const time = new Date().toISOString().substring(11, 19);
+  row.innerHTML = '<span style="color:#b38b4d;">[' + time + '] ' + type + ':</span> ' + JSON.stringify(data);
+  logEl.prepend(row);
+}
+
+function updateProgressBar() {
+  const bar = document.getElementById('progressBar');
+  if (state.screen === 'screenIntro') bar.style.width = '5%';
+  else if (state.screen === 'screenSjt') bar.style.width = (10 + (state.sjtIndex / 7) * 35) + '%';
+  else if (state.screen === 'screenGbaIntro') bar.style.width = '48%';
+  else if (state.screen === 'screenGba') bar.style.width = (50 + (state.gameIndex / 14) * 48) + '%';
+  else bar.style.width = '100%';
+}
+
+function showScreen(screenId) {
+  state.screen = screenId;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(screenId);
+  if (target) target.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  updateProgressBar();
+}
+
+/* ==========================================================================
+   SECTION 1: SJT ENGINE
+   ========================================================================== */
+function renderSjt(index) {
+  state.sjtIndex = index;
+  state.sjtSelectedOpt = null;
+  const s = DATA.sjts[index];
+
+  document.getElementById('sjtActBadge').textContent = s.act_title;
+  document.getElementById('sjtHeading').textContent = s.main_heading;
+  document.getElementById('sjtCounter').textContent = 'Story ' + (index + 1) + ' of 7';
+  document.getElementById('sjtSetupText').textContent = s.setup;
+
+  const btnNext = document.getElementById('btnNextSjt');
+  btnNext.disabled = true;
+
+  const container = document.getElementById('sjtOptionsContainer');
+  container.innerHTML = '';
+
+  s.options.forEach((opt, idx) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'outside-opt-card';
+    card.innerHTML = '<div class="opt-bullet">' + (idx + 1) + '</div><div style="flex:1;">' + opt.text + '</div>';
+
+    card.onclick = () => {
+      container.querySelectorAll('.outside-opt-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.sjtSelectedOpt = opt;
+      btnNext.disabled = false;
+      logTelemetry('sjt_select', { scenario: s.id, option: opt.id });
+    };
+
+    container.appendChild(card);
+  });
+
+  showScreen('screenSjt');
+  logTelemetry('sjt_view', { scenario: s.id });
+}
+
+document.getElementById('btnStartSjt').onclick = () => renderSjt(0);
+
+document.getElementById('btnNextSjt').onclick = () => {
+  if (!state.sjtSelectedOpt) return;
+  const s = DATA.sjts[state.sjtIndex];
+  Object.entries(state.sjtSelectedOpt.weights).forEach(([trait, score]) => {
+    state.sjtScores[trait] += score;
+  });
+  logTelemetry('sjt_submit', { scenario: s.id, option: state.sjtSelectedOpt.id });
+
+  if (state.sjtIndex < DATA.sjts.length - 1) {
+    renderSjt(state.sjtIndex + 1);
+  } else {
+    showScreen('screenGbaIntro');
+  }
+};
+
+document.addEventListener('keydown', (e) => {
+  if (state.screen === 'screenSjt') {
+    if (['1', '2', '3', '4'].includes(e.key)) {
+      const idx = parseInt(e.key) - 1;
+      const cards = document.querySelectorAll('#sjtOptionsContainer .outside-opt-card');
+      if (cards[idx]) cards[idx].click();
+    } else if (e.key === 'Enter') {
+      const btn = document.getElementById('btnNextSjt');
+      if (!btn.disabled) btn.click();
+    }
+  }
+});
+
+/* ==========================================================================
+   SECTION 2: GBA ENGINE
+   ========================================================================== */
+function setDirectiveText(el, text) {
+  if (!el) return;
+  const sp = el.querySelector ? (el.querySelector('span:first-child') || el.querySelector('span')) : null;
+  if (sp) sp.textContent = text;
+  else el.textContent = text;
+}
+
+document.getElementById('btnStartGba').onclick = () => renderGba(0);
+
+function renderGba(index) {
+  state.gameIndex = index;
+  state.gbaSelectedOption = null;
+  state.startTrialTime = performance.now();
+  const g = DATA.games[index];
+
+  document.getElementById('gbaRoomTag').textContent = g.world;
+  document.getElementById('gbaMainHeading').textContent = g.main_heading;
+  document.getElementById('gbaCounter').textContent = 'Activity ' + (index + 1) + ' of 14';
+  document.getElementById('gbaGoalText').textContent = g.goal;
+
+  const stage = document.getElementById('studioStage');
+  const preZone = document.getElementById('gbaOutsidePreZone');
+  const postZone = document.getElementById('gbaOutsidePostZone');
+  const optContainer = document.getElementById('gbaOutsideOptions');
+  const directiveEl = document.getElementById('gbaDirective');
+  const actionFooter = document.getElementById('gbaActionFooter');
+  const btnNext = document.getElementById('btnNextGba');
+
+  const stageCard = document.getElementById('gbaStageCard');
+  if (stageCard) stageCard.style.display = 'block';
+
+  stage.innerHTML = '';
+  preZone.innerHTML = '';
+  postZone.innerHTML = '';
+  optContainer.innerHTML = '';
+  directiveEl.style.display = 'flex';
+  optContainer.style.display = 'grid';
+  actionFooter.style.display = 'flex';
+  btnNext.disabled = true;
+
+  function setupOutsideOptions(options, directiveText = 'Choose one option below:') {
+    setDirectiveText(directiveEl, directiveText);
+    options.forEach((opt, idx) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'outside-opt-card';
+      const label = String.fromCharCode(65 + idx);
+      card.innerHTML = '<div class="opt-bullet">' + label + '</div><div style="flex:1;">' + opt.text + '</div>';
+
+      card.onclick = () => {
+        optContainer.querySelectorAll('.outside-opt-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        state.gbaSelectedOption = opt;
+        btnNext.disabled = false;
+        if (opt.onSelect) opt.onSelect();
+        logTelemetry('gba_option_select', { game: g.id, choice: opt.id || label });
+      };
+      optContainer.appendChild(card);
+    });
+  }
+
+  if (g.type === 'tuning_hall') renderTuningHall(stage, preZone, postZone, optContainer, directiveEl, btnNext);
+  else if (g.type === 'gathering_voices') renderGatheringVoices(stage, setupOutsideOptions);
+  else if (g.type === 'manuscript_folios') renderManuscriptFolios(stage, setupOutsideOptions);
+  else if (g.type === 'fragile_leaf') renderFragileLeaf(stage, setupOutsideOptions);
+  else if (g.type === 'resource_cooperation') renderResourceCooperation(stage, preZone, optContainer, directiveEl, btnNext);
+  else if (g.type === 'gallery_wall') renderGalleryWall(stage, setupOutsideOptions);
+  else if (g.type === 'ceramic_mosaic') renderCeramicMosaic(stage, optContainer, directiveEl, actionFooter);
+  else if (g.type === 'courtyard_setup') renderCourtyardSetup(stage, setupOutsideOptions);
+  else if (g.type === 'curatorial_dossier') renderCuratorialDossier(stage, setupOutsideOptions);
+  else if (g.type === 'relic_anomaly') renderRelicAnomaly(stage, preZone, setupOutsideOptions);
+  else if (g.type === 'artisans_assembly') renderArtisansAssembly(stage, postZone, optContainer, directiveEl, btnNext);
+  else if (g.type === 'improvised_tool') renderImprovisedTool(stage, setupOutsideOptions, btnNext);
+  else if (g.type === 'ceremonial_seal') renderCeremonialSeal(stage, setupOutsideOptions);
+  else if (g.type === 'courtesy_sleeves') renderCourtesySleeves(stage, optContainer, directiveEl, actionFooter, btnNext);
+
+  showScreen('screenGba');
+  logTelemetry('gba_start', { game: g.id });
+}
+
+document.getElementById('btnNextGba').onclick = () => {
+  const g = DATA.games[state.gameIndex];
+  logTelemetry('gba_finish', { game: g.id, chosen: state.gbaSelectedOption?.id });
+  if (state.gameIndex < DATA.games.length - 1) {
+    renderGba(state.gameIndex + 1);
+  } else {
+    showScreen('screenComplete');
+  }
+};
+
+/* --------------------------------------------------------------------------
+   GBA 1: F1 Tuning the Hall
+   Order:
+   1) Step 1: Read report and choose an action + Options (A, B, C)
+   2) The Tile + Step 2: Adjust Volume Fader grouped as ONE UNIT
+   -------------------------------------------------------------------------- */
+function renderTuningHall(stage, preZone, postZone, optContainer, directiveEl, btnNext) {
+  // Hide top stage card so Tile is unified with Step 2 below Step 1
+  const stageCard = document.getElementById('gbaStageCard');
+  if (stageCard) stageCard.style.display = 'none';
+
+  // STEP 1 FIRST: Sound Report & Directive
+  preZone.innerHTML = '<div style="background:var(--card); border:1.5px solid var(--line); border-radius:var(--radius-md); padding:16px; margin-bottom:12px;">' +
+    '<div style="font-size:0.75rem; text-transform:uppercase; color:var(--accent); font-weight:800; margin-bottom:6px;">Sound Report from Hall Host</div>' +
+    '<div style="font-size:1.05rem; font-family:var(--font-serif); color:var(--ink); line-height:1.45; font-style:italic;">' +
+      '"Front rows are hearing too much echo from the wall speakers during the opening reading."' +
+    '</div>' +
+  '</div>';
+
+  setDirectiveText(directiveEl, 'Step 1: Read the report and choose an action:');
+
+  const options = [
+    { id: 'fader_adjust', text: 'A · Fix Sound — Change volume fader to balance echo' },
+    { id: 'keep_as_is', text: 'B · Keep As Is — Leave sound settings as they are' },
+    { id: 'check_first', text: 'C · Check First — Run a quick test on the microphone cable' }
+  ];
+
+  options.forEach((opt, idx) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'outside-opt-card';
+    card.innerHTML = '<div class="opt-bullet">' + String.fromCharCode(65 + idx) + '</div><div style="flex:1;">' + opt.text + '</div>';
+
+    card.onclick = () => {
+      optContainer.querySelectorAll('.outside-opt-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.gbaSelectedOption = opt;
+      btnNext.disabled = false;
+      logTelemetry('tuning_choice', { choice: opt.id });
+    };
+    optContainer.appendChild(card);
+  });
+
+  // TILE + STEP 2 AS ONE UNIT (Rendered directly after Step 1 options!)
+  postZone.innerHTML = '<div class="gba-stage-card" style="margin-top:16px; border-radius:var(--radius-md); overflow:hidden; background:#1b1612; border:1px solid #382c22; padding:18px;">' +
+    '<div style="font-size:0.75rem; color:#d8caa8; margin-bottom:8px; text-transform:uppercase; font-weight:700; display:flex; justify-content:space-between; align-items:center;">' +
+      '<span>Hall Acoustic Monitor · Room Waveform</span>' +
+      '<span id="sensorStatusText" style="color:#e6be82; font-weight:700;">Echo Detected (Front Rows)</span>' +
+    '</div>' +
+    '<div class="waveform-box" id="waveBox" style="margin-bottom:14px;">' +
+      Array.from({length: 18}, () => '<div class="wave-bar" style="height:28px;"></div>').join('') +
+    '</div>' +
+    '<div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-sm); padding:14px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">' +
+        '<span style="color:#e6be82; font-weight:800; font-size:0.85rem; text-transform:uppercase;">Step 2: Adjust Volume Fader</span>' +
+        '<span id="sliderFeedbackText" style="color:#fff; font-weight:700; font-size:0.85rem;">Level: 50%</span>' +
+      '</div>' +
+      '<div style="font-size:0.82rem; color:#d8caa8; margin-bottom:8px;">Slide control left or right to balance the sound:</div>' +
+      '<div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#a89a88; font-weight:700; margin-bottom:4px;">' +
+        '<span>🔈 Softer</span>' +
+        '<span>◄ Slide to balance ►</span>' +
+        '<span>🔊 Louder</span>' +
+      '</div>' +
+      '<input type="range" class="tuning-slider-input" id="tuningFader" min="15" max="95" value="50" style="width:100%; accent-color:#bd6f5d; cursor:pointer;">' +
+    '</div>' +
+  '</div>';
+
+  const bars = postZone.querySelectorAll('.wave-bar');
+  const sensorStatus = postZone.querySelector('#sensorStatusText');
+  const fader = document.getElementById('tuningFader') || postZone.querySelector('#tuningFader');
+  const feedText = document.getElementById('sliderFeedbackText') || postZone.querySelector('#sliderFeedbackText');
+
+  fader.oninput = () => {
+    const val = fader.value;
+    feedText.textContent = 'Level: ' + val + '%';
+    bars.forEach((b, i) => {
+      const h = Math.max(10, Math.min(64, (val * 0.58) + ((i % 4) * 8)));
+      b.style.height = h + 'px';
+    });
+    if (val >= 40 && val <= 60) {
+      sensorStatus.textContent = '✓ Balanced Sound Across All Rows';
+      sensorStatus.style.color = '#8cd39e';
+    } else if (val < 40) {
+      sensorStatus.textContent = 'Sound Level Very Soft';
+      sensorStatus.style.color = '#e6be82';
+    } else {
+      sensorStatus.textContent = 'Heavy Front Row Echo';
+      sensorStatus.style.color = '#df9b8e';
+    }
+    logTelemetry('mixer_slider_adjusted', { volume: val });
+  };
+}
+
+/* --------------------------------------------------------------------------
+   GBA 2: F2 The Gathering Voices
+   -------------------------------------------------------------------------- */
+function renderGatheringVoices(stage, setupOptions) {
+  stage.innerHTML = '<div class="stage-content" style="align-items:stretch;">' +
+    '<div style="background:rgba(0,0,0,0.32); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px;">' +
+      '<div style="font-size:0.75rem; text-transform:uppercase; color:#d1b88e; font-weight:700;">Note From Your Teammate</div>' +
+      '<p style="margin:6px 0 0; font-size:0.98rem; line-height:1.45; color:#f6efe5;">' +
+        '"The speaker is whispering softly. People in row 6 cannot hear the words clearly."' +
+      '</p>' +
+    '</div>' +
+    '<div style="display:flex; justify-content:space-around; align-items:center; background:#221b15; border-radius:8px; padding:8px; margin-top:10px;">' +
+      '<span style="font-size:0.8rem; color:#bba98e;">🎙️ Main Mic: On</span>' +
+      '<span style="font-size:0.8rem; color:#bba98e;">🔊 Hall Sound: Low</span>' +
+    '</div>' +
+  '</div>';
+
+  setupOptions([
+    { id: 'act_now', text: 'Act Now — Turn up the room volume right away.' },
+    { id: 'ask_first', text: 'Ask First — Check with the host before changing the sound.' },
+    { id: 'keep_going', text: 'Keep Going — Wait until the reading finishes first.' }
+  ], 'Choose your next step:');
+}
+
+/* --------------------------------------------------------------------------
+   GBA 3: A1 The Manuscript Folios
+   -------------------------------------------------------------------------- */
+function renderManuscriptFolios(stage, setupOptions) {
+  stage.innerHTML = '<div class="stage-content">' +
+    '<div class="folio-sheet">' +
+      '<div style="font-size:0.75rem; color:#7d6349; text-transform:uppercase; font-weight:700;">Old Paper 1 of 5</div>' +
+      '<h3 style="font-family:var(--font-serif); margin:4px 0 6px; font-size:1.15rem; color:#1f1912;">Old River Song (18th Century)</h3>' +
+      '<p style="font-size:0.9rem; line-height:1.45; color:#4a3f33; margin:0;">' +
+        'A handwritten song about the river, written on antique paper with gold flower borders.' +
+      '</p>' +
+      '<div class="water-stain"></div>' +
+    '</div>' +
+  '</div>';
+
+  setupOptions([
+    { id: 'shelf_poetry', text: 'Shelf A: Poetry & Songs' },
+    { id: 'shelf_artisan', text: 'Shelf B: Shop & Trade Records' },
+    { id: 'shelf_chronicler', text: 'Shelf C: City History & Laws' }
+  ], 'Choose which shelf to place this on:');
+}
+
+/* --------------------------------------------------------------------------
+   GBA 4: A2 The Fragile Leaf
+   -------------------------------------------------------------------------- */
+function renderFragileLeaf(stage, setupOptions) {
+  stage.innerHTML = '<div class="stage-content">' +
+    '<div class="folio-sheet" style="border:2px dashed #a0815b;">' +
+      '<div style="font-size:0.75rem; color:#8f4d38; text-transform:uppercase; font-weight:700;">Fragile Page 1 of 4</div>' +
+      '<h3 style="font-family:var(--font-serif); margin:4px 0 6px; font-size:1.15rem; color:#1f1912;">Old Hand-Drawn Picture</h3>' +
+      '<p style="font-size:0.9rem; line-height:1.45; color:#4a3f33; margin:0;">' +
+        'The paper is very old and dry. A small water stain is in the corner, and the binding stitches are loose.' +
+      '</p>' +
+    '</div>' +
+  '</div>';
+
+  setupOptions([
+    { id: 'care_folder', text: 'Put it inside a clean paper folder to keep it safe.' },
+    { id: 'care_press', text: 'Press it gently between clean boards so it dries flat.' },
+    { id: 'care_sew', text: 'Sew the loose threads with soft thread.' }
+  ], 'Choose how to protect this page:');
+}
+
+/* --------------------------------------------------------------------------
+   GBA 5: C1 Resource Cooperation (Fully Functional & Robust +/- Buttons)
+   -------------------------------------------------------------------------- */
+function renderResourceCooperation(stage, preZone, optContainer, directiveEl, btnNext) {
+  let shared = 3;
+  let youTiles = 5;
+  let partnerTiles = 5;
+
+  setDirectiveText(directiveEl, 'Use + / − to choose how many tiles to share:');
+  optContainer.style.display = 'none';
+
+  stage.innerHTML = '<div class="stage-content">' +
+    '<div class="dual-boards">' +
+      '<div class="board-box">' +
+        '<div class="board-title">Your Wall</div>' +
+        '<div class="tiles-grid" id="youTilesGrid"></div>' +
+        '<div style="font-size:0.75rem; color:#baa890; margin-top:4px;">You have: <span id="youCount">5</span> (Need 5)</div>' +
+      '</div>' +
+      '<div class="board-box">' +
+        '<div class="board-title">Partner&#39;s Wall</div>' +
+        '<div class="tiles-grid" id="partnerTilesGrid"></div>' +
+        '<div style="font-size:0.75rem; margin-top:4px;" id="coopStatusNote">Checking...</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  preZone.innerHTML = '<div style="background:var(--card); border:1.5px solid var(--line); border-radius:var(--radius-md); padding:16px; text-align:center;">' +
+    '<div style="font-size:0.92rem; color:var(--ink); margin-bottom:8px;">' +
+      'You started with 8 tiles (need 5). Partner started with 2 tiles (needs 3 more to reach 5).' +
+    '</div>' +
+    '<div class="counter-controls">' +
+      '<button type="button" class="counter-btn" id="btnMinusTile" aria-label="Decrease shared tiles">−</button>' +
+      '<span style="font-size:1.25rem; font-weight:800; color:var(--accent); min-width:120px;" id="sharedCountText">3 tile(s)</span>' +
+      '<button type="button" class="counter-btn" id="btnPlusTile" aria-label="Increase shared tiles">+</button>' +
+    '</div>' +
+    '<div style="font-size:0.8rem; color:var(--muted); margin-top:8px;">Tap buttons to adjust tiles given to partner</div>' +
+  '</div>';
+
+  function updateDisplay() {
+    const youEl = stage.querySelector('#youTilesGrid');
+    const partnerEl = stage.querySelector('#partnerTilesGrid');
+    const sharedText = document.getElementById('sharedCountText');
+    const youCountText = stage.querySelector('#youCount');
+    const statusNote = stage.querySelector('#coopStatusNote');
+    if (!youEl || !partnerEl) return;
+
+    youEl.innerHTML = Array.from({length: youTiles}, () => '<div class="tile-chip"></div>').join('');
+    partnerEl.innerHTML = Array.from({length: partnerTiles}, () => '<div class="tile-chip partner"></div>').join('');
+    if (sharedText) sharedText.textContent = shared + ' tile(s)';
+    if (youCountText) youCountText.textContent = youTiles;
+
+    if (partnerTiles >= 5) {
+      statusNote.textContent = '✓ Partner has enough tiles to finish (' + partnerTiles + '/5)';
+      statusNote.style.color = '#8cd39e';
+    } else {
+      const stillNeeds = 5 - partnerTiles;
+      statusNote.textContent = 'Partner still needs ' + stillNeeds + ' more tile(s) to finish';
+      statusNote.style.color = '#e6be82';
+    }
+
+    btnNext.disabled = false;
+    state.gbaSelectedOption = { id: 'shared_' + shared, shared };
+  }
+
+  updateDisplay();
+
+  const minusBtn = document.getElementById('btnMinusTile') || preZone.querySelector('#btnMinusTile');
+  const plusBtn = document.getElementById('btnPlusTile') || preZone.querySelector('#btnPlusTile');
+
+  minusBtn.onclick = (e) => {
+    e.preventDefault();
+    if (shared > 0) {
+      shared--;
+      youTiles = 8 - shared;
+      partnerTiles = 2 + shared;
+      updateDisplay();
+      logTelemetry('coop_tile_adjusted', { shared, youTiles, partnerTiles });
+    }
+  };
+
+  plusBtn.onclick = (e) => {
+    e.preventDefault();
+    if (shared < 6) {
+      shared++;
+      youTiles = 8 - shared;
+      partnerTiles = 2 + shared;
+      updateDisplay();
+      logTelemetry('coop_tile_adjusted', { shared, youTiles, partnerTiles });
+    }
+  };
+}
+
+/* --------------------------------------------------------------------------
+   GBA 6: C2 The Gallery Wall
+   -------------------------------------------------------------------------- */
+function renderGalleryWall(stage, setupOptions) {
+  stage.innerHTML = '<div class="stage-content">' +
+    '<div class="wall-spots-canvas">' +
+      '<div class="partner-frame">Partner&#39;s Painting<br>(Already Hung)</div>' +
+      '<div class="hanging-spot-marker" id="markerSpot1" style="right:20px; top:18px; width:68px; height:60px;">Spot 1</div>' +
+      '<div class="hanging-spot-marker" id="markerSpot2" style="left:96px; top:24px; width:68px; height:80px;">Spot 2</div>' +
+      '<div class="hanging-spot-marker" id="markerSpot3" style="bottom:12px; left:50%; transform:translateX(-50%); width:84px; height:46px;">Spot 3</div>' +
+    '</div>' +
+  '</div>';
+
+  function highlightMarker(markerId) {
+    stage.querySelectorAll('.hanging-spot-marker').forEach(m => m.classList.remove('active'));
+    const target = stage.querySelector('#' + markerId);
+    if (target) target.classList.add('active');
+  }
+
+  setupOptions([
+    { id: 'spot_1', text: 'Spot 1 — Upper right wall space', onSelect: () => highlightMarker('markerSpot1') },
+    { id: 'spot_2', text: 'Spot 2 — Right next to partner&#39;s frame', onSelect: () => highlightMarker('markerSpot2') },
+    { id: 'spot_3', text: 'Spot 3 — Below in the lower center space', onSelect: () => highlightMarker('markerSpot3') }
+  ], 'Choose where on the wall to hang your artwork:');
+}
+
+/* --------------------------------------------------------------------------
+   GBA 7: G1 The Ceramic Mosaic (Instant Response on Click)
+   -------------------------------------------------------------------------- */
+function renderCeramicMosaic(stage, optContainer, directiveEl, actionFooter) {
+  setDirectiveText(directiveEl, 'Tap Container 1 or Container 2 to place tile now:');
+  actionFooter.style.display = 'none';
+
+  const currentTile = { color: 'Gold', shape: 'Square', icon: '■', colorCode: '#b38b4d' };
+
+  stage.innerHTML = '<div class="stage-content">' +
+    '<div style="font-size:0.75rem; text-transform:uppercase; color:#baa890; margin-bottom:6px;">Tile to Sort</div>' +
+    '<div style="width:72px; height:72px; background:' + currentTile.colorCode + '; border-radius:10px; border:2px solid #5a421b; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(0,0,0,0.4);">' +
+      '<span style="font-size:2.4rem; color:#fff;">' + currentTile.icon + '</span>' +
+    '</div>' +
+    '<div style="font-size:1rem; color:#f6efe5; margin-top:8px; font-weight:700;">' + currentTile.color + ' Square</div>' +
+  '</div>';
+
+  optContainer.innerHTML = '<div class="mosaic-containers-row">' +
+    '<button type="button" class="container-box-btn" id="btnContainer1">' +
+      '<div style="font-size:2.2rem; color:var(--gold); line-height:1;">●</div>' +
+      '<div style="font-weight:700; font-size:1rem; margin-top:6px;">Container 1</div>' +
+      '<div style="font-size:0.8rem; color:var(--muted);">Reference: Gold Circle</div>' +
+    '</button>' +
+    '<button type="button" class="container-box-btn" id="btnContainer2">' +
+      '<div style="font-size:2.2rem; color:var(--green); line-height:1;">■</div>' +
+      '<div style="font-weight:700; font-size:1rem; margin-top:6px;">Container 2</div>' +
+      '<div style="font-size:0.8rem; color:var(--muted);">Reference: Green Square</div>' +
+    '</button>' +
+  '</div>';
+
+  function onSelectContainer(boxId) {
+    const latency = Math.round(performance.now() - state.startTrialTime);
+    logTelemetry('mosaic_touch_select', { container: boxId, latency_ms: latency });
+
+    const btn = optContainer.querySelector('#' + boxId);
+    if (btn) btn.style.borderColor = 'var(--accent-gold)';
+
+    setTimeout(() => {
+      renderGba(state.gameIndex + 1);
+    }, 280);
+  }
+
+  optContainer.querySelector('#btnContainer1').onclick = () => onSelectContainer('btnContainer1');
+  optContainer.querySelector('#btnContainer2').onclick = () => onSelectContainer('btnContainer2');
+}
+
+/* --------------------------------------------------------------------------
+   GBA 8: G2 The Courtyard Setup (Realistic Organic Ink Splatter)
+   -------------------------------------------------------------------------- */
+function renderCourtyardSetup(stage, setupOptions) {
+  stage.innerHTML = '<div class="stage-content">' +
+    '<div class="realistic-ink-desk">' +
+      '<div class="desk-sheet">' +
+        '<div style="font-size:0.75rem; text-transform:uppercase; color:#786653; font-weight:700;">Studio Drawing Sheet</div>' +
+        '<div style="font-size:0.95rem; font-weight:700; margin:3px 0;">Handmade Drawing Paper</div>' +
+        '<div style="font-size:0.82rem; color:#5c4e3f;">You were drawing lines when an ink bottle tipped...</div>' +
+        '<!-- Truly Random Organic Ink Splatter SVG (No Heart Resemblance) -->' +
+        '<svg style="position:absolute; right:20px; bottom:10px; width:125px; height:95px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6));" viewBox="0 0 120 90">' +
+          '<path d="M50,42 C38,30 22,38 18,50 C14,64 30,72 45,68 C58,65 65,74 78,70 C92,65 105,52 98,38 C92,25 78,20 68,32 C62,38 56,34 50,42 Z" fill="#0b0c0f"/>' +
+          '<path d="M72,30 C80,18 92,22 86,34 Z" fill="#0b0c0f"/>' +
+          '<circle cx="16" cy="36" r="3.2" fill="#0b0c0f"/>' +
+          '<circle cx="28" cy="22" r="2.4" fill="#0b0c0f"/>' +
+          '<circle cx="85" cy="18" r="3.8" fill="#0b0c0f"/>' +
+          '<circle cx="106" cy="46" r="2.8" fill="#0b0c0f"/>' +
+          '<circle cx="62" cy="78" r="3" fill="#0b0c0f"/>' +
+          '<circle cx="40" cy="80" r="2.2" fill="#0b0c0f"/>' +
+        '</svg>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  setupOptions([
+    { id: 'dab_cloth', text: 'Dab the ink gently with a clean dry cloth so paper stays flat.' },
+    { id: 'draw_around', text: 'Keep working right away around the wet ink spot.' },
+    { id: 'step_away', text: 'Step away from the table and wait for someone to help.' }
+  ], 'Choose what you would do right now:');
+}
+
+/* --------------------------------------------------------------------------
+   GBA 9: H1 The Curatorial Dossier (Pulsing Tip & Simple Words)
+   -------------------------------------------------------------------------- */
+function renderCuratorialDossier(stage, setupOptions) {
+  let noteOpened = false;
+
+  stage.innerHTML = '<div class="stage-content">' +
+    '<div style="width:92%; background:#2c241d; border:1px solid #4a3d31; border-radius:10px; padding:14px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">' +
+        '<span style="font-size:0.75rem; color:#d8baa0; text-transform:uppercase; font-weight:700;">Old Object 1 of 3</span>' +
+        '<button type="button" class="btn pulse-btn" id="btnResearchNote" style="padding:6px 12px; font-size:0.78rem; background:#4a392b; color:#ffffff; border:1.5px solid var(--accent-gold);">' +
+          '📖 Open Research Tip' +
+        '</button>' +
+      '</div>' +
+      '<div style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:4px;">Old Wooden Pen Box (Qalamdan)</div>' +
+      '<p style="font-size:0.86rem; color:#cfc2b2; margin:0; line-height:1.45;">' +
+        'A painted wooden box for keeping pens. The paint is old and tiny pieces of shiny coat are peeling off.' +
+      '</p>' +
+      '<div id="tipBox" style="display:none; margin-top:10px; padding:8px 12px; background:#1e1712; border-left:3px solid var(--accent-gold); font-size:0.82rem; color:#e0d0b8;">' +
+        '<b>Tip from old makers:</b> Natural tree oil dries slowly and keeps paint bright without cracking.' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  const btnTip = stage.querySelector('#btnResearchNote');
+  const tipBox = stage.querySelector('#tipBox');
+
+  btnTip.onclick = () => {
+    noteOpened = !noteOpened;
+    btnTip.classList.remove('pulse-btn');
+    tipBox.style.display = noteOpened ? 'block' : 'none';
+    btnTip.textContent = noteOpened ? '✕ Hide Research Tip' : '📖 Open Research Tip';
+    logTelemetry('curatorial_tip_toggled', { opened: noteOpened });
+  };
+
+  setupOptions([
+    { id: 'natural_oil', text: 'Wipe with natural plant oil and let it dry slowly.' },
+    { id: 'quick_spray', text: 'Spray with modern quick-drying polish.' },
+    { id: 'dry_cloth', text: 'Gently rub with a clean dry cloth.' }
+  ], 'Choose how to care for this box:');
+}
+
+/* --------------------------------------------------------------------------
+   GBA 10: H2 The Relic Anomaly (Step 1 Outside Tile Similar to Step 2)
+   -------------------------------------------------------------------------- */
+function renderRelicAnomaly(stage, preZone, setupOptions) {
+  // Inside the Tile: Relic Artifact Canvas ONLY
+  stage.innerHTML = '<div class="stage-content">' +
+    '<div style="width:86%; background:#292019; border:1.5px solid #48392d; border-radius:10px; padding:16px; text-align:center;">' +
+      '<div style="font-size:0.75rem; color:#d8baa0; text-transform:uppercase; font-weight:700;">Historical Artifact on Velvet Pad</div>' +
+      '<div style="width:52px; height:52px; border-radius:50%; background:#963728; margin:10px auto; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.75rem; font-weight:800; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:2px solid #5a1c12;">' +
+        'STAMP' +
+      '</div>' +
+      '<div style="font-size:0.88rem; color:#f0e2d2; font-weight:600;">Old Wax Seal on Goatskin Parchment</div>' +
+      '<div style="font-size:0.78rem; color:#ad9e8e; margin-top:2px;">Origin unknown · Inspect clues below to identify</div>' +
+    '</div>' +
+  '</div>';
+
+  // Outside the Tile: Step 1 (Clues Row & Clue Note Box) — Rendered BEFORE Step 2 Options!
+  preZone.innerHTML = '<div style="background:var(--card); border:1.5px solid var(--line); border-radius:var(--radius-md); padding:14px; margin-bottom:12px;">' +
+    '<div style="font-size:0.8rem; font-weight:800; color:var(--accent); text-transform:uppercase; margin-bottom:8px;">' +
+      'Step 1: Tap to check clues on this old stamp' +
+    '</div>' +
+    '<div style="display:flex; gap:8px; flex-wrap:wrap;" id="clueRow">' +
+      '<button type="button" class="btn" id="btnClue_stamp" style="flex:1; min-width:120px; padding:8px 10px; font-size:0.8rem;" data-clue="stamp">🔍 Carved Script</button>' +
+      '<button type="button" class="btn" id="btnClue_wax" style="flex:1; min-width:120px; padding:8px 10px; font-size:0.8rem;" data-clue="wax">🔬 Red Wax</button>' +
+      '<button type="button" class="btn" id="btnClue_paper" style="flex:1; min-width:120px; padding:8px 10px; font-size:0.8rem;" data-clue="paper">📜 Paper Grain</button>' +
+    '</div>' +
+    '<div id="clueNoteBox" style="font-size:0.86rem; color:var(--ink); margin-top:10px; padding:10px; background:var(--card-tint); border-radius:var(--radius-sm); border:1px solid var(--line);">' +
+      'Tap any clue button above to inspect physical details.' +
+    '</div>' +
+  '</div>';
+
+  const noteBox = document.getElementById('clueNoteBox') || preZone.querySelector('#clueNoteBox');
+  preZone.querySelectorAll('button').forEach(btn => {
+    btn.onclick = () => {
+      const c = btn.dataset?.clue || (btn.id ? btn.id.replace('btnClue_', '') : '');
+      preZone.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      if (c === 'stamp') noteBox.innerHTML = '<b>Carved Script:</b> Shows the official writing of the old Srinagar city office from 1862.';
+      else if (c === 'wax') noteBox.innerHTML = '<b>Red Wax:</b> Made from local mountain pine tree wax rather than imported wax.';
+      else if (c === 'paper') noteBox.innerHTML = '<b>Paper Grain:</b> Mountain goatskin paper with hand-scraped tool lines.';
+      logTelemetry('relic_clue_checked', { clue: c });
+    };
+  });
+
+  // Step 2 Outside Options
+  setupOptions([
+    { id: 'attr_city_office', text: 'Old City Office of Srinagar (1860s)' },
+    { id: 'attr_river_trader', text: 'River Trader Shipping Receipt' },
+    { id: 'attr_tourist_copy', text: 'Modern Souvenir Copy' }
+  ], 'Step 2: Choose where this stamp came from:');
+}
+
+/* --------------------------------------------------------------------------
+   GBA 11: B1 The Artisan's Assembly ('Equip below' at tile bottom, 'Test Setup' after options)
+   -------------------------------------------------------------------------- */
+function renderArtisansAssembly(stage, postZone, optContainer, directiveEl, btnNext) {
+  const parts = [
+    { id: 'P_BAMBOO', name: 'Bamboo Strip', desc: 'Thin and bends easily' },
+    { id: 'P_BRASS', name: 'Brass Rod', desc: 'Strong metal bar that stays straight' },
+    { id: 'P_PEG', name: 'Wooden Peg', desc: 'Small wooden pin' },
+    { id: 'P_CORD', name: 'Strong String', desc: 'Waxed cord for tying tight' },
+    { id: 'P_WEIGHT', name: 'Clay Weight', desc: 'Small heavy piece for balance' }
+  ];
+  let equipped = [];
+
+  function updateRig() {
+    const list = stage.querySelector('#equippedList');
+    if (!list) return;
+    if (equipped.length === 0) list.innerHTML = '<span style="color:#8a7968; font-size:0.75rem;">No items equipped yet</span>';
+    else list.innerHTML = equipped.map(id => '<span class="equipped-pill">' + parts.find(p=>p.id===id).name + '</span>').join(' ');
+  }
+
+  // Inside Tile: Loom preview with intuitive prompt at bottom!
+  stage.innerHTML = '<div class="stage-content">' +
+    '<div class="loom-rig-preview">' +
+      '<div style="font-size:0.72rem; text-transform:uppercase; color:#baa088; font-weight:700;">Weaving Loom Workbench</div>' +
+      '<div style="font-size:0.88rem; color:#f0e5d8; margin:2px 0;">Cracked shuttle crossbar needs replacement</div>' +
+      '<div class="rig-parts-row" id="equippedList"></div>' +
+    '</div>' +
+    '<div class="tile-bottom-guide">⬇ Equip parts below, then click Test Setup</div>' +
+  '</div>';
+
+  updateRig();
+
+  // Outside the Tile: Step 1 (Materials Options on Workbench) — Rendered FIRST
+  setDirectiveText(directiveEl, 'Tap items below to equip or remove from workbench:');
+  optContainer.innerHTML = '<div class="materials-chip-grid" id="matGrid"></div>';
+  const grid = optContainer.querySelector('#matGrid');
+
+  parts.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'material-chip';
+    chip.innerHTML = '<div><b>' + p.name + '</b><div style="font-size:0.75rem; color:var(--muted);">' + p.desc + '</div></div><span class="chip-state">+ Add</span>';
+
+    chip.onclick = () => {
+      const badge = chip.querySelector('.chip-state');
+      if (equipped.includes(p.id)) {
+        equipped = equipped.filter(id => id !== p.id);
+        chip.classList.remove('equipped');
+        if (badge) badge.textContent = '+ Add';
+      } else {
+        equipped.push(p.id);
+        chip.classList.add('equipped');
+        if (badge) badge.textContent = '✓ Added';
+      }
+      updateRig();
+      const testStatus = document.getElementById('testStatusText');
+      if (testStatus) {
+        testStatus.textContent = 'Parts updated. Click Test Setup below.';
+        testStatus.style.color = 'var(--muted)';
+      }
+      state.gbaSelectedOption = { id: 'assembly', parts: [...equipped] };
+      logTelemetry('part_toggled', { part: p.id, equipped: [...equipped] });
+    };
+    grid.appendChild(chip);
+  });
+
+  // Step 2 Dedicated Test Setup Area — Placed AFTER Options and BEFORE Confirm & Next Activity!
+  postZone.innerHTML = '<div style="background:var(--card); border:1.5px solid var(--line); border-radius:var(--radius-md); padding:14px; margin-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">' +
+    '<div>' +
+      '<div style="font-weight:700; font-size:0.92rem; color:var(--ink);">Test Your Assembled Parts</div>' +
+      '<div style="font-size:0.8rem; color:var(--muted);" id="testStatusText">Equip parts above, then test.</div>' +
+    '</div>' +
+    '<button type="button" class="btn" id="btnTestRig" style="background:#4a392b; color:#ffffff; border-color:#68523e; padding:8px 18px; font-weight:700;">' +
+      '🔧 Test Setup' +
+    '</button>' +
+  '</div>';
+
+  const testBtn = document.getElementById('btnTestRig') || postZone.querySelector('#btnTestRig');
+  const testText = document.getElementById('testStatusText') || postZone.querySelector('#testStatusText');
+
+  testBtn.onclick = () => {
+    if (equipped.length === 0) {
+      testText.textContent = 'Please choose at least one item above first.';
+      testText.style.color = '#c94a38';
+      return;
+    }
+    const isWorking = (equipped.includes('P_BAMBOO') && equipped.includes('P_CORD')) || equipped.includes('P_BRASS');
+    testText.textContent = isWorking ? '✓ Setup works! Loom parts hold firmly.' : 'Observation: Parts wobble without string to tie them.';
+    testText.style.color = isWorking ? '#2d6a3e' : '#a86520';
+    btnNext.disabled = false;
+    logTelemetry('assembly_tested', { equipped: [...equipped], works: isWorking });
+  };
+}
+
+/* --------------------------------------------------------------------------
+   GBA 12: B2 The Improvised Tool
+   -------------------------------------------------------------------------- */
+function renderImprovisedTool(stage, setupOptions, btnNext) {
+  stage.innerHTML = '<div class="stage-content">' +
+    '<div class="folio-sheet" style="width:92%; min-height:120px; text-align:center;">' +
+      '<div style="font-size:0.72rem; text-transform:uppercase; color:#855c3c; font-weight:700;">Paper Workbench</div>' +
+      '<div style="font-size:0.95rem; font-weight:700; color:#2a2016; margin:4px 0;">Thick Paper Sheet</div>' +
+      '<div style="height:3px; background:#baa58c; width:80%; margin:8px auto; border-radius:2px;" id="creaseVisual"></div>' +
+      '<div style="font-size:0.82rem; color:#6d5b48;" id="creaseFeedback">Goal: Make a sharp clean fold without tearing paper.</div>' +
+    '</div>' +
+  '</div>';
+
+  const creaseVisual = stage.querySelector('#creaseVisual');
+  const creaseFeedback = stage.querySelector('#creaseFeedback');
+
+  setupOptions([
+    {
+      id: 'bone_edge',
+      text: 'Smooth Bone Tool — Slide rounded edge firmly along ruler',
+      onSelect: () => {
+        creaseVisual.style.background = '#487352';
+        creaseVisual.style.height = '4px';
+        creaseFeedback.textContent = 'Result: Clean sharp crease made with zero paper damage.';
+        creaseFeedback.style.color = '#275c31';
+      }
+    },
+    {
+      id: 'bamboo_face',
+      text: 'Flat Bamboo Stick — Rub flat wooden side across the fold',
+      onSelect: () => {
+        creaseVisual.style.background = '#8a7751';
+        creaseFeedback.textContent = 'Result: Gentle fold made without scratching paper.';
+        creaseFeedback.style.color = '#4f4124';
+      }
+    },
+    {
+      id: 'stylus_drag',
+      text: 'Sharp Metal Pin — Drag sharp metal tip along the fold',
+      onSelect: () => {
+        creaseVisual.style.background = '#8c4740';
+        creaseFeedback.textContent = 'Result: Paper was cut through by sharp needle tip.';
+        creaseFeedback.style.color = '#732924';
+      }
+    }
+  ], 'Choose which tool and action to use:');
+}
+
+/* --------------------------------------------------------------------------
+   GBA 13: M1 The Ceremonial Seal
+   -------------------------------------------------------------------------- */
+function renderCeremonialSeal(stage, setupOptions) {
+  stage.innerHTML = '<div class="stage-content">' +
+    '<div style="width:86%; background:#efe8db; border:1px solid #d8caa8; border-radius:10px; padding:16px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.25);">' +
+      '<div style="font-size:0.75rem; text-transform:uppercase; color:#785c45; font-weight:700;">Event Invitation Envelope 1 of 3</div>' +
+      '<div style="font-size:0.95rem; font-weight:700; color:#2d241c; margin:4px 0;">To: Master Ghulam — Calligraphy Group</div>' +
+      '<div style="width:44px; height:44px; border-radius:50%; background:#9c382a; margin:10px auto; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.72rem; font-weight:700; box-shadow:0 3px 8px rgba(0,0,0,0.3);">' +
+        'SEAL' +
+      '</div>' +
+      '<div style="font-size:0.8rem; color:#635242;">Warm red wax drop is ready</div>' +
+    '</div>' +
+  '</div>';
+
+  setupOptions([
+    { id: 'seal_gentle', text: 'Gentle Press (Light touch on wax)' },
+    { id: 'seal_firm', text: 'Firm Balanced Press (Hold stamp steady for 2 seconds)' },
+    { id: 'seal_quick', text: 'Quick Tap (Fast downward stamp)' }
+  ], 'Choose how you want to press the stamp:');
+}
+
+/* --------------------------------------------------------------------------
+   GBA 14: M2 The Courtesy Sleeves (Authentic Voluntary Continuation)
+   -------------------------------------------------------------------------- */
+function renderCourtesySleeves(stage, optContainer, directiveEl, actionFooter, btnNext) {
+  actionFooter.style.display = 'none';
+
+  let currentStep = 1;
+
+  const folders = [
+    { title: "Required Folder 1 of 2", label: "Crafts Guild Welcome Folder", isRequired: true },
+    { title: "Required Folder 2 of 2", label: "Regional Patrons Welcome Folder", isRequired: true },
+    { title: "Optional Extra Folder 1", label: "Visiting Students Folder", isRequired: false }
+  ];
+
+  function renderFolderStage() {
+    const f = folders[Math.min(currentStep - 1, folders.length - 1)];
+
+    stage.innerHTML = '<div class="stage-content">' +
+      '<div style="width:90%; background:#2f261e; border:1px solid #4a3d31; border-radius:10px; padding:16px; text-align:center;">' +
+        '<div style="font-size:0.75rem; text-transform:uppercase; color:#d4baa2; font-weight:700; margin-bottom:4px;">' + f.title + '</div>' +
+        '<div style="font-size:1.05rem; font-weight:700; color:#fff; margin:6px 0;">' + f.label + '</div>' +
+        '<div style="font-size:0.82rem; color:#baa38c; margin-top:6px;">Place courtesy papers inside and fold sleeve closed</div>' +
+      '</div>' +
+    '</div>';
+
+    if (currentStep <= 2) {
+      setDirectiveText(directiveEl, 'Step ' + currentStep + ' of 2 (Required):');
+      optContainer.innerHTML = '<button type="button" class="btn primary full" id="btnAssembleReq">' +
+        'Assemble ' + f.label + ' →' +
+      '</button>';
+
+      optContainer.querySelector('#btnAssembleReq').onclick = () => {
+        logTelemetry('courtesy_folder_assembled', { step: currentStep, folder: f.label, mandatory: true });
+        currentStep++;
+        renderFolderStage();
+      };
+    } else {
+      setDirectiveText(directiveEl, 'Required folders completed! You may finish or do extra:');
+      optContainer.innerHTML = '<div style="display:grid; gap:10px;">' +
+        '<button type="button" class="btn primary full" id="btnFinishM2">' +
+          '✓ Finish Activity Now (Requirement Met)' +
+        '</button>' +
+        '<button type="button" class="btn full" id="btnOptionalExtra">' +
+          '+ Assemble Optional Extra Folder (Visiting Students)' +
+        '</button>' +
+      '</div>';
+
+      optContainer.querySelector('#btnFinishM2').onclick = () => {
+        logTelemetry('courtesy_choice_finish', { completed_optional: false });
+        showScreen('screenComplete');
+      };
+
+      optContainer.querySelector('#btnOptionalExtra').onclick = () => {
+        logTelemetry('courtesy_choice_extra', { completed_optional: true });
+        optContainer.innerHTML = '<div style="text-align:center; padding:12px; color:var(--accent); font-weight:700;">' +
+          '✓ Extra folder assembled! Thank you.' +
+        '</div>';
+        setTimeout(() => showScreen('screenComplete'), 1000);
+      };
+    }
+  }
+
+  renderFolderStage();
+}
+
+/* Reviewer Navigation */
+document.getElementById('jumpSelector').onchange = (e) => {
+  const val = e.target.value;
+  if (!val) return;
+  if (val.startsWith('sjt-')) renderSjt(parseInt(val.split('-')[1]));
+  else if (val.startsWith('gba-')) renderGba(parseInt(val.split('-')[1]));
+};
+
+document.getElementById('btnRestart').onclick = () => {
+  state.sjtIndex = 0;
+  state.gameIndex = 0;
+  state.sjtScores = { empathy: 0, conscientiousness: 0, collaborative_spirit: 0, emotional_agility: 0, curiosity: 0, creative_initiative: 0, motivation: 0 };
+  showScreen('screenIntro');
+};
+
+document.getElementById('btnOpenTelemetry').onclick = () => {
+  document.getElementById('telemetryDrawer').classList.toggle('open');
+};
+
+console.log("Candidate Experience V2.1 Final Draft loaded successfully.");
+</script>
+</body>
+</html>

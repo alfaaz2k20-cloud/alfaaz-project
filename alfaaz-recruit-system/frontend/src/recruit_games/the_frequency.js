@@ -104,6 +104,7 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
     worldCode: 'W1',
     worldIndex: 0,
     title: 'Tuning the Hall',
+    goal: 'Balance the room sound across 5 rounds.',
     subtitle: 'Adjust the hall sound to support the poetry reading.',
     instructionPrompt: 'Your Task',
     instruction: 'Complete Step 1, then balance the volume in Step 2.',
@@ -125,28 +126,28 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
             ${t.cue_text}
           </div>
         </div>
-        <!-- Action Options -->
+        <!-- Action Options Outside Tile with A, B, C bullets -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-          <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'accommodate' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="accommodate">
-            <div class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full ${selectedAction === 'accommodate' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
-              Adjust Sound
+          <button type="button" class="outside-opt-card f1-action-btn ${selectedAction === 'accommodate' ? 'selected' : ''}" data-action="accommodate">
+            <div class="opt-bullet">A</div>
+            <div style="flex:1;">
+              <div class="text-sm font-semibold text-[var(--text-primary)]">Fix Sound</div>
+              <div class="text-xs text-[var(--text-secondary)] mt-0.5">Change volume fader to balance echo</div>
             </div>
-            <div class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">Change the sound level to help.</div>
           </button>
-          <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'maintain_objective' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="maintain_objective">
-            <div class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full ${selectedAction === 'maintain_objective' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
-              Keep Same
+          <button type="button" class="outside-opt-card f1-action-btn ${selectedAction === 'maintain_objective' ? 'selected' : ''}" data-action="maintain_objective">
+            <div class="opt-bullet">B</div>
+            <div style="flex:1;">
+              <div class="text-sm font-semibold text-[var(--text-primary)]">Keep As Is</div>
+              <div class="text-xs text-[var(--text-secondary)] mt-0.5">Leave sound settings as they are</div>
             </div>
-            <div class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">Leave the current sound as is.</div>
           </button>
-          <button type="button" class="f1-action-btn p-3.5 text-left border rounded-xs interactive-option min-h-[56px] ${selectedAction === 'clarify' ? 'border-[var(--accent-gold)] bg-amber-50/70 shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'}" data-action="clarify">
-            <div class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full ${selectedAction === 'clarify' ? 'bg-[var(--accent-gold)]' : 'bg-stone-300'}"></span>
-              Check Channel
+          <button type="button" class="outside-opt-card f1-action-btn ${selectedAction === 'clarify' ? 'selected' : ''}" data-action="clarify">
+            <div class="opt-bullet">C</div>
+            <div style="flex:1;">
+              <div class="text-sm font-semibold text-[var(--text-primary)]">Check First</div>
+              <div class="text-xs text-[var(--text-secondary)] mt-0.5">Run test on microphone cable</div>
             </div>
-            <div class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">Check audio before changing.</div>
           </button>
         </div>
       </div>

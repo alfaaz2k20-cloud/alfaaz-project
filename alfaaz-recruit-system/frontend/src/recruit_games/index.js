@@ -25,11 +25,14 @@ export function renderGameShell({
  worldIndex = 0,
  stepBadge = '',
  title = '',
+ goal = '',
  subtitle = '',
  instruction = '',
  instructionPrompt = 'Your Task',
+ preZoneContent = '',
  stimulusContent = '',
  interactionContent = '',
+ postZoneContent = '',
  feedbackContent = '',
  summaryContent = '',
  actionButtonId = '',
@@ -57,27 +60,45 @@ export function renderGameShell({
  </div>
  </div>
 
- <!-- MAIN STIMULUS / SITUATION (HERO: Shown first, prominent and larger) -->
+ <!-- GOAL BANNER (Rendered BEFORE stimulus tile!) -->
+ ${goal ? `
+ <div class="gba-goal-banner candidate-content-protected">
+ <span class="goal-badge">Goal</span>
+ <span class="goal-text">${goal}</span>
+ </div>
+ ` : ''}
+
+ <!-- PRE ZONE (outside stage, e.g. Sound Report or Step 1 Clues) -->
+ ${preZoneContent ? `
+ <div class="candidate-content-protected">
+ ${preZoneContent}
+ </div>
+ ` : ''}
+
+ <!-- MAIN STIMULUS / SITUATION (HERO: Inside stage / tile) -->
  ${stimulusContent ? `
  <div class="candidate-content-protected">
- ${subtitle ? `<div class="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-medium mb-1.5">${subtitle}</div>` : ''}
  ${stimulusContent}
  </div>
  ` : ''}
 
- <!-- "YOUR TASK" / WHAT TO DO: Placed JUST BEFORE the options/interaction area -->
+ <!-- DIRECTIVE: Placed JUST BEFORE options -->
  ${instruction ? `
- <div class="p-3 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs flex items-center gap-2 candidate-content-protected">
- <span class="w-2 h-2 rounded-full bg-[var(--accent-gold)] inline-block shrink-0"></span>
- <div class="text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
- <strong class="uppercase text-xs tracking-wider text-[var(--accent-gold)] mr-1">${instructionPrompt || 'Your Task'}:</strong>
- ${instruction}
- </div>
+ <div class="options-directive candidate-content-protected">
+ <span>${instruction}</span>
+ <span class="text-[11px] text-[var(--text-secondary)] font-medium lowercase">tap to select</span>
  </div>
  ` : ''}
 
  <!-- INTERACTION AREA (Options / Controls / Actions) -->
  ${interactionContent ? `<div class="candidate-content-protected">${interactionContent}</div>` : ''}
+
+ <!-- POST ZONE (outside stage, e.g. Step 2 Volume Fader or Test Setup) -->
+ ${postZoneContent ? `
+ <div class="candidate-content-protected">
+ ${postZoneContent}
+ </div>
+ ` : ''}
 
  <!-- FEEDBACK REGION -->
  ${feedbackContent ? `

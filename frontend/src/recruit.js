@@ -290,7 +290,21 @@ async function restoreLocalState() {
  state.worldSequence = saved.worldSequence || [];
  state.seeds = saved.seeds || {};
  state.screen = saved.screen || 'consent';
- state.sjtScenarios = saved.sjtScenarios || [];
+ const rawSavedScenarios = (saved.sjtScenarios && saved.sjtScenarios.length > 0) ? saved.sjtScenarios : FALLBACK_V2_1_SCENARIOS;
+ state.sjtScenarios = rawSavedScenarios.map(sc => {
+   const v21 = SJT_V2_1_COPY[sc.id];
+   if (!v21) return sc;
+   return {
+     ...sc,
+     act_title_en: v21.act_title_en || sc.act_title_en,
+     act_title_ur: v21.act_title_ur || sc.act_title_ur,
+     setup: v21.setup || sc.setup,
+     options: (sc.options || []).map(opt => ({
+       ...opt,
+       text: (v21.options && v21.options[opt.id]) || opt.text
+     }))
+   };
+ });
  state.currentSjtIndex = saved.currentSjtIndex || 0;
  state.sjtResponses = saved.sjtResponses || {};
  state.currentWorldIndex = saved.currentWorldIndex || 0;
@@ -1135,11 +1149,22 @@ function renderSjtBriefing(app) {
 
  function renderSJT(app, progressBarFill) {
 
- const scenario = state.sjtScenarios[state.currentSjtIndex];
- if (!scenario) {
+ const baseScenario = state.sjtScenarios[state.currentSjtIndex];
+ if (!baseScenario) {
  submitSjtAndProceed();
  return;
  }
+ const v21 = SJT_V2_1_COPY[baseScenario.id];
+ const scenario = v21 ? {
+   ...baseScenario,
+   act_title_en: v21.act_title_en || baseScenario.act_title_en,
+   act_title_ur: v21.act_title_ur || baseScenario.act_title_ur,
+   setup: v21.setup || baseScenario.setup,
+   options: (baseScenario.options || []).map(opt => ({
+     ...opt,
+     text: (v21.options && v21.options[opt.id]) || opt.text
+   }))
+ } : baseScenario;
 
  const total = state.sjtScenarios.length;
  const current = state.currentSjtIndex + 1;
@@ -1157,9 +1182,9 @@ function renderSjtBriefing(app) {
  const selectedOptId = state.sjtResponses[scenario.id] || null;
 
  const optionsHtml = scenario.options.map(opt => `
- <div class="option-card min-h-[52px] p-4 sm:p-5 rounded-xs border transition-all ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button" aria-pressed="${selectedOptId === opt.id ? 'true' : 'false'}" aria-label="Option ${opt.id.slice(-1)}">
- <span class="w-7 h-7 rounded-xs bg-stone-100 border border-[var(--grid-border)] flex items-center justify-center text-xs font-semibold text-[var(--accent-gold)] shrink-0 mt-0.5">${opt.id.slice(-1)}</span>
- <span class="text-sm sm:text-base text-[var(--text-primary)] font-medium leading-relaxed">${opt.text}</span>
+ <div class="outside-opt-card option-card ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button" aria-pressed="${selectedOptId === opt.id ? 'true' : 'false'}" aria-label="Option ${opt.id.slice(-1)}">
+ <div class="opt-bullet">${opt.id.slice(-1)}</div>
+ <div style="flex:1;" class="text-sm sm:text-base text-[var(--text-primary)] font-medium leading-relaxed">${opt.text}</div>
  </div>
  `).join('');
 

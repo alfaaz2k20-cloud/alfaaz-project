@@ -78,76 +78,69 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
  return;
  }
 
- const r = rounds[currentRound];
- const partnerTotal = r.partner_initial + transferCount;
- const userTotal = r.user_initial - transferCount;
+  const r = rounds[currentRound];
+  const partnerTotal = r.partner_initial + transferCount;
+  const userTotal = r.user_initial - transferCount;
 
- app.innerHTML = renderGameShell({
- worldCode: 'W3',
- worldIndex: 2,
- title: "The Artisan's Basket",
- subtitle: 'Coordinate ceramic tiles with your workshop partner.',
- instructionPrompt: 'Your Task',
-    instruction: 'Check basket levels in Step 1. Use the + and &minus; buttons in Step 2 to choose tiles to share.',
- stimulusContent: `
-    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
-      <div class="flex items-center justify-between">
-        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${r.title}</span>
-        <span class="text-xs text-[var(--text-secondary)] uppercase">Round ${currentRound + 1} of ${rounds.length}</span>
-      </div>
-      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
-        ${r.description}
-      </p>
-    </div>
-  `,
- interactionContent: `
-    <div class="space-y-4">
-      <!-- STEP 1 -->
-      <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
-        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
-          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">1</span>
-          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 1: Check Current Basket Levels</span>
-        </div>
-        <div class="grid grid-cols-2 gap-4 text-center">
-          <div class="p-3.5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs">
-            <span class="text-xs text-[var(--text-secondary)] uppercase font-semibold">Partner Basket</span>
-            <div class="text-xl sm:text-2xl font-serif font-bold text-[var(--text-primary)] mt-1">${partnerTotal} Tiles</div>
-            <div class="flex justify-center gap-1 mt-2 flex-wrap max-w-[140px] mx-auto">
-              ${Array(Math.max(0, partnerTotal)).fill('<div class="w-3 h-3 bg-[var(--text-primary)]/70 rounded-xs shadow-xs"></div>').join('')}
+  app.innerHTML = renderGameShell({
+    worldCode: 'W3',
+    worldIndex: 2,
+    title: 'Resource Cooperation',
+    goal: 'Share ceramic tiles so both you and your partner have enough to finish.',
+    subtitle: 'Coordinate ceramic tiles with your workshop partner.',
+    instructionPrompt: 'Your Task',
+    instruction: 'Use + / − to choose how many tiles to share with your partner.',
+    stimulusContent: `
+      <div class="stage-content">
+        <div class="dual-boards">
+          <div class="board-box">
+            <div class="board-title">Your Wall</div>
+            <div class="tiles-grid" id="youTilesGrid">
+              ${Array.from({length: Math.max(0, userTotal)}, () => '<div class="tile-chip"></div>').join('')}
             </div>
+            <div style="font-size:0.75rem; color:#baa890; margin-top:6px;">You have: <span class="font-bold text-white">${userTotal}</span> (Need 5)</div>
           </div>
-          <div class="p-3.5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs">
-            <span class="text-xs text-[var(--text-secondary)] uppercase font-semibold">Your Basket</span>
-            <div class="text-xl sm:text-2xl font-serif font-bold text-[var(--text-primary)] mt-1">${userTotal} Tiles</div>
-            <div class="flex justify-center gap-1 mt-2 flex-wrap max-w-[140px] mx-auto">
-              ${Array(Math.max(0, userTotal)).fill('<div class="w-3 h-3 bg-[var(--text-primary)]/70 rounded-xs shadow-xs"></div>').join('')}
+          <div class="board-box">
+            <div class="board-title">Partner&#39;s Wall</div>
+            <div class="tiles-grid" id="partnerTilesGrid">
+              ${Array.from({length: Math.max(0, partnerTotal)}, () => '<div class="tile-chip partner"></div>').join('')}
+            </div>
+            <div style="font-size:0.75rem; margin-top:6px; color:${partnerTotal >= 5 ? '#8cd39e' : '#e6be82'};">
+              ${partnerTotal >= 5 ? `✓ Partner has enough tiles (${partnerTotal}/5)` : `Partner needs ${5 - partnerTotal} more tile(s)`}
             </div>
           </div>
         </div>
       </div>
-
-      <!-- STEP 2 -->
-      <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
-        <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
-          <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">2</span>
-          <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 2: Use + and &minus; to Choose Tiles to Share</span>
-        </div>
-        <div class="flex justify-center items-center gap-4 py-2">
-          <button type="button" id="minusTileBtn" class="w-12 h-12 rounded-xs bg-[#faf8f5] border border-[var(--grid-border)] text-2xl font-bold interactive-option shadow-xs flex items-center justify-center min-h-[48px]" tabindex="0">&minus;</button>
-          <span id="transferCount" class="text-3xl font-serif font-bold text-[var(--accent-gold)] w-16 text-center">${transferCount}</span>
-          <button type="button" id="plusTileBtn" class="w-12 h-12 rounded-xs bg-[#faf8f5] border border-[var(--grid-border)] text-2xl font-bold interactive-option shadow-xs flex items-center justify-center min-h-[48px]" tabindex="0">+</button>
+    `,
+    interactionContent: `
+      <div class="space-y-4">
+        <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-[var(--grid-border)]">
+            <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">Round ${currentRound + 1} of ${rounds.length}: ${r.title}</span>
+            <span class="text-xs text-[var(--text-secondary)]">${r.context_note}</span>
+          </div>
+          <p class="text-sm sm:text-base text-[var(--text-primary)] leading-relaxed">
+            ${r.description}
+          </p>
+          <div class="p-4 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs text-center">
+            <div class="counter-controls">
+              <button type="button" class="counter-btn" id="minusTileBtn" aria-label="Decrease shared tiles">−</button>
+              <span style="font-size:1.25rem; font-weight:800; color:var(--accent-gold); min-width:120px;" id="sharedCountText">${transferCount} tile(s)</span>
+              <button type="button" class="counter-btn" id="plusTileBtn" aria-label="Increase shared tiles">+</button>
+            </div>
+            <div class="text-xs text-[var(--text-secondary)] mt-2">Tap buttons to adjust tiles given to partner</div>
+          </div>
         </div>
       </div>
-    </div>
-  `,
- summaryContent: `
- <span>Sharing: <strong class="text-[var(--text-primary)]">${transferCount} tiles</strong> (You keep ${userTotal})</span>
- <span class="text-sm text-black ">Round ${currentRound + 1} of ${rounds.length}</span>
- `,
- actionButtonId: 'confirmTransferBtn',
- actionButtonText: currentRound < rounds.length - 1 ? 'Confirm Allocation &rarr;' : 'Confirm & Finish &rarr;',
- progressText: `Round ${currentRound + 1} of ${rounds.length}`
- });
+    `,
+    summaryContent: `
+      <span>Sharing: <strong class="text-[var(--text-primary)]">${transferCount} tiles</strong> (You keep ${userTotal})</span>
+      <span class="text-sm text-black">Round ${currentRound + 1} of ${rounds.length}</span>
+    `,
+    actionButtonId: 'confirmTransferBtn',
+    actionButtonText: currentRound < rounds.length - 1 ? 'Confirm Allocation &rarr;' : 'Confirm & Finish &rarr;',
+    progressText: `Round ${currentRound + 1} of ${rounds.length}`
+  });
 
  document.getElementById('minusTileBtn')?.addEventListener('click', () => {
  lastInputModality = 'mouse';
@@ -275,52 +268,62 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
  return;
  }
 
- const r = rounds[currentRound];
- const activeSlot = r.slots.find(s => s.id === chosenSlot);
+  const r = rounds[currentRound];
+  const activeSlot = r.slots.find(s => s.id === chosenSlot);
 
- app.innerHTML = renderGameShell({
- worldCode: 'W3',
- worldIndex: 2,
- title: 'The Gallery Wall',
- subtitle: 'Coordinate artwork placement with your partner.',
- instructionPrompt: 'Your Task',
-    instruction: "Look at where your partner hung their piece. Click one open spot below to hang yours.",
- stimulusContent: `
-    <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
-      <div class="flex items-center justify-between">
-        <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${r.title}</span>
-        <span class="text-xs text-[var(--text-secondary)] uppercase">Round ${currentRound + 1} of ${rounds.length}</span>
+  app.innerHTML = renderGameShell({
+    worldCode: 'W3',
+    worldIndex: 2,
+    title: 'The Gallery Wall',
+    goal: 'Choose where on the wall to hang your artwork alongside your partner\'s painting.',
+    subtitle: 'Coordinate artwork placement with your partner.',
+    instructionPrompt: 'Your Task',
+    instruction: 'Look at the wall layout above. Choose an open spot below to hang your artwork.',
+    stimulusContent: `
+      <div class="stage-content">
+        <div class="wall-spots-canvas">
+          <div class="partner-frame">Partner&#39;s Painting<br><span style="font-size:0.68rem; opacity:0.8;">(Already Hung)</span></div>
+          <div class="hanging-spot-marker ${chosenSlot === r.slots[0]?.id ? 'active' : ''}" id="markerSpot1" style="right:20px; top:18px; width:72px; height:60px;">Spot 1</div>
+          <div class="hanging-spot-marker ${chosenSlot === r.slots[1]?.id ? 'active' : ''}" id="markerSpot2" style="left:96px; top:24px; width:72px; height:76px;">Spot 2</div>
+          <div class="hanging-spot-marker ${chosenSlot === r.slots[2]?.id ? 'active' : ''}" id="markerSpot3" style="bottom:12px; left:50%; transform:translateX(-50%); width:88px; height:46px;">Spot 3</div>
+        </div>
+        <div class="text-xs text-center text-[var(--text-secondary)] mt-2">
+          ${r.partner_desc}
+        </div>
       </div>
-      <p class="text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed">
-        ${r.partner_desc}
-      </p>
-    </div>
-  `,
- interactionContent: `
- <div class="p-5 bg-[#faf8f5] border border-[var(--grid-border)] rounded-xs shadow-xs">
- <div class="text-sm text-black uppercase tracking-wider mb-2.5">Available Wall Placement Slots:</div>
- <div class="flex flex-col gap-2.5">
- ${r.slots.map(s => `
- <button type="button" class="slot-btn px-4 py-3 text-base border rounded-xs ${chosenSlot === s.id ? 'border-[var(--accent-gold)] bg-amber-50/70 font-semibold shadow-xs ring-1 ring-[var(--accent-gold)]/40' : 'border-[var(--grid-border)] bg-white'} interactive-option flex items-center justify-between min-h-[48px]" data-slot="${s.id}" tabindex="0">
- <span class="flex items-center gap-2">
- <span class="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] ${chosenSlot === s.id ? 'bg-[var(--accent-gold)] text-white' : 'text-black'}">${chosenSlot === s.id ? '✓' : ''}</span>
- <span class="text-[var(--text-primary)]">${s.label}</span>
- </span>
- <span class="text-sm text-[var(--accent-gold)] font-medium uppercase">Slot ${s.id.replace('SLOT_', '')}</span>
- </button>
- `).join('')}
- </div>
- </div>
- `,
- summaryContent: `
- <span>${chosenSlot ? `You selected: <strong class="text-[var(--text-primary)]">${activeSlot?.label}</strong>` : 'Select a spot above to continue.'}</span>
- <span class="text-sm text-black ">Round ${currentRound + 1} of ${rounds.length}</span>
- `,
- actionButtonId: 'confirmWallBtn',
- actionButtonText: currentRound < rounds.length - 1 ? 'Confirm Placement &rarr;' : 'Confirm & Finish &rarr;',
- actionButtonDisabled: !chosenSlot,
- progressText: `Round ${currentRound + 1} of ${rounds.length}`
- });
+    `,
+    interactionContent: `
+      <div class="space-y-3">
+        <div class="options-directive">
+          <span>Choose where on the wall to hang your artwork:</span>
+          <span style="font-size:0.75rem; color:var(--text-secondary);">Tap to select</span>
+        </div>
+        <div class="outside-options space-y-2.5">
+          ${r.slots.map((s, idx) => {
+            const bullet = String.fromCharCode(65 + idx);
+            const isSelected = chosenSlot === s.id;
+            return `
+              <button type="button" class="outside-opt-card slot-btn ${isSelected ? 'selected' : ''}" data-slot="${s.id}" tabindex="0">
+                <div class="opt-bullet">${bullet}</div>
+                <div style="flex:1;">
+                  <div class="text-sm sm:text-base font-semibold text-[var(--text-primary)]">${s.label}</div>
+                  <div class="text-xs text-[var(--text-secondary)] mt-0.5">Wall Spot ${idx + 1}</div>
+                </div>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `,
+    summaryContent: `
+      <span>${chosenSlot ? `You selected: <strong class="text-[var(--text-primary)]">${activeSlot?.label}</strong>` : 'Select a spot above to continue.'}</span>
+      <span class="text-sm text-black">Round ${currentRound + 1} of ${rounds.length}</span>
+    `,
+    actionButtonId: 'confirmWallBtn',
+    actionButtonText: currentRound < rounds.length - 1 ? 'Confirm Placement &rarr;' : 'Confirm & Finish &rarr;',
+    actionButtonDisabled: !chosenSlot,
+    progressText: `Round ${currentRound + 1} of ${rounds.length}`
+  });
 
  app.querySelectorAll('.slot-btn').forEach(btn => {
  const selectSlot = (modality) => {
