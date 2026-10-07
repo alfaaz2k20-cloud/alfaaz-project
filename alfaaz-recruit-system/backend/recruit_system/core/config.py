@@ -63,8 +63,23 @@ if _missing_recruit_copy:
 
 # Database
 DATABASE_URL = os.environ.get("DATABASE_URL")
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+if DATABASE_URL:
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    if DATABASE_URL.startswith("postgresql+psycopg://"):
+        try:
+            import psycopg  # noqa: F401
+        except ImportError:
+            DATABASE_URL = DATABASE_URL.replace("postgresql+psycopg://", "postgresql+psycopg2://", 1)
+    elif DATABASE_URL.startswith("postgresql://") and not DATABASE_URL.startswith("postgresql+"):
+        try:
+            import psycopg2  # noqa: F401
+        except ImportError:
+            try:
+                import psycopg  # noqa: F401
+                DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+            except ImportError:
+                pass
 SQLALCHEMY_DATABASE_URL = DATABASE_URL or "sqlite:///./alfaaz_data.db"
 
 # JWT Security
