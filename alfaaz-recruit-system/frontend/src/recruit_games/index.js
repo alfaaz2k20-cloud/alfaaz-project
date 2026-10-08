@@ -201,6 +201,17 @@ export function renderTutorialCard({ icon, goal, steps }) {
  `;
 }
 
+
+export function scrollToTop() {
+  if (typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    const recruitApp = document.getElementById('recruitApp') || document.querySelector('main');
+    if (recruitApp) {
+      recruitApp.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+}
+
 export function bindTutorialCard(app, onStart) {
  let started = false;
  const trigger = (e) => {
@@ -210,7 +221,8 @@ export function bindTutorialCard(app, onStart) {
  }
  if (started) return;
  started = true;
- onStart();
+    scrollToTop();
+    onStart();
  };
 
  const btn = app.querySelector('#startActivityBtn');
@@ -233,6 +245,7 @@ export function bindTutorialCard(app, onStart) {
 }
 
 export function runMiniGame(context) {
+  scrollToTop();
  const { appContainer, worldCode, worldIndex, miniGameIndex, gameId, onMiniGameComplete } = context;
  const meta = WORLD_METADATA[worldCode] || { name: 'Alfaaz Workshop', name_ur: '', subtitle: '' };
 

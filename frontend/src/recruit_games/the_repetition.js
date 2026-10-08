@@ -8,7 +8,7 @@
  and scoped candidate content protection.
  ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell, scrollToTop } from './index.js';
 
 export function runTheRepetition(context, renderHeader) {
  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;

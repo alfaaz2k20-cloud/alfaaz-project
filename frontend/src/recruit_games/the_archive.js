@@ -6,7 +6,7 @@
  Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
  ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell, scrollToTop } from './index.js';
 
 export function runTheArchive(context, renderHeader) {
  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete, worldIndex } = context;
@@ -213,8 +213,9 @@ function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex
  });
 
  currentDocIdx++;
- selectedFolder = null;
- render();
+    selectedFolder = null;
+    scrollToTop();
+    render();
  });
  }
 

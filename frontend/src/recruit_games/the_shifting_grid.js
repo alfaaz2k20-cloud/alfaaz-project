@@ -6,7 +6,7 @@
  Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
  ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell, scrollToTop } from './index.js';
 
 export function runTheShiftingGrid(context, renderHeader) {
  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
@@ -261,27 +261,48 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
     instructionPrompt: 'Your Task',
     instruction: 'Read what happened in the studio above. Choose your immediate response below.',
     stimulusContent: `
-      <div class="stage-content">
+      <div class="stage-content space-y-3">
+        <!-- Prominent Situation Cue -->
+        <div class="p-4 sm:p-5 bg-white border border-[var(--grid-border)] rounded-xs shadow-xs text-left">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">${s.title}</span>
+            <span class="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-medium">Studio Situation</span>
+          </div>
+          <div class="text-base sm:text-lg font-serif text-[var(--text-primary)] font-semibold leading-relaxed">
+            ${s.situation}
+          </div>
+        </div>
+
+        <!-- Visual Workshop Environment Tile -->
         <div class="realistic-ink-desk">
           <div class="desk-sheet">
             <div style="font-size:0.75rem; text-transform:uppercase; color:#786653; font-weight:700;">Studio Drawing Sheet</div>
-            <div style="font-size:0.95rem; font-weight:700; margin:3px 0;">Handmade Drawing Paper</div>
-            <div style="font-size:0.82rem; color:#5c4e3f;">You were drawing lines when an ink bottle tipped...</div>
-            <!-- Truly Random Organic Ink Splatter SVG (No Heart Resemblance) -->
-            <svg style="position:absolute; right:20px; bottom:10px; width:125px; height:95px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6));" viewBox="0 0 120 90">
-              <path d="M50,42 C38,30 22,38 18,50 C14,64 30,72 45,68 C58,65 65,74 78,70 C92,65 105,52 98,38 C92,25 78,20 68,32 C62,38 56,34 50,42 Z" fill="#0b0c0f"/>
-              <path d="M72,30 C80,18 92,22 86,34 Z" fill="#0b0c0f"/>
-              <circle cx="16" cy="36" r="3.2" fill="#0b0c0f"/>
-              <circle cx="28" cy="22" r="2.4" fill="#0b0c0f"/>
-              <circle cx="85" cy="18" r="3.8" fill="#0b0c0f"/>
-              <circle cx="106" cy="46" r="2.8" fill="#0b0c0f"/>
-              <circle cx="62" cy="78" r="3" fill="#0b0c0f"/>
-              <circle cx="40" cy="80" r="2.2" fill="#0b0c0f"/>
-            </svg>
+            <div style="font-size:0.95rem; font-weight:700; margin:3px 0; color:#382d22;">${s.title}</div>
+            <div style="font-size:0.85rem; color:#5c4e3f; line-height:1.4;">${s.situation}</div>
+            ${s.stimulus_id === 'E2_S1' ? `
+              <!-- Truly Random Organic Ink Splatter SVG -->
+              <svg style="position:absolute; right:20px; bottom:10px; width:125px; height:95px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6));" viewBox="0 0 120 90">
+                <path d="M50,42 C38,30 22,38 18,50 C14,64 30,72 45,68 C58,65 65,74 78,70 C92,65 105,52 98,38 C92,25 78,20 68,32 C62,38 56,34 50,42 Z" fill="#0b0c0f"/>
+                <path d="M72,30 C80,18 92,22 86,34 Z" fill="#0b0c0f"/>
+                <circle cx="16" cy="36" r="3.2" fill="#0b0c0f"/>
+                <circle cx="28" cy="22" r="2.4" fill="#0b0c0f"/>
+                <circle cx="85" cy="18" r="3.8" fill="#0b0c0f"/>
+                <circle cx="106" cy="46" r="2.8" fill="#0b0c0f"/>
+                <circle cx="62" cy="78" r="3" fill="#0b0c0f"/>
+                <circle cx="40" cy="80" r="2.2" fill="#0b0c0f"/>
+              </svg>
+            ` : s.stimulus_id === 'E2_S3' ? `
+              <!-- Wind Breeze Drift Graphic -->
+              <div style="position:absolute; right:25px; bottom:15px; opacity:0.85; font-size:2.2rem;">
+                🍃 📄
+              </div>
+            ` : `
+              <!-- Clean Steady Studio Graphic -->
+              <div style="position:absolute; right:25px; bottom:15px; opacity:0.85; font-size:2.2rem;">
+                ✨ 🎨
+              </div>
+            `}
           </div>
-        </div>
-        <div class="text-xs text-center text-[var(--text-secondary)] mt-2">
-          ${s.situation}
         </div>
       </div>
     `,
@@ -352,9 +373,10 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
 
  if (currentSeq < sequences.length - 1) {
  currentSeq++;
- selectedAction = null;
- logSequencePresented();
- render();
+      selectedAction = null;
+      logSequencePresented();
+      scrollToTop();
+      render();
  } else {
  onComplete({
  mini_game: 'E2',

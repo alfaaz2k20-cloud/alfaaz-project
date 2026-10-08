@@ -36,6 +36,7 @@ All changes in V2.1 are exclusively restricted to **frontend presentation archit
 | **Visual Affordances** | Text-heavy descriptions of physical states. | **Enhanced Visual Representation**: Procedural canvas waveform monitors, realistic organic ink drops, dual tile grids, and visual material chips. |
 | **Interactive Prompts** | Unobtrusive links or tiny icons that candidates easily missed. | **Pulsing Action Cues (`.pulse-btn`)**: Non-intrusive glowing pulse animations draw attention to contextual aids (e.g. Shelf Guide, Guild Research Note) until opened. |
 | **Linguistic Standard** | Complex, academic, or multi-syllabic vocabulary (e.g., *“affordance synthesis”*, *“acoustical impedance”*, *“discrepancy reconciliation”*). | **Plain Conversational English**: Maximum 12 words per sentence, active voice, zero jargon from candidate POV, respecting Kashmiri cultural roots with accessible wording. |
+| **Viewport Reset on Mobile** | Viewport remained stationary at bottom of page when confirming trials, forcing candidates on mobile to manually scroll back up to see new tasks. | **Universal Viewport Reset (`scrollToTop()`)**: Viewport smoothly and automatically resets to the top of the container on every trial transition, screen advance, and mini-game launch. |
 
 ---
 
@@ -69,8 +70,9 @@ The 7 SJTs test professional judgement across Alfaaz Collective's cultural ateli
   - **Explicit 2-Step Sequenced Unit:**
     - **Step 1 (Report & Choice):** Unambiguous sound report cue card (e.g. *“Front rows are hearing too much echo from the wall speakers during the opening reading.”*) immediately followed by outside option cards (A: Fix Sound, B: Keep As Is, C: Check First).
     - **Step 2 (Visual Monitor & Fader Unit):** Live HTML5 canvas waveform monitor grouped directly with the 0–100 volume fader as a single cohesive unit.
+  - **Zero Pre-Selection & Interactive Toggle:** Options start unselected (`selectedAction = null`), requiring active candidate decision before enabling confirmation (`actionButtonDisabled: !selectedAction`). Smooth visual `.selected` state toggling without disrupting live audio canvas.
   - **Copy Clarification:** Concrete sound scenarios (echo, soft reciting, sudden pause, balanced singing).
-  - **Progression Logic:** Properly bounds to `trials.length` (5 trials), preventing off-by-one errors.
+  - **Progression Logic:** Properly bounds to `trials.length` (5 trials), preventing off-by-one errors, with smooth auto-scroll to top on advance.
 - **Invariance Proof:**
   - Emits: `trial_presented`, `slider_input`, `trial_submit`.
   - Stimuli: `F1_T1` through `F1_T5`.
@@ -159,35 +161,40 @@ The 7 SJTs test professional judgement across Alfaaz Collective's cultural ateli
   - High-visibility rule indicator badge (`Rule: Match Color` vs. `Rule: Match Shape`).
   - Outside response buttons with large, accessible touch targets.
 - **Invariance Proof:**
-  - Emits: `stimulus_presented`, `color_response_registered`.
+  - Emits: `stimulus_presented`, `tile_sorted`.
   - Stimuli: Full E1 stimulus sequence.
 
-#### E3: The Mosaic Constraint
-- **Parameter Measured:** `emotional_agility` (Facet: Creative problem solving under unexpected resource limits).
-- **V2 Baseline:** Text labels describing color bans; candidate had to manually click a confirm button even after picking a tile.
+#### E2: The Courtyard Setup (Setback Recovery)
+- **Parameter Measured:** `emotional_agility` (Facet: Constructive adaptation to unexpected workplace disruptions).
+- **V2 Baseline:**
+  - Unexpected disruption situations were squeezed into tiny text under the drawing sheet tile.
+  - Misleading heart-shaped ink blob graphic causing ambiguity.
 - **V2.1 Enhancements:**
-  - **Goal Banner:** *"Adapt mosaic layout under unexpected pigment restrictions."*
-  - Visual color chips (Gold, Sage Green, Lapis Blue) displayed as authentic graphic tiles.
-  - Immediate selection and clear step advancement.
+  - **Goal Banner:** *"Respond calmly when unexpected studio events happen."*
+  - **Prominent Situation Hero Card:** Clean, high-legibility card (`text-base sm:text-lg font-serif font-semibold`) displaying the scenario front and center (*"A small drop of ink spilled onto your active pattern card"*).
+  - **Contextual Visual State Tile:** Studio drawing sheet displaying situational graphics:
+    - Sequence 1: Truly random, organic fluid ink splatter SVG (no heart resemblance).
+    - Sequence 2: Clean, tidy artisan studio workbench.
+    - Sequence 3: Natural draft breeze and drifting reference drawing.
+  - Elimination of tiny text under the desk tile; outside options with clear A, B, C bullets.
 - **Invariance Proof:**
-  - Emits: `constraint_presented`, `mosaic_layout_selected`.
-  - Stimuli: `E3_C1`, `E3_C2`.
+  - Emits: `sequence_presented`, `action_selected`, `sequence_completed`.
+  - Stimuli: `E2_S1`, `E2_S2`, `E2_S3`.
 
 ---
 
 ### World 5: The Hidden Gallery (نگار خانہ)
 
-#### Q1: The Courtyard Setup
-- **Parameter Measured:** `curiosity` (Facet: Information seeking and unexpected event investigation).
-- **V2 Baseline:**
-  - Stylized geometric shape that looked like a heart rather than an ink drop, causing cognitive ambiguity.
+#### Q1: Information Seeking (The Relic Anomaly)
+- **Parameter Measured:** `curiosity` (Facet: Voluntary background inquiry prior to preservation decisions).
+- **V2 Baseline:** Dense academic appraisal forms with unguided option buttons.
 - **V2.1 Enhancements:**
-  - **Goal Banner:** *"Investigate an unexpected ink spill on the preparation table."*
-  - **Realistic Ink Drop Graphic:** Rendered with authentic organic fluid splatter geometry on aged parchment texture.
-  - Sequential inquiry choices outside the card with clear A, B, C bullets.
+  - **Goal Banner:** *"Choose the best way to care for old objects."*
+  - Clear object appraisal cue card with historical artifact details.
+  - Outside options for preservation method.
 - **Invariance Proof:**
-  - Emits: `anomaly_presented`, `investigation_step_logged`, `inquiry_concluded`.
-  - Stimuli: `Q1_D1`, `Q1_D2`.
+  - Emits: `decision_presented`, `resource_viewed`, `decision_logged`.
+  - Stimuli: `Q1_D1`, `Q1_D2`, `Q1_D3`.
 
 #### Q2: The Curatorial Dossier
 - **Parameter Measured:** `curiosity` (Facet: Deep voluntary research prior to decision making).

@@ -7,7 +7,7 @@
  and scoped candidate content protection.
  ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell, scrollToTop } from './index.js';
 
 export function runTheHiddenGallery(context, renderHeader) {
  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
@@ -234,10 +234,11 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
 
  if (currentDecision < decisions.length - 1) {
  currentDecision++;
- selectedChoice = null;
- viewedResources = {};
- logDecisionPresented();
- render();
+      selectedChoice = null;
+      viewedResources = {};
+      logDecisionPresented();
+      scrollToTop();
+      render();
  } else {
  onComplete({
  mini_game: 'Q1',

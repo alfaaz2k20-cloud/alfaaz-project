@@ -6,7 +6,7 @@
  Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
  ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell, scrollToTop } from './index.js';
 
 export function runTheSharedCanvas(context, renderHeader) {
  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
@@ -184,9 +184,10 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
 
  if (currentRound < rounds.length - 1) {
  currentRound++;
- transferCount = 0;
- logRoundPresented();
- render();
+      transferCount = 0;
+      logRoundPresented();
+      scrollToTop();
+      render();
  } else {
  onComplete({
  mini_game: 'C1',
@@ -359,9 +360,10 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
 
  if (currentRound < rounds.length - 1) {
  currentRound++;
- chosenSlot = null;
- logRoundPresented();
- render();
+      chosenSlot = null;
+      logRoundPresented();
+      scrollToTop();
+      render();
  } else {
  onComplete({
  mini_game: 'C2',

@@ -6,7 +6,7 @@
  Preserves raw behavioral telemetry emissions and exact stimulus/action IDs.
  ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell, scrollToTop } from './index.js';
 
 export function runTheFrequency(context, renderHeader) {
  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
@@ -29,7 +29,7 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
  let inTutorial = false;
  let currentTrial = 0;
  let sliderVal = 50;
- let selectedAction = 'accommodate';
+ let selectedAction = null;
  let lastInputModality = 'mouse';
  let animationFrameId = null;
 
@@ -107,8 +107,8 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
  inTutorial = false;
  currentTrial = 0;
  sliderVal = 50;
- selectedAction = 'accommodate';
- render();
+ selectedAction = null;
+      render();
  });
  return;
  }
@@ -195,10 +195,11 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
     </div>
     `,
     summaryContent: `
-      <span>Action: <strong class="text-[var(--text-primary)]" id="choiceSummary">${selectedAction === 'accommodate' ? 'Fix Sound' : (selectedAction === 'maintain_objective' ? 'Keep As Is' : 'Check First')} (Fader: ${sliderVal})</strong></span>
+      <span>Action: <strong class="text-[var(--text-primary)]" id="choiceSummary">${selectedAction ? (selectedAction === 'accommodate' ? 'Fix Sound' : (selectedAction === 'maintain_objective' ? 'Keep As Is' : 'Check First')) : 'None selected'} (Fader: ${sliderVal})</strong></span>
       <span class="text-sm text-black">${currentTrial + 1} / ${trials.length}</span>
     `,
     actionButtonId: 'lockFreqBtn',
+    actionButtonDisabled: !selectedAction,
     actionButtonText: currentTrial < trials.length - 1 ? 'Confirm Setting &rarr;' : 'Confirm & Finish &rarr;',
     progressText: `Sound Report ${currentTrial + 1} of ${trials.length}`
   });
@@ -239,26 +240,27 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
  drawWave();
 
  // Action button handlers
- app.querySelectorAll('.f1-action-btn').forEach(btn => {
- btn.addEventListener('click', () => {
- lastInputModality = 'mouse';
- selectedAction = btn.getAttribute('data-action');
- app.querySelectorAll('.f1-action-btn').forEach(b => {
- b.classList.remove('border-[var(--accent-gold)]', 'bg-amber-50/70', 'shadow-xs');
- b.classList.add('border-[var(--grid-border)]', 'bg-white');
- b.querySelector('span.rounded-full')?.classList.remove('bg-[var(--accent-gold)]');
- b.querySelector('span.rounded-full')?.classList.add('bg-stone-300');
- });
- btn.classList.add('border-[var(--accent-gold)]', 'bg-amber-50/70', 'shadow-xs');
- btn.classList.remove('border-[var(--grid-border)]', 'bg-white');
- btn.querySelector('span.rounded-full')?.classList.add('bg-[var(--accent-gold)]');
- btn.querySelector('span.rounded-full')?.classList.remove('bg-stone-300');
- if (choiceSummary) {
- const lbl = selectedAction === 'accommodate' ? 'Adjust Sound' : (selectedAction === 'maintain_objective' ? 'Keep Baseline' : 'Check Channel');
- choiceSummary.textContent = `${lbl} (Level: ${sliderVal})`;
- }
- });
- });
+  app.querySelectorAll('.f1-action-btn').forEach(btn => {
+    const handleChoose = (modality) => {
+      lastInputModality = modality;
+      selectedAction = btn.getAttribute('data-action');
+      app.querySelectorAll('.f1-action-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      if (choiceSummary) {
+        const lbl = selectedAction === 'accommodate' ? 'Fix Sound' : (selectedAction === 'maintain_objective' ? 'Keep As Is' : 'Check First');
+        choiceSummary.textContent = `${lbl} (Fader: ${sliderVal})`;
+      }
+      const lockBtn = document.getElementById('lockFreqBtn');
+      if (lockBtn) lockBtn.removeAttribute('disabled');
+    };
+    btn.addEventListener('click', () => handleChoose('mouse'));
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleChoose('keyboard');
+      }
+    });
+  });
 
  let lastSliderLogTime = 0;
  let sliderThrottleTimer = null;
@@ -334,7 +336,8 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
     if (currentTrial < trials.length - 1) {
       currentTrial++;
       sliderVal = 50;
-      selectedAction = trials[currentTrial].default_action;
+      selectedAction = null;
+      scrollToTop();
       render();
     } else {
       onComplete({

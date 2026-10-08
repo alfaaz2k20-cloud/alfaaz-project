@@ -7,7 +7,7 @@
  and scoped candidate content protection.
  ========================================================================== */
 
-import { renderTutorialCard, bindTutorialCard, renderGameShell } from './index.js';
+import { renderTutorialCard, bindTutorialCard, renderGameShell, scrollToTop } from './index.js';
 
 export function runTheBrokenTool(context, renderHeader) {
  const { appContainer, miniGameIndex, gameId, logEvent, onMiniGameComplete } = context;
@@ -239,10 +239,11 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
 
  if (currentStageIdx < stages.length - 1) {
  currentStageIdx++;
- selectedParts = [];
- testFeedback = null;
- logStagePresented();
- render();
+      selectedParts = [];
+      testFeedback = null;
+      logStagePresented();
+      scrollToTop();
+      render();
  } else {
  onComplete({
  mini_game: 'CR1',
@@ -860,12 +861,13 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
 
  if (currentTrial < trials.length - 1) {
  currentTrial++;
- selectedTool = null;
- selectedMethod = null;
- feedbackText = null;
- hasObservedFeedback = false;
- logTrialPresented();
- render();
+      selectedTool = null;
+      selectedMethod = null;
+      feedbackText = null;
+      hasObservedFeedback = false;
+      logTrialPresented();
+      scrollToTop();
+      render();
  } else {
  onComplete({
  mini_game: 'CR3',
