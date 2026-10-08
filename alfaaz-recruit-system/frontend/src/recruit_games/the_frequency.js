@@ -34,37 +34,52 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
  let animationFrameId = null;
 
  const trials = [
- {
- stimulus_id: 'F1_T1',
- title: 'Sound Note: Sharp Echo',
- cue_text: '"Front row sound has sharp treble and heavy wall echo."',
- default_action: 'accommodate'
- },
- {
- stimulus_id: 'F1_T2',
- title: 'Sound Note: Clear Hall',
- cue_text: '"Center hall sound is clear, balanced, and easy to hear."',
- default_action: 'maintain_objective'
- },
- {
- stimulus_id: 'F1_T3',
- title: 'Sound Note: Quiet Whisper',
- cue_text: '"The speaker is reciting a whisper. Words are hard to hear."',
- default_action: 'accommodate'
- },
- {
- stimulus_id: 'F1_T4',
- title: 'Sound Note: Sudden Silence',
- cue_text: '"A sudden quiet pause. Could be a dramatic silence or equipment issue."',
- default_action: 'clarify'
- },
- {
- stimulus_id: 'F1_T5',
- title: 'Sound Note: Group Singing',
- cue_text: '"Group singing is steady and balanced across the entire room."',
- default_action: 'maintain_objective'
- }
- ];
+    {
+      stimulus_id: 'F1_T1',
+      title: 'Sound Report: Front Row Echo',
+      cue_text: '"Front rows are hearing too much echo from the wall speakers during the opening reading."',
+      default_action: 'accommodate',
+      actionA_desc: 'Change volume fader to balance echo',
+      actionB_desc: 'Keep acoustics as they are for reading',
+      actionC_desc: 'Run diagnostics on microphone cable'
+    },
+    {
+      stimulus_id: 'F1_T2',
+      title: 'Sound Report: Clear Hall Acoustics',
+      cue_text: '"Center hall sound is clear, balanced, and easy to hear for all attendees."',
+      default_action: 'maintain_objective',
+      actionA_desc: 'Adjust volume fader settings anyway',
+      actionB_desc: 'Keep acoustics as they are for reading',
+      actionC_desc: 'Run diagnostics on microphone cable'
+    },
+    {
+      stimulus_id: 'F1_T3',
+      title: 'Sound Report: Quiet Whisper',
+      cue_text: '"The speaker is reciting a whisper. Words are hard to hear in the rear seats."',
+      default_action: 'accommodate',
+      actionA_desc: 'Change volume fader to boost voice',
+      actionB_desc: 'Keep acoustics as they are for reading',
+      actionC_desc: 'Run diagnostics on microphone cable'
+    },
+    {
+      stimulus_id: 'F1_T4',
+      title: 'Sound Report: Audio Dropout',
+      cue_text: '"Sound suddenly went silent. It could be an artistic pause or an equipment failure."',
+      default_action: 'clarify',
+      actionA_desc: 'Change volume fader to high level',
+      actionB_desc: 'Keep acoustics as they are for reading',
+      actionC_desc: 'Run diagnostics on microphone cable'
+    },
+    {
+      stimulus_id: 'F1_T5',
+      title: 'Sound Report: Steady Room Acoustics',
+      cue_text: '"Group singing is steady and projected cleanly across the entire gallery hall."',
+      default_action: 'maintain_objective',
+      actionA_desc: 'Readjust volume fader across hall',
+      actionB_desc: 'Keep acoustics as they are for reading',
+      actionC_desc: 'Run diagnostics on microphone cable'
+    }
+  ];
 
 
  function render() {
@@ -132,21 +147,21 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
             <div class="opt-bullet">A</div>
             <div style="flex:1;">
               <div class="text-sm font-semibold text-[var(--text-primary)]">Fix Sound</div>
-              <div class="text-xs text-[var(--text-secondary)] mt-0.5">Change volume fader to balance echo</div>
+              <div class="text-xs text-[var(--text-secondary)] mt-0.5">${t.actionA_desc || 'Change volume fader to balance echo'}</div>
             </div>
           </button>
           <button type="button" class="outside-opt-card f1-action-btn ${selectedAction === 'maintain_objective' ? 'selected' : ''}" data-action="maintain_objective">
             <div class="opt-bullet">B</div>
             <div style="flex:1;">
               <div class="text-sm font-semibold text-[var(--text-primary)]">Keep As Is</div>
-              <div class="text-xs text-[var(--text-secondary)] mt-0.5">Leave sound settings as they are</div>
+              <div class="text-xs text-[var(--text-secondary)] mt-0.5">${t.actionB_desc || 'Leave sound settings as they are'}</div>
             </div>
           </button>
           <button type="button" class="outside-opt-card f1-action-btn ${selectedAction === 'clarify' ? 'selected' : ''}" data-action="clarify">
             <div class="opt-bullet">C</div>
             <div style="flex:1;">
               <div class="text-sm font-semibold text-[var(--text-primary)]">Check First</div>
-              <div class="text-xs text-[var(--text-secondary)] mt-0.5">Run test on microphone cable</div>
+              <div class="text-xs text-[var(--text-secondary)] mt-0.5">${t.actionC_desc || 'Run test on microphone cable'}</div>
             </div>
           </button>
         </div>
@@ -180,12 +195,12 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
     </div>
     `,
     summaryContent: `
-      <span>Your setting: <strong class="text-[var(--text-primary)]" id="choiceSummary">${selectedAction === 'accommodate' ? 'Adjust Sound' : (selectedAction === 'maintain_objective' ? 'Keep Baseline' : 'Check Channel')} (Level: ${sliderVal})</strong></span>
-      <span class="text-sm text-black ">${currentTrial + 1} / 6</span>
+      <span>Action: <strong class="text-[var(--text-primary)]" id="choiceSummary">${selectedAction === 'accommodate' ? 'Fix Sound' : (selectedAction === 'maintain_objective' ? 'Keep As Is' : 'Check First')} (Fader: ${sliderVal})</strong></span>
+      <span class="text-sm text-black">${currentTrial + 1} / ${trials.length}</span>
     `,
     actionButtonId: 'lockFreqBtn',
-    actionButtonText: currentTrial < 5 ? 'Confirm Setting &rarr;' : 'Confirm & Finish &rarr;',
-    progressText: `Sound Note ${currentTrial + 1} of 6`
+    actionButtonText: currentTrial < trials.length - 1 ? 'Confirm Setting &rarr;' : 'Confirm & Finish &rarr;',
+    progressText: `Sound Report ${currentTrial + 1} of ${trials.length}`
   });
 
  const canvas = document.getElementById('waveCanvas');
@@ -316,17 +331,17 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
  task_def_version: '1.0'
  });
 
- if (currentTrial < 5) {
- currentTrial++;
- sliderVal = 50;
- selectedAction = trials[currentTrial].default_action;
- render();
- } else {
- onComplete({
- mini_game: 'F1',
- observations_count: 6
- });
- }
+    if (currentTrial < trials.length - 1) {
+      currentTrial++;
+      sliderVal = 50;
+      selectedAction = trials[currentTrial].default_action;
+      render();
+    } else {
+      onComplete({
+        mini_game: 'F1',
+        observations_count: trials.length
+      });
+    }
  });
  }
 

@@ -41,14 +41,14 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
  context_note: 'Partner Needs Help'
  },
  {
- stimulus_id: 'C1_R2',
- title: 'Round 2: Balanced Baskets',
- description: 'Both you and your partner have 5 tiles. Both have enough to finish.',
- partner_initial: 5,
- user_initial: 5,
- default_transfer: 0,
- context_note: 'Both Have Enough'
- }
+    stimulus_id: 'C1_R3',
+    title: 'Round 2: Scarce Personal Supply',
+    description: 'You only have 3 tiles (need 5 to finish). Your partner already has 7 tiles.',
+    partner_initial: 7,
+    user_initial: 3,
+    default_transfer: 0,
+    context_note: 'You Are Short on Tiles'
+  }
  ];
 
 

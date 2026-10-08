@@ -177,20 +177,19 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
   if (testBtn) {
     testBtn.onclick = () => {
       lastInputModality = 'mouse';
-      const validCombo = st.valid_combinations.some(combo =>
-        combo.length === selectedParts.length && combo.every(id => selectedParts.includes(id))
-      );
+      const curSet = new Set(selectedParts);
+      const isFunctional = st.valid_combinations.some(combo => combo.every(id => curSet.has(id)));
 
       testFeedback = {
-        valid: validCombo,
-        message: validCombo ? '✓ Setup works! Loom parts hold firmly.' : 'Observation: Parts wobble without string to tie them.'
+        valid: isFunctional,
+        message: isFunctional ? 'Tension test passed. The loom parts balance smoothly.' : 'Test note: The parts wobble or do not connect tightly.'
       };
 
       logEvent('assembly_tested', {
         stage_id: st.stage_id,
         trial_index: currentStageIdx,
-        selected_parts: [...selectedParts],
-        is_functional: validCombo,
+        parts: [...selectedParts],
+        is_functional: isFunctional,
         input_modality: lastInputModality,
         task_def_version: '1.0'
       });
@@ -199,55 +198,35 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
     };
   }
 
- app.querySelectorAll('.part-card').forEach(card => {
- const toggle = (modality) => {
- lastInputModality = modality;
- const pId = card.getAttribute('data-id');
- if (selectedParts.includes(pId)) {
- selectedParts = selectedParts.filter(id => id !== pId);
- } else {
- selectedParts.push(pId);
- }
- testFeedback = null;
- logEvent('part_toggled', {
- stage_id: st.stage_id,
- trial_index: currentStageIdx,
- part_id: pId,
- selected_parts: [...selectedParts],
- input_modality: lastInputModality,
- task_def_version: '1.0'
- });
- render();
- };
+  app.querySelectorAll('.part-card').forEach(card => {
+    const toggle = (modality) => {
+      lastInputModality = modality;
+      const pId = card.getAttribute('data-id');
+      if (selectedParts.includes(pId)) {
+        selectedParts = selectedParts.filter(id => id !== pId);
+      } else {
+        selectedParts.push(pId);
+      }
+      testFeedback = null;
+      logEvent('part_toggled', {
+        stage_id: st.stage_id,
+        trial_index: currentStageIdx,
+        part_id: pId,
+        selected_parts: [...selectedParts],
+        input_modality: lastInputModality,
+        task_def_version: '1.0'
+      });
+      render();
+    };
 
- card.addEventListener('click', () => toggle('mouse'));
- card.addEventListener('keydown', (e) => {
- if (e.key === 'Enter' || e.key === ' ') {
- e.preventDefault();
- toggle('keyboard');
- }
- });
- });
-
- document.getElementById('testAssemblyBtn')?.addEventListener('click', () => {
- lastInputModality = 'mouse';
- const curSet = new Set(selectedParts);
- const isFunctional = st.valid_combinations.some(combo => combo.every(id => curSet.has(id)));
- testFeedback = {
- valid: isFunctional,
- message: isFunctional
- ? 'Tension test passed. The loom parts balance smoothly.'
- : 'Test note: The parts wobble or do not connect tightly.'
- };
- logEvent('assembly_tested', {
- stage_id: st.stage_id,
- trial_index: currentStageIdx,
- parts: [...selectedParts],
- input_modality: lastInputModality,
- task_def_version: '1.0'
- });
- render();
- });
+    card.addEventListener('click', () => toggle('mouse'));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle('keyboard');
+      }
+    });
+  });
 
  document.getElementById('confirmStageBtn')?.addEventListener('click', () => {
  logEvent('stage_completed', {
@@ -788,7 +767,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
               ${feedbackText ? feedbackText : (selectedTool && selectedMethod ? 'Tool and method chosen. Click Test Technique.' : 'Pick tool and method above, then test.')}
             </div>
           </div>
-          <button type="button" class="btn" id="testTechniqueBtn" style="background:#4a392b; color:#ffffff; border:1px solid #68523e; padding:8px 18px; font-weight:700; border-radius:var(--radius-sm);" ${selectedTool && selectedMethod ? '' : 'disabled'}>
+          <button type="button" class="btn" id="applyTechniqueBtn" style="background:#4a392b; color:#ffffff; border:1px solid #68523e; padding:8px 18px; font-weight:700; border-radius:var(--radius-sm);" ${selectedTool && selectedMethod ? '' : 'disabled'}>
             🔧 Test Technique
           </button>
         </div>
@@ -798,76 +777,55 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
       <span>Technique: <strong class="text-[var(--text-primary)]">${selectedTool && selectedMethod ? 'Ready to confirm' : 'In progress'}</strong></span>
       <span class="text-sm text-black">Round ${currentTrial + 1} of ${trials.length}</span>
     `,
-    actionButtonId: 'confirmToolUseBtn',
+    actionButtonId: 'confirmTrialBtn',
     actionButtonText: currentTrial < trials.length - 1 ? 'Confirm Action &rarr;' : 'Confirm & Finish &rarr;',
     actionButtonDisabled: !selectedTool || !selectedMethod,
     progressText: `Round ${currentTrial + 1} of ${trials.length}`
   });
 
-  const testTechBtn = document.getElementById('testTechniqueBtn');
-  if (testTechBtn) {
-    testTechBtn.onclick = () => {
-      lastInputModality = 'mouse';
-      const key = `${selectedTool}:${selectedMethod}`;
-      const fb = tr.feedback_map[key] || { success: false, text: 'Observation: The technique produced an uneven result.' };
-      feedbackText = fb.text;
-      hasObservedFeedback = true;
-      logEvent('technique_tested', {
+  app.querySelectorAll('.cr3-tool-card').forEach(card => {
+    const select = (modality) => {
+      lastInputModality = modality;
+      selectedTool = card.getAttribute('data-id');
+      logEvent('tool_selected', {
         stimulus_id: tr.stimulus_id,
         trial_index: currentTrial,
         tool_id: selectedTool,
-        method_id: selectedMethod,
-        success: fb.success,
         input_modality: lastInputModality,
         task_def_version: '1.0'
       });
       render();
     };
-  }
+    card.addEventListener('click', () => select('mouse'));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        select('keyboard');
+      }
+    });
+  });
 
- app.querySelectorAll('.cr3-tool-card').forEach(card => {
- const select = (modality) => {
- lastInputModality = modality;
- selectedTool = card.getAttribute('data-id');
- logEvent('tool_selected', {
- stimulus_id: tr.stimulus_id,
- trial_index: currentTrial,
- tool_id: selectedTool,
- input_modality: lastInputModality,
- task_def_version: '1.0'
- });
- render();
- };
- card.addEventListener('click', () => select('mouse'));
- card.addEventListener('keydown', (e) => {
- if (e.key === 'Enter' || e.key === ' ') {
- e.preventDefault();
- select('keyboard');
- }
- });
- });
+  app.querySelectorAll('.cr3-method-card').forEach(card => {
+    const select = (modality) => {
+      lastInputModality = modality;
+      selectedMethod = card.getAttribute('data-id');
+      render();
+    };
+    card.addEventListener('click', () => select('mouse'));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        select('keyboard');
+      }
+    });
+  });
 
- app.querySelectorAll('.cr3-method-card').forEach(card => {
- const select = (modality) => {
- lastInputModality = modality;
- selectedMethod = card.getAttribute('data-id');
- render();
- };
- card.addEventListener('click', () => select('mouse'));
- card.addEventListener('keydown', (e) => {
- if (e.key === 'Enter' || e.key === ' ') {
- e.preventDefault();
- select('keyboard');
- }
- });
- });
-
- document.getElementById('applyTechniqueBtn')?.addEventListener('click', () => {
- lastInputModality = 'mouse';
- const key = `${selectedTool}:${selectedMethod}`;
- const outcome = tr.feedback_map[key] || { success: false, text: 'No noticeable craft adaptation observed.' };
- feedbackText = outcome;
- hasObservedFeedback = true;
+  document.getElementById('applyTechniqueBtn')?.addEventListener('click', () => {
+    lastInputModality = 'mouse';
+    const key = `${selectedTool}:${selectedMethod}`;
+    const outcome = tr.feedback_map[key] || { success: false, text: 'No noticeable craft adaptation observed.' };
+    feedbackText = outcome.text;
+    hasObservedFeedback = true;
 
  logEvent('action_applied', {
  stimulus_id: tr.stimulus_id,

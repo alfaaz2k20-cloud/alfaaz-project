@@ -108,7 +108,7 @@ function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex
     <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
       <div class="flex justify-between items-start mb-1">
         <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">Folio ${currentDocIdx + 1} of ${documents.length}</span>
-        <button id="guideBtn" type="button" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1 interactive-option flex items-center gap-1.5 rounded-xs min-h-[32px] bg-white" tabindex="0">
+        <button id="guideBtn" type="button" class="text-xs text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 px-2.5 py-1 interactive-option flex items-center gap-1.5 rounded-xs min-h-[32px] bg-white ${guideOpened ? '' : 'pulse-btn'}" tabindex="0">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           ${guideOpened ? 'Close Guide' : 'Shelf Guide'}
         </button>
