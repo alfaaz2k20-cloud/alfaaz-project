@@ -64,10 +64,11 @@ if not ADMIN_PASSWORD:
     if ENV == "production":
         raise RuntimeError("CRITICAL: ADMIN_PASSWORD environment variable must be set in production.")
     else:
-        ADMIN_PASSWORD = "AlfaazAdmin2026!" # Safe fallback only for local dev
+        ADMIN_PASSWORD = secrets.token_urlsafe(16)
+        print(f"[DEV NOTICE] Generated ephemeral dev ADMIN_PASSWORD: {ADMIN_PASSWORD}", file=sys.stderr)
 
 # Cloudinary
-CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "dmqwjpmjk")
+CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME")
 CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
 CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
 

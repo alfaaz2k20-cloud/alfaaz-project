@@ -87,11 +87,41 @@ def list_research_sessions(
         query = query.where(DBSession.status == status)
 
     sessions = db.exec(query).all()
+    if not sessions:
+        return []
+
+    session_ids = [s.session_id for s in sessions]
+
+    # Batch fetch identities, SJT counts, and telemetry task counts (eliminates N+1 queries)
+    identities_list = db.exec(
+        select(DBApplicantIdentity).where(DBApplicantIdentity.session_id.in_(session_ids))
+    ).all()
+    identities_map = {i.session_id: i for i in identities_list}
+
+    sjt_counts_raw = db.exec(
+        select(DBSJTResponse.session_id, func.count(DBSJTResponse.id))
+        .where(DBSJTResponse.session_id.in_(session_ids))
+        .group_by(DBSJTResponse.session_id)
+    ).all()
+    sjt_counts_map = {row[0]: row[1] for row in sjt_counts_raw}
+
+    active_ids = [s.session_id for s in sessions if s.status not in ("COMPLETE", "COMPLETED")]
+    task_counts_map = {}
+    if active_ids:
+        task_counts_raw = db.exec(
+            select(DBTelemetryEvent.session_id, func.count(func.distinct(DBTelemetryEvent.mini_game)))
+            .where(
+                DBTelemetryEvent.session_id.in_(active_ids),
+                DBTelemetryEvent.mini_game != None
+            )
+            .group_by(DBTelemetryEvent.session_id)
+        ).all()
+        task_counts_map = {row[0]: row[1] for row in task_counts_raw}
 
     results = []
     for s in sessions:
-        identity = db.get(DBApplicantIdentity, s.session_id)
-        sjt_count = db.exec(select(func.count(DBSJTResponse.id)).where(DBSJTResponse.session_id == s.session_id)).one()
+        identity = identities_map.get(s.session_id)
+        sjt_count = sjt_counts_map.get(s.session_id, 0)
         has_sjt = (sjt_count >= 7)
         spec_ver = (getattr(s, "spec_version", None) or "").lower()
         is_historical = ("2026-05" in spec_ver) or ("v1" in spec_ver) or (spec_ver == "1.0")
@@ -101,10 +131,7 @@ def list_research_sessions(
         if s.status in ("COMPLETE", "COMPLETED"):
             completed_tasks_count = expected_tasks
         else:
-            completed_tasks_count = db.exec(
-                select(func.count(func.distinct(DBTelemetryEvent.mini_game)))
-                .where(DBTelemetryEvent.session_id == s.session_id, DBTelemetryEvent.mini_game != None)
-            ).one()
+            completed_tasks_count = task_counts_map.get(s.session_id, 0)
         evidence_collected = has_sjt and (completed_tasks_count >= expected_tasks)
 
         results.append({

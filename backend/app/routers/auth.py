@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.user import DBUser
-from app.schemas.auth import UserRegister, UserLogin, ForgotPassword, ResetPassword
+from app.schemas.auth import UserRegister, UserLogin, ForgotPassword, ResetPassword, UserUpdate
 from app.core.security import get_password_hash, verify_password, create_token, require_auth
 from app.core.config import FRONTEND_URL, JWT_SECRET, JWT_ALGORITHM
 from app.services.email import send_system_email
@@ -77,12 +77,12 @@ def get_me(db: Session = Depends(get_db), user=Depends(require_auth)):
     return {"email": db_user.email, "full_name": db_user.full_name, "status": db_user.status}
 
 @router.patch("/me")
-def update_me(data: dict, db: Session = Depends(get_db), user=Depends(require_auth)):
+def update_me(data: UserUpdate, db: Session = Depends(get_db), user=Depends(require_auth)):
     db_user = db.query(DBUser).filter(DBUser.email == user["email"]).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found.")
-    if "full_name" in data:
-        full_name = str(data["full_name"]).strip()
+    if data.full_name is not None:
+        full_name = str(data.full_name).strip()
         if len(full_name) > 80:
             raise HTTPException(status_code=400, detail="Name too long.")
         db_user.full_name = full_name

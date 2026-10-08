@@ -34,3 +34,6 @@ class ResetPassword(BaseModel):
 class StatusUpdate(BaseModel):
     email: str
     status: str
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None

@@ -7,9 +7,12 @@ from recruit_system.services.sjt_engine import resolve_config_path
 
 DEFAULT_MODEL_ARTIFACT_REL_PATH = os.path.join("models", "relative_ridge_v1.json")
 _MODEL_ARTIFACT_CACHE: Optional[Dict[str, Any]] = None
+_RESOLVED_MODEL_PATH_CACHE: Dict[str, str] = {}
 
 
 def resolve_model_path(rel_path: str = DEFAULT_MODEL_ARTIFACT_REL_PATH) -> str:
+    if rel_path in _RESOLVED_MODEL_PATH_CACHE:
+        return _RESOLVED_MODEL_PATH_CACHE[rel_path]
     candidates = [
         os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "config", rel_path),
         os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config", rel_path),
@@ -19,8 +22,12 @@ def resolve_model_path(rel_path: str = DEFAULT_MODEL_ARTIFACT_REL_PATH) -> str:
     ]
     for c in candidates:
         if os.path.exists(c):
-            return os.path.abspath(c)
-    return candidates[0]
+            resolved = os.path.abspath(c)
+            _RESOLVED_MODEL_PATH_CACHE[rel_path] = resolved
+            return resolved
+    fallback = candidates[0]
+    _RESOLVED_MODEL_PATH_CACHE[rel_path] = fallback
+    return fallback
 
 
 def load_model_artifact(artifact_path: Optional[str] = None) -> Dict[str, Any]:

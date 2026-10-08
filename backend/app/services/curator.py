@@ -3,6 +3,7 @@ from collections import defaultdict
 from fastapi import Request, HTTPException
 from groq import Groq
 from app.core.config import GROQ_API_KEY
+from app.services.rate_limiter import get_client_ip
 
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
@@ -85,7 +86,7 @@ _CURATOR_LIMIT = 10
 _CURATOR_WINDOW = 60
 
 def check_curator_rate_limit(request: Request):
-    ip = request.client.host
+    ip = get_client_ip(request)
     now = time.time()
     window_start = now - _CURATOR_WINDOW
     _curator_requests[ip] = [t for t in _curator_requests[ip] if t > window_start]

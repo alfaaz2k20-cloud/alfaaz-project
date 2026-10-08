@@ -1,8 +1,11 @@
 import uuid
 import json
+import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+
+logger = logging.getLogger("recruit_system.routers.recruit")
 from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
@@ -362,7 +365,8 @@ def submit_telemetry(req: TelemetryBatchRequest, request: Request, db: Session =
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ingest failure: {str(e)}")
+        logger.error("Telemetry ingest failure: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Ingest failure encountered during telemetry processing")
 
 @router.post("/complete")
 def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db)):

@@ -528,30 +528,29 @@ def integrate_session_evidence(
     # Pass 3: Insert-Only Evidence Persistence
     updated_records: List[DBEvidence] = []
 
+    # Batch supersede all existing active records for this session
+    old_active_records = db.exec(
+        select(DBEvidence).where(
+            DBEvidence.session_id == session_id,
+            DBEvidence.is_superseded == False
+        )
+    ).all()
+    for old_rec in old_active_records:
+        old_rec.is_superseded = True
+        old_rec.superseded_at = now_utc
+        db.add(old_rec)
+
+    # Batch query maximum version per parameter across this session
+    version_rows = db.exec(
+        select(DBEvidence.parameter, func.max(DBEvidence.version))
+        .where(DBEvidence.session_id == session_id)
+        .group_by(DBEvidence.parameter)
+    ).all()
+    max_versions = {row[0]: (row[1] or 0) for row in version_rows}
+
     for param_name in PARAM_MINIGAMES.keys():
         p_data = preliminary[param_name]
-
-        # Supersede all existing active records for this session and parameter
-        old_active_records = db.exec(
-            select(DBEvidence).where(
-                DBEvidence.session_id == session_id,
-                DBEvidence.parameter == param_name,
-                DBEvidence.is_superseded == False
-            )
-        ).all()
-        for old_rec in old_active_records:
-            old_rec.is_superseded = True
-            old_rec.superseded_at = now_utc
-            db.add(old_rec)
-
-        # Calculate next_version based on MAX(version) across all versions in DB
-        max_v = db.exec(
-            select(func.max(DBEvidence.version)).where(
-                DBEvidence.session_id == session_id,
-                DBEvidence.parameter == param_name
-            )
-        ).one_or_none()
-        next_version = (max_v or 0) + 1
+        next_version = max_versions.get(param_name, 0) + 1
 
         new_ev = DBEvidence(
             session_id=session_id,
