@@ -237,8 +237,8 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
       selectedChoice = null;
       viewedResources = {};
       logDecisionPresented();
-      scrollToTop();
       render();
+      scrollToTop();
  } else {
  onComplete({
  mini_game: 'Q1',
@@ -493,6 +493,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
  selectedAttribution = null;
  logArtifactPresented();
  render();
+ scrollToTop();
  } else {
  onComplete({
  mini_game: 'Q2',
@@ -742,6 +743,7 @@ function runQ3KnowledgeIntegration(app, renderHeader, logEvent, onComplete) {
  selectedIntegrationChoice = null;
  logEpisodePresented();
  render();
+ scrollToTop();
  } else {
  onComplete({
  mini_game: 'Q3',

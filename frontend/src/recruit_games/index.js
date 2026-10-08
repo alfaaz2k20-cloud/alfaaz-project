@@ -202,13 +202,15 @@ export function renderTutorialCard({ icon, goal, steps }) {
 }
 
 
-export function scrollToTop() {
+export function scrollToTop(behavior = 'smooth') {
   if (typeof window !== 'undefined') {
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-    const recruitApp = document.getElementById('recruitApp') || document.querySelector('main');
-    if (recruitApp) {
-      recruitApp.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    requestAnimationFrame(() => {
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior });
+      } catch (_) {
+        window.scrollTo(0, 0);
+      }
+    });
   }
 }
 
@@ -221,8 +223,8 @@ export function bindTutorialCard(app, onStart) {
  }
  if (started) return;
  started = true;
-    scrollToTop();
     onStart();
+    scrollToTop();
  };
 
  const btn = app.querySelector('#startActivityBtn');

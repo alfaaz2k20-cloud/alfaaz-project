@@ -242,8 +242,8 @@ function runCR1OpenConstruction(app, renderHeader, logEvent, onComplete) {
       selectedParts = [];
       testFeedback = null;
       logStagePresented();
-      scrollToTop();
       render();
+      scrollToTop();
  } else {
  onComplete({
  mini_game: 'CR1',
@@ -469,6 +469,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
  phase = 'post_shift';
  revisedStrategy = initialStrategy; // defaults to prior unless revised
  render();
+	scrollToTop();
  });
 
  } else {
@@ -565,6 +566,7 @@ function runCR2ConstraintShift(app, renderHeader, logEvent, onComplete) {
  revisedStrategy = null;
  logEpisodePresented();
  render();
+	scrollToTop();
  } else {
  onComplete({
  mini_game: 'CR2',
@@ -866,8 +868,8 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
       feedbackText = null;
       hasObservedFeedback = false;
       logTrialPresented();
-      scrollToTop();
       render();
+      scrollToTop();
  } else {
  onComplete({
  mini_game: 'CR3',

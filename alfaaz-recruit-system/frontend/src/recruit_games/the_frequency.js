@@ -337,8 +337,8 @@ function runF1CueDetection(app, renderHeader, logEvent, onComplete) {
       currentTrial++;
       sliderVal = 50;
       selectedAction = null;
-      scrollToTop();
       render();
+      scrollToTop();
     } else {
       onComplete({
         mini_game: 'F1',
@@ -516,6 +516,7 @@ function runF2AmbiguousCue(app, renderHeader, logEvent, onComplete) {
  currentTrial++;
  selectedAction = null;
  render();
+ scrollToTop();
  } else {
  onComplete({
  mini_game: 'F2',
@@ -836,6 +837,7 @@ function runF3ContextChange(app, renderHeader, logEvent, onComplete) {
  selectedUpdatedChoice = null;
  logTransitionPresented();
  render();
+ scrollToTop();
  } else {
  onComplete({
  mini_game: 'F3',

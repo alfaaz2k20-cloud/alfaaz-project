@@ -186,8 +186,8 @@ function runC1ResourceCooperation(app, renderHeader, logEvent, onComplete) {
  currentRound++;
       transferCount = 0;
       logRoundPresented();
-      scrollToTop();
       render();
+      scrollToTop();
  } else {
  onComplete({
  mini_game: 'C1',
@@ -362,8 +362,8 @@ function runC2Coordination(app, renderHeader, logEvent, onComplete) {
  currentRound++;
       chosenSlot = null;
       logRoundPresented();
-      scrollToTop();
       render();
+      scrollToTop();
  } else {
  onComplete({
  mini_game: 'C2',
@@ -627,6 +627,7 @@ function runC3CollaborationRepair(app, renderHeader, logEvent, onComplete) {
  selectedRepair = null;
  logRepairPresented();
  render();
+ scrollToTop();
  } else {
  onComplete({
  mini_game: 'C3',

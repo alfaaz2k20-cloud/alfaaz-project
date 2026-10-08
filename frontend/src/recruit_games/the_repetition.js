@@ -157,6 +157,7 @@ function runM1Minimum(app, renderHeader, logEvent, onComplete) {
  currentIdx++;
  logUnitPresented();
  render();
+ scrollToTop();
  } else {
  onComplete({
  mini_game: 'M1',
@@ -284,6 +285,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
  mandatoryIdx++;
  logUnitPresented(mandatoryUnits[mandatoryIdx]);
  render();
+ scrollToTop();
  } else {
  // Transition to explicit choice point
  phase = 'choice';
@@ -293,6 +295,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
  task_def_version: '1.0'
  });
  render();
+ scrollToTop();
  }
  });
 
@@ -361,6 +364,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
  phase = 'optional';
  logUnitPresented(optionalUnits[optionalIdx]);
  render();
+ scrollToTop();
  });
 
  } else if (phase === 'optional') {
@@ -432,6 +436,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
  task_def_version: '1.0'
  });
  render();
+ scrollToTop();
  } else {
  onComplete({
  mini_game: 'M2',
@@ -615,6 +620,7 @@ function runM3ReducedReward(app, renderHeader, logEvent, onComplete) {
  currentIdx++;
  logTrialPresented();
  render();
+ scrollToTop();
  } else {
  // Reached right-censoring ceiling of 6 units
  onComplete({

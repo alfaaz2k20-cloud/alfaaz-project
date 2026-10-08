@@ -214,8 +214,8 @@ function runA1Classification(app, renderHeader, logEvent, onComplete, worldIndex
 
  currentDocIdx++;
     selectedFolder = null;
-    scrollToTop();
     render();
+    scrollToTop();
  });
  }
 
@@ -392,11 +392,12 @@ function runA2ExceptionHandling(app, renderHeader, logEvent, onComplete, worldIn
  task_def_version: '1.0'
  });
 
- if (currentTrial < 3) {
- currentTrial++;
- chosenAction = null;
- render();
- } else {
+  if (currentTrial < 3) {
+  currentTrial++;
+  chosenAction = null;
+  render();
+  scrollToTop();
+  } else {
  onComplete({
  mini_game: 'A2',
  observations_count: 4

@@ -138,6 +138,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
           trialStartTime = performance.now();
           logTrialPresented();
           render();
+          scrollToTop();
         } else {
           onComplete({
             mini_game: 'E1',
@@ -375,8 +376,8 @@ function runE2SetbackRecovery(app, renderHeader, logEvent, onComplete) {
  currentSeq++;
       selectedAction = null;
       logSequencePresented();
-      scrollToTop();
       render();
+      scrollToTop();
  } else {
  onComplete({
  mini_game: 'E2',
@@ -574,6 +575,7 @@ function runE3ChangingConditions(app, renderHeader, logEvent, onComplete) {
  selectedLayout = null;
  logConditionPresented();
  render();
+ scrollToTop();
  } else {
  onComplete({
  mini_game: 'E3',

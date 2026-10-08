@@ -101,7 +101,7 @@ const FALLBACK_V2_1_SCENARIOS = Object.keys(SJT_V2_1_COPY).map((k, idx) => ({
 
 import consentCopy from '../../alfaaz-recruit-system/backend/config/copy/consent.json';
 import './recruit-utilities.css';
-import { runMiniGame, CANDIDATE_CORE_GAMES } from './recruit_games/index.js';
+import { runMiniGame, CANDIDATE_CORE_GAMES, scrollToTop } from './recruit_games/index.js';
 
 // KEEP-ALIVE PING FOR RENDER FREE TIER
 function startKeepAlivePing() {
@@ -603,7 +603,8 @@ function togglePause() {
 
 // Main Render Dispatcher
 export function renderScreen() {
- const app = document.getElementById('recruitApp');
+  scrollToTop();
+  const app = document.getElementById('recruitApp');
  const headerControls = document.getElementById('sessionHeaderControls');
  const topProgressBar = document.getElementById('topProgressBar');
  const progressBarFill = document.getElementById('progressBarFill');
@@ -1249,6 +1250,7 @@ function renderSjtBriefing(app) {
          sjtKeydownHandler = null;
        }
        renderSJT(app, progressBarFill);
+       scrollToTop();
      }
    });
 
