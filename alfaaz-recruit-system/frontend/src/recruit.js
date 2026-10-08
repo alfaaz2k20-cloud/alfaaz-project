@@ -240,7 +240,12 @@ function persistLocalState() {
  activeMiniGameInProgress: state.activeMiniGameInProgress || false,
  telemetryTerminal: state.telemetryTerminal
  };
- sessionStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(toSave));
+ const jsonStr = JSON.stringify(toSave);
+ sessionStorage.setItem(STATE_STORAGE_KEY, jsonStr);
+ if (state.sessionId) {
+   sessionStorage.setItem(`${STATE_STORAGE_KEY}_${state.sessionId}`, jsonStr);
+   sessionStorage.setItem('alfaaz_active_session_id', state.sessionId);
+ }
  // UNSENT_STORAGE_KEY persistence removed in favor of explicit IDB append
  } catch (e) {
  console.warn('[Persistence] Error saving sessionStorage:', e);
@@ -266,7 +271,9 @@ function saveLocalState({ immediate = false } = {}) {
 
 async function restoreLocalState() {
  try {
- const savedStateStr = sessionStorage.getItem(STATE_STORAGE_KEY);
+ const activeSessionId = sessionStorage.getItem('alfaaz_active_session_id');
+ const scopedKey = activeSessionId ? `${STATE_STORAGE_KEY}_${activeSessionId}` : STATE_STORAGE_KEY;
+ const savedStateStr = sessionStorage.getItem(scopedKey) || sessionStorage.getItem(STATE_STORAGE_KEY);
  
  const idbEvents = await TelemetryOutbox.getAll();
  if (idbEvents && idbEvents.length > 0) {
@@ -578,7 +585,7 @@ function setupGlobalControls() {
 
  const exitBtn = document.getElementById('exitBtn');
  exitBtn?.addEventListener('click', () => {
- if (confirm('Are you sure you wish to exit the volunteer assessment? You can return at any time.')) {
+ if (confirm('Exit assessment for now? All completed responses are saved, and you can resume this session later on this device.')) {
  logEvent(state.screen, 'candidate_exited');
  flushTelemetry();
  window.location.href = 'index.html';
@@ -602,6 +609,49 @@ function togglePause() {
 }
 
 // Main Render Dispatcher
+function announceToScreenReader(message) {
+  const announcer = document.getElementById('a11yAnnouncer');
+  if (announcer && message) {
+    announcer.textContent = message;
+  }
+}
+
+function focusMainHeading() {
+  requestAnimationFrame(() => {
+    const app = document.getElementById('recruitApp');
+    if (!app) return;
+    const heading = app.querySelector('h1, h2, [role="heading"]');
+    if (heading) {
+      heading.setAttribute('tabindex', '-1');
+      heading.focus({ preventScroll: true });
+    }
+  });
+}
+
+function renderErrorPanel({ title = 'Connection Notice', message = 'A temporary connection issue occurred. Your progress is kept safe.', onRetry = null }) {
+  const panel = document.createElement('div');
+  panel.className = 'mt-5 p-4 sm:p-5 bg-[#fff8f5] border border-[#e8c8be] rounded-xs text-left shadow-xs space-y-3';
+  panel.setAttribute('role', 'alert');
+  panel.innerHTML = `
+    <div class="flex items-start gap-3">
+      <div class="w-7 h-7 rounded-full bg-[#fceae5] border border-[#e8c8be] text-[#bd6f5d] flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">!</div>
+      <div class="space-y-1">
+        <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-primary)]">${window.escapeHtml ? window.escapeHtml(title) : title}</div>
+        <p class="text-xs text-stone-600 leading-relaxed">${window.escapeHtml ? window.escapeHtml(message) : message}</p>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-2.5 pt-2 border-t border-[#f2ded7]">
+      ${onRetry ? '<button type="button" class="error-retry-btn min-h-[44px] px-4 py-2 bg-[var(--text-primary)] text-white text-xs uppercase tracking-wider hover:bg-[var(--accent-gold)] transition-colors rounded-xs cursor-pointer">Try Again</button>' : ''}
+      <button type="button" class="error-refresh-btn min-h-[44px] px-4 py-2 bg-white border border-[var(--grid-border)] text-stone-700 text-xs uppercase tracking-wider hover:bg-[#faf8f5] transition-colors rounded-xs cursor-pointer">Refresh Page</button>
+    </div>
+  `;
+  if (onRetry) {
+    panel.querySelector('.error-retry-btn')?.addEventListener('click', onRetry);
+  }
+  panel.querySelector('.error-refresh-btn')?.addEventListener('click', () => window.location.reload());
+  return panel;
+}
+
 export function renderScreen() {
   scrollToTop();
   const app = document.getElementById('recruitApp');
@@ -651,6 +701,7 @@ export function renderScreen() {
  renderComplete(app);
  break;
  }
+  focusMainHeading();
 }
 
 // 1. Consent Screen
@@ -762,12 +813,20 @@ function renderConsent(app) {
  state.screen = 'identity';
  renderScreen();
  } catch (err) {
- alert(`Unable to initialize session: ${err.message || 'Please check connection.'}`);
- console.error(err);
+ console.error('[Consent error]', err);
  if (btn) {
- btn.innerHTML = origText;
- btn.setAttribute('aria-disabled', 'false');
+   btn.innerHTML = origText;
+   btn.setAttribute('aria-disabled', 'false');
  }
+ const form = document.getElementById('consentForm');
+ form?.querySelectorAll('.error-banner').forEach(el => el.remove());
+ const errPanel = renderErrorPanel({
+   title: 'Unable to start session',
+   message: 'Could not connect to the studio server. Please check your connection and try again.',
+   onRetry: () => form?.dispatchEvent(new Event('submit', { cancelable: true }))
+ });
+ errPanel.classList.add('error-banner');
+ form?.appendChild(errPanel);
  }
  });
 }
@@ -826,11 +885,20 @@ function renderIdentity(app) {
  saveLocalState({ immediate: true });
  renderScreen();
  } catch (err) {
- alert(`Unable to continue: ${err.message || 'Please check connection.'}`);
+ console.error('[Identity error]', err);
  if (btn) {
- btn.disabled = false;
- btn.innerHTML = origText;
+   btn.disabled = false;
+   btn.innerHTML = origText;
  }
+ const form = document.getElementById('identityForm');
+ form?.querySelectorAll('.error-banner').forEach(el => el.remove());
+ const errPanel = renderErrorPanel({
+   title: 'Unable to register participant',
+   message: 'Could not submit your details due to a connection delay. Please try again.',
+   onRetry: () => form?.dispatchEvent(new Event('submit', { cancelable: true }))
+ });
+ errPanel.classList.add('error-banner');
+ form?.appendChild(errPanel);
  }
  });
 }
