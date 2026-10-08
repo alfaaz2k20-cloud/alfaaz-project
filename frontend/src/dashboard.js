@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
  }
  };
 
- // PHANTOM TERMINAL
+ // CURATOR AI TERMINAL
  function appendPhantomMessage(output, label, text, style = '') {
  const row = document.createElement('div');
  row.style.cssText = style;
@@ -100,25 +100,56 @@ document.addEventListener('DOMContentLoaded', () => {
  const input = document.getElementById('phantomInput'), output = document.getElementById('phantomOutput');
  if (!input || !output) return;
  const query = input.value.trim();
- if (!query) return; input.value = '';
- appendPhantomMessage(output, 'You', query, 'margin-top:1.5rem; color: var(--accent-gold);');
- const loadMsg = appendPhantomMessage(output, '', 'The Curator is thinking...', 'color:var(--text-secondary); font-style:italic; margin-top:0.5rem;');
+ if (!query) return; 
+ input.value = '';
  
- try {
- const res = await window.globalApiFetch('/phantom/ask', { method: 'POST', body: JSON.stringify({ question: query }) });
- if (loadMsg.isConnected) loadMsg.remove();
- if (res && res.ok) {
- const data = await res.json();
- appendPhantomMessage(output, 'Curator', data.answer, 'color:var(--text-primary); margin-top:0.5rem;');
- } else {
- appendPhantomMessage(output, '', 'The Curator is currently occupied.', 'color:var(--accent-red); margin-top:0.5rem;');
+ appendPhantomMessage(output, 'You', query, 'margin-top:1.5rem; color: var(--accent-gold); font-weight: 500;');
+ const loadMsg = appendPhantomMessage(output, '', 'Curator AI is reflecting...', 'color:var(--text-secondary); font-style:italic; margin-top:0.5rem;');
+ 
+ const coldTimer = setTimeout(() => {
+   if (loadMsg.isConnected) {
+     loadMsg.textContent = 'Waking the archives... Curator AI is preparing your answer.';
+   }
+ }, 4000);
+
+ const history = window.alfaazCuratorMemory?.history?.() || [];
+
+ async function executeQuery() {
+   return await window.globalApiFetch('/phantom/ask', { 
+     method: 'POST', 
+     body: JSON.stringify({ question: query, history }) 
+   });
  }
+
+ try {
+   let res = await executeQuery();
+   if (res && (res.status === 502 || res.status === 503)) {
+     if (loadMsg.isConnected) loadMsg.textContent = 'Connecting to archives...';
+     await new Promise(r => setTimeout(r, 3000));
+     res = await executeQuery();
+   }
+
+   clearTimeout(coldTimer);
+   if (loadMsg.isConnected) loadMsg.remove();
+
+   if (res && res.ok) {
+     const data = await res.json();
+     appendPhantomMessage(output, 'Curator AI', data.answer, 'color:var(--text-primary); margin-top:0.5rem; border-left: 2px solid var(--accent-gold); padding-left: 8px;');
+     window.alfaazCuratorMemory?.add?.('user', query);
+     window.alfaazCuratorMemory?.add?.('assistant', data.answer);
+   } else if (res && res.status === 429) {
+     appendPhantomMessage(output, '', 'Curator AI is currently occupied with other visitors. Please wait a moment.', 'color:var(--accent-red); margin-top:0.5rem;');
+   } else {
+     appendPhantomMessage(output, '', 'The archives are momentarily quiet. Please inquire again in a few moments.', 'color:var(--accent-red); margin-top:0.5rem;');
+   }
  } catch (err) { 
- if (loadMsg.isConnected) loadMsg.remove();
- appendPhantomMessage(output, '', '[Offline]', 'color:var(--accent-red); margin-top:0.5rem;');
+   clearTimeout(coldTimer);
+   if (loadMsg.isConnected) loadMsg.remove();
+   appendPhantomMessage(output, '', 'Connection interrupted. Please try again.', 'color:var(--accent-red); margin-top:0.5rem;');
  }
  output.scrollTop = output.scrollHeight;
  };
+ window.askCurator = window.askPhantom;
  
  document.getElementById('phantomInput')?.addEventListener('keydown', function (e) {
  if (e.key === 'Enter') {

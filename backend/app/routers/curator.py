@@ -1,22 +1,22 @@
-from fastapi import APIRouter, Request, Depends, HTTPException
-from app.services.curator import build_curator_messages, check_curator_rate_limit, get_groq_client
+import logging
+from fastapi import APIRouter, Request, Depends
+from app.services.curator import ask_curator_ai, check_curator_rate_limit
 from app.schemas.curator import PhantomQuery
 
-# This replaces @app.post
-router = APIRouter(prefix="/phantom", tags=["The Curator"])
+logger = logging.getLogger("app.curator")
+
+# Retain /phantom prefix for full backward-compatibility with deployed clients
+router = APIRouter(prefix="/phantom", tags=["Curator AI"])
 
 @router.post("/ask")
-def ask_phantom(query: PhantomQuery, request: Request, _=Depends(check_curator_rate_limit)):
-    client = get_groq_client()
-    if not client:
-        return {"answer": "The Curator is currently unavailable."}
+def ask_curator_endpoint(query: PhantomQuery, request: Request, _=Depends(check_curator_rate_limit)):
+    """
+    Primary conversational endpoint for Curator AI.
+    Answers inquiries across visitor widget and dashboard terminal.
+    """
     try:
-        response = client.chat.completions.create(
-            messages=build_curator_messages(query.question, query.history),
-            model="llama-3.3-70b-versatile",
-            temperature=0.6,
-            max_tokens=450,
-        )
-        return {"answer": response.choices[0].message.content}
-    except Exception:
-        return {"answer": "Our archives are temporarily unreachable. Please inquire again later."}
+        answer = ask_curator_ai(query.question, query.history)
+        return {"answer": answer}
+    except Exception as e:
+        logger.error("Curator AI request processing error: %s", e, exc_info=True)
+        return {"answer": "The Curator is temporarily contemplating in quiet reflection. Please inquire again momentarily."}

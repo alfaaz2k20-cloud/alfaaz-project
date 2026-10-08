@@ -42,61 +42,24 @@ def generate_blog_article(data: BlogGenerateRequest, db: Session = Depends(get_d
         print("[CURATOR ERROR] Unauthorized access attempt to /blogs/generate.")
         raise HTTPException(status_code=403, detail="Unauthorized Curator Access")
 
-    client = get_groq_client()
-    if not client:
-        print("[CURATOR ERROR] Groq client not initialized.")
-        raise HTTPException(status_code=500, detail="Curator AI not configured.")
+    # Services
+    from app.services.curator import generate_curator_essay
 
     active_topic = data.topic if data.topic else (
         "Explore a profound intersection between Kashmiri cultural heritage and global movements in "
         "art, photography, film, philosophy, or literature. Focus on a specific, authentic, and scholarly "
         "topic that resonates with local identity while connecting to a broader human narrative."
     )
-    
-    system_prompt = """You are the Curator for the Alfaaz Collective, a senior polymath, scholarly researcher, and poetic voice.
-    TASK: Generate an exhaustive, deeply detailed, and evocative journal article (1500+ words).
-    TONE: Academic, dense, grounded in Kashmiri/Regional nuances, and globally philosophical.
-    
-    STRUCTURE & DEPTH:
-    1. Introduction: A lengthy, atmospheric hook (3-4 paragraphs) connecting a specific local observation to a universal theme.
-    2. Deep Dive: 4-5 expansive sections. Each section MUST be at least 400 words of dense prose, exploring historical, psychological, or visual layers.
-    3. The Local-Global Bridge: A rigorous comparative analysis between regional Kashmiri aesthetics/philosophy and international movements.
-    4. References: A list of 5-7 authentic scholarly works, historical texts, or artistic movements.
-
-    CRITICAL CONSTRAINTS:
-    - OUTPUT MUST BE A MASSIVE, LONG-FORM ESSAY, NOT A SUMMARY.
-    - Use sophisticated vocabulary and complex sentence structures.
-    - MUST be a strictly valid JSON object.
-    - "content" is HTML (use <p>, <h2>, <h3>, <blockquote>, <ul> tags).
-    - Use single quotes for HTML attributes.
-    - Do NOT include newlines (\\n) inside JSON strings; use <br> or <p> tags.
-    
-    JSON structure: {"title": "...", "excerpt": "...", "content": "<h2>...</h2><p>...</p>..."}"""
 
     try:
-        response = client.chat.completions.create(
-            messages=[{"role": "system", "content": system_prompt},
-                      {"role": "user", "content": f"Topic: {active_topic}"}],
-            model="llama-3.3-70b-versatile",
-            response_format={"type": "json_object"},
-            temperature=0.85,
-            max_tokens=8192
-        )
-        
-        raw_content = response.choices[0].message.content
-        try:
-            result = json.loads(raw_content)
-        except json.JSONDecodeError as je:
-            print(f"[CURATOR ERROR] JSON Decode Failed: {je}")
-            print(f"[CURATOR ERROR] Raw Output: {raw_content}")
-            raise HTTPException(status_code=500, detail="The Curator produced an unreadable manuscript.")
-
+        result = generate_curator_essay(active_topic)
         new_blog = DBBlog(
             title=result.get("title", "Untitled Reflection"), 
             excerpt=result.get("excerpt", ""),
             content=result.get("content", ""), 
             is_published=True
         )
+
         
         db.add(new_blog)
         db.commit()

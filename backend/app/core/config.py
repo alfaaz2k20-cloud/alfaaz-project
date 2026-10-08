@@ -76,5 +76,7 @@ CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
 MAKE_WEBHOOK_URL = os.environ.get("MAKE_WEBHOOK_URL")
 
 # AI & Others
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 PHANTOM_SECRET_TOKEN = os.environ.get("PHANTOM_SECRET_TOKEN")
+
