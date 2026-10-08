@@ -55,12 +55,12 @@ async function loadSessionsList(selectedStatus = '') {
     const sessions = await resp.json();
 
     const filterToolbar = `
-    <div class="flex justify-between items-center bg-white border border-[var(--grid-border)] p-4">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white border border-[var(--grid-border)] p-4">
       <div>
-        <h2 class="text-lg text-[var(--text-primary)] font-serif">Applicant Assessment Records</h2>
+        <h2 class="text-base sm:text-lg text-[var(--text-primary)] font-serif">Applicant Assessment Records</h2>
         <span class="text-xs text-black">Ordered strictly by submission time</span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
         <label for="statusFilter" class="text-xs uppercase tracking-wider text-black">Session Status:</label>
         <select id="statusFilter" class="px-2 py-1 text-xs border border-[var(--grid-border)] bg-[#faf8f5] text-[var(--text-primary)] focus:outline-none">
           <option value="" ${selectedStatus === '' ? 'selected' : ''}>All Operational Statuses</option>
@@ -356,7 +356,7 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
 
         return `
         <tr class="group border-b border-[var(--grid-border)] hover:bg-[#faf9f6] transition-colors">
-          <td scope="row" class="p-3 text-center font-mono text-xs font-semibold text-stone-500 sticky-col-rank bg-white group-hover:bg-[#faf9f6] transition-colors">${rankNum}</td>
+          <td scope="row" class="p-3 text-center font-mono text-xs font-semibold text-stone-500 w-12 min-w-[48px] max-w-[48px] sticky-col-rank bg-white group-hover:bg-[#faf9f6] transition-colors">${rankNum}</td>
           <td class="p-3 font-medium text-[var(--text-primary)] min-w-[200px] sticky-col-dim bg-white group-hover:bg-[#faf9f6] transition-colors">
             <div>${safeName}</div>
             <div class="text-[10px] text-stone-600 mt-0.5 line-clamp-2" title="${obs}">${obs}</div>
@@ -559,7 +559,7 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
         <table id="dimensionTable" class="w-full text-left text-sm border-collapse">
           <thead class="bg-[#f0eeea] text-xs uppercase tracking-wider text-black select-none">
             <tr>
-              <th scope="col" class="p-3 text-center w-12 sticky-th bg-[#f0eeea] sticky-col-rank sticky-th-corner">#</th>
+              <th scope="col" class="p-3 text-center w-12 min-w-[48px] max-w-[48px] sticky-th bg-[#f0eeea] sticky-col-rank sticky-th-corner">#</th>
               <th scope="col" class="p-3 sticky-th bg-[#f0eeea] sticky-col-dim">Dimension & Observed Context</th>
               <th scope="col" id="thSjt" class="p-3 text-center cursor-pointer hover:bg-[#e4e1dc] transition-colors sticky-th bg-[#f0eeea]" title="Click to rank by SJT" aria-sort="${activeSortMode === 'sjt' ? 'descending' : 'none'}" aria-label="Rank by Written Situational Trade-offs">SJT Rel <span id="thSjtArrow">${activeSortMode === 'sjt' ? '&darr;' : ''}</span></th>
               <th scope="col" id="thGame" class="p-3 text-center cursor-pointer hover:bg-[#e4e1dc] transition-colors sticky-th bg-[#f0eeea]" title="Click to rank by Game" aria-sort="${activeSortMode === 'game' ? 'descending' : 'none'}" aria-label="Rank by Practical Hands-On Game Performance">Game Rel <span id="thGameArrow">${activeSortMode === 'game' ? '&darr;' : ''}</span></th>

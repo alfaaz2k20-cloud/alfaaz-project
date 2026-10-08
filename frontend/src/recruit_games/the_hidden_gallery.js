@@ -169,7 +169,7 @@ function runQ1InformationSeeking(app, renderHeader, logEvent, onComplete) {
       <span class="text-sm text-black">${currentDecision + 1} / ${decisions.length}</span>
     `,
     actionButtonId: 'confirmQ1Btn',
-    actionButtonText: currentDecision < decisions.length - 1 ? 'Confirm Choice &rarr;' : 'Confirm & Finish &rarr;',
+    actionButtonText: currentDecision < decisions.length - 1 ? 'Confirm Decision &rarr;' : 'Confirm & Finish &rarr;',
     actionButtonDisabled: !selectedChoice,
     progressText: `Record ${currentDecision + 1} of ${decisions.length}`
   });
@@ -328,6 +328,33 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
  }
  ];
 
+  const relicVisuals = [
+    {
+      badgeText: 'SEAL',
+      badgeBg: '#963728',
+      badgeBorder: '#5a1c12',
+      padBorder: '#48392d',
+      noun: 'wax seal',
+      surface: 'Velvet Display Pad'
+    },
+    {
+      badgeText: 'CHART',
+      badgeBg: '#233554',
+      badgeBorder: '#142038',
+      padBorder: '#2d3d5e',
+      noun: 'star chart',
+      surface: 'Study Folio Desk'
+    },
+    {
+      badgeText: 'RECEIPT',
+      badgeBg: '#443b32',
+      badgeBorder: '#28221b',
+      padBorder: '#4a3f35',
+      noun: 'transit receipt',
+      surface: 'Archival Tray'
+    }
+  ];
+
  function render() {
  if (inTutorial) {
  app.innerHTML = `
@@ -338,7 +365,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
  </div>
  ${renderTutorialCard({
  icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>`,
- goal: 'Inspect 4 historic relics to identify where they came from.',
+ goal: 'Inspect 3 historic relics to identify where they came from.',
  steps: [
  'Read the description of the relic.',
  'Click any clues you want to inspect.',
@@ -359,6 +386,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
  }
 
   const r = relics[currentTrial];
+  const v = relicVisuals[currentTrial] || relicVisuals[0];
   const lastClueId = Object.keys(inspectedClues).pop();
   const lastClue = lastClueId ? r.clues.find(c => c.id === lastClueId) : null;
 
@@ -369,16 +397,17 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
     goal: 'Inspect clues on the old object to find where it came from.',
     subtitle: 'Inspect physical clues to identify each historic object.',
     instructionPrompt: 'Your Task',
-    instruction: 'Complete Step 1 by inspecting clues. Then choose where this stamp came from in Step 2.',
+    instruction: `Complete Step 1 by inspecting clues. Then choose where this ${v.noun} came from in Step 2.`,
     stimulusContent: `
       <div class="stage-content">
-        <div style="width:86%; background:#292019; border:1.5px solid #48392d; border-radius:10px; padding:16px; text-align:center; margin:0 auto;">
-          <div style="font-size:0.75rem; color:#d8baa0; text-transform:uppercase; font-weight:700;">Historical Artifact on Velvet Pad</div>
-          <div style="width:52px; height:52px; border-radius:50%; background:#963728; margin:10px auto; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.75rem; font-weight:800; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:2px solid #5a1c12;">
-            STAMP
+        <div style="width:86%; background:#292019; border:1.5px solid ${v.padBorder}; border-radius:10px; padding:16px; text-align:center; margin:0 auto;">
+          <div style="font-size:0.75rem; color:#d8baa0; text-transform:uppercase; font-weight:700; letter-spacing:0.04em;">Historical Artifact on ${v.surface}</div>
+          <div style="width:54px; height:54px; border-radius:50%; background:${v.badgeBg}; margin:10px auto; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.72rem; font-weight:800; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:2px solid ${v.badgeBorder}; letter-spacing:0.05em;">
+            ${v.badgeText}
           </div>
-          <div style="font-size:0.88rem; color:#f0e2d2; font-weight:600;">Old Wax Seal on Goatskin Parchment</div>
-          <div style="font-size:0.78rem; color:#ad9e8e; margin-top:2px;">Origin unknown · Inspect clues below to identify</div>
+          <div style="font-size:0.92rem; color:#f0e2d2; font-weight:600;">${r.title}</div>
+          <div style="font-size:0.78rem; color:#ad9e8e; margin-top:3px; line-height:1.4;">${r.description}</div>
+          <div style="font-size:0.75rem; color:#c4a482; margin-top:4px; font-style:italic;">Origin unknown · Inspect clues below to identify</div>
         </div>
       </div>
     `,
@@ -388,7 +417,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
         <div class="p-4 bg-white border border-[var(--grid-border)] rounded-xs space-y-3">
           <div class="flex items-center gap-2 pb-2 border-b border-[var(--grid-border)]">
             <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs font-bold flex items-center justify-center font-serif">1</span>
-            <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 1: Tap to check clues on this old stamp</span>
+            <span class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-bold">Step 1: Tap to check clues on this ${v.noun}</span>
           </div>
           <div class="flex gap-2 flex-wrap" id="clueRow">
             ${r.clues.map(c => `
@@ -405,7 +434,7 @@ function runQ2InvestigationUnderUncertainty(app, renderHeader, logEvent, onCompl
         <!-- Step 2 Outside Tile: Origin Attributions -->
         <div class="space-y-3">
           <div class="options-directive">
-            <span>Step 2: Choose where this stamp came from:</span>
+            <span>Step 2: Choose where this ${v.noun} came from:</span>
             <span style="font-size:0.75rem; color:var(--text-secondary);">Tap to select</span>
           </div>
           <div class="outside-options space-y-2.5">

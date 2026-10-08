@@ -50,7 +50,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
  ${renderHeader('The Ceramic Mosaic', 'Sort each tile into the matching container.')}
  ${renderTutorialCard({
  icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>`,
- goal: 'Sort 9 tiles into the matching containers.',
+ goal: 'Sort 8 tiles into the matching containers.',
  steps: [
  'Look at the tile shape and color.',
  'Click Container 1 or Container 2 to place it.',
@@ -82,7 +82,7 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
     stimulusContent: `
       <div class="stage-content">
         <div style="font-size:0.75rem; text-transform:uppercase; color:#baa890; margin-bottom:6px;">Tile to Sort (${currentIdx + 1} of ${trials.length})</div>
-        <div style="width:72px; height:72px; background:${t.color === 'Gold' ? '#b38b4d' : '#487352'}; border-radius:10px; border:2px solid #5a421b; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(0,0,0,0.4); margin:0 auto;">
+        <div style="width:72px; height:72px; background:${t.color === 'Gold' ? '#b38b4d' : '#487352'}; border-radius:10px; border:2px solid ${t.color === 'Gold' ? '#5a421b' : '#28442e'}; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(0,0,0,0.4); margin:0 auto;">
           <span style="font-size:2.4rem; color:#fff;">${t.shape === 'Square' ? '■' : '●'}</span>
         </div>
         <div style="font-size:1rem; color:#f6efe5; margin-top:8px; font-weight:700;">${t.color} ${t.shape}</div>
@@ -96,14 +96,18 @@ function runE1RuleShift(app, renderHeader, logEvent, onComplete) {
         </div>
         <div class="mosaic-containers-row">
           <button type="button" class="container-box-btn bin-btn" data-choice="container_1" id="btnContainer1" tabindex="0">
-            <div style="font-size:2.2rem; color:var(--accent-gold); line-height:1;">●</div>
+            <div style="width:46px; height:46px; background:#b38b4d; border:2px solid #5a421b; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 3px 8px rgba(0,0,0,0.18); margin:2px auto;">
+              <span style="font-size:1.6rem; color:#fff; line-height:1;">●</span>
+            </div>
             <div style="font-weight:700; font-size:1rem; margin-top:6px;">Container 1</div>
             <div style="font-size:0.8rem; color:var(--text-secondary);">Reference: Gold Circle</div>
           </button>
           <button type="button" class="container-box-btn bin-btn" data-choice="container_2" id="btnContainer2" tabindex="0">
-            <div style="font-size:2.2rem; color:#487352; line-height:1;">■</div>
+            <div style="width:46px; height:46px; background:#487352; border:2px solid #28442e; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 3px 8px rgba(0,0,0,0.18); margin:2px auto;">
+              <span style="font-size:1.6rem; color:#fff; line-height:1;">■</span>
+            </div>
             <div style="font-weight:700; font-size:1rem; margin-top:6px;">Container 2</div>
-            <div style="font-size:0.8rem; color:var(--text-secondary);">Reference: Green Square</div>
+            <div style="font-size:0.8rem; color:var(--text-secondary);">Reference: Sage Square</div>
           </button>
         </div>
       </div>

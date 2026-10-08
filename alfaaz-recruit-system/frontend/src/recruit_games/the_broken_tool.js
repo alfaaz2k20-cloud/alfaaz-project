@@ -695,22 +695,35 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
  }
 
   const tr = trials[currentTrial];
+  const isTrial1 = currentTrial === 0;
 
   app.innerHTML = renderGameShell({
     worldCode: 'W6',
     worldIndex: 5,
     title: 'The Improvised Tool',
-    goal: 'Form a sharp, clean fold without tearing paper fibers.',
+    goal: tr.objective,
     subtitle: 'Choose a tool and action to solve the craft problem.',
     instructionPrompt: 'Your Task',
-    instruction: 'Choose your tool and technique below. Test your crease before confirming.',
+    instruction: isTrial1
+      ? 'Choose your tool and technique below. Test your crease before confirming.'
+      : 'Choose your tool and technique below. Test your stippling before confirming.',
     stimulusContent: `
       <div class="stage-content">
-        <div class="folio-sheet" style="width:92%; min-height:120px; text-align:center; margin:0 auto;">
-          <div style="font-size:0.72rem; text-transform:uppercase; color:#855c3c; font-weight:700;">Paper Workbench</div>
-          <div style="font-size:0.95rem; font-weight:700; color:#2a2016; margin:4px 0;">Thick Paper Sheet</div>
-          <div style="height:3px; background:${feedbackText ? (feedbackText.includes('Clean') || feedbackText.includes('Smooth') || feedbackText.includes('Fine') ? '#487352' : '#8c4740') : '#baa58c'}; width:80%; margin:8px auto; border-radius:2px;" id="creaseVisual"></div>
-          <div style="font-size:0.82rem; color:#6d5b48;" id="creaseFeedback">${feedbackText ? feedbackText : 'Goal: Form a sharp, clean fold without tearing paper fibers.'}</div>
+        <div class="folio-sheet" style="width:92%; min-height:120px; text-align:center; margin:0 auto; padding:16px;">
+          <div style="font-size:0.72rem; text-transform:uppercase; color:#855c3c; font-weight:700; letter-spacing:0.05em;">${isTrial1 ? 'Paper Workbench' : 'Ink Workbench'}</div>
+          <div style="font-size:1rem; font-weight:700; color:#2a2016; margin:4px 0;">${isTrial1 ? 'Thick Paper Sheet' : 'Mulberry Paper Sheet'}</div>
+          ${isTrial1 ? `
+            <div style="height:3px; background:${feedbackText ? (feedbackText.includes('Clean') || feedbackText.includes('Smooth') || feedbackText.includes('Gentle') || feedbackText.includes('Uniform') ? '#487352' : '#8c4740') : '#baa58c'}; width:80%; margin:10px auto; border-radius:2px;" id="creaseVisual"></div>
+            <div style="font-size:0.82rem; color:#6d5b48;" id="creaseFeedback">${feedbackText ? feedbackText : 'Goal: ' + tr.objective}</div>
+          ` : `
+            <div style="display:flex; justify-content:center; align-items:center; gap:6px; min-height:22px; margin:8px auto; width:80%;" id="stippleVisual">
+              ${feedbackText ? (feedbackText.includes('Fine') || feedbackText.includes('Rich') || feedbackText.includes('speckled')
+                ? '<span style="color:#487352; font-size:1.15rem; letter-spacing:5px; font-weight:700;">• • • • • • •</span>'
+                : '<span style="color:#8c4740; font-size:0.85rem; font-weight:600;">— irregular pigment smudge —</span>')
+                : '<span style="color:#baa58c; font-size:1.15rem; letter-spacing:5px;">· · · · · · ·</span>'}
+            </div>
+            <div style="font-size:0.82rem; color:#6d5b48;" id="stippleFeedback">${feedbackText ? feedbackText : 'Goal: ' + tr.objective}</div>
+          `}
         </div>
       </div>
     `,
@@ -781,7 +794,7 @@ function runCR3UnspecifiedToolUse(app, renderHeader, logEvent, onComplete) {
       <span class="text-sm text-black">Round ${currentTrial + 1} of ${trials.length}</span>
     `,
     actionButtonId: 'confirmTrialBtn',
-    actionButtonText: currentTrial < trials.length - 1 ? 'Confirm Action &rarr;' : 'Confirm & Finish &rarr;',
+    actionButtonText: currentTrial < trials.length - 1 ? 'Confirm Technique &rarr;' : 'Confirm & Finish &rarr;',
     actionButtonDisabled: !selectedTool || !selectedMethod,
     progressText: `Round ${currentTrial + 1} of ${trials.length}`
   });

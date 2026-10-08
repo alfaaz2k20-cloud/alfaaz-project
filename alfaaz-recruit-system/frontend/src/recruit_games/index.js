@@ -47,16 +47,16 @@ export function renderGameShell({
  const cleanBadge = (stepBadge && !stepBadge.toLowerCase().includes('takes about')) ? stepBadge : '';
 
  return `
- <div class="max-w-2xl mx-auto space-y-5">
+ <div class="max-w-2xl mx-auto space-y-3.5 sm:space-y-4">
  <!-- TOP BAR: English Left, Urdu Right -->
- <div class="flex justify-between items-start pb-3 border-b border-[var(--grid-border)]">
+ <div class="flex justify-between items-start pb-2.5 sm:pb-3 border-b border-[var(--grid-border)]">
  <div>
  <span class="act-badge">World ${wIdx + 1} of 7 &middot; ${meta.name}</span>
- <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">${title}</h2>
+ <h2 class="text-base sm:text-xl font-serif text-[var(--text-primary)] mt-0.5">${title}</h2>
  </div>
  <div class="text-right shrink-0 ml-4">
- ${meta.name_ur ? `<span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">${meta.name_ur}</span>` : ''}
- ${cleanBadge ? `<span class="text-[11px] text-[var(--accent-gold)] uppercase tracking-wider block mt-1">${cleanBadge}</span>` : ''}
+ ${meta.name_ur ? `<span class="font-serif text-lg sm:text-2xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">${meta.name_ur}</span>` : ''}
+ ${cleanBadge ? `<span class="text-[10px] sm:text-[11px] text-[var(--accent-gold)] uppercase tracking-wider block mt-1">${cleanBadge}</span>` : ''}
  </div>
  </div>
 
@@ -109,7 +109,7 @@ export function renderGameShell({
 
  <!-- ACTIVE SELECTION / SUMMARY AREA -->
  ${summaryContent ? `
- <div class="p-3.5 bg-white border border-[var(--grid-border)] rounded-xs text-sm font-sans text-[var(--text-primary)] flex justify-between items-center candidate-content-protected">
+ <div class="p-2.5 sm:p-3.5 bg-white border border-[var(--grid-border)] rounded-xs text-xs sm:text-sm font-sans text-[var(--text-primary)] flex justify-between items-center candidate-content-protected">
  ${summaryContent}
  </div>
  ` : ''}
@@ -119,7 +119,7 @@ export function renderGameShell({
  <div class="flex flex-col sm:flex-row justify-end items-center gap-3 pt-2">
  ${secondaryActionHtml || ''}
  ${actionButtonText ? `
- <button type="button" id="${actionButtonId}" ${actionButtonDisabled ? 'disabled' : ''} class="w-full sm:w-auto px-8 py-3.5 bg-[var(--text-primary)] text-white text-xs font-bold uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer interactive-option shadow-sm rounded-xs flex items-center justify-center gap-2 min-h-[44px]">
+ <button type="button" id="${actionButtonId}" ${actionButtonDisabled ? 'disabled' : ''} class="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3.5 bg-[var(--text-primary)] text-white text-xs font-bold uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer interactive-option shadow-sm rounded-xs flex items-center justify-center gap-2 min-h-[44px]">
  ${actionButtonText}
  </button>
  ` : ''}
@@ -171,22 +171,22 @@ export const ALL_GAMES_BY_WORLD = {
 
 export function renderTutorialCard({ icon, goal, steps }) {
  return `
- <div class="tutorial-card cursor-pointer p-6 border border-[var(--accent-gold)] bg-gradient-to-br from-[#faf8f5] to-[#f5efe8] space-y-4 mb-6 interactive-option rounded-xs" tabindex="0" role="button" aria-label="Begin Activity Guide">
- <div class="flex justify-between items-start gap-4">
+ <div class="tutorial-card cursor-pointer p-4 sm:p-6 border border-[var(--accent-gold)] bg-gradient-to-br from-[#faf8f5] to-[#f5efe8] space-y-3 sm:space-y-4 mb-4 sm:mb-6 interactive-option rounded-xs" tabindex="0" role="button" aria-label="Begin Activity Guide">
+ <div class="flex justify-between items-start gap-3 sm:gap-4">
  <div>
- <span class="text-xs uppercase tracking-widest text-[var(--accent-gold)] font-medium block">Activity Guide &middot; رہنمائے عمل</span>
- <h3 class="text-base sm:text-lg font-serif text-[var(--text-primary)] font-semibold mt-0.5">${goal}</h3>
+ <span class="text-[11px] sm:text-xs uppercase tracking-widest text-[var(--accent-gold)] font-medium block">Activity Guide &middot; رہنمائے عمل</span>
+ <h3 class="text-sm sm:text-base font-serif text-[var(--text-primary)] font-semibold mt-0.5">${goal}</h3>
  </div>
- <div class="w-9 h-9 rounded-full bg-amber-100/80 border border-[var(--accent-gold)] flex items-center justify-center text-[var(--accent-gold)] shrink-0">
+ <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-100/80 border border-[var(--accent-gold)] flex items-center justify-center text-[var(--accent-gold)] shrink-0">
  ${icon || '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'}
  </div>
  </div>
 
- <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+ <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3 pt-1">
  ${steps.map((s, idx) => `
- <div class="bg-white/90 border border-[var(--grid-border)] p-4 rounded-xs flex items-start gap-2.5">
- <span class="w-6 h-6 rounded-full bg-[var(--accent-gold)] text-white text-xs flex items-center justify-center font-serif shrink-0 mt-0.5">${idx + 1}</span>
- <div class="text-xs sm:text-sm text-[var(--text-primary)] leading-relaxed">${s}</div>
+ <div class="bg-white/90 border border-[var(--grid-border)] p-3 sm:p-4 rounded-xs flex items-start gap-2 sm:gap-2.5">
+ <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[var(--accent-gold)] text-white text-[11px] sm:text-xs flex items-center justify-center font-serif shrink-0 mt-0.5">${idx + 1}</span>
+ <div class="text-[11px] sm:text-xs text-[var(--text-primary)] leading-relaxed">${s}</div>
  </div>
  `).join('')}
  </div>

@@ -260,7 +260,7 @@ function runM2Optional(app, renderHeader, logEvent, onComplete) {
         </div>
       `,
       actionButtonId: 'foldSleeveBtn',
-      actionButtonText: `Assemble ${u.label} &rarr;`,
+      actionButtonText: 'Assemble Required Folder &rarr;',
       progressText: `Required Folder ${mandatoryIdx + 1} of ${mandatoryUnits.length}`
     });
 

@@ -1130,10 +1130,10 @@ function renderSjtBriefing(app) {
  <div class="flex justify-between items-start pb-4 border-b border-[var(--grid-border)]">
  <div>
  <span class="act-badge">Section 1 &middot; Overview</span>
- <h1 class="text-2xl sm:text-3xl font-serif text-[var(--text-primary)]">Situational Scenarios</h1>
+ <h1 class="text-xl sm:text-3xl font-serif text-[var(--text-primary)]">Situational Scenarios</h1>
  </div>
  <div class="text-right shrink-0">
- <span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">تفہیم و ارادہ</span>
+ <span class="font-serif text-xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">تفہیم و ارادہ</span>
  <span class="text-[10px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider block mt-1">7 Scenarios</span>
  </div>
  </div>
@@ -1245,7 +1245,7 @@ function renderSjtBriefing(app) {
  const segmentProgress = document.getElementById('segmentProgress');
  if (segmentProgress) {
  const remainingMins = Math.max(1, Math.round(((total - current + 1) * 35 + 14 * 32) / 60));
- segmentProgress.innerHTML = `<span class="text-black hidden sm:inline mr-2 text-[10px] sm:text-xs font-normal">About ${remainingMins} mins remaining</span><span>Scenario ${current} / ${total}</span>`;
+ segmentProgress.innerHTML = `<span class="text-black hidden sm:inline mr-2 text-[10px] sm:text-xs font-normal">About ${remainingMins} mins remaining</span><span>Judgment ${current} / ${total}</span>`;
  }
 
  const selectedOptId = state.sjtResponses[scenario.id] || null;
@@ -1253,45 +1253,45 @@ function renderSjtBriefing(app) {
  const optionsHtml = scenario.options.map(opt => `
  <div class="outside-opt-card option-card ${selectedOptId === opt.id ? 'selected' : ''}" data-opt-id="${opt.id}" tabindex="0" role="button" aria-pressed="${selectedOptId === opt.id ? 'true' : 'false'}" aria-label="Option ${opt.id.slice(-1)}">
  <div class="opt-bullet">${opt.id.slice(-1)}</div>
- <div style="flex:1;" class="text-sm sm:text-base text-[var(--text-primary)] font-medium leading-relaxed">${opt.text}</div>
+ <div style="flex:1;" class="text-[13px] sm:text-sm text-[var(--text-primary)] font-medium leading-snug sm:leading-normal">${opt.text}</div>
  </div>
  `).join('');
 
  app.innerHTML = `
- <div class="space-y-5">
+ <div class="space-y-3.5 sm:space-y-5">
  <!-- Top Context: English Title on Top-Left, Urdu on Top-Right -->
- <div class="border-b border-[var(--grid-border)] pb-3 flex justify-between items-start gap-4">
+ <div class="border-b border-[var(--grid-border)] pb-2.5 sm:pb-3 flex justify-between items-start gap-3 sm:gap-4">
  <div>
  <span class="act-badge">Scenario ${current} of ${total}</span>
- <h2 class="text-xl sm:text-2xl font-serif text-[var(--text-primary)] mt-0.5">${scenario.act_title_en}</h2>
+ <h2 class="text-base sm:text-xl font-serif text-[var(--text-primary)] mt-0.5">${scenario.act_title_en}</h2>
  </div>
  <div class="text-right shrink-0">
- ${scenario.act_title_ur ? `<span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">${scenario.act_title_ur}</span>` : ''}
+ ${scenario.act_title_ur ? `<span class="font-serif text-lg sm:text-2xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">${scenario.act_title_ur}</span>` : ''}
  <span class="text-[10px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider block mt-1">Section 1 &middot; ${current} of ${total}</span>
  </div>
  </div>
 
- <!-- SITUATION / STIMULUS: Prominent, larger serif text (Hero) -->
- <div class="scenario-text text-base sm:text-lg font-serif text-[var(--text-primary)] leading-relaxed bg-[#faf8f5] p-5 sm:p-6 border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs">
+ <!-- SITUATION / STIMULUS: Prominent serif text (Hero) -->
+ <div class="scenario-text text-sm sm:text-base font-serif text-[var(--text-primary)] leading-normal sm:leading-relaxed bg-[#faf8f5] p-3.5 sm:p-5 border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs">
  ${scenario.setup}
  </div>
 
  <!-- YOUR TASK: Placed immediately before options -->
- <div class="p-3 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs flex items-center gap-2">
- <span class="w-2 h-2 rounded-full bg-[var(--accent-gold)] inline-block shrink-0"></span>
- <div class="text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
- <strong class="uppercase text-xs tracking-wider text-[var(--accent-gold)] mr-1">Your Task:</strong>
+ <div class="py-2 px-2.5 sm:p-3 bg-amber-50/70 border border-[var(--accent-gold)]/40 rounded-xs flex items-center gap-2">
+ <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[var(--accent-gold)] inline-block shrink-0"></span>
+ <div class="text-[11px] sm:text-xs font-semibold text-[var(--text-primary)]">
+ <strong class="uppercase text-[10px] sm:text-xs tracking-wider text-[var(--accent-gold)] mr-1">Your Task:</strong>
  Read the situation above and pick what you would do.
  </div>
  </div>
 
  <!-- OPTIONS -->
- <div class="space-y-3">
+ <div class="space-y-2 sm:space-y-2.5">
  ${optionsHtml}
  </div>
 
  <!-- PRIMARY ACTION -->
- <div class="pt-5 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-[var(--grid-border)]">
+ <div class="pt-4 sm:pt-5 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-[var(--grid-border)]">
  <span class="text-xs text-[var(--text-secondary)] order-2 sm:order-1 text-[11px]">Tip: Press keys 1 to 4 on your keyboard, or click an option</span>
  <button id="nextSjtBtn" ${selectedOptId ? '' : 'disabled'} class="w-full sm:w-auto min-h-[44px] px-8 py-3 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] disabled:opacity-40 disabled:hover:bg-[var(--text-primary)] shadow-sm rounded-xs order-1 sm:order-2">
  ${current === total ? 'Complete Section 1 &rarr;' : 'Next Scenario &rarr;'}
@@ -1422,10 +1422,10 @@ function renderGbaBriefing(app) {
  <div class="flex justify-between items-start pb-4 border-b border-[var(--grid-border)]">
  <div>
  <span class="act-badge">Section 2 &middot; Overview</span>
- <h1 class="text-2xl sm:text-3xl font-serif text-[var(--text-primary)]">Interactive Studio Activities</h1>
+ <h1 class="text-xl sm:text-3xl font-serif text-[var(--text-primary)]">Interactive Studio Activities</h1>
  </div>
  <div class="text-right shrink-0">
- <span class="font-serif text-2xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">عملی مشاغل</span>
+ <span class="font-serif text-xl sm:text-3xl text-[var(--text-secondary)] block" style="font-family: var(--font-urdu); direction: rtl;">عملی مشاغل</span>
  <span class="text-[10px] sm:text-xs text-[var(--accent-gold)] uppercase tracking-wider block mt-1">14 Activities</span>
  </div>
  </div>
