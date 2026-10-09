@@ -53,6 +53,13 @@ app.add_middleware(
 def on_startup():
     logger.info("Initializing database...")
     SQLModel.metadata.create_all(engine)
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE applicant_identities ADD COLUMN linkedin_url VARCHAR(500);"))
+            conn.commit()
+    except Exception:
+        pass
     logger.info("Database initialized.")
 
 app.include_router(recruit.router)

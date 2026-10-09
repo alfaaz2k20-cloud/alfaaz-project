@@ -25,6 +25,20 @@ engine = create_engine(
 _masked_url = engine.url.render_as_string(hide_password=True)
 logger.info("Database engine initialized: %s", _masked_url)
 
+def init_db(target_engine=engine):
+    try:
+        from sqlmodel import SQLModel
+        from recruit_system.models.recruit import DBApplicantIdentity
+        SQLModel.metadata.create_all(target_engine)
+        from sqlalchemy import text
+        with target_engine.connect() as conn:
+            conn.execute(text("ALTER TABLE applicant_identities ADD COLUMN linkedin_url VARCHAR(500);"))
+            conn.commit()
+    except Exception:
+        pass
+
+init_db(engine)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=Session)
 
 def get_db():

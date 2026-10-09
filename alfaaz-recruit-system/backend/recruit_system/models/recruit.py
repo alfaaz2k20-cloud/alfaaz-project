@@ -9,6 +9,7 @@ class DBApplicantIdentity(SQLModel, table=True):
     full_name: str
     email: str = Field(index=True)
     phone_or_contact: Optional[str] = None
+    linkedin_url: Optional[str] = None
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), server_default=func.now())

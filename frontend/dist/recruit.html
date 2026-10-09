@@ -46,46 +46,69 @@
 
     .assessment-container {
       max-width: 760px;
-      margin: 4.5rem auto 1.5rem;
-      padding: 1.5rem;
+      margin: 3.5rem auto 1rem;
+      padding: 1.15rem 0.95rem;
       background: var(--bg-secondary);
       border: 1px solid var(--grid-border);
       box-shadow: var(--shadow-base);
-      min-height: 460px;
+      min-height: 440px;
       position: relative;
     }
     @media (min-width: 640px) {
       .assessment-container {
         margin: 5rem auto 2.5rem;
         padding: 2.25rem;
+        min-height: 460px;
       }
     }
     .act-badge {
       display: inline-block;
-      font-size: 11px;
-      letter-spacing: 2px;
+      font-size: 10px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
       color: var(--accent-gold);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+    @media (min-width: 640px) {
+      .act-badge {
+        font-size: 11px;
+        letter-spacing: 2px;
+        margin-bottom: 0.5rem;
+      }
     }
     .act-title-ur {
       font-family: var(--font-urdu);
-      font-size: 1.4rem;
+      font-size: 1.15rem;
       color: var(--text-secondary);
       margin-left: 0.5rem;
       direction: rtl;
     }
+    @media (min-width: 640px) {
+      .act-title-ur {
+        font-size: 1.4rem;
+      }
+    }
     .option-card {
       background: #faf8f5;
       border: 1px solid var(--grid-border);
-      padding: 1.25rem 1.5rem;
+      padding: 0.75rem 0.85rem;
       cursor: pointer;
       transition: background-color 0.15s ease, border-color 0.15s ease;
       display: flex;
       align-items: flex-start;
-      gap: 1rem;
+      gap: 0.75rem;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+      min-height: 46px;
+      border-radius: 4px;
+    }
+    @media (min-width: 640px) {
+      .option-card {
+        padding: 1rem 1.25rem;
+        gap: 1rem;
+        min-height: 48px;
+        border-radius: 0;
+      }
     }
     @media (hover: hover) and (pointer: fine) {
       .option-card:hover {
@@ -153,83 +176,117 @@
     /* V2.1 Candidate Experience Styles */
     .gba-goal-banner {
       background: #f7f1e6;
-      border-left: 4px solid var(--accent-gold, #b38b4d);
-      border-radius: 6px;
-      padding: 10px 14px;
-      font-size: 0.95rem;
+      border-left: 3px solid var(--accent-gold, #b38b4d);
+      border-radius: 4px;
+      padding: 7px 10px;
+      font-size: 0.825rem;
       color: var(--text-primary, #1c1a17);
-      margin-bottom: 14px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+    }
+    @media (min-width: 640px) {
+      .gba-goal-banner {
+        border-left-width: 4px;
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        margin-bottom: 14px;
+        gap: 10px;
+      }
     }
     .goal-badge {
       background: var(--accent-gold, #b38b4d);
       color: #ffffff;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 800;
       letter-spacing: 0.08em;
-      padding: 3px 7px;
+      padding: 2px 6px;
       border-radius: 4px;
       text-transform: uppercase;
       flex-shrink: 0;
     }
     .goal-text { font-weight: 600; line-height: 1.35; color: var(--text-primary, #1c1a17); }
     .options-directive {
-      font-size: 0.8rem;
+      font-size: 0.74rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       color: var(--accent-gold, #b38b4d);
-      margin: 16px 0 10px;
+      margin: 10px 0 6px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
+    @media (min-width: 640px) {
+      .options-directive {
+        font-size: 0.78rem;
+        margin: 14px 0 8px;
+      }
+    }
     .studio-stage {
       position: relative;
       width: 100%;
-      min-height: 220px;
+      min-height: 180px;
       background: radial-gradient(ellipse at center, #352c24 0%, #211a14 100%);
       border: 1px solid var(--grid-border, #e0d8ca);
-      border-radius: 12px;
+      border-radius: 10px;
       box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
       overflow: hidden;
       color: #f6efe6;
       display: flex;
       flex-direction: column;
     }
-    @media (min-width: 601px) { .studio-stage { min-height: 250px; } }
+    @media (min-width: 601px) { .studio-stage { min-height: 220px; border-radius: 12px; } }
     .stage-content {
       position: relative;
       flex: 1;
       width: 100%;
       height: 100%;
-      padding: 16px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
     }
-    .outside-options { display: grid; gap: 10px; width: 100%; }
+    @media (min-width: 640px) {
+      .stage-content {
+        padding: 16px;
+      }
+    }
+    .outside-options { display: grid; gap: 8px; width: 100%; }
+    @media (min-width: 640px) {
+      .outside-options { gap: 10px; }
+    }
     .outside-opt-card {
       width: 100%;
       text-align: left;
       background: #ffffff;
       border: 1.5px solid var(--grid-border, #e0d8ca);
-      border-radius: 10px;
-      padding: 13px 15px;
+      border-radius: 8px;
+      padding: 9px 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      min-height: 52px;
+      gap: 10px;
+      min-height: 46px;
       transition: all 0.15s ease;
-      font-size: 0.95rem;
-      line-height: 1.4;
+      font-size: 0.875rem;
+      line-height: 1.35;
       color: var(--text-primary, #1c1a17);
       cursor: pointer;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+    }
+    @media (min-width: 640px) {
+      .outside-opt-card {
+        border-radius: 10px;
+        padding: 12px 15px;
+        gap: 12px;
+        min-height: 50px;
+        font-size: 0.925rem;
+        line-height: 1.4;
+      }
     }
     .outside-opt-card:hover { border-color: var(--accent-gold, #b38b4d); background: #fdfaf4; }
     .outside-opt-card.selected {
@@ -238,18 +295,25 @@
       box-shadow: 0 0 0 1px var(--accent-gold, #b38b4d);
     }
     .opt-bullet {
-      width: 26px;
-      height: 26px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       border: 1.5px solid var(--grid-border, #e0d8ca);
       background: #fcfaf4;
       font-weight: 700;
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--text-secondary, #66615b);
       flex-shrink: 0;
+    }
+    @media (min-width: 640px) {
+      .opt-bullet {
+        width: 26px;
+        height: 26px;
+        font-size: 0.78rem;
+      }
     }
     .outside-opt-card.selected .opt-bullet {
       background: var(--accent-gold, #b38b4d);
@@ -260,8 +324,8 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
       border-bottom: 1px solid var(--grid-border, #e0d8ca);
     }
     .game-world-tag {
@@ -274,9 +338,9 @@
     }
     .game-main-heading {
       font-family: var(--font-serif, "Playfair Display", Georgia, serif);
-      font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+      font-size: clamp(1.15rem, 3vw, 1.45rem);
       margin: 0;
-      line-height: 1.2;
+      line-height: 1.25;
       color: var(--text-primary, #1c1a17);
     }
     .game-step-counter {
@@ -555,10 +619,21 @@
       background: #fdf7eb;
       font-weight: 700;
     }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
   </style>
-  <script type="module" crossorigin src="/assets/recruit-BX4P6fKu.js"></script>
+  <script type="module" crossorigin src="/assets/recruit-CkHwpbpb.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/global-DxYxv3W5.js">
-  <link rel="stylesheet" crossorigin href="/assets/recruit-DvKtq3MY.css">
+  <link rel="stylesheet" crossorigin href="/assets/recruit-mCyzanBt.css">
   <link rel="stylesheet" crossorigin href="/assets/global-DcIjY9J7.css">
 </head>
 <body class="selection:bg-transparent selection:text-inherit">
@@ -575,22 +650,40 @@
       <button id="exitBtn" aria-label="Exit Assessment" class="min-h-[44px] px-2 sm:px-2.5 text-xs text-[var(--text-secondary)] hover:text-[var(--accent-red,#c62828)] uppercase tracking-wider flex items-center gap-1.5 transition">
         <i data-lucide="log-out" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">Exit</span>
       </button>
-      <div id="segmentProgress" class="text-[11px] sm:text-xs text-[var(--accent-gold)] font-medium uppercase tracking-wider ml-1 sm:ml-2"></div>
+      <div id="segmentProgress" aria-live="polite" class="text-[11px] sm:text-xs text-[var(--accent-gold)] font-medium uppercase tracking-wider ml-1 sm:ml-2"></div>
     </div>
   </header>
 
   <main class="min-h-[100dvh] pt-14 pb-8 px-3 sm:px-6 flex flex-col justify-start sm:justify-center items-center">
+    <div id="a11yAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
     <div class="w-full max-w-3xl">
       <!-- Progress Bar -->
-      <div id="topProgressBar" class="w-full bg-[var(--grid-border)] h-[2px] mb-3 sm:mb-4 hidden">
+      <div id="topProgressBar" class="w-full bg-[var(--grid-border)] h-[2px] mb-3 sm:mb-4 hidden" role="progressbar" aria-valuemin="0" aria-valuemax="100">
         <div id="progressBarFill" class="progress-bar-inner w-0"></div>
       </div>
 
       <!-- Dynamic App Container -->
-      <div id="recruitApp" class="assessment-container candidate-content-protected">
-        <!-- Rendered by src/recruit.js -->
-        <div class="flex items-center justify-center py-20 text-[var(--text-secondary)] font-serif text-lg">
-          Loading assessment environment...
+      <div id="recruitApp" class="assessment-container candidate-content-protected" role="region" aria-label="Assessment Workspace">
+        <!-- Initial Skeleton & Onboarding Briefing -->
+        <div class="py-12 px-4 max-w-lg mx-auto text-center space-y-6" role="status" aria-busy="true">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#f4f0e8] border border-[var(--grid-border)] text-[var(--accent-gold)]">
+            <svg class="w-6 h-6 animate-spin text-[var(--accent-gold)]" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </div>
+          <div class="space-y-2">
+            <span class="text-[10px] uppercase tracking-widest text-[var(--accent-gold)] font-medium">Alfaaz Studio Assessment</span>
+            <h2 class="text-xl sm:text-2xl text-[var(--text-primary)] font-serif">Preparing Workspace</h2>
+            <p class="text-xs sm:text-sm text-stone-600 leading-relaxed">
+              Estimated duration: 11–14 minutes. You may pause, reflect, or take breaks at any time.
+            </p>
+          </div>
+          <!-- Shimmer placeholder bars -->
+          <div class="space-y-2.5 pt-2 max-w-xs mx-auto">
+            <div class="h-2 bg-[#f0ece4] rounded-full animate-pulse w-full"></div>
+            <div class="h-2 bg-[#f0ece4] rounded-full animate-pulse w-4/5 mx-auto"></div>
+          </div>
         </div>
       </div>
     </div>

@@ -93,6 +93,7 @@ async function loadSessionsList(selectedStatus = '') {
     <tr class="border-b border-[var(--grid-border)] hover:bg-[#faf8f5] transition-colors">
       <td class="p-4 text-sm font-medium text-[var(--text-primary)]">${window.escapeHtml(s.full_name || 'Anonymous Applicant')}</td>
       <td class="p-4 text-xs text-black">${window.escapeHtml(s.email || '—')}</td>
+      <td class="p-4 text-xs text-black">${s.linkedin_url ? `<a href="${window.escapeHtml(s.linkedin_url.startsWith('http') ? s.linkedin_url : 'https://' + s.linkedin_url)}" target="_blank" rel="noopener noreferrer" class="text-[var(--accent-gold)] hover:underline inline-flex items-center gap-1" title="${window.escapeHtml(s.linkedin_url)}">Link &nearr;</a>` : '—'}</td>
       <td class="p-4 text-xs text-black">${s.created_at ? new Date(s.created_at).toLocaleString() : '—'}</td>
       <td class="p-4 text-xs">
         <span class="px-2 py-0.5 bg-[#f4f1ea] border border-[var(--grid-border)] text-[10px] uppercase tracking-wider">${s.status}</span>
@@ -115,6 +116,7 @@ async function loadSessionsList(selectedStatus = '') {
               <tr class="bg-[#faf8f5] border-b border-[var(--grid-border)] text-[10px] uppercase tracking-wider text-black">
                 <th class="p-4">Applicant Name</th>
                 <th class="p-4">Email</th>
+                <th class="p-4">LinkedIn / CV</th>
                 <th class="p-4">Submission Date</th>
                 <th class="p-4">Status</th>
                 <th class="p-4 text-right">Action</th>
@@ -192,6 +194,7 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
     const candidateName = window.escapeHtml(applicant.full_name || 'Candidate');
     const candidateEmail = window.escapeHtml(applicant.email || '—');
     const candidatePhone = window.escapeHtml(applicant.phone_or_contact || '—');
+    const candidateLinkedin = applicant.linkedin_url ? window.escapeHtml(applicant.linkedin_url) : null;
     const durationMin = meta.duration_minutes !== null ? `${meta.duration_minutes} min` : 'In progress';
 
     const dims = data.dimensions || [];
@@ -492,9 +495,10 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
     
     <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-6 mb-4">
       <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)] mb-4">1. Candidate & Session Overview</h3>
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
         <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">Name</strong>${candidateName}</div>
         <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">Email</strong>${candidateEmail}</div>
+        <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">LinkedIn / CV</strong>${candidateLinkedin ? `<a href="${candidateLinkedin.startsWith('http') ? candidateLinkedin : 'https://' + candidateLinkedin}" target="_blank" rel="noopener noreferrer" class="text-[var(--accent-gold)] hover:underline block truncate" title="${candidateLinkedin}">Open Link &nearr;</a>` : '<span class="text-stone-400">—</span>'}</div>
         <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">Contact</strong>${candidatePhone}</div>
         <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">Session Duration</strong>${durationMin}</div>
         <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">Battery Version</strong><span class="badge" style="font-size:10px; background:#f0eeea; color:var(--text-primary); border:1px solid var(--grid-border);">${batteryVer}</span></div>

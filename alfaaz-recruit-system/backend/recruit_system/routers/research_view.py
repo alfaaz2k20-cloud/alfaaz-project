@@ -141,6 +141,7 @@ def list_research_sessions(
             "full_name": identity.full_name if identity else "Anonymous Applicant",
             "email": identity.email if identity else "unknown",
             "phone_or_contact": identity.phone_or_contact if identity else None,
+            "linkedin_url": identity.linkedin_url if identity else None,
             "has_sjt": has_sjt,
             "completed_tasks_count": completed_tasks_count,
             "battery_expected_tasks": expected_tasks,
@@ -535,7 +536,8 @@ def get_session_research_view(
             "applicant": {
                 "full_name": identity.full_name if identity else None,
                 "email": identity.email if identity else None,
-                "phone_or_contact": identity.phone_or_contact if identity else None
+                "phone_or_contact": identity.phone_or_contact if identity else None,
+                "linkedin_url": identity.linkedin_url if identity else None
             },
             "consent": {
                 "consent_text_version": consent.consent_text_version if consent else "1.0",

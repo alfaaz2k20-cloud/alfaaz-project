@@ -45,6 +45,7 @@ class IdentityRequest(BaseModel):
     full_name: str = Field(..., min_length=2, max_length=150)
     email: str = Field(..., min_length=5, max_length=150)
     phone_or_contact: Optional[str] = Field(None, max_length=50)
+    linkedin_url: Optional[str] = Field(None, max_length=500)
 
 class ConsentRequest(BaseModel):
     choices: Dict[str, bool] = Field(default_factory=dict)
@@ -163,7 +164,8 @@ def submit_identity(req: IdentityRequest, request: Request, db: Session = Depend
         session_id=req.session_id,
         full_name=req.full_name,
         email=req.email,
-        phone_or_contact=req.phone_or_contact
+        phone_or_contact=req.phone_or_contact,
+        linkedin_url=req.linkedin_url
     )
     db.add(identity)
     session_obj.current_screen = "accessibility"

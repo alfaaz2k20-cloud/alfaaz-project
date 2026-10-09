@@ -848,6 +848,10 @@ function renderIdentity(app) {
  <label class="block text-xs uppercase tracking-wider text-black mb-1">Email Address *</label>
  <input type="email" id="email" required class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="you@example.com">
  </div>
+ <div>
+ <label class="block text-xs uppercase tracking-wider text-black mb-1">LinkedIn URL / CV Link</label>
+ <input type="text" id="linkedinUrl" class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="https://linkedin.com/in/... or CV / portfolio link">
+ </div>
  <div class="pt-4 flex justify-end">
  <button type="submit" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] ">
  Begin Session &rarr;
@@ -867,12 +871,14 @@ function renderIdentity(app) {
  }
 
  try {
+ const linkedinVal = document.getElementById('linkedinUrl')?.value.trim() || null;
  const resp = await apiFetch('/recruit/identity', {
  method: 'POST',
  body: JSON.stringify({
  session_id: state.sessionId,
  full_name: document.getElementById('fullName').value.trim(),
- email: document.getElementById('email').value.trim()
+ email: document.getElementById('email').value.trim(),
+ linkedin_url: linkedinVal
  })
  });
  if (!resp || !resp.ok) {

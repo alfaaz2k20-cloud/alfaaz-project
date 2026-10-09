@@ -67,14 +67,20 @@
   <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
     <div class="header">
       <div>Administration</div>
-      <a href="dashboard.html" class="" style="font-size: 11px; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px;">&larr; Dashboard</a>
+      <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+        <a href="research.html" class="action-btn gold" style="padding: 0.5rem 1.2rem; font-size: 10px; letter-spacing: 1.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Research Dossier &rarr;
+        </a>
+        <a href="dashboard.html" style="font-size: 11px; color: var(--text-secondary); text-decoration: none; text-transform: uppercase; letter-spacing: 2px;">&larr; Dashboard</a>
+      </div>
     </div>
     <div class="tab-nav">
       <button class="tab-btn active" onclick="switchTab('events')">Standard Events</button>
       <button class="tab-btn" onclick="switchTab('exhibitions')">Exhibitions</button>
       <button class="tab-btn" onclick="switchTab('clubs')">Club Applications</button>
       <button class="tab-btn" onclick="switchTab('roster')">Collective Roster</button>
-          </div>
+    </div>
 
     <div id="tab-events" class="tab-panel active">
       <div class="section-title">Create Event</div>

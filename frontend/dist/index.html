@@ -151,8 +151,29 @@
         .updates-section, .volunteer-section, .about-section, .margins-section, .clubs-section, .cta-section, footer { padding-left: 1.5rem; padding-right: 1.5rem; } 
         .footer-content, .footer-bottom { flex-direction: column; align-items: start; gap: 2rem; } 
     }
+
+    /* CURATOR AI FLOATING WIDGET (DESKTOP & MOBILE RESPONSIVE) */
+    .curator-widget-overlay { position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end; }
+    .curator-widget-box { display: none; width: 360px; max-width: calc(100vw - 2rem); max-height: 80vh; background: var(--bg-secondary); border: 1px solid var(--grid-border); box-shadow: var(--shadow-float); margin-bottom: 1rem; padding: 1.5rem; transform: translateY(10px); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-sizing: border-box; }
+    .curator-widget-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--grid-border); padding-bottom: 0.75rem; margin-bottom: 1rem; }
+    .curator-widget-title { font-family: var(--font-heading); font-size: 1.8rem; color: var(--text-primary); line-height: 1; margin: 0; }
+    .curator-widget-close { background: none; border: none; font-size: 1.4rem; color: var(--text-secondary); cursor: pointer; padding: 0.25rem 0.5rem; line-height: 1; transition: color 0.2s ease; }
+    .curator-widget-close:hover { color: var(--accent-gold); }
+    .curator-widget-output { font-size: 12px; color: var(--text-secondary); line-height: 1.6; height: 260px; max-height: 45vh; overflow-y: auto; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 12px; overscroll-behavior: contain; }
+    .curator-input-wrapper { display: flex; align-items: center; border: 1px solid var(--grid-border); background: var(--bg-primary); transition: border-color 0.3s ease; }
+    .curator-input-box { flex: 1; background: transparent; border: none; color: var(--text-primary); padding: 0.85rem 1rem; font-family: var(--font-body); font-size: 16px; outline: none; min-height: 44px; }
+    .curator-send-button { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 0 1rem; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; transition: color 0.2s ease; }
+    .curator-send-button:hover { color: var(--accent-gold); }
+    .curator-trigger-button { background: var(--bg-secondary); border: 1px solid var(--grid-border); border-radius: 0; color: var(--text-primary); padding: 0.85rem 1.6rem; font-size: 10px; letter-spacing: 2px; transition: all 0.3s ease; text-transform: uppercase; box-shadow: var(--shadow-base); min-height: 44px; cursor: pointer; }
+
+    @media (max-width: 640px) {
+      .curator-widget-overlay { bottom: 1rem; right: 1rem; left: 1rem; align-items: stretch; }
+      .curator-widget-box { width: 100%; max-width: 100%; max-height: 75vh; padding: 1.25rem; margin-bottom: 0.75rem; }
+      .curator-widget-output { height: 220px; max-height: 38vh; font-size: 12px; }
+      .curator-trigger-button { width: 100%; text-align: center; }
+    }
   </style>
-  <script type="module" crossorigin src="/assets/main-bVSth6qC.js"></script>
+  <script type="module" crossorigin src="/assets/main-BlWPct6Q.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/global-DxYxv3W5.js">
   <link rel="stylesheet" crossorigin href="/assets/global-DcIjY9J7.css">
 </head>
@@ -388,20 +409,23 @@
     </div>
   </footer>
 
-  <div id="phantomMiniOverlay" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end;">
-    <div id="phantomMiniBox" style="display: none; width: 340px; background: var(--bg-secondary); border: 1px solid var(--grid-border); border-radius: 0px; box-shadow: var(--shadow-float); margin-bottom: 1rem; padding: 2rem; transform: translateY(10px); opacity: 0; transition: all 0.3s ease;">
-      <div style="font-family: var(--font-heading); font-size: 1.8rem; color: var(--text-primary); margin-bottom: 1rem; border-bottom: 1px solid var(--grid-border); padding-bottom: 0.5rem; line-height: 1;">The Curator</div>
-      <div id="phantomMiniOutput" style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; height: 250px; overflow-y: auto; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 12px;">
-        <div style="font-style: italic;">Ask the Curator a question...</div>
+  <div id="phantomMiniOverlay" class="curator-widget-overlay">
+    <div id="phantomMiniBox" class="curator-widget-box">
+      <div class="curator-widget-header">
+        <h3 class="curator-widget-title">Curator AI</h3>
+        <button class="curator-widget-close" onclick="togglePhantomMini()" aria-label="Close Chat">&times;</button>
       </div>
-      <div style="display: flex; align-items: center; border: 1px solid var(--grid-border); background: transparent; transition: 0.3s;">
-        <input type="text" id="phantomMiniInput" placeholder="Ask The Curator..." style="flex: 1; background: transparent; border: none; color: var(--text-primary); padding: 0.8rem; font-family: var(--font-body); font-size: 12px; outline: none;">
-        <button id="phantomMiniSendBtn" aria-label="Send" style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 0 0.8rem; display: flex; align-items: center; justify-content: center; transition: color 0.2s ease;">
+      <div id="phantomMiniOutput" class="curator-widget-output">
+        <div style="font-style: italic;">Ask Curator AI a question about our art, literature, or programming...</div>
+      </div>
+      <div class="curator-input-wrapper">
+        <input type="text" id="phantomMiniInput" class="curator-input-box" placeholder="Ask Curator AI...">
+        <button id="phantomMiniSendBtn" class="curator-send-button" aria-label="Send">
           <i data-lucide="send" style="width: 16px; height: 16px;"></i>
         </button>
       </div>
     </div>
-    <button id="phantomMiniTrigger" onclick="togglePhantomMini()" style="background: var(--bg-secondary); border: 1px solid var(--grid-border); border-radius: 0; color: var(--text-primary); padding: 0.8rem 1.5rem; font-size: 10px; letter-spacing: 2px; transition: all 0.3s ease; text-transform: uppercase; box-shadow: var(--shadow-base);">[ Consult Curator ]</button>
+    <button id="phantomMiniTrigger" class="curator-trigger-button" onclick="togglePhantomMini()">[ Consult Curator ]</button>
   </div>
 
 </body>

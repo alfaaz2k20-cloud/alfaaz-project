@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALFAAZ COLLECTIVE — Volunteer Participation & Legal Package</title>
+  <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
+  
+  <!-- Typography matching Alfaaz Collective Design System -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Alegreya+Sans:wght@300;400;500;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-cream: #fbfaf8;
+      --bg-surface: #ffffff;
+      --text-main: #242825;
+      --text-muted: #69706b;
+      --accent-clay: #bd6f5d;
+      --accent-deep: #1f2421;
+      --border-light: rgba(45, 49, 46, 0.15);
+      --border-focus: #bd6f5d;
+      --font-serif: 'Alegreya', Georgia, serif;
+      --font-sans: 'Alegreya Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-urdu: 'Noto Nastaliq Urdu', serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-cream);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Screen Action Bar */
+    .screen-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(251, 250, 248, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-light);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .brand-title {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-deep);
+    }
+
+    .brand-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .actions-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border-light);
+      background: var(--bg-surface);
+      color: var(--text-main);
+    }
+
+    .btn:hover {
+      border-color: var(--accent-clay);
+      color: var(--accent-clay);
+    }
+
+    .btn-primary {
+      background: var(--accent-deep);
+      color: #ffffff;
+      border-color: var(--accent-deep);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-clay);
+      border-color: var(--accent-clay);
+      color: #ffffff;
+    }
+
+    /* Main Container */
+    .document-container {
+      max-width: 860px;
+      margin: 32px auto;
+      padding: 48px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Header & Heraldry */
+    .doc-herald {
+      text-align: center;
+      padding-bottom: 32px;
+      border-bottom: 2px solid var(--text-main);
+      margin-bottom: 36px;
+    }
+
+    .doc-urdu {
+      font-family: var(--font-urdu);
+      font-size: 20px;
+      color: var(--accent-clay);
+      margin-bottom: 6px;
+    }
+
+    .doc-org {
+      font-family: var(--font-serif);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .doc-tagline {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .doc-type {
+      display: inline-block;
+      font-family: var(--font-serif);
+      font-size: 14px;
+      font-style: italic;
+      color: var(--accent-clay);
+      padding: 4px 16px;
+      background: rgba(189, 111, 93, 0.08);
+      border-radius: 20px;
+    }
+
+    /* Legal Notice Box */
+    .notice-box {
+      background: #faf8f5;
+      border-left: 3px solid var(--accent-clay);
+      padding: 14px 18px;
+      margin-bottom: 28px;
+      font-size: 13.5px;
+      color: #3f4541;
+    }
+
+    .notice-box strong {
+      color: var(--accent-deep);
+    }
+
+    /* Typography Hierarchy */
+    h1 {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin: 32px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-main);
+    }
+
+    h2 {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin: 24px 0 10px;
+      color: var(--accent-deep);
+    }
+
+    p {
+      margin-bottom: 12px;
+      text-align: justify;
+    }
+
+    ul, ol {
+      margin-left: 20px;
+      margin-bottom: 14px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    /* Schedule / Particulars Table */
+    .particulars-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0 32px;
+      font-size: 14px;
+    }
+
+    .particulars-table th, 
+    .particulars-table td {
+      border: 1px solid var(--border-light);
+      padding: 10px 14px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .particulars-table th {
+      background: #f7f5f0;
+      width: 32%;
+      font-weight: 600;
+      color: var(--accent-deep);
+    }
+
+    .particulars-table td {
+      background: #ffffff;
+      color: #2b302c;
+    }
+
+    .fillable-field {
+      border-bottom: 1px dashed #8b908d;
+      padding: 0 4px;
+      color: #1a1e1b;
+      font-family: monospace;
+      font-size: 13.5px;
+    }
+
+    /* Section Divider */
+    .schedule-break {
+      margin: 48px 0 32px;
+      padding-top: 24px;
+      border-top: 2px dashed var(--border-light);
+      text-align: center;
+    }
+
+    .schedule-badge {
+      display: inline-block;
+      font-family: var(--font-serif);
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-clay);
+      font-weight: 700;
+      padding: 2px 14px;
+      background: #fbf6f2;
+      border: 1px solid rgba(189, 111, 93, 0.25);
+    }
+
+    /* Signature Block */
+    .signature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+      margin-top: 36px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .sig-column {
+      border: 1px solid var(--border-light);
+      padding: 20px;
+      background: #faf9f6;
+      border-radius: 4px;
+    }
+
+    .sig-title {
+      font-family: var(--font-serif);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--accent-deep);
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 6px;
+    }
+
+    .sig-line {
+      min-height: 54px;
+      border-bottom: 1px solid #2d312e;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: flex-end;
+      padding-bottom: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      color: #69706b;
+    }
+
+    .sig-detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .sig-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .sig-value {
+      font-weight: 600;
+      color: var(--text-main);
+      border-bottom: 1px dotted #a0a6a2;
+      min-width: 140px;
+      text-align: right;
+    }
+
+    .initials-box {
+      margin-top: 28px;
+      padding: 10px 14px;
+      background: #ffffff;
+      border: 1px dashed var(--border-light);
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .initials-mark {
+      border: 1px solid #2d312e;
+      width: 100px;
+      height: 28px;
+      background: #fbfaf8;
+      display: inline-block;
+    }
+
+    /* Print Formatting */
+    @media print {
+      body {
+        background: #ffffff;
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: #000000;
+      }
+
+      .screen-header {
+        display: none !important;
+      }
+
+      .document-container {
+        border: none;
+        box-shadow: none;
+        margin: 0;
+        padding: 0;
+        max-width: 100%;
+      }
+
+      .schedule-break {
+        page-break-before: always;
+        margin-top: 0;
+        padding-top: 16px;
+        border-top: none;
+      }
+
+      .notice-box {
+        background: #fdfdfd;
+        border-left: 2px solid #000000;
+      }
+
+      .particulars-table th {
+        background: #f0f0f0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .sig-column {
+        background: #ffffff;
+        border: 1px solid #000000;
+      }
+
+      h1 {
+        font-size: 18px;
+        margin: 20px 0 10px;
+      }
+
+      h2 {
+        font-size: 14px;
+        margin: 16px 0 6px;
+      }
+
+      p, li {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen Navigation & Action Bar -->
+  <header class="screen-header">
+    <div class="brand-group">
+      <div class="brand-title">Alfaaz Collective</div>
+      <div class="brand-subtitle">Interim Volunteer Engagement & Compliance Suite</div>
+    </div>
+    <div class="actions-group">
+      <button class="btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">Top</button>
+      <button class="btn" onclick="document.getElementById('schedule-b').scrollIntoView({behavior: 'smooth'})">Code of Conduct</button>
+      <button class="btn" onclick="document.getElementById('schedule-c').scrollIntoView({behavior: 'smooth'})">Privacy & NDA</button>
+      <button class="btn" onclick="document.getElementById('signatures').scrollIntoView({behavior: 'smooth'})">Signatures</button>
+      <button class="btn btn-primary" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        Print / Save PDF
+      </button>
+    </div>
+  </header>
+
+  <main class="document-container">
+
+    <!-- Document Header -->
+    <header class="doc-herald">
+      <div class="doc-urdu">الفاظ — ایک پل فن، ادب اور وجود کے درمیان</div>
+      <div class="doc-org">Alfaaz Collective</div>
+      <div class="doc-tagline">Art, Literature, and Cultural Preservation • Srinagar, Jammu & Kashmir</div>
+      <div class="doc-type">Interim Volunteer Participation & Confidentiality Instrument</div>
+    </header>
+
+    <!-- Notice Box -->
+    <div class="notice-box">
+      <strong>STATUTORY RECITALS & NATURE OF INSTRUMENT:</strong> This Agreement is executed pursuant to Section 10 of the <em>Indian Contract Act, 1872</em> and Section 10A of the <em>Information Technology Act, 2000</em>. Alfaaz Collective is currently in the active process of formal statutory registration under the applicable Societies / Trusts framework in Jammu & Kashmir. This instrument governs the voluntary, honorary engagement of the undersigned Volunteer and explicitly disclaims any employment, labor, or master-servant relationship under the <em>Industrial Disputes Act, 1947</em> and <em>Code on Wages, 2019</em>.
+    </div>
+
+    <!-- SCHEDULE OF PARTICULARS -->
+    <h1>Schedule A: Particulars of Voluntary Engagement</h1>
+    <table class="particulars-table">
+      <tr>
+        <th>Organization</th>
+        <td><strong>Alfaaz Collective</strong> (Unincorporated Voluntary Cultural Association & NGO-in-Formation, Srinagar, J&K)</td>
+      </tr>
+      <tr>
+        <th>Authorized Curator</th>
+        <td><span class="fillable-field">{{Curator_Full_Name}}</span> (Lead Curator / Authorized Signatory)</td>
+      </tr>
+      <tr>
+        <th>Volunteer Full Name</th>
+        <td><span class="fillable-field">{{Volunteer_Full_Name}}</span></td>
+      </tr>
+      <tr>
+        <th>Communication Coordinates</th>
+        <td>
+          Email: <span class="fillable-field">{{Volunteer_Email}}</span><br>
+          WhatsApp / Phone: <span class="fillable-field">{{Volunteer_Phone}}</span>
+        </td>
+      </tr>
+      <tr>
+        <th>Residential Address</th>
+        <td><span class="fillable-field">{{Volunteer_Address}}</span></td>
+      </tr>
+      <tr>
+        <th>Identity Verification Proof</th>
+        <td>
+          Type: <span class="fillable-field">{{Volunteer_ID_Type}}</span> (Aadhaar / Voter ID / Passport)<br>
+          ID Number: <span class="fillable-field">{{Volunteer_ID_Number}}</span>
+        </td>
+      </tr>
+      <tr>
+        <th>Emergency Contact</th>
+        <td><span class="fillable-field">{{Emergency_Contact_Name}}</span> (<span class="fillable-field">{{Emergency_Contact_Phone}}</span>)</td>
+      </tr>
+      <tr>
+        <th>Term of Engagement</th>
+        <td>Six (6) Months from Effective Date, or until formal statutory NGO incorporation</td>
+      </tr>
+      <tr>
+        <th>Effective Date</th>
+        <td><span class="fillable-field">{{Effective_Date}}</span></td>
+      </tr>
+      <tr>
+        <th>Primary Scope & Locations</th>
+        <td>Srinagar, J&K (Mahatta Art Gallery, The Bund, Nigeen Club, The Swan & Remote Archival)</td>
+      </tr>
+    </table>
+
+    <!-- SECTION 1: PREAMBLE -->
+    <h1>1. Institutional Mission & Interim Status</h1>
+    <p><strong>1.1. About Alfaaz Collective:</strong> Founded in Srinagar in 2020, Alfaaz Collective operates as an independent cultural sanctuary fostering Kashmiri and regional visual arts, poetry, literature, and cinema through curated physical exhibitions (including <em>Kaamil I & II</em>, <em>Bayaan</em>, <em>Khayaal</em>, <em>Harud</em>, and <em>The Swan</em>), bespoke artisan framing, literary salons, and online archives (including sister offshoot <em>Tchandervar</em>).</p>
+    <p><strong>1.2. Interim NGO Status:</strong> The Collective has submitted formal documentation for statutory NGO registration with the competent government authorities. Pending receipt of the formal registration certificate, the Collective operates legally as an Unincorporated Voluntary Cultural Association administered by its founding curators and governance council.</p>
+    <p><strong>1.3. Voluntary Accession:</strong> Having cleared the Alfaaz Talent Assessment Battery (V2.1) and curatorial dialogue, the Volunteer joins the Collective purely out of personal passion, cultural solidarity, and civic devotion to Kashmiri heritage.</p>
+
+    <!-- SECTION 2: NON-EMPLOYMENT -->
+    <h1>2. Honorary Nature & Non-Employment Covenant</h1>
+    <p><strong>2.1. Strict Non-Employment Disclaimer:</strong> The Parties unequivocally agree that this Agreement is a voluntary engagement contract and <strong>DOES NOT</strong> create, constitute, or imply any employment relationship, contract of service, apprenticeship, or partnership under the <em>Industrial Disputes Act, 1947</em>, the <em>Code on Wages, 2019</em>, the <em>Employees’ Provident Funds Act, 1952</em>, or any other central or state labor statute.</p>
+    <p><strong>2.2. No Remuneration or Permanent Expectation:</strong> The Volunteer acknowledges that:</p>
+    <ul>
+      <li>Their contribution is honorary and voluntary;</li>
+      <li>They have no legal right or claim to regular wages, minimum wages, overtime pay, statutory bonus, gratuity, or severance;</li>
+      <li>Participation in this voluntary capacity creates no right, claim, or promise of future permanent employment upon formal registration of the NGO.</li>
+    </ul>
+
+    <!-- SECTION 3: ROLES & EXPENSES -->
+    <h1>3. Voluntary Duties & Reimbursements</h1>
+    <p><strong>3.1. Scope of Engagement:</strong> The Volunteer shall contribute in areas including exhibition setup and visitor coordination, archival indexing, poetry and essay transcription, reader club facilitation, and community engagement at designated Srinagar partner venues.</p>
+    <p><strong>3.2. Out-of-Pocket Expense Reimbursement:</strong> Alfaaz Collective shall reimburse reasonable, pre-approved actual expenses incurred by the Volunteer directly for authorized Collective operations (e.g., local conveyance between Srinagar exhibition sites or urgent exhibition supplies), upon submission of verified physical or digital receipts.</p>
+    <p><strong>3.3. Discretionary Honorarium (Ex-Gratia):</strong> Any stipend, event honorarium, or fellowship allowance disbursed to the Volunteer represents a purely discretionary ex-gratia allowance to offset incidental personal participation costs. It shall not be deemed wages or commercial compensation for labor.</p>
+
+    <!-- SECTION 4: ARTIST IP -->
+    <h1>4. Artist Intellectual Property & Moral Rights Safeguarding</h1>
+    <p><strong>4.1. Absolute Ownership by Artists:</strong> Under Sections 17 and 57 of the <em>Indian Copyright Act, 1957</em>, all original paintings, photographs, calligraphic scrolls, sculptures, and literary texts displayed or archived by the Collective remain the sole and exclusive intellectual and moral property of the originating artists and their legal heirs.</p>
+    <p><strong>4.2. Prohibition of Unauthorized Exploitation:</strong> The Volunteer shall not photograph, digitize, reproduce, distribute, license, sell, or commercially exploit any artwork or exhibition design without explicit, prior written authorization from the artist and the Lead Curator.</p>
+    <p><strong>4.3. Collective Media:</strong> Any promotional event photography or social media dispatches created by the Volunteer on behalf of Alfaaz during events are licensed non-exclusively and perpetually to Alfaaz Collective for non-commercial cultural promotion, with author credit extended where practicable.</p>
+
+    <!-- SECTION 5: TERM & DISPUTE -->
+    <h1>5. Term, Discontinuation & Jurisdiction</h1>
+    <p><strong>5.1. Voluntary Withdrawal:</strong> The Volunteer may pause or withdraw from this engagement at any time upon providing seven (7) days' written notice to the Lead Curator, ensuring an orderly handover of any assigned tasks or physical assets.</p>
+    <p><strong>5.2. Curatorial Discontinuation:</strong> The Collective reserves the right to immediately discontinue this engagement in the event of any breach of the Code of Conduct, harassment zero-tolerance policies, or compromise of artist trust.</p>
+    <p><strong>5.3. Srinagar Jurisdiction:</strong> This Agreement is governed by the laws of India. Any unresolved dispute shall be subject to the exclusive jurisdiction of the competent courts in <strong>Srinagar, Jammu & Kashmir</strong>.</p>
+
+    <!-- SCHEDULE B: CODE OF CONDUCT -->
+    <div class="schedule-break" id="schedule-b">
+      <div class="schedule-badge">Schedule B</div>
+    </div>
+
+    <h1>Volunteer Code of Conduct & Heritage Venue Etiquette</h1>
+    <div class="notice-box">
+      <strong>ETIQUETTE CORE PRINCIPLE:</strong> Alfaaz Collective treats art as a contemplative sanctuary. Every volunteer is a custodian of physical artworks, public decorum, and the cultural dignity of Kashmir.
+    </div>
+
+    <h2>1. Heritage Venue Etiquette across Srinagar</h2>
+    <ul>
+      <li><strong>Mahatta Art Gallery & The Bund:</strong> Established in 1915, Mahatta holds irreplaceable photographic archives. Volunteers must tread gently on heritage floorboards, refrain from leaning against glass vitrines, and maintain peaceful decorum along the Jhelum riverfront.</li>
+      <li><strong>Nigeen Club & Lakeside Sites:</strong> Strict zero-littering and zero-plastic policies. Audio amplification must be kept within serene thresholds to preserve the lake’s natural acoustic calm.</li>
+      <li><strong>The Swan & Atelier Spaces:</strong> Absolute respect for artist workspaces. Never displace tools, pigments, or ongoing canvases without direct artist consent.</li>
+    </ul>
+
+    <h2>2. Curatorial Art Handling Protocols (Zero Compromise)</h2>
+    <ul>
+      <li><strong>White-Glove Rule:</strong> Clean cotton gloves must be worn when moving unvarnished canvas, raw paper works, historical silver gelatin prints, or antique calligraphy.</li>
+      <li><strong>Custom Walnut Wood Frames:</strong> Kashmiri walnut wood frames are heavy and delicate. Always use two hands on the structural side rails. Never carry an artwork by its hanging cord, top rail alone, or corner joints.</li>
+      <li><strong>Two-Meter Liquid Buffer:</strong> Absolutely no tea (Nun Chai / Kehwa), coffee, bottled drinks, or open snacks within two (2) meters of displayed or stacked art.</li>
+      <li><strong>Floor Stacking:</strong> Artworks must never touch bare or damp floors. Use acid-free foam blocks or clean runners.</li>
+    </ul>
+
+    <h2>3. Zero-Tolerance Workplace Safety & Anti-Harassment (POSH)</h2>
+    <ul>
+      <li>In alignment with the <em>Prevention of Sexual Harassment of Women at Workplace (POSH) Act, 2013</em>, Alfaaz maintains a zero-tolerance standard against unwelcome physical contact, suggestive remarks, stalking, non-consensual photography, or inappropriate electronic messaging.</li>
+      <li>Zero tolerance for verbal abuse, sectarian slurs, communal rancor, or discrimination based on gender, faith, or background.</li>
+      <li>Strict prohibition of alcohol, narcotics, smoking, or any intoxicating substance at exhibition venues.</li>
+    </ul>
+
+    <h2>4. Media, Public Communication & Social Media</h2>
+    <ul>
+      <li>Only designated Curators are authorized to give statements to press, news outlets, or television crews. Volunteers must direct journalists to the Curatorial Media Desk.</li>
+      <li>Volunteers may share personal celebratory posts on social media honoring the artists and tagging <code>@alfaaz.2020</code>, but must never post confidential setup discussions, unreleased artwork, or backstage candid photographs of artists without permission.</li>
+    </ul>
+
+    <!-- SCHEDULE C: PRIVACY & NDA -->
+    <div class="schedule-break" id="schedule-c">
+      <div class="schedule-badge">Schedule C</div>
+    </div>
+
+    <h1>Privacy, Data Protection & Candidate Assessment Confidentiality Consent</h1>
+    <div class="notice-box">
+      <strong>DATA PROTECTION & PROPRIETARY INTEGRITY:</strong> Executed in compliance with the <em>Digital Personal Data Protection Act, 2023 (DPDP Act)</em> and the <em>Information Technology Act, 2000</em>.
+    </div>
+
+    <h2>1. Proprietary Secrecy of the Alfaaz Talent Assessment Engine (V2.1)</h2>
+    <p>The Volunteer acknowledges that the Alfaaz Talent Assessment (V2.1), including its Situational Judgment Tests (SJTs), psychometric rubrics, theory-driven calibration matrices, recruiter evaluation dossiers (e.g. <code>research.html</code>), and interview scoring criteria, are confidential trade secrets of Alfaaz Collective. The Volunteer solemnly covenants:</p>
+    <ul>
+      <li>Never to reproduce, screenshot, record, share, or publish test questions, scenario prompts, or answer rubrics on any public forum, social network, or coaching channel;</li>
+      <li>Never to assist, coach, or reveal scoring mechanics to prospective applicants;</li>
+      <li>To keep all applicant personal data, interview notes, and candidate evaluation dossiers strictly confidential.</li>
+    </ul>
+
+    <h2>2. Volunteer Personal Data Consent (DPDP Act, 2023)</h2>
+    <p>The Volunteer hereby grants explicit consent to Alfaaz Collective to collect and process their personal data (Name, Date of Birth, Government ID, Contact Information, Emergency Contact, and Reimbursement Bank/UPI coordinates) strictly for:</p>
+    <ul>
+      <li>Volunteer roster planning, gallery shift coordination, and emergency safety;</li>
+      <li>Verification of identity and issuance of venue access credentials;</li>
+      <li>Disbursement and accounting of approved expense reimbursements and stipends;</li>
+      <li>Public crediting in exhibition catalogs and archival documentation.</li>
+    </ul>
+    <p>Alfaaz Collective affirms that volunteer personal data shall <strong>NEVER</strong> be sold, rented, or transferred to third-party commercial advertisers. Volunteers maintain the right to review, correct, or request deletion of their personal data upon completion of engagement by writing to <code>alfaazcollective@gmail.com</code>.</p>
+
+    <!-- SIGNATURE BLOCKS -->
+    <div class="schedule-break" id="signatures">
+      <div class="schedule-badge">Execution & Signatures</div>
+    </div>
+
+    <p style="text-align: center; font-style: italic; color: var(--text-muted); margin-bottom: 24px;">
+      By signing below, the Parties execute this Interim Volunteer Participation Agreement, Code of Conduct (Schedule B), and Privacy Consent (Schedule C) pursuant to Section 10A of the Information Technology Act, 2000.
+    </p>
+
+    <div class="signature-grid">
+      <!-- Volunteer Column -->
+      <div class="sig-column">
+        <div class="sig-title">For The Volunteer</div>
+        <div class="sig-line">
+          {{Volunteer_Signature}}
+        </div>
+        <div class="sig-detail-row">
+          <span class="sig-label">Full Name:</span>
+          <span class="sig-value">{{Volunteer_Full_Name}}</span>
+        </div>
+        <div class="sig-detail-row">
+          <span class="sig-label">ID / Aadhaar No:</span>
+          <span class="sig-value">{{Volunteer_ID_Number}}</span>
+        </div>
+        <div class="sig-detail-row">
+          <span class="sig-label">Date:</span>
+          <span class="sig-value">{{Date}}</span>
+        </div>
+        <div class="sig-detail-row">
+          <span class="sig-label">Place:</span>
+          <span class="sig-value">Srinagar, J&K</span>
+        </div>
+      </div>
+
+      <!-- Curator Column -->
+      <div class="sig-column">
+        <div class="sig-title">For Alfaaz Collective</div>
+        <div class="sig-line">
+          {{Curator_Signature}}
+        </div>
+        <div class="sig-detail-row">
+          <span class="sig-label">Authorized Signatory:</span>
+          <span class="sig-value">{{Curator_Full_Name}}</span>
+        </div>
+        <div class="sig-detail-row">
+          <span class="sig-label">Designation:</span>
+          <span class="sig-value">Lead Curator</span>
+        </div>
+        <div class="sig-detail-row">
+          <span class="sig-label">Date:</span>
+          <span class="sig-value">{{Date}}</span>
+        </div>
+        <div class="sig-detail-row">
+          <span class="sig-label">Place:</span>
+          <span class="sig-value">Srinagar, J&K</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Initials Box for Printed Hardcopies -->
+    <div class="initials-box">
+      <span>Official Archival Record • Alfaaz Collective (NGO-in-Formation)</span>
+      <span>Volunteer Initials: [ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ] &nbsp;&nbsp; Curator Initials: [ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ]</span>
+    </div>
+
+  </main>
+
+</body>
+</html>
