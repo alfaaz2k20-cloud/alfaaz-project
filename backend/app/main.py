@@ -188,6 +188,44 @@ try:
         except Exception as _gs_tbl_err:
             logger.warning("[DB Migration] Notice ensuring game_scores table: %s", _gs_tbl_err)
 
+        # 5. Explicit interview_bookings table creation
+        try:
+            with _conn.begin_nested():
+                if _conn_dialect == "postgresql":
+                    _conn.execute(sa_text("""
+                        CREATE TABLE IF NOT EXISTS interview_bookings (
+                            id SERIAL PRIMARY KEY,
+                            session_id VARCHAR NOT NULL UNIQUE,
+                            candidate_name VARCHAR NOT NULL,
+                            candidate_email VARCHAR NOT NULL,
+                            candidate_phone VARCHAR,
+                            slot_date VARCHAR NOT NULL,
+                            slot_time VARCHAR NOT NULL,
+                            slot_display VARCHAR NOT NULL,
+                            status VARCHAR DEFAULT 'SCHEDULED',
+                            notes TEXT,
+                            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """))
+                else:
+                    _conn.execute(sa_text("""
+                        CREATE TABLE IF NOT EXISTS interview_bookings (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            session_id VARCHAR NOT NULL UNIQUE,
+                            candidate_name VARCHAR NOT NULL,
+                            candidate_email VARCHAR NOT NULL,
+                            candidate_phone VARCHAR,
+                            slot_date VARCHAR NOT NULL,
+                            slot_time VARCHAR NOT NULL,
+                            slot_display VARCHAR NOT NULL,
+                            status VARCHAR DEFAULT 'SCHEDULED',
+                            notes TEXT,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """))
+        except Exception as _ib_tbl_err:
+            logger.warning("[DB Migration] Notice ensuring interview_bookings table: %s", _ib_tbl_err)
+
     logger.info("Schema migration check completed successfully.")
 except Exception as _e:
     logger.warning("Schema migration notice: %s", _e)

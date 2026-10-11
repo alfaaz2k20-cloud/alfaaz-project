@@ -117,6 +117,9 @@ let state = {
  worldSequence: [],
  seeds: {},
  screen: 'consent', // consent, identity, accessibility, warmup, sjt_briefing, sjt, gba_briefing, games, complete, paused
+ candidateName: '',
+ candidateEmail: '',
+ candidatePhone: '',
  pausedPreviousScreen: null,
  sjtScenarios: [],
  currentSjtIndex: 0,
@@ -228,6 +231,9 @@ function persistLocalState() {
  worldSequence: state.worldSequence,
  seeds: state.seeds,
  screen: state.screen,
+ candidateName: state.candidateName || '',
+ candidateEmail: state.candidateEmail || '',
+ candidatePhone: state.candidatePhone || '',
  sjtScenarios: state.sjtScenarios,
  currentSjtIndex: state.currentSjtIndex,
  sjtResponses: state.sjtResponses,
@@ -297,6 +303,9 @@ async function restoreLocalState() {
  state.worldSequence = saved.worldSequence || [];
  state.seeds = saved.seeds || {};
  state.screen = saved.screen || 'consent';
+ state.candidateName = saved.candidateName || '';
+ state.candidateEmail = saved.candidateEmail || '';
+ state.candidatePhone = saved.candidatePhone || '';
  const rawSavedScenarios = (saved.sjtScenarios && saved.sjtScenarios.length > 0) ? saved.sjtScenarios : FALLBACK_V2_1_SCENARIOS;
  state.sjtScenarios = rawSavedScenarios.map(sc => {
    const v21 = SJT_V2_1_COPY[sc.id];
@@ -832,81 +841,133 @@ function renderConsent(app) {
 }
 
 function renderIdentity(app) {
- app.innerHTML = `
- <div class="space-y-6">
- <div class="border-b border-[var(--grid-border)] pb-4 text-center">
- <span class="act-badge">Participant Details</span>
- <h1 class="text-3xl text-[var(--text-primary)]">About You</h1>
- </div>
+  app.innerHTML = `
+  <div class="space-y-6 max-w-lg mx-auto">
+    <div class="border-b border-[var(--grid-border)] pb-4 text-center">
+      <span class="act-badge">Participant Details</span>
+      <h1 class="text-2xl sm:text-3xl text-[var(--text-primary)] font-serif">About You</h1>
+    </div>
 
- <form id="identityForm" class="space-y-4 pt-2">
- <div>
- <label class="block text-xs uppercase tracking-wider text-black mb-1">Full Name *</label>
- <input type="text" id="fullName" required class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="Your name">
- </div>
- <div>
- <label class="block text-xs uppercase tracking-wider text-black mb-1">Email Address *</label>
- <input type="email" id="email" required class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="you@example.com">
- </div>
- <div>
- <label class="block text-xs uppercase tracking-wider text-black mb-1">LinkedIn URL / CV Link</label>
- <input type="text" id="linkedinUrl" class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="https://linkedin.com/in/... or CV / portfolio link">
- </div>
- <div class="pt-4 flex justify-end">
- <button type="submit" class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] ">
- Begin Session &rarr;
- </button>
- </div>
- </form>
- </div>
- `;
+    <!-- Brief Assessment Process Overview in Simple English -->
+    <div class="p-4 sm:p-5 bg-[#faf8f5] border border-[var(--grid-border)] text-xs text-stone-700 space-y-3 leading-relaxed">
+      <div class="flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)]"></span>
+        <span class="font-semibold text-stone-900 uppercase tracking-widest text-[11px]">How the Assessment Works</span>
+      </div>
+      <p class="text-stone-600">
+        This session takes about <strong>11–14 minutes</strong>. It consists of <strong>two simple parts</strong>, followed by a friendly interview:
+      </p>
+      <div class="space-y-2 pt-1 border-t border-[var(--grid-border)]/60">
+        <div class="flex items-start gap-2.5">
+          <span class="font-mono font-bold text-[var(--accent-gold)] shrink-0 text-xs">Part 1</span>
+          <div>
+            <strong class="text-stone-900">Situational Scenarios:</strong>
+            <span class="text-stone-600 block mt-0.5">Read short everyday situations from art and community teamwork, then choose what you would do.</span>
+          </div>
+        </div>
+        <div class="flex items-start gap-2.5">
+          <span class="font-mono font-bold text-[var(--accent-gold)] shrink-0 text-xs">Part 2</span>
+          <div>
+            <strong class="text-stone-900">Interactive Activities:</strong>
+            <span class="text-stone-600 block mt-0.5">Quick, hands-on visual activities that observe how you focus, pace decisions, and collaborate.</span>
+          </div>
+        </div>
+      </div>
+      <div class="pt-2 border-t border-[var(--grid-border)]/60 text-stone-600 flex items-start gap-2">
+        <span class="font-mono font-bold text-stone-900 shrink-0 text-xs">&rarr;</span>
+        <span>
+          <strong class="text-stone-900">Next Step &mdash; Interview Call:</strong>
+          After you finish both parts, we will invite you to an interview conversation to speak with our team directly.
+        </span>
+      </div>
+    </div>
 
- document.getElementById('identityForm')?.addEventListener('submit', async (e) => {
- e.preventDefault();
- const btn = e.target.querySelector('button[type="submit"]');
- const origText = btn ? btn.innerHTML : 'Begin Session &rarr;';
- if (btn) {
- btn.disabled = true;
- btn.innerHTML = 'Connecting...';
- }
+    <form id="identityForm" class="space-y-4 pt-1">
+      <div>
+        <label for="fullName" class="block text-xs uppercase tracking-wider text-black mb-1">Full Name *</label>
+        <input type="text" id="fullName" required class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="Your full name">
+      </div>
+      <div>
+        <label for="email" class="block text-xs uppercase tracking-wider text-black mb-1">Email Address *</label>
+        <input type="email" id="email" required class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="you@example.com">
+      </div>
+      <div>
+        <label for="whatsappNo" class="block text-xs uppercase tracking-wider text-black mb-1">WhatsApp Number *</label>
+        <input type="tel" id="whatsappNo" required class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="+91 ... or WhatsApp number with country code">
+      </div>
+      <div>
+        <label for="linkedinUrl" class="block text-xs uppercase tracking-wider text-stone-600 mb-1">LinkedIn / CV / Portfolio Link <span class="normal-case text-stone-400 font-normal">(Optional)</span></label>
+        <input type="url" id="linkedinUrl" class="w-full p-2.5 bg-white border border-[var(--grid-border)] focus:border-[var(--accent-gold)] focus:outline-none" placeholder="https://linkedin.com/in/... or portfolio / CV link">
+      </div>
+      <div class="pt-4 flex justify-end">
+        <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition-colors">
+          Begin Assessment &rarr;
+        </button>
+      </div>
+    </form>
+  </div>
+  `;
 
- try {
- const linkedinVal = document.getElementById('linkedinUrl')?.value.trim() || null;
- const resp = await apiFetch('/recruit/identity', {
- method: 'POST',
- body: JSON.stringify({
- session_id: state.sessionId,
- full_name: document.getElementById('fullName').value.trim(),
- email: document.getElementById('email').value.trim(),
- linkedin_url: linkedinVal
- })
- });
- if (!resp || !resp.ok) {
- const errData = resp ? await resp.json().catch(() => ({})) : {};
- throw new Error(errData.detail || (resp ? `Server returned ${resp.status}` : 'No response from server'));
- }
+  document.getElementById('identityForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const origText = btn ? btn.innerHTML : 'Begin Assessment &rarr;';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = 'Connecting...';
+    }
 
- state.screen = 'accessibility';
- logEvent('identity', 'identity_submitted');
- saveLocalState({ immediate: true });
- renderScreen();
- } catch (err) {
- console.error('[Identity error]', err);
- if (btn) {
-   btn.disabled = false;
-   btn.innerHTML = origText;
- }
- const form = document.getElementById('identityForm');
- form?.querySelectorAll('.error-banner').forEach(el => el.remove());
- const errPanel = renderErrorPanel({
-   title: 'Unable to register participant',
-   message: 'Could not submit your details due to a connection delay. Please try again.',
-   onRetry: () => form?.dispatchEvent(new Event('submit', { cancelable: true }))
- });
- errPanel.classList.add('error-banner');
- form?.appendChild(errPanel);
- }
- });
+    try {
+      const fullNameVal = document.getElementById('fullName')?.value.trim();
+      const emailVal = document.getElementById('email')?.value.trim();
+      const whatsappVal = document.getElementById('whatsappNo')?.value.trim();
+      const linkedinVal = document.getElementById('linkedinUrl')?.value.trim() || null;
+
+      if (!fullNameVal || !emailVal || !whatsappVal) {
+        throw new Error('Please fill in all required fields (Name, Email, WhatsApp number).');
+      }
+
+      const resp = await apiFetch('/recruit/identity', {
+        method: 'POST',
+        body: JSON.stringify({
+          session_id: state.sessionId,
+          full_name: fullNameVal,
+          email: emailVal,
+          phone_or_contact: whatsappVal,
+          whatsapp_no: whatsappVal,
+          linkedin_url: linkedinVal
+        })
+      });
+      if (!resp || !resp.ok) {
+        const errData = resp ? await resp.json().catch(() => ({})) : {};
+        throw new Error(errData.detail || (resp ? `Server returned ${resp.status}` : 'No response from server'));
+      }
+
+      state.candidateName = fullNameVal;
+      state.candidateEmail = emailVal;
+      state.candidatePhone = whatsappVal;
+
+      state.screen = 'accessibility';
+      logEvent('identity', 'identity_submitted', { has_whatsapp: Boolean(whatsappVal), has_linkedin: Boolean(linkedinVal) });
+      saveLocalState({ immediate: true });
+      renderScreen();
+    } catch (err) {
+      console.error('[Identity error]', err);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
+      const form = document.getElementById('identityForm');
+      form?.querySelectorAll('.error-banner').forEach(el => el.remove());
+      const errPanel = renderErrorPanel({
+        title: 'Unable to register participant',
+        message: err.message || 'Could not submit your details due to a connection delay. Please try again.',
+        onRetry: () => form?.dispatchEvent(new Event('submit', { cancelable: true }))
+      });
+      errPanel.classList.add('error-banner');
+      form?.appendChild(errPanel);
+    }
+  });
 }
 
 // 2. Accessibility Options Screen
@@ -1679,43 +1740,257 @@ function renderPaused(app) {
  document.getElementById('resumeBtn')?.addEventListener('click', togglePause);
 }
 
-// 7. Completion Screen
-function renderComplete(app) {
- app.innerHTML = `
- <div class="space-y-6 text-center py-16">
- <div class="w-16 h-16 rounded-full bg-[var(--text-primary)] border border-emerald-200 text-[var(--text-primary)] mx-auto flex items-center justify-center text-2xl ">
- &#10003;
- </div>
- <h1 class="text-3xl text-[var(--text-primary)]">Assessment Complete</h1>
- <p class="text-sm text-black max-w-lg mx-auto leading-relaxed">
- Thank you for your time, care, and attention. Your responses have been safely submitted to the Alfaaz Collective research registry.
- </p>
- 
- <div class="max-w-md mx-auto mt-8 p-5 bg-[#faf8f5] border border-[var(--grid-border)]">
- <h2 class="text-lg text-[var(--text-primary)] mb-2">Next Step: Interview Call</h2>
- <p class="text-xs text-black mb-4">
- Please schedule a Google Meet call with us to discuss your application. Select a date <strong>other than today</strong>.
- </p>
- <div class="flex flex-col gap-2">
- <a href="mailto:alfaaz2k20@gmail.com?subject=Volunteer%20Interview%20Call%20Request&body=Hi%20Alfaaz%20Team%2C%0D%0A%0D%0AI%20have%20completed%20the%20volunteer%20assessment.%20I%20would%20like%20to%20schedule%20a%20Google%20Meet%20call%20for%20my%20interview.%0D%0A%0D%0AProposed%20Date%20%28Please%20choose%20a%20future%20date%2C%20not%20today%29%3A%20%5BInsert%20Date%5D%0D%0AProposed%20Time%3A%20%5BInsert%20Time%5D%0D%0A%0D%0AThank%20you%2C%0D%0A%5BYour%20Name%5D" 
- class="inline-block w-full min-h-[44px] px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] shadow-sm rounded-xs">
- Open Email App
- </a>
- <a href="https://mail.google.com/mail/?view=cm&fs=1&to=alfaaz2k20@gmail.com&su=Volunteer+Interview+Call+Request&body=Hi+Alfaaz+Team,%0A%0AI+have+completed+the+volunteer+assessment.+I+would+like+to+schedule+a+Google+Meet+call+for+my+interview.%0A%0AProposed+Date+(Please+choose+a+future+date,+not+today):+[Insert+Date]%0AProposed+Time:+[Insert+Time]%0A%0AThank+you,%0A[Your+Name]" target="_blank"
- class="inline-block w-full min-h-[44px] px-6 py-2.5 border border-[var(--grid-border)] text-[var(--text-primary)] bg-white text-xs uppercase tracking-widest hover:border-[var(--accent-gold)] shadow-sm rounded-xs">
- Open Gmail in Browser
- </a>
- <p class="text-[10px] text-black mt-2">
- Or manually email <strong class="select-all cursor-pointer text-[var(--text-primary)]">alfaaz2k20@gmail.com</strong>
- </p>
- </div>
- </div>
+// 7. Completion Screen with In-House Interview Slot Picker
+async function renderComplete(app) {
+  let selectedDate = null;
+  let selectedTime = null;
+  let selectedDateLabel = null;
+  let existingBooking = null;
 
- <div class="pt-6">
- <a href="index.html" class="inline-block px-6 py-2.5 border border-[var(--grid-border)] text-xs uppercase tracking-widest text-[var(--text-primary)] hover:border-[var(--accent-gold)] ">
- Return to Alfaaz Home
- </a>
- </div>
- </div>
- `;
+  try {
+    if (state.sessionId) {
+      const bResp = await apiFetch(`/recruit/interview-booking/${state.sessionId}`);
+      if (bResp && bResp.ok) {
+        const bData = await bResp.json();
+        existingBooking = bData.booking;
+      }
+    }
+  } catch (e) {
+    console.warn('Could not fetch existing booking:', e);
+  }
+
+  let availableDays = [];
+  try {
+    const sResp = await apiFetch('/recruit/interview-slots');
+    if (sResp && sResp.ok) {
+      const sData = await sResp.json();
+      availableDays = sData.days || [];
+    }
+  } catch (e) {
+    console.warn('Could not fetch interview slots:', e);
+  }
+
+  if (!availableDays || availableDays.length === 0) {
+    const today = new Date();
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      if (d.getDay() === 0) continue;
+      const iso = d.toISOString().split('T')[0];
+      const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const fullLabel = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      availableDays.push({
+        date: iso,
+        date_label: label,
+        full_date_label: fullLabel,
+        times: ['11:00 AM', '03:00 PM', '05:30 PM', '07:00 PM']
+      });
+      if (availableDays.length >= 5) break;
+    }
+  }
+
+  const renderBookingConfirmed = (booking) => `
+    <div class="p-6 bg-[#f4f7f4] border border-[#bce0bc] text-left space-y-4">
+      <div class="flex items-center gap-2.5 text-emerald-800 font-semibold text-sm">
+        <span class="w-6 h-6 rounded-full bg-emerald-800 text-white flex items-center justify-center text-xs shrink-0">&#10003;</span>
+        <span>Interview Confirmed &bull; ${window.escapeHtml(booking.slot_display)}</span>
+      </div>
+      <p class="text-xs text-stone-700 leading-relaxed">
+        Your interview time is locked. We have notified our recruiting team and will reach out with the Google Meet link via WhatsApp &amp; Email.
+      </p>
+      <div class="flex flex-wrap gap-2.5 pt-2">
+        <a href="${booking.whatsapp_notify_url || `https://wa.me/?text=${encodeURIComponent(`Hi Alfaaz Team, I (${booking.candidate_name || 'Candidate'}) have scheduled my volunteer interview for ${booking.slot_display}. Looking forward to speaking with you!`)}`}" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-[#25d366] text-white text-xs uppercase tracking-wider font-semibold hover:bg-[#1ebe5b] transition inline-flex items-center gap-2 shadow-xs">
+          Notify on WhatsApp &rarr;
+        </a>
+        <a href="${booking.google_calendar_url || `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Alfaaz Volunteer Interview')}&details=${encodeURIComponent(`Interview with Alfaaz Collective for ${booking.candidate_name || 'Candidate'}`)}&location=Google+Meet`}" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-white border border-[var(--grid-border)] text-stone-800 text-xs uppercase tracking-wider font-semibold hover:border-[var(--accent-gold)] transition inline-flex items-center gap-2">
+          Add to Google Calendar
+        </a>
+      </div>
+    </div>
+  `;
+
+  const renderSlotPicker = () => `
+    <div id="schedulerCard" class="max-w-xl mx-auto mt-8 p-5 sm:p-6 bg-[#faf8f5] border border-[var(--grid-border)] text-left space-y-5">
+      <div class="border-b border-[var(--grid-border)] pb-3">
+        <span class="act-badge">Next Step &bull; Final Stage</span>
+        <h2 class="text-xl sm:text-2xl text-[var(--text-primary)] font-serif mt-1">Select Interview Timing</h2>
+        <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+          Choose a date and time slot that works best for you. Both you and our recruitment lead will be notified immediately.
+        </p>
+      </div>
+
+      <!-- Step 1: Date Selection -->
+      <div>
+        <label class="block text-xs uppercase tracking-wider text-black font-semibold mb-2">1. Choose Date</label>
+        <div id="datePillsContainer" class="flex flex-wrap gap-2">
+          ${availableDays.map((day, idx) => `
+            <button type="button" class="date-pill px-3 py-2 text-xs border border-[var(--grid-border)] bg-white hover:border-[var(--accent-gold)] transition-colors text-stone-800 ${idx === 0 ? 'selected-date border-[var(--accent-gold)] bg-[#fdfaf3] font-bold' : ''}" data-date="${day.date}" data-label="${day.full_date_label}">
+              ${day.date_label}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Step 2: Time Selection -->
+      <div>
+        <label class="block text-xs uppercase tracking-wider text-black font-semibold mb-2">2. Choose Time Slot (IST)</label>
+        <div id="timePillsContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <!-- Populated dynamically based on selected date -->
+        </div>
+      </div>
+
+      <!-- Confirmation Footer -->
+      <div class="pt-3 border-t border-[var(--grid-border)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div id="selectedSlotSummary" class="text-xs text-stone-600 italic">
+          Select a time slot to proceed.
+        </div>
+        <button type="button" id="confirmInterviewBtn" disabled class="px-6 py-2.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-widest hover:bg-[var(--accent-gold)] transition-colors opacity-40 cursor-not-allowed">
+          Confirm Schedule &rarr;
+        </button>
+      </div>
+    </div>
+  `;
+
+  app.innerHTML = `
+  <div class="space-y-6 text-center py-12 px-3 sm:px-4 max-w-2xl mx-auto">
+    <div class="w-16 h-16 rounded-full bg-[var(--text-primary)] border border-emerald-200 text-white mx-auto flex items-center justify-center text-2xl font-bold">
+      &#10003;
+    </div>
+    <div class="space-y-2">
+      <h1 class="text-2xl sm:text-3xl text-[var(--text-primary)] font-serif">Assessment Complete</h1>
+      <p class="text-xs sm:text-sm text-stone-600 max-w-lg mx-auto leading-relaxed">
+        Thank you for your time, care, and attention. Your responses have been safely saved to the Alfaaz Collective research registry.
+      </p>
+    </div>
+
+    <div id="interviewSection">
+      ${existingBooking ? renderBookingConfirmed(existingBooking) : renderSlotPicker()}
+    </div>
+
+    <div class="text-[11px] text-stone-500 pt-2 space-y-1">
+      <p>Need a different timing or have questions? Email us directly at <a href="mailto:alfaaz2k20@gmail.com" class="text-[var(--accent-gold)] hover:underline">alfaaz2k20@gmail.com</a></p>
+    </div>
+
+    <div class="pt-4">
+      <a href="index.html" class="inline-block px-6 py-2.5 border border-[var(--grid-border)] text-xs uppercase tracking-widest text-[var(--text-primary)] hover:border-[var(--accent-gold)] transition-colors">
+        Return to Alfaaz Home
+      </a>
+    </div>
+  </div>
+  `;
+
+  if (existingBooking) return;
+
+  const datePills = app.querySelectorAll('.date-pill');
+  const timeContainer = app.querySelector('#timePillsContainer');
+  const summaryEl = app.querySelector('#selectedSlotSummary');
+  const confirmBtn = app.querySelector('#confirmInterviewBtn');
+
+  if (availableDays.length > 0) {
+    selectedDate = availableDays[0].date;
+    selectedDateLabel = availableDays[0].full_date_label;
+  }
+
+  const updateTimesForDate = (dateVal) => {
+    selectedTime = null;
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.classList.add('opacity-40', 'cursor-not-allowed');
+    }
+    if (summaryEl) {
+      summaryEl.textContent = 'Please choose a time slot.';
+    }
+
+    const dayObj = availableDays.find(d => d.date === dateVal);
+    const times = dayObj ? dayObj.times : ['11:00 AM', '03:00 PM', '05:30 PM', '07:00 PM'];
+
+    if (timeContainer) {
+      timeContainer.innerHTML = times.map(t => `
+        <button type="button" class="time-pill px-3 py-2 text-xs border border-[var(--grid-border)] bg-white hover:border-[var(--accent-gold)] transition-colors text-stone-800" data-time="${t}">
+          ${t}
+        </button>
+      `).join('');
+
+      timeContainer.querySelectorAll('.time-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          timeContainer.querySelectorAll('.time-pill').forEach(b => {
+            b.classList.remove('selected-time', 'bg-[#fdfaf3]', 'border-[var(--accent-gold)]', 'font-bold');
+          });
+          btn.classList.add('selected-time', 'bg-[#fdfaf3]', 'border-[var(--accent-gold)]', 'font-bold');
+          selectedTime = btn.getAttribute('data-time');
+
+          const slotDisplay = `${selectedDateLabel} at ${selectedTime} IST`;
+          if (summaryEl) {
+            summaryEl.innerHTML = `<span class="text-stone-900 font-semibold">Selected:</span> ${slotDisplay}`;
+          }
+          if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+          }
+        });
+      });
+    }
+  };
+
+  datePills.forEach(btn => {
+    btn.addEventListener('click', () => {
+      datePills.forEach(b => {
+        b.classList.remove('selected-date', 'border-[var(--accent-gold)]', 'bg-[#fdfaf3]', 'font-bold');
+      });
+      btn.classList.add('selected-date', 'border-[var(--accent-gold)]', 'bg-[#fdfaf3]', 'font-bold');
+      selectedDate = btn.getAttribute('data-date');
+      selectedDateLabel = btn.getAttribute('data-label');
+      updateTimesForDate(selectedDate);
+    });
+  });
+
+  if (selectedDate) {
+    updateTimesForDate(selectedDate);
+  }
+
+  confirmBtn?.addEventListener('click', async () => {
+    if (!selectedDate || !selectedTime || !state.sessionId) return;
+    const slotDisplay = `${selectedDateLabel} at ${selectedTime} IST`;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = 'Scheduling...';
+
+    try {
+      const resp = await apiFetch('/recruit/schedule-interview', {
+        method: 'POST',
+        body: JSON.stringify({
+          session_id: state.sessionId,
+          candidate_name: state.candidateName || null,
+          candidate_email: state.candidateEmail || null,
+          candidate_phone: state.candidatePhone || null,
+          slot_date: selectedDate,
+          slot_time: selectedTime,
+          slot_display: slotDisplay
+        })
+      });
+
+      if (!resp || !resp.ok) {
+        const errJson = resp ? await resp.json().catch(() => ({})) : {};
+        throw new Error(errJson.detail || 'Could not schedule interview. Please try again.');
+      }
+
+      const resData = await resp.json();
+      const booking = resData.booking || {
+        candidate_name: state.candidateName || 'Candidate',
+        slot_display: slotDisplay
+      };
+
+      const interviewSection = app.querySelector('#interviewSection');
+      if (interviewSection) {
+        interviewSection.innerHTML = renderBookingConfirmed(booking);
+      }
+    } catch (err) {
+      console.error('[Scheduling Error]', err);
+      confirmBtn.disabled = false;
+      confirmBtn.innerHTML = 'Confirm Schedule &rarr;';
+      if (summaryEl) {
+        summaryEl.innerHTML = `<span class="text-red-700 font-semibold">${window.escapeHtml(err.message)}</span>`;
+      }
+    }
+  });
 }
+

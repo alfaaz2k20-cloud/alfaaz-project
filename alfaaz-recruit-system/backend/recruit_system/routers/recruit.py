@@ -14,7 +14,7 @@ from recruit_system.core.config import RECRUIT_CONSENT_COPY
 from recruit_system.models.recruit import (
     DBApplicantIdentity, DBSession, DBConsentRecord, DBAccessibilityProfile,
     DBWarmupBaseline, DBTaskAssignment, DBSJTResponse, DBEvidence, DBDataQualityFlag,
-    DBTelemetryEvent
+    DBTelemetryEvent, DBInterviewBooking
 )
 from recruit_system.services.sjt_engine import (
     get_public_sjt_payload, score_sjt_responses, get_config_hash
@@ -45,7 +45,18 @@ class IdentityRequest(BaseModel):
     full_name: str = Field(..., min_length=2, max_length=150)
     email: str = Field(..., min_length=5, max_length=150)
     phone_or_contact: Optional[str] = Field(None, max_length=50)
+    whatsapp_no: Optional[str] = Field(None, max_length=50)
     linkedin_url: Optional[str] = Field(None, max_length=500)
+
+class ScheduleInterviewRequest(BaseModel):
+    session_id: str
+    candidate_name: Optional[str] = None
+    candidate_email: Optional[str] = None
+    candidate_phone: Optional[str] = None
+    slot_date: str = Field(..., min_length=4, max_length=20)
+    slot_time: str = Field(..., min_length=2, max_length=20)
+    slot_display: str = Field(..., min_length=5, max_length=150)
+    notes: Optional[str] = None
 
 class ConsentRequest(BaseModel):
     choices: Dict[str, bool] = Field(default_factory=dict)
@@ -160,11 +171,12 @@ def submit_identity(req: IdentityRequest, request: Request, db: Session = Depend
     if db.get(DBApplicantIdentity, req.session_id):
         raise HTTPException(status_code=409, detail="Identity already submitted")
 
+    phone_val = req.phone_or_contact or req.whatsapp_no
     identity = DBApplicantIdentity(
         session_id=req.session_id,
         full_name=req.full_name,
         email=req.email,
-        phone_or_contact=req.phone_or_contact,
+        phone_or_contact=phone_val,
         linkedin_url=req.linkedin_url
     )
     db.add(identity)
@@ -404,4 +416,195 @@ def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db))
         "session_status": "COMPLETE",
         "message": "Assessment Complete. Thank you for your time.",
         "is_already_completed": False
+    }
+
+
+def _send_interview_notification(booking: DBInterviewBooking):
+    subject = f"Alfaaz Interview Scheduled: {booking.candidate_name} ({booking.slot_display})"
+    body = (
+        f"A candidate has scheduled their interview for the Alfaaz Collective Volunteer Assessment.\n\n"
+        f"Candidate Name: {booking.candidate_name}\n"
+        f"Email: {booking.candidate_email}\n"
+        f"WhatsApp / Contact: {booking.candidate_phone or 'Not provided'}\n"
+        f"Scheduled Time: {booking.slot_display}\n"
+        f"Session ID: {booking.session_id}\n\n"
+        f"Recruiter Research Dossier:\n"
+        f"https://alfaazcollective.vercel.app/research.html?session={booking.session_id}\n"
+    )
+
+    import os
+    webhook_url = os.environ.get("MAKE_WEBHOOK_URL")
+    if webhook_url:
+        try:
+            import requests
+            requests.post(
+                webhook_url,
+                json={
+                    "to": "alfaaz2k20@gmail.com",
+                    "subject": subject,
+                    "text": body,
+                    "type": "interview_scheduled",
+                    "candidate_name": booking.candidate_name,
+                    "candidate_email": booking.candidate_email,
+                    "candidate_phone": booking.candidate_phone,
+                    "slot_display": booking.slot_display,
+                    "session_id": booking.session_id
+                },
+                timeout=10
+            )
+        except Exception as e:
+            logger.warning(f"Notice sending interview email webhook: {e}")
+
+    logger.info(f"[INTERVIEW SCHEDULED] {booking.candidate_name} -> {booking.slot_display} (Contact: {booking.candidate_phone})")
+
+
+@router.get("/interview-slots")
+def get_interview_slots(db: Session = Depends(get_db)):
+    """
+    Returns available interview dates and time windows for the next 7 days,
+    excluding today and Sundays. Already-booked slots are filtered out.
+    """
+    from datetime import timedelta
+    now_utc = datetime.now(timezone.utc)
+
+    active_bookings = db.exec(
+        select(DBInterviewBooking).where(DBInterviewBooking.status == "SCHEDULED")
+    ).all()
+    booked_set = {(b.slot_date, b.slot_time) for b in active_bookings}
+
+    standard_times = ["11:00 AM", "03:00 PM", "05:30 PM", "07:00 PM"]
+    available_days = []
+
+    for day_offset in range(1, 9):
+        day_date = now_utc + timedelta(days=day_offset)
+        if day_date.weekday() == 6:  # Skip Sundays
+            continue
+
+        date_str = day_date.strftime("%Y-%m-%d")
+        date_label = day_date.strftime("%a, %b %d")
+        full_date_label = day_date.strftime("%A, %B %d, %Y")
+
+        free_times = [t for t in standard_times if (date_str, t) not in booked_set]
+        if free_times:
+            available_days.append({
+                "date": date_str,
+                "date_label": date_label,
+                "full_date_label": full_date_label,
+                "times": free_times
+            })
+
+        if len(available_days) >= 6:
+            break
+
+    return {"days": available_days}
+
+
+@router.post("/schedule-interview")
+def schedule_interview(req: ScheduleInterviewRequest, db: Session = Depends(get_db)):
+    session_obj = db.get(DBSession, req.session_id)
+    if not session_obj:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    identity = db.get(DBApplicantIdentity, req.session_id)
+    candidate_name = req.candidate_name or (identity.full_name if identity else "Applicant")
+    candidate_email = req.candidate_email or (identity.email if identity else "unknown")
+    candidate_phone = req.candidate_phone or (identity.phone_or_contact if identity else None)
+
+    collision = db.exec(
+        select(DBInterviewBooking).where(
+            DBInterviewBooking.slot_date == req.slot_date,
+            DBInterviewBooking.slot_time == req.slot_time,
+            DBInterviewBooking.status == "SCHEDULED",
+            DBInterviewBooking.session_id != req.session_id
+        )
+    ).first()
+    if collision:
+        raise HTTPException(
+            status_code=409,
+            detail="This timing was just reserved by another candidate. Please choose another slot."
+        )
+
+    existing_booking = db.exec(
+        select(DBInterviewBooking).where(DBInterviewBooking.session_id == req.session_id)
+    ).first()
+
+    if existing_booking:
+        existing_booking.candidate_name = candidate_name
+        existing_booking.candidate_email = candidate_email
+        existing_booking.candidate_phone = candidate_phone
+        existing_booking.slot_date = req.slot_date
+        existing_booking.slot_time = req.slot_time
+        existing_booking.slot_display = req.slot_display
+        existing_booking.status = "SCHEDULED"
+        existing_booking.notes = req.notes
+        db.add(existing_booking)
+        booking = existing_booking
+    else:
+        booking = DBInterviewBooking(
+            session_id=req.session_id,
+            candidate_name=candidate_name,
+            candidate_email=candidate_email,
+            candidate_phone=candidate_phone,
+            slot_date=req.slot_date,
+            slot_time=req.slot_time,
+            slot_display=req.slot_display,
+            status="SCHEDULED",
+            notes=req.notes
+        )
+        db.add(booking)
+
+    db.commit()
+    db.refresh(booking)
+
+    _send_interview_notification(booking)
+
+    import urllib.parse
+    wa_msg = (
+        f"Hi Alfaaz Team, I ({candidate_name}) have completed the volunteer assessment "
+        f"and scheduled my interview for {req.slot_display}. "
+        f"Looking forward to speaking with you!"
+    )
+    whatsapp_notify_url = f"https://wa.me/?text={urllib.parse.quote(wa_msg)}"
+
+    cal_title = urllib.parse.quote("Alfaaz Collective — Volunteer Interview")
+    cal_desc = urllib.parse.quote(f"Volunteer interview call for {candidate_name} ({candidate_email}). WhatsApp: {candidate_phone or 'N/A'}")
+    google_calendar_url = f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={cal_title}&details={cal_desc}&location=Google+Meet"
+
+    return {
+        "status": "SUCCESS",
+        "booking": {
+            "session_id": booking.session_id,
+            "candidate_name": booking.candidate_name,
+            "candidate_email": booking.candidate_email,
+            "candidate_phone": booking.candidate_phone,
+            "slot_date": booking.slot_date,
+            "slot_time": booking.slot_time,
+            "slot_display": booking.slot_display,
+            "status": booking.status,
+            "created_at": booking.created_at.isoformat() if booking.created_at else None,
+            "whatsapp_notify_url": whatsapp_notify_url,
+            "google_calendar_url": google_calendar_url
+        }
+    }
+
+
+@router.get("/interview-booking/{session_id}")
+def get_interview_booking(session_id: str, db: Session = Depends(get_db)):
+    booking = db.exec(
+        select(DBInterviewBooking).where(DBInterviewBooking.session_id == session_id)
+    ).first()
+    if not booking:
+        return {"booking": None}
+    return {
+        "booking": {
+            "session_id": booking.session_id,
+            "candidate_name": booking.candidate_name,
+            "candidate_email": booking.candidate_email,
+            "candidate_phone": booking.candidate_phone,
+            "slot_date": booking.slot_date,
+            "slot_time": booking.slot_time,
+            "slot_display": booking.slot_display,
+            "status": booking.status,
+            "created_at": booking.created_at.isoformat() if booking.created_at else None
+        }
     }

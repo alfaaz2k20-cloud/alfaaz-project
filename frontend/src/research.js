@@ -89,22 +89,33 @@ async function loadSessionsList(selectedStatus = '') {
       return;
     }
 
-    const rowsHtml = sessions.map(s => `
-    <tr class="border-b border-[var(--grid-border)] hover:bg-[#faf8f5] transition-colors">
-      <td class="p-4 text-sm font-medium text-[var(--text-primary)]">${window.escapeHtml(s.full_name || 'Anonymous Applicant')}</td>
-      <td class="p-4 text-xs text-black">${window.escapeHtml(s.email || '—')}</td>
-      <td class="p-4 text-xs text-black">${s.linkedin_url ? `<a href="${window.escapeHtml(s.linkedin_url.startsWith('http') ? s.linkedin_url : 'https://' + s.linkedin_url)}" target="_blank" rel="noopener noreferrer" class="text-[var(--accent-gold)] hover:underline inline-flex items-center gap-1" title="${window.escapeHtml(s.linkedin_url)}">Link &nearr;</a>` : '—'}</td>
-      <td class="p-4 text-xs text-black">${s.created_at ? new Date(s.created_at).toLocaleString() : '—'}</td>
-      <td class="p-4 text-xs">
-        <span class="px-2 py-0.5 bg-[#f4f1ea] border border-[var(--grid-border)] text-[10px] uppercase tracking-wider">${s.status}</span>
-      </td>
-      <td class="p-4 text-right">
-        <button class="view-session-btn px-3 py-1 bg-[var(--text-primary)] text-white text-[10px] uppercase tracking-widest hover:bg-[var(--accent-gold)] transition-colors" data-id="${s.session_id}">
-          View Evidence &rarr;
-        </button>
-      </td>
-    </tr>
-    `).join('');
+    const rowsHtml = sessions.map(s => {
+      const booking = s.interview_booking;
+      const bookingBadge = booking
+        ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-[#eaf5ea] border border-[#bce0bc] text-[#1e6624] text-[10px] font-medium" title="Booked slot">
+            <span>📅</span>
+            <span>${window.escapeHtml(booking.slot_display || `${booking.slot_date} ${booking.slot_time}`)}</span>
+          </span>`
+        : `<span class="text-stone-400 text-[10px] italic">Not scheduled</span>`;
+
+      return `
+      <tr class="border-b border-[var(--grid-border)] hover:bg-[#faf8f5] transition-colors">
+        <td class="p-4 text-sm font-medium text-[var(--text-primary)]">${window.escapeHtml(s.full_name || 'Anonymous Applicant')}</td>
+        <td class="p-4 text-xs text-black">${window.escapeHtml(s.email || '—')}</td>
+        <td class="p-4 text-xs text-black">${s.linkedin_url ? `<a href="${window.escapeHtml(s.linkedin_url.startsWith('http') ? s.linkedin_url : 'https://' + s.linkedin_url)}" target="_blank" rel="noopener noreferrer" class="text-[var(--accent-gold)] hover:underline inline-flex items-center gap-1" title="${window.escapeHtml(s.linkedin_url)}">Link &nearr;</a>` : '—'}</td>
+        <td class="p-4 text-xs">${bookingBadge}</td>
+        <td class="p-4 text-xs text-black">${s.created_at ? new Date(s.created_at).toLocaleString() : '—'}</td>
+        <td class="p-4 text-xs">
+          <span class="px-2 py-0.5 bg-[#f4f1ea] border border-[var(--grid-border)] text-[10px] uppercase tracking-wider">${s.status}</span>
+        </td>
+        <td class="p-4 text-right">
+          <button class="view-session-btn px-3 py-1 bg-[var(--text-primary)] text-white text-[10px] uppercase tracking-widest hover:bg-[var(--accent-gold)] transition-colors" data-id="${s.session_id}">
+            View Evidence &rarr;
+          </button>
+        </td>
+      </tr>
+      `;
+    }).join('');
 
     container.innerHTML = `
     <div class="space-y-4">
@@ -117,6 +128,7 @@ async function loadSessionsList(selectedStatus = '') {
                 <th class="p-4">Applicant Name</th>
                 <th class="p-4">Email</th>
                 <th class="p-4">LinkedIn / CV</th>
+                <th class="p-4">Interview Timing</th>
                 <th class="p-4">Submission Date</th>
                 <th class="p-4">Status</th>
                 <th class="p-4 text-right">Action</th>
@@ -196,6 +208,14 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
     const candidatePhone = window.escapeHtml(applicant.phone_or_contact || '—');
     const candidateLinkedin = applicant.linkedin_url ? window.escapeHtml(applicant.linkedin_url) : null;
     const durationMin = meta.duration_minutes !== null ? `${meta.duration_minutes} min` : 'In progress';
+    const booking = applicant.interview_booking || null;
+
+    const rawPhone = applicant.phone_or_contact || '';
+    const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+    const whatsappDirectLink = cleanPhone ? `
+      <a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hello ${applicant.full_name || ''}, this is the Alfaaz Collective recruitment team regarding your interview.`)}" target="_blank" rel="noopener noreferrer" class="text-[11px] text-[#1e6624] hover:underline inline-flex items-center gap-1 font-medium mt-1">
+        <span>💬</span> Chat on WhatsApp &nearr;
+      </a>` : '';
 
     const dims = data.dimensions || [];
     const summary = data.profile_summary || {};
@@ -495,14 +515,37 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
     
     <div class="bg-[#faf8f5] border border-[var(--grid-border)] p-6 mb-4">
       <h3 class="text-xs font-semibold tracking-widest uppercase text-[var(--accent-gold)] mb-4">1. Candidate & Session Overview</h3>
-      <div class="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-sm">
         <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">Name</strong>${candidateName}</div>
         <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">Email</strong>${candidateEmail}</div>
+        <div>
+          <strong class="block text-black text-xs uppercase tracking-wider mb-1">WhatsApp / Contact</strong>
+          <div>${candidatePhone}</div>
+          ${whatsappDirectLink}
+        </div>
+        <div>
+          <strong class="block text-black text-xs uppercase tracking-wider mb-1">Interview Slot</strong>
+          ${booking ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-[#eaf5ea] border border-[#bce0bc] text-[#1e6624] text-xs font-semibold">📅 ${window.escapeHtml(booking.slot_display || `${booking.slot_date} ${booking.slot_time}`)}</span>` : '<span class="text-stone-400 text-xs italic">Not scheduled</span>'}
+        </div>
         <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">LinkedIn / CV</strong>${candidateLinkedin ? `<a href="${candidateLinkedin.startsWith('http') ? candidateLinkedin : 'https://' + candidateLinkedin}" target="_blank" rel="noopener noreferrer" class="text-[var(--accent-gold)] hover:underline block truncate" title="${candidateLinkedin}">Open Link &nearr;</a>` : '<span class="text-stone-400">—</span>'}</div>
-        <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">Contact</strong>${candidatePhone}</div>
         <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">Session Duration</strong>${durationMin}</div>
         <div><strong class="block text-black text-xs uppercase tracking-wider mb-1">Battery Version</strong><span class="badge" style="font-size:10px; background:#f0eeea; color:var(--text-primary); border:1px solid var(--grid-border);">${batteryVer}</span></div>
       </div>
+      ${booking ? `
+      <div class="mt-4 pt-3 border-t border-[var(--grid-border)] flex flex-wrap items-center justify-between gap-3 text-xs bg-white p-3 border border-[#bce0bc]">
+        <div class="flex items-center gap-2 text-[#1e6624]">
+          <span class="text-base">📅</span>
+          <div>
+            <span class="font-semibold uppercase tracking-wider text-[10px]">Confirmed Interview Slot:</span>
+            <span class="font-serif text-sm ml-1 text-black">${window.escapeHtml(booking.slot_display || `${booking.slot_date} at ${booking.slot_time}`)}</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          ${cleanPhone ? `<a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hello ${applicant.full_name || ''}, this is the Alfaaz Collective recruitment team confirming your interview slot: ${booking.slot_display || `${booking.slot_date} ${booking.slot_time}`}.`)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-[#25D366] text-white rounded text-[11px] font-medium hover:opacity-90 inline-flex items-center gap-1">Open WhatsApp Chat &nearr;</a>` : ''}
+          <a href="mailto:${window.escapeHtml(applicant.email || '')}?subject=${encodeURIComponent(`Alfaaz Collective — Interview Confirmation: ${booking.slot_display || booking.slot_date}`)}" class="px-2.5 py-1 border border-[var(--grid-border)] bg-[#faf8f5] text-black text-[11px] font-medium hover:bg-stone-100">Send Email</a>
+        </div>
+      </div>
+      ` : ''}
     </div>
 
     <div class="bg-white border-l-4 border-[var(--accent-gold)] border-t border-r border-b border-[var(--grid-border)] p-4 mb-4 text-xs text-black leading-relaxed">

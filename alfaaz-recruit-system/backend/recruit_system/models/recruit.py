@@ -232,3 +232,20 @@ class DBRecruiterAccessLog(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
     ip_address: Optional[str] = None
+
+class DBInterviewBooking(SQLModel, table=True):
+    __tablename__ = "interview_bookings"
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    session_id: str = Field(unique=True, index=True)
+    candidate_name: str
+    candidate_email: str
+    candidate_phone: Optional[str] = None
+    slot_date: str = Field(index=True)      # e.g., "2026-10-15"
+    slot_time: str                          # e.g., "15:00"
+    slot_display: str                       # e.g., "Thursday, Oct 15 at 3:00 PM IST"
+    status: str = Field(default="SCHEDULED") # SCHEDULED, COMPLETED, CANCELLED
+    notes: Optional[str] = None
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+    )

@@ -10,7 +10,7 @@ from recruit_system.core.security import require_admin
 from recruit_system.models.recruit import (
     DBSession, DBApplicantIdentity, DBEvidence, DBFeature,
     DBDataQualityFlag, DBRecruiterAccessLog, DBSJTResponse,
-    DBConsentRecord, DBTelemetryEvent, DBGameScore
+    DBConsentRecord, DBTelemetryEvent, DBGameScore, DBInterviewBooking
 )
 from recruit_system.services.feature_extractor import extract_session_features
 from recruit_system.services.evidence_integrator import (
@@ -118,6 +118,11 @@ def list_research_sessions(
         ).all()
         task_counts_map = {row[0]: row[1] for row in task_counts_raw}
 
+    bookings_list = db.exec(
+        select(DBInterviewBooking).where(DBInterviewBooking.session_id.in_(session_ids))
+    ).all()
+    bookings_map = {b.session_id: b for b in bookings_list}
+
     results = []
     for s in sessions:
         identity = identities_map.get(s.session_id)
@@ -134,6 +139,7 @@ def list_research_sessions(
             completed_tasks_count = task_counts_map.get(s.session_id, 0)
         evidence_collected = has_sjt and (completed_tasks_count >= expected_tasks)
 
+        booking = bookings_map.get(s.session_id)
         results.append({
             "session_id": s.session_id,
             "created_at": s.created_at.isoformat() if s.created_at else None,
@@ -142,6 +148,13 @@ def list_research_sessions(
             "email": identity.email if identity else "unknown",
             "phone_or_contact": identity.phone_or_contact if identity else None,
             "linkedin_url": identity.linkedin_url if identity else None,
+            "interview_booking": {
+                "slot_date": booking.slot_date,
+                "slot_time": booking.slot_time,
+                "slot_display": booking.slot_display,
+                "status": booking.status,
+                "created_at": booking.created_at.isoformat() if booking.created_at else None
+            } if booking else None,
             "has_sjt": has_sjt,
             "completed_tasks_count": completed_tasks_count,
             "battery_expected_tasks": expected_tasks,
@@ -250,6 +263,7 @@ def get_session_research_view(
         evidence_list = existing_evidence
 
     identity = db.get(DBApplicantIdentity, session_id)
+    booking = db.exec(select(DBInterviewBooking).where(DBInterviewBooking.session_id == session_id)).first()
     consent = db.exec(select(DBConsentRecord).where(DBConsentRecord.session_id == session_id)).first()
     flags = db.exec(
         select(DBDataQualityFlag).where(DBDataQualityFlag.session_id == session_id)
@@ -537,7 +551,14 @@ def get_session_research_view(
                 "full_name": identity.full_name if identity else None,
                 "email": identity.email if identity else None,
                 "phone_or_contact": identity.phone_or_contact if identity else None,
-                "linkedin_url": identity.linkedin_url if identity else None
+                "linkedin_url": identity.linkedin_url if identity else None,
+                "interview_booking": {
+                    "slot_date": booking.slot_date,
+                    "slot_time": booking.slot_time,
+                    "slot_display": booking.slot_display,
+                    "status": booking.status,
+                    "created_at": booking.created_at.isoformat() if booking.created_at else None
+                } if booking else None
             },
             "consent": {
                 "consent_text_version": consent.consent_text_version if consent else "1.0",
