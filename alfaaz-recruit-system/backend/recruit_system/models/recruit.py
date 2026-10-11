@@ -249,3 +249,14 @@ class DBInterviewBooking(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
+
+class DBInterviewSettings(SQLModel, table=True):
+    __tablename__ = "interview_settings"
+    id: Optional[int] = Field(default=1, primary_key=True)
+    slots_json: str = Field(default='["11:00 AM", "03:00 PM", "05:30 PM", "07:00 PM"]')
+    skip_days_json: str = Field(default='["Sunday"]')
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+    )
+

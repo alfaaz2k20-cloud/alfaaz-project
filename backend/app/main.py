@@ -226,6 +226,30 @@ try:
         except Exception as _ib_tbl_err:
             logger.warning("[DB Migration] Notice ensuring interview_bookings table: %s", _ib_tbl_err)
 
+        # 6. Explicit interview_settings table creation
+        try:
+            with _conn.begin_nested():
+                if _conn_dialect == "postgresql":
+                    _conn.execute(sa_text("""
+                        CREATE TABLE IF NOT EXISTS interview_settings (
+                            id INTEGER PRIMARY KEY,
+                            slots_json TEXT NOT NULL DEFAULT '["11:00 AM", "03:00 PM", "05:30 PM", "07:00 PM"]',
+                            skip_days_json TEXT NOT NULL DEFAULT '["Sunday"]',
+                            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """))
+                else:
+                    _conn.execute(sa_text("""
+                        CREATE TABLE IF NOT EXISTS interview_settings (
+                            id INTEGER PRIMARY KEY,
+                            slots_json TEXT NOT NULL DEFAULT '["11:00 AM", "03:00 PM", "05:30 PM", "07:00 PM"]',
+                            skip_days_json TEXT NOT NULL DEFAULT '["Sunday"]',
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """))
+        except Exception as _is_tbl_err:
+            logger.warning("[DB Migration] Notice ensuring interview_settings table: %s", _is_tbl_err)
+
     logger.info("Schema migration check completed successfully.")
 except Exception as _e:
     logger.warning("Schema migration notice: %s", _e)

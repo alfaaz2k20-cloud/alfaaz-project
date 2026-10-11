@@ -7,10 +7,12 @@ from sqlalchemy import func
 
 from recruit_system.db.session import get_db
 from recruit_system.core.security import require_admin
+from pydantic import BaseModel
 from recruit_system.models.recruit import (
     DBSession, DBApplicantIdentity, DBEvidence, DBFeature,
     DBDataQualityFlag, DBRecruiterAccessLog, DBSJTResponse,
-    DBConsentRecord, DBTelemetryEvent, DBGameScore, DBInterviewBooking
+    DBConsentRecord, DBTelemetryEvent, DBGameScore, DBInterviewBooking,
+    DBInterviewSettings
 )
 from recruit_system.services.feature_extractor import extract_session_features
 from recruit_system.services.evidence_integrator import (
@@ -598,3 +600,237 @@ def get_session_research_view(
             {"scope": fl.scope, "flag": fl.flag, "detail": fl.detail} for fl in flags
         ]
     }
+
+
+class RescheduleInterviewRequest(BaseModel):
+    slot_date: str          # e.g., "2026-10-18"
+    slot_time: str          # e.g., "03:00 PM"
+    slot_display: str       # e.g., "Sunday, Oct 18 at 03:00 PM IST"
+    notes: Optional[str] = None
+
+
+class InterviewSettingsUpdateRequest(BaseModel):
+    slots: List[str]
+    skip_days: Optional[List[str]] = None
+
+
+@router.post("/sessions/{session_id}/reschedule")
+def admin_reschedule_session_interview(
+    session_id: str,
+    req: RescheduleInterviewRequest,
+    admin_user: dict = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Allows recruiter to change / reschedule an applicant's interview date & time.
+    Dispatches notification webhook and returns pre-filled WhatsApp link for candidate outreach.
+    """
+    session_obj = db.get(DBSession, session_id)
+    if not session_obj:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    identity = db.get(DBApplicantIdentity, session_id)
+    candidate_name = identity.full_name if identity else "Applicant"
+    candidate_email = identity.email if identity else "unknown"
+    candidate_phone = identity.phone_or_contact if identity else None
+
+    # Check collision with other sessions
+    collision = db.exec(
+        select(DBInterviewBooking).where(
+            DBInterviewBooking.slot_date == req.slot_date,
+            DBInterviewBooking.slot_time == req.slot_time,
+            DBInterviewBooking.status == "SCHEDULED",
+            DBInterviewBooking.session_id != session_id
+        )
+    ).first()
+    if collision:
+        raise HTTPException(
+            status_code=409,
+            detail=f"This slot is already booked by another applicant ({collision.candidate_name})."
+        )
+
+    booking = db.exec(
+        select(DBInterviewBooking).where(DBInterviewBooking.session_id == session_id)
+    ).first()
+
+    if booking:
+        booking.slot_date = req.slot_date
+        booking.slot_time = req.slot_time
+        booking.slot_display = req.slot_display
+        booking.status = "SCHEDULED"
+        if req.notes is not None:
+            booking.notes = req.notes
+        db.add(booking)
+    else:
+        booking = DBInterviewBooking(
+            session_id=session_id,
+            candidate_name=candidate_name,
+            candidate_email=candidate_email,
+            candidate_phone=candidate_phone,
+            slot_date=req.slot_date,
+            slot_time=req.slot_time,
+            slot_display=req.slot_display,
+            status="SCHEDULED",
+            notes=req.notes
+        )
+        db.add(booking)
+
+    db.commit()
+    db.refresh(booking)
+
+    from recruit_system.routers.recruit import _send_interview_notification
+    _send_interview_notification(booking, is_reschedule=True)
+
+    import urllib.parse
+    clean_phone = "".join(filter(str.isdigit, booking.candidate_phone or ""))
+    wa_msg = (
+        f"Hi {booking.candidate_name}, this is the Alfaaz Collective recruitment team. "
+        f"Your volunteer interview timing has been updated to: {booking.slot_display}. "
+        f"Looking forward to speaking with you!"
+    )
+    whatsapp_notify_url = f"https://wa.me/{clean_phone}?text={urllib.parse.quote(wa_msg)}" if clean_phone else f"https://wa.me/?text={urllib.parse.quote(wa_msg)}"
+
+    cal_title = urllib.parse.quote(f"Alfaaz Collective — Volunteer Interview: {booking.candidate_name}")
+    cal_desc = urllib.parse.quote(f"Volunteer interview with {booking.candidate_name} ({booking.candidate_email}). WhatsApp: {booking.candidate_phone or 'N/A'}")
+    google_calendar_url = f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={cal_title}&details={cal_desc}&location=Google+Meet"
+
+    return {
+        "status": "SUCCESS",
+        "booking": {
+            "session_id": booking.session_id,
+            "candidate_name": booking.candidate_name,
+            "candidate_email": booking.candidate_email,
+            "candidate_phone": booking.candidate_phone,
+            "slot_date": booking.slot_date,
+            "slot_time": booking.slot_time,
+            "slot_display": booking.slot_display,
+            "status": booking.status,
+            "notes": booking.notes,
+            "created_at": booking.created_at.isoformat() if booking.created_at else None,
+            "whatsapp_notify_url": whatsapp_notify_url,
+            "google_calendar_url": google_calendar_url
+        }
+    }
+
+
+@router.get("/interview-settings")
+def get_interview_settings(
+    admin_user: dict = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns the currently active interview hours and skip days.
+    """
+    import os
+    settings_row = db.get(DBInterviewSettings, 1)
+    if settings_row:
+        try:
+            return {
+                "slots": json.loads(settings_row.slots_json),
+                "skip_days": json.loads(settings_row.skip_days_json),
+                "source": "database",
+                "updated_at": settings_row.updated_at.isoformat() if settings_row.updated_at else None
+            }
+        except Exception:
+            pass
+
+    env_slots = os.environ.get("RECRUIT_INTERVIEW_SLOTS")
+    env_skip = os.environ.get("RECRUIT_INTERVIEW_SKIP_DAYS")
+    slots = [s.strip() for s in env_slots.split(",") if s.strip()] if env_slots else ["11:00 AM", "03:00 PM", "05:30 PM", "07:00 PM"]
+    skip_days = [d.strip() for d in env_skip.split(",") if d.strip()] if env_skip else ["Sunday"]
+    return {
+        "slots": slots,
+        "skip_days": skip_days,
+        "source": "env" if (env_slots or env_skip) else "default",
+        "updated_at": None
+    }
+
+
+@router.post("/interview-settings")
+def update_interview_settings(
+    req: InterviewSettingsUpdateRequest,
+    admin_user: dict = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Allows recruiter to configure default available interview slots and days of the week.
+    """
+    if not req.slots or not isinstance(req.slots, list):
+        raise HTTPException(status_code=400, detail="slots must be a non-empty list of time strings")
+
+    skip_days = req.skip_days if req.skip_days is not None else ["Sunday"]
+    settings_row = db.get(DBInterviewSettings, 1)
+    if not settings_row:
+        settings_row = DBInterviewSettings(
+            id=1,
+            slots_json=json.dumps(req.slots),
+            skip_days_json=json.dumps(skip_days)
+        )
+        db.add(settings_row)
+    else:
+        settings_row.slots_json = json.dumps(req.slots)
+        settings_row.skip_days_json = json.dumps(skip_days)
+        settings_row.updated_at = datetime.now(timezone.utc)
+        db.add(settings_row)
+
+    db.commit()
+    db.refresh(settings_row)
+
+    return {
+        "status": "SUCCESS",
+        "settings": {
+            "slots": req.slots,
+            "skip_days": skip_days,
+            "updated_at": settings_row.updated_at.isoformat() if settings_row.updated_at else None
+        }
+    }
+
+
+class WebhookTestRequest(BaseModel):
+    webhook_url: Optional[str] = None
+
+
+@router.post("/webhook-test")
+def trigger_webhook_test(
+    req: Optional[WebhookTestRequest] = None,
+    admin_user: dict = Depends(require_admin)
+):
+    """
+    Sends a sample test payload to the Make.com webhook so Make.com can detect fields and map values.
+    """
+    import os
+    import requests
+    target_url = (req.webhook_url if req and req.webhook_url else None) or os.environ.get("MAKE_WEBHOOK_URL")
+    if not target_url:
+        raise HTTPException(
+            status_code=400,
+            detail="No MAKE_WEBHOOK_URL configured in server environment. Please provide a webhook_url."
+        )
+
+    sample_payload = {
+        "to": "alfaaz2k20@gmail.com",
+        "subject": "Alfaaz Interview Scheduled: Test Candidate (Monday, Oct 19 at 11:00 AM IST)",
+        "text": (
+            "A candidate has scheduled their interview for the Alfaaz Collective Volunteer Assessment.\n\n"
+            "Candidate Name: Test Candidate\n"
+            "Email: test@example.com\n"
+            "WhatsApp / Contact: +91 98765 43210\n"
+            "Interview Timing: Monday, Oct 19 at 11:00 AM IST\n"
+            "Session ID: sess-test-12345\n\n"
+            "Recruiter Research Dossier:\n"
+            "https://alfaazcollective.vercel.app/research.html?session=sess-test-12345\n"
+        )
+    }
+
+    try:
+        resp = requests.post(target_url, json=sample_payload, timeout=15)
+        return {
+            "status": "SENT",
+            "webhook_url": target_url,
+            "response_status": resp.status_code,
+            "response_text": resp.text[:200]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to deliver payload to webhook URL: {str(e)}")
+
+

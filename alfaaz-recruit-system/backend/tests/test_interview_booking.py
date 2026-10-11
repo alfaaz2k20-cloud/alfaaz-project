@@ -6,7 +6,9 @@ from sqlmodel import SQLModel, Session, create_engine, select
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
-from recruit_system.models.recruit import DBApplicantIdentity, DBConsentRecord, DBSession, DBInterviewBooking
+from recruit_system.models.recruit import (
+    DBApplicantIdentity, DBConsentRecord, DBSession, DBInterviewBooking, DBInterviewSettings
+)
 from recruit_system.routers.recruit import (
     IdentityRequest,
     ScheduleInterviewRequest,
@@ -14,6 +16,15 @@ from recruit_system.routers.recruit import (
     get_interview_slots,
     schedule_interview,
     get_interview_booking,
+)
+from recruit_system.routers.research_view import (
+    RescheduleInterviewRequest,
+    InterviewSettingsUpdateRequest,
+    WebhookTestRequest,
+    admin_reschedule_session_interview,
+    get_interview_settings,
+    update_interview_settings,
+    trigger_webhook_test,
 )
 
 
@@ -167,3 +178,80 @@ class TestInterviewBooking(unittest.TestCase):
             )
             self.assertEqual(resched_res["booking"]["slot_date"], slot_date_2)
             self.assertEqual(resched_res["booking"]["slot_time"], slot_time_2)
+
+    def test_admin_reschedule_interview(self):
+        with Session(self.engine) as db:
+            self._create_consented_session(db, "cand-admin-resched", name="Admin Resched Test", email="adminresched@example.com", phone="+919988112233")
+            admin_user = {"email": "admin@alfaaz.com", "status": "ADMIN"}
+
+            # Admin assigns slot
+            res = admin_reschedule_session_interview(
+                session_id="cand-admin-resched",
+                req=RescheduleInterviewRequest(
+                    slot_date="2026-10-25",
+                    slot_time="04:30 PM",
+                    slot_display="Sunday, Oct 25 at 04:30 PM IST",
+                    notes="Recruiter moved to Sunday afternoon"
+                ),
+                admin_user=admin_user,
+                db=db
+            )
+            self.assertEqual(res["status"], "SUCCESS")
+            booking = res["booking"]
+            self.assertEqual(booking["slot_date"], "2026-10-25")
+            self.assertEqual(booking["slot_time"], "04:30 PM")
+            self.assertEqual(booking["notes"], "Recruiter moved to Sunday afternoon")
+            self.assertIn("whatsapp_notify_url", booking)
+            self.assertIn("google_calendar_url", booking)
+
+    def test_admin_interview_settings(self):
+        with Session(self.engine) as db:
+            admin_user = {"email": "admin@alfaaz.com", "status": "ADMIN"}
+
+            # Default settings
+            initial = get_interview_settings(admin_user=admin_user, db=db)
+            self.assertIn("slots", initial)
+            self.assertIn("skip_days", initial)
+
+            # Update settings
+            custom_slots = ["10:00 AM", "02:00 PM", "06:00 PM"]
+            custom_skip = ["Saturday", "Sunday"]
+            update_res = update_interview_settings(
+                req=InterviewSettingsUpdateRequest(slots=custom_slots, skip_days=custom_skip),
+                admin_user=admin_user,
+                db=db
+            )
+            self.assertEqual(update_res["status"], "SUCCESS")
+            self.assertEqual(update_res["settings"]["slots"], custom_slots)
+            self.assertEqual(update_res["settings"]["skip_days"], custom_skip)
+
+            # Verify get_interview_slots uses updated settings
+            slots_res = get_interview_slots(db=db)
+            self.assertEqual(slots_res["configured_slots"], custom_slots)
+            self.assertEqual(slots_res["skip_days"], custom_skip)
+            for day in slots_res["days"]:
+                for t in day["times"]:
+                    self.assertIn(t, custom_slots)
+
+    def test_webhook_test_mocked(self):
+        from unittest.mock import patch, MagicMock
+        admin_user = {"email": "admin@alfaaz.com", "status": "ADMIN"}
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.text = "Accepted"
+
+        with patch("requests.post", return_value=mock_resp) as mock_post:
+            res = trigger_webhook_test(
+                req=WebhookTestRequest(webhook_url="https://hook.eu1.make.com/mock-test"),
+                admin_user=admin_user
+            )
+            self.assertEqual(res["status"], "SENT")
+            self.assertEqual(res["response_status"], 200)
+            mock_post.assert_called_once()
+            called_payload = mock_post.call_args[1]["json"]
+            self.assertIn("to", called_payload)
+            self.assertIn("subject", called_payload)
+            self.assertIn("text", called_payload)
+
+

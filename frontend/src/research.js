@@ -60,15 +60,21 @@ async function loadSessionsList(selectedStatus = '') {
         <h2 class="text-base sm:text-lg text-[var(--text-primary)] font-serif">Applicant Assessment Records</h2>
         <span class="text-xs text-black">Ordered strictly by submission time</span>
       </div>
-      <div class="flex items-center gap-2 flex-wrap">
-        <label for="statusFilter" class="text-xs uppercase tracking-wider text-black">Session Status:</label>
-        <select id="statusFilter" class="px-2 py-1 text-xs border border-[var(--grid-border)] bg-[#faf8f5] text-[var(--text-primary)] focus:outline-none">
-          <option value="" ${selectedStatus === '' ? 'selected' : ''}>All Operational Statuses</option>
-          <option value="CONSENTED" ${selectedStatus === 'CONSENTED' ? 'selected' : ''}>Consented</option>
-          <option value="SJT" ${selectedStatus === 'SJT' ? 'selected' : ''}>SJT</option>
-          <option value="ACTIVE" ${selectedStatus === 'ACTIVE' ? 'selected' : ''}>Active (Games)</option>
-          <option value="COMPLETE" ${selectedStatus === 'COMPLETE' ? 'selected' : ''}>Complete</option>
-        </select>
+      <div class="flex items-center gap-3 flex-wrap">
+        <button id="manageInterviewHoursBtn" class="px-2.5 py-1 text-xs border border-[var(--grid-border)] bg-[#faf8f5] text-[var(--text-primary)] hover:bg-[#eae6dc] transition-colors flex items-center gap-1.5" title="Configure interview time windows and working days">
+          <span>⏱️</span>
+          <span>Interview Hours</span>
+        </button>
+        <div class="flex items-center gap-1.5">
+          <label for="statusFilter" class="text-xs uppercase tracking-wider text-black">Session Status:</label>
+          <select id="statusFilter" class="px-2 py-1 text-xs border border-[var(--grid-border)] bg-[#faf8f5] text-[var(--text-primary)] focus:outline-none">
+            <option value="" ${selectedStatus === '' ? 'selected' : ''}>All Operational Statuses</option>
+            <option value="CONSENTED" ${selectedStatus === 'CONSENTED' ? 'selected' : ''}>Consented</option>
+            <option value="SJT" ${selectedStatus === 'SJT' ? 'selected' : ''}>SJT</option>
+            <option value="ACTIVE" ${selectedStatus === 'ACTIVE' ? 'selected' : ''}>Active (Games)</option>
+            <option value="COMPLETE" ${selectedStatus === 'COMPLETE' ? 'selected' : ''}>Complete</option>
+          </select>
+        </div>
       </div>
     </div>
     `;
@@ -85,6 +91,9 @@ async function loadSessionsList(selectedStatus = '') {
       `;
       document.getElementById('statusFilter')?.addEventListener('change', (e) => {
         loadSessionsList(e.target.value);
+      });
+      document.getElementById('manageInterviewHoursBtn')?.addEventListener('click', () => {
+        openInterviewSettingsModal();
       });
       return;
     }
@@ -145,6 +154,10 @@ async function loadSessionsList(selectedStatus = '') {
 
     document.getElementById('statusFilter')?.addEventListener('change', (e) => {
       loadSessionsList(e.target.value);
+    });
+
+    document.getElementById('manageInterviewHoursBtn')?.addEventListener('click', () => {
+      openInterviewSettingsModal();
     });
 
     container.querySelectorAll('.view-session-btn').forEach(btn => {
@@ -540,12 +553,20 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
             <span class="font-serif text-sm ml-1 text-black">${window.escapeHtml(booking.slot_display || `${booking.slot_date} at ${booking.slot_time}`)}</span>
           </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <button id="rescheduleBtn" class="px-2.5 py-1 bg-[var(--text-primary)] text-white text-[11px] font-medium hover:bg-[var(--accent-gold)] transition-colors inline-flex items-center gap-1">Change / Reschedule Slot</button>
           ${cleanPhone ? `<a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hello ${applicant.full_name || ''}, this is the Alfaaz Collective recruitment team confirming your interview slot: ${booking.slot_display || `${booking.slot_date} ${booking.slot_time}`}.`)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-[#25D366] text-white rounded text-[11px] font-medium hover:opacity-90 inline-flex items-center gap-1">Open WhatsApp Chat &nearr;</a>` : ''}
           <a href="mailto:${window.escapeHtml(applicant.email || '')}?subject=${encodeURIComponent(`Alfaaz Collective — Interview Confirmation: ${booking.slot_display || booking.slot_date}`)}" class="px-2.5 py-1 border border-[var(--grid-border)] bg-[#faf8f5] text-black text-[11px] font-medium hover:bg-stone-100">Send Email</a>
         </div>
       </div>
-      ` : ''}
+      ` : `
+      <div class="mt-4 pt-3 border-t border-[var(--grid-border)] flex flex-wrap items-center justify-between gap-3 text-xs bg-white p-3 border border-[var(--grid-border)]">
+        <div class="text-stone-500 italic">Interview timing is currently unassigned for this candidate.</div>
+        <div>
+          <button id="rescheduleBtn" class="px-2.5 py-1 bg-[var(--text-primary)] text-white text-[11px] font-medium hover:bg-[var(--accent-gold)] transition-colors inline-flex items-center gap-1">Assign / Schedule Slot</button>
+        </div>
+      </div>
+      `}
     </div>
 
     <div class="bg-white border-l-4 border-[var(--accent-gold)] border-t border-r border-b border-[var(--grid-border)] p-4 mb-4 text-xs text-black leading-relaxed">
@@ -637,6 +658,7 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
     `;
     document.getElementById('backToRegistryBtn')?.addEventListener('click', () => loadSessionsList());
     document.getElementById('recomputeTelemetryBtn')?.addEventListener('click', () => loadSessionDetail(sessionId, true));
+    document.getElementById('rescheduleBtn')?.addEventListener('click', () => openRescheduleModal(sessionId, applicant, booking));
 
     const updateTableSort = (newMode) => {
       activeSortMode = newMode;
@@ -727,3 +749,348 @@ async function loadSessionDetail(sessionId, forceRecompute = false) {
 
 window.loadSessionsList = loadSessionsList;
 window.loadSessionDetail = loadSessionDetail;
+
+async function openInterviewSettingsModal() {
+  const apiBase = window.ALFAAZ_API_URL || 'https://alfaaz-project.onrender.com';
+  const token = localStorage.getItem('alfaaz_token');
+  
+  let modal = document.getElementById('interviewSettingsModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'interviewSettingsModal';
+    document.body.appendChild(modal);
+  }
+  
+  modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+  modal.innerHTML = `
+    <div class="bg-white border border-[var(--grid-border)] max-w-lg w-full p-6 space-y-4 shadow-xl">
+      <div class="flex justify-between items-center border-b border-[var(--grid-border)] pb-3">
+        <h3 class="font-serif text-lg text-[var(--text-primary)]">Interview Schedule & Working Hours</h3>
+        <button id="closeSettingsModalBtn" class="text-stone-400 hover:text-black text-lg">&times;</button>
+      </div>
+      <div id="settingsModalBody" class="space-y-4 text-xs">
+        <div class="text-stone-500">Loading current configuration...</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('closeSettingsModalBtn')?.addEventListener('click', () => modal.remove());
+
+  try {
+    const resp = await fetch(`${apiBase}/recruit/research/interview-settings`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await resp.json();
+    const currentSlots = (data.slots || []).join(', ');
+    const skipDays = data.skip_days || ['Sunday'];
+    const daysList = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+    const bodyEl = document.getElementById('settingsModalBody');
+    bodyEl.innerHTML = `
+      <div>
+        <label class="block font-semibold uppercase tracking-wider text-[11px] text-[var(--text-primary)] mb-1">
+          Available Time Slots (Comma-separated)
+        </label>
+        <p class="text-[11px] text-stone-500 mb-2">Candidates will be offered these time windows on active interview days (e.g. 11:00 AM, 03:00 PM, 05:30 PM, 07:00 PM).</p>
+        <input type="text" id="settingsSlotsInput" value="${window.escapeHtml(currentSlots)}" class="w-full p-2 border border-[var(--grid-border)] text-xs font-mono focus:outline-none focus:border-[var(--accent-gold)]" placeholder="11:00 AM, 03:00 PM, 05:30 PM, 07:00 PM" />
+      </div>
+
+      <div>
+        <label class="block font-semibold uppercase tracking-wider text-[11px] text-[var(--text-primary)] mb-1">
+          Days Off / Excluded Days
+        </label>
+        <p class="text-[11px] text-stone-500 mb-2">Slots will not be generated for designated off-days.</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+          ${daysList.map(d => `
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" name="skipDayCheck" value="${d}" ${skipDays.includes(d) ? 'checked' : ''} class="accent-[var(--accent-gold)]" />
+              <span>${d}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-[var(--grid-border)] space-y-1.5">
+        <label class="block font-semibold uppercase tracking-wider text-[11px] text-[var(--text-primary)]">
+          Make.com Webhook Test & Data Detection
+        </label>
+        <p class="text-[11px] text-stone-500">
+          Click &ldquo;Detect new values&rdquo; in Make.com, then click below to transmit the standard <code>to</code>, <code>subject</code>, and <code>text</code> payload.
+        </p>
+        <div class="flex items-center gap-2">
+          <input type="text" id="customWebhookUrlInput" placeholder="Optional: Paste Webhook URL if not configured in Render" class="flex-grow p-1.5 border border-[var(--grid-border)] text-xs font-mono focus:outline-none" />
+          <button type="button" id="sendTestWebhookBtn" class="px-3 py-1.5 bg-[#f4f1ea] border border-[var(--grid-border)] text-xs text-[var(--text-primary)] hover:bg-[#eae6dc] transition-colors whitespace-nowrap">
+            📡 Send Test Payload
+          </button>
+        </div>
+        <div id="testWebhookFeedback" class="text-[11px] hidden"></div>
+      </div>
+
+      <div id="settingsFeedback" class="text-[11px] hidden"></div>
+
+      <div class="pt-3 border-t border-[var(--grid-border)] flex justify-end gap-2">
+        <button id="cancelSettingsBtn" class="px-3 py-1.5 border border-[var(--grid-border)] text-xs text-stone-600 hover:bg-stone-50">Cancel</button>
+        <button id="saveSettingsBtn" class="px-4 py-1.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-wider hover:bg-[var(--accent-gold)] transition-colors">
+          Save Schedule
+        </button>
+      </div>
+    `;
+
+    document.getElementById('sendTestWebhookBtn')?.addEventListener('click', async () => {
+      const btn = document.getElementById('sendTestWebhookBtn');
+      const feedback = document.getElementById('testWebhookFeedback');
+      const customUrl = document.getElementById('customWebhookUrlInput')?.value.trim();
+
+      btn.disabled = true;
+      btn.innerText = 'Sending...';
+      feedback.className = 'text-[11px] text-stone-500 block';
+      feedback.innerText = 'Transmitting sample payload to Make.com...';
+
+      try {
+        const testResp = await fetch(`${apiBase}/recruit/research/webhook-test`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ webhook_url: customUrl || undefined })
+        });
+
+        const testData = await testResp.json();
+        if (!testResp.ok) {
+          throw new Error(testData.detail || 'Webhook test failed');
+        }
+
+        feedback.className = 'text-[11px] text-emerald-700 block font-medium';
+        feedback.innerText = `✓ Test payload sent successfully (HTTP ${testData.response_status})! Make.com should now display 'Successfully determined'.`;
+        btn.disabled = false;
+        btn.innerText = '📡 Send Test Payload';
+      } catch (err) {
+        feedback.className = 'text-[11px] text-red-600 block';
+        feedback.innerText = `Error: ${err.message}`;
+        btn.disabled = false;
+        btn.innerText = '📡 Send Test Payload';
+      }
+    });
+
+    document.getElementById('cancelSettingsBtn')?.addEventListener('click', () => modal.remove());
+    document.getElementById('saveSettingsBtn')?.addEventListener('click', async () => {
+      const rawSlots = document.getElementById('settingsSlotsInput').value;
+      const slots = rawSlots.split(',').map(s => s.trim()).filter(Boolean);
+      if (slots.length === 0) {
+        alert('Please enter at least one time slot.');
+        return;
+      }
+      const checkedDays = Array.from(document.querySelectorAll('input[name="skipDayCheck"]:checked')).map(cb => cb.value);
+
+      const saveBtn = document.getElementById('saveSettingsBtn');
+      const feedback = document.getElementById('settingsFeedback');
+      saveBtn.disabled = true;
+      saveBtn.innerText = 'Saving...';
+
+      try {
+        const updateResp = await fetch(`${apiBase}/recruit/research/interview-settings`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ slots, skip_days: checkedDays })
+        });
+        if (!updateResp.ok) throw new Error('Failed to save settings');
+        feedback.className = 'text-[11px] text-emerald-700 block font-medium';
+        feedback.innerText = 'Interview schedule updated successfully!';
+        setTimeout(() => modal.remove(), 1200);
+      } catch (e) {
+        feedback.className = 'text-[11px] text-red-600 block';
+        feedback.innerText = `Error: ${e.message}`;
+        saveBtn.disabled = false;
+        saveBtn.innerText = 'Save Schedule';
+      }
+    });
+
+  } catch (err) {
+    document.getElementById('settingsModalBody').innerHTML = `<div class="text-red-600">Failed to load interview settings: ${err.message}</div>`;
+  }
+}
+
+async function openRescheduleModal(sessionId, applicant, currentBooking) {
+  const apiBase = window.ALFAAZ_API_URL || 'https://alfaaz-project.onrender.com';
+  const token = localStorage.getItem('alfaaz_token');
+  
+  let modal = document.getElementById('rescheduleModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'rescheduleModal';
+    document.body.appendChild(modal);
+  }
+  
+  modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+  modal.innerHTML = `
+    <div class="bg-white border border-[var(--grid-border)] max-w-lg w-full p-6 space-y-4 shadow-xl">
+      <div class="flex justify-between items-center border-b border-[var(--grid-border)] pb-3">
+        <div>
+          <h3 class="font-serif text-lg text-[var(--text-primary)]">Change / Reschedule Interview</h3>
+          <div class="text-xs text-stone-500">${window.escapeHtml(applicant.full_name || 'Candidate')} &middot; ${window.escapeHtml(applicant.email || '')}</div>
+        </div>
+        <button id="closeRescheduleModalBtn" class="text-stone-400 hover:text-black text-lg">&times;</button>
+      </div>
+
+      <div id="rescheduleModalBody" class="space-y-4 text-xs">
+        <div class="text-stone-500">Loading open slots...</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('closeRescheduleModalBtn')?.addEventListener('click', () => modal.remove());
+
+  try {
+    const resp = await fetch(`${apiBase}/recruit/interview-slots`);
+    const slotsData = await resp.json();
+    const days = slotsData.days || [];
+
+    const availableOptions = [];
+    days.forEach(d => {
+      (d.times || []).forEach(t => {
+        availableOptions.push({
+          date: d.date,
+          time: t,
+          display: `${d.date_label} at ${t} IST`,
+          fullDisplay: `${d.full_date_label} at ${t} IST`
+        });
+      });
+    });
+
+    const currentDisplay = currentBooking ? (currentBooking.slot_display || `${currentBooking.slot_date} at ${currentBooking.slot_time}`) : 'None assigned';
+
+    const bodyEl = document.getElementById('rescheduleModalBody');
+    bodyEl.innerHTML = `
+      <div class="p-3 bg-[#faf8f5] border border-[var(--grid-border)]">
+        <span class="text-[10px] uppercase font-semibold text-stone-500 block">Current Interview Slot:</span>
+        <span class="text-sm font-serif text-black">${window.escapeHtml(currentDisplay)}</span>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block font-semibold uppercase tracking-wider text-[11px] text-[var(--text-primary)]">
+          Option 1: Choose from Open System Slots
+        </label>
+        <select id="openSlotSelect" class="w-full p-2 border border-[var(--grid-border)] bg-white text-xs focus:outline-none focus:border-[var(--accent-gold)]">
+          <option value="">-- Choose an available slot --</option>
+          ${availableOptions.map(o => `
+            <option value="${o.date}|${o.time}|${o.display}">${o.fullDisplay}</option>
+          `).join('')}
+        </select>
+      </div>
+
+      <div class="relative flex py-1 items-center">
+        <div class="flex-grow border-t border-[var(--grid-border)]"></div>
+        <span class="flex-shrink mx-2 text-[10px] uppercase tracking-wider text-stone-400">or specify custom timing</span>
+        <div class="flex-grow border-t border-[var(--grid-border)]"></div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block font-semibold uppercase tracking-wider text-[10px] text-stone-600 mb-1">Custom Date</label>
+          <input type="date" id="customDateInput" class="w-full p-2 border border-[var(--grid-border)] text-xs focus:outline-none" />
+        </div>
+        <div>
+          <label class="block font-semibold uppercase tracking-wider text-[10px] text-stone-600 mb-1">Custom Time (e.g. 04:00 PM IST)</label>
+          <input type="text" id="customTimeInput" placeholder="04:00 PM IST" class="w-full p-2 border border-[var(--grid-border)] text-xs focus:outline-none" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-semibold uppercase tracking-wider text-[10px] text-stone-600 mb-1">Recruiter Notes (Optional)</label>
+        <input type="text" id="rescheduleNotesInput" placeholder="e.g. Candidate requested evening call" class="w-full p-2 border border-[var(--grid-border)] text-xs focus:outline-none" />
+      </div>
+
+      <div id="rescheduleFeedback" class="text-[11px] hidden"></div>
+
+      <div class="pt-3 border-t border-[var(--grid-border)] flex justify-end gap-2">
+        <button id="cancelRescheduleBtn" class="px-3 py-1.5 border border-[var(--grid-border)] text-xs text-stone-600 hover:bg-stone-50">Cancel</button>
+        <button id="confirmRescheduleBtn" class="px-4 py-1.5 bg-[var(--text-primary)] text-white text-xs uppercase tracking-wider hover:bg-[var(--accent-gold)] transition-colors">
+          Confirm Reschedule
+        </button>
+      </div>
+    `;
+
+    document.getElementById('cancelRescheduleBtn')?.addEventListener('click', () => modal.remove());
+    document.getElementById('confirmRescheduleBtn')?.addEventListener('click', async () => {
+      const selectedVal = document.getElementById('openSlotSelect').value;
+      const customDate = document.getElementById('customDateInput').value;
+      const customTime = document.getElementById('customTimeInput').value;
+      const notes = document.getElementById('rescheduleNotesInput').value;
+
+      let slotDate, slotTime, slotDisplay;
+
+      if (selectedVal) {
+        const parts = selectedVal.split('|');
+        slotDate = parts[0];
+        slotTime = parts[1];
+        slotDisplay = parts[2];
+      } else if (customDate && customTime) {
+        slotDate = customDate;
+        slotTime = customTime.trim();
+        slotDisplay = `${customDate} at ${customTime}`;
+      } else {
+        alert('Please choose an available slot or enter a custom date and time.');
+        return;
+      }
+
+      const confirmBtn = document.getElementById('confirmRescheduleBtn');
+      const feedback = document.getElementById('rescheduleFeedback');
+      confirmBtn.disabled = true;
+      confirmBtn.innerText = 'Updating...';
+
+      try {
+        const resp = await fetch(`${apiBase}/recruit/research/sessions/${sessionId}/reschedule`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            slot_date: slotDate,
+            slot_time: slotTime,
+            slot_display: slotDisplay,
+            notes: notes || undefined
+          })
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json();
+          throw new Error(errData.detail || 'Failed to reschedule');
+        }
+
+        const resJson = await resp.json();
+        feedback.className = 'text-[11px] text-emerald-700 block font-medium';
+        feedback.innerText = 'Interview rescheduled successfully! Updating dossier...';
+
+        setTimeout(async () => {
+          modal.remove();
+          await loadSessionDetail(sessionId);
+          if (resJson.whatsapp_notify_url) {
+            const rawPhone = applicant.phone_or_contact || '';
+            const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+            if (cleanPhone) {
+              const openWa = confirm(`Interview updated to: ${slotDisplay}\n\nWould you like to open WhatsApp now to send the candidate the updated timing?`);
+              if (openWa) {
+                window.open(resJson.whatsapp_notify_url, '_blank');
+              }
+            }
+          }
+        }, 800);
+
+      } catch (err) {
+        feedback.className = 'text-[11px] text-red-600 block';
+        feedback.innerText = `Error: ${err.message}`;
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = 'Confirm Reschedule';
+      }
+    });
+
+  } catch (err) {
+    document.getElementById('rescheduleModalBody').innerHTML = `<div class="text-red-600">Failed to load open interview slots: ${err.message}</div>`;
+  }
+}
+

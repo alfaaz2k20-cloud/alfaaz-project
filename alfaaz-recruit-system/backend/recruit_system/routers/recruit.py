@@ -14,7 +14,7 @@ from recruit_system.core.config import RECRUIT_CONSENT_COPY
 from recruit_system.models.recruit import (
     DBApplicantIdentity, DBSession, DBConsentRecord, DBAccessibilityProfile,
     DBWarmupBaseline, DBTaskAssignment, DBSJTResponse, DBEvidence, DBDataQualityFlag,
-    DBTelemetryEvent, DBInterviewBooking
+    DBTelemetryEvent, DBInterviewBooking, DBInterviewSettings
 )
 from recruit_system.services.sjt_engine import (
     get_public_sjt_payload, score_sjt_responses, get_config_hash
@@ -419,14 +419,15 @@ def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db))
     }
 
 
-def _send_interview_notification(booking: DBInterviewBooking):
-    subject = f"Alfaaz Interview Scheduled: {booking.candidate_name} ({booking.slot_display})"
+def _send_interview_notification(booking: DBInterviewBooking, is_reschedule: bool = False):
+    action_text = "Rescheduled" if is_reschedule else "Scheduled"
+    subject = f"Alfaaz Interview {action_text}: {booking.candidate_name} ({booking.slot_display})"
     body = (
-        f"A candidate has scheduled their interview for the Alfaaz Collective Volunteer Assessment.\n\n"
+        f"A candidate interview has been {action_text.lower()} for the Alfaaz Collective Volunteer Assessment.\n\n"
         f"Candidate Name: {booking.candidate_name}\n"
         f"Email: {booking.candidate_email}\n"
         f"WhatsApp / Contact: {booking.candidate_phone or 'Not provided'}\n"
-        f"Scheduled Time: {booking.slot_display}\n"
+        f"Interview Timing: {booking.slot_display}\n"
         f"Session ID: {booking.session_id}\n\n"
         f"Recruiter Research Dossier:\n"
         f"https://alfaazcollective.vercel.app/research.html?session={booking.session_id}\n"
@@ -437,32 +438,46 @@ def _send_interview_notification(booking: DBInterviewBooking):
     if webhook_url:
         try:
             import requests
+            # Clean standard schema strictly matching send_system_email: {to, subject, text}
             requests.post(
                 webhook_url,
                 json={
                     "to": "alfaaz2k20@gmail.com",
                     "subject": subject,
-                    "text": body,
-                    "type": "interview_scheduled",
-                    "candidate_name": booking.candidate_name,
-                    "candidate_email": booking.candidate_email,
-                    "candidate_phone": booking.candidate_phone,
-                    "slot_display": booking.slot_display,
-                    "session_id": booking.session_id
+                    "text": body
                 },
                 timeout=10
             )
         except Exception as e:
             logger.warning(f"Notice sending interview email webhook: {e}")
 
-    logger.info(f"[INTERVIEW SCHEDULED] {booking.candidate_name} -> {booking.slot_display} (Contact: {booking.candidate_phone})")
+    logger.info(f"[INTERVIEW {action_text.upper()}] {booking.candidate_name} -> {booking.slot_display} (Contact: {booking.candidate_phone})")
+
+
+def _get_effective_interview_settings(db: Session):
+    import os
+    settings_row = db.get(DBInterviewSettings, 1)
+    if settings_row:
+        try:
+            slots = json.loads(settings_row.slots_json)
+            skip_days = json.loads(settings_row.skip_days_json)
+            if slots and isinstance(slots, list):
+                return slots, skip_days
+        except Exception:
+            pass
+
+    env_slots = os.environ.get("RECRUIT_INTERVIEW_SLOTS")
+    env_skip = os.environ.get("RECRUIT_INTERVIEW_SKIP_DAYS")
+    slots = [s.strip() for s in env_slots.split(",") if s.strip()] if env_slots else ["11:00 AM", "03:00 PM", "05:30 PM", "07:00 PM"]
+    skip_days = [d.strip() for d in env_skip.split(",") if d.strip()] if env_skip else ["Sunday"]
+    return slots, skip_days
 
 
 @router.get("/interview-slots")
 def get_interview_slots(db: Session = Depends(get_db)):
     """
     Returns available interview dates and time windows for the next 7 days,
-    excluding today and Sundays. Already-booked slots are filtered out.
+    excluding designated skip days. Already-booked slots are filtered out.
     """
     from datetime import timedelta
     now_utc = datetime.now(timezone.utc)
@@ -472,12 +487,15 @@ def get_interview_slots(db: Session = Depends(get_db)):
     ).all()
     booked_set = {(b.slot_date, b.slot_time) for b in active_bookings}
 
-    standard_times = ["11:00 AM", "03:00 PM", "05:30 PM", "07:00 PM"]
+    standard_times, skip_days = _get_effective_interview_settings(db)
     available_days = []
 
-    for day_offset in range(1, 9):
+    WEEKDAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    skip_day_indices = {i for i, name in enumerate(WEEKDAY_NAMES) if any(name.lower() == s.lower() for s in skip_days)}
+
+    for day_offset in range(1, 10):
         day_date = now_utc + timedelta(days=day_offset)
-        if day_date.weekday() == 6:  # Skip Sundays
+        if day_date.weekday() in skip_day_indices:
             continue
 
         date_str = day_date.strftime("%Y-%m-%d")
@@ -496,7 +514,7 @@ def get_interview_slots(db: Session = Depends(get_db)):
         if len(available_days) >= 6:
             break
 
-    return {"days": available_days}
+    return {"days": available_days, "configured_slots": standard_times, "skip_days": skip_days}
 
 
 @router.post("/schedule-interview")
