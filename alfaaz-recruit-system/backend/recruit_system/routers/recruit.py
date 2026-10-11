@@ -421,8 +421,8 @@ def complete_session(req: CompleteSessionRequest, db: Session = Depends(get_db))
 
 def _send_interview_notification(booking: DBInterviewBooking, is_reschedule: bool = False):
     action_text = "Rescheduled" if is_reschedule else "Scheduled"
-    subject = f"Alfaaz Interview {action_text}: {booking.candidate_name} ({booking.slot_display})"
-    body = (
+    recruiter_subject = f"Alfaaz Interview {action_text}: {booking.candidate_name} ({booking.slot_display})"
+    recruiter_body = (
         f"A candidate interview has been {action_text.lower()} for the Alfaaz Collective Volunteer Assessment.\n\n"
         f"Candidate Name: {booking.candidate_name}\n"
         f"Email: {booking.candidate_email}\n"
@@ -438,16 +438,54 @@ def _send_interview_notification(booking: DBInterviewBooking, is_reschedule: boo
     if webhook_url:
         try:
             import requests
-            # Clean standard schema strictly matching send_system_email: {to, subject, text}
+            # 1. Dispatch internal recruiter notification to alfaaz2k20@gmail.com
             requests.post(
                 webhook_url,
                 json={
                     "to": "alfaaz2k20@gmail.com",
-                    "subject": subject,
-                    "text": body
+                    "subject": recruiter_subject,
+                    "text": recruiter_body
                 },
                 timeout=10
             )
+
+            # 2. Dispatch candidate confirmation email if a valid candidate email is present
+            cand_email = (booking.candidate_email or "").strip()
+            if cand_email and "@" in cand_email and not cand_email.lower().startswith("unknown"):
+                cand_subject = f"ALFAAZ — Interview {action_text}: {booking.slot_display}"
+                if is_reschedule:
+                    cand_body = (
+                        f"Greetings {booking.candidate_name},\n\n"
+                        f"Your conversational volunteer interview timing with the Alfaaz Collective has been updated.\n\n"
+                        f"Updated Timing: {booking.slot_display}\n"
+                        f"Format: Online Conversation (Google Meet / Video Call)\n\n"
+                        f"Our team will connect with you at your updated timing or reach out via WhatsApp "
+                        f"({booking.candidate_phone or 'your provided number'}) if any coordination is needed.\n\n"
+                        f"We look forward to speaking with you.\n\n"
+                        f"— The Alfaaz Collective"
+                    )
+                else:
+                    cand_body = (
+                        f"Greetings {booking.candidate_name},\n\n"
+                        f"Thank you for completing the Alfaaz Studio Assessment. "
+                        f"Your conversational volunteer interview has been confirmed.\n\n"
+                        f"Confirmed Timing: {booking.slot_display}\n"
+                        f"Format: Online Conversation (Google Meet / Video Call)\n\n"
+                        f"Our team will connect with you at your confirmed timing or reach out via WhatsApp "
+                        f"({booking.candidate_phone or 'your provided number'}) if any coordination is needed.\n\n"
+                        f"We look forward to speaking with you and learning more about your perspective.\n\n"
+                        f"— The Alfaaz Collective"
+                    )
+
+                requests.post(
+                    webhook_url,
+                    json={
+                        "to": cand_email,
+                        "subject": cand_subject,
+                        "text": cand_body
+                    },
+                    timeout=10
+                )
         except Exception as e:
             logger.warning(f"Notice sending interview email webhook: {e}")
 

@@ -254,4 +254,56 @@ class TestInterviewBooking(unittest.TestCase):
             self.assertIn("subject", called_payload)
             self.assertIn("text", called_payload)
 
+    def test_candidate_and_recruiter_notification_dispatch(self):
+        import os
+        from unittest.mock import patch, MagicMock
+        from recruit_system.routers.recruit import _send_interview_notification
+        from recruit_system.models.recruit import DBInterviewBooking
+
+        booking = DBInterviewBooking(
+            session_id="test-notify-sess",
+            candidate_name="Amina Mir",
+            candidate_email="amina.mir@example.com",
+            candidate_phone="+919876543210",
+            slot_date="2026-10-28",
+            slot_time="03:00 PM",
+            slot_display="Wednesday, Oct 28 at 03:00 PM IST",
+            status="SCHEDULED"
+        )
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+
+        with patch.dict(os.environ, {"MAKE_WEBHOOK_URL": "https://hook.eu1.make.com/fake-hook"}):
+            with patch("requests.post", return_value=mock_resp) as mock_post:
+                # 1. Test initial schedule dispatch
+                _send_interview_notification(booking, is_reschedule=False)
+                self.assertEqual(mock_post.call_count, 2)
+
+                # Check Recruiter Payload (Call 1)
+                recruiter_payload = mock_post.call_args_list[0][1]["json"]
+                self.assertEqual(recruiter_payload["to"], "alfaaz2k20@gmail.com")
+                self.assertIn("Alfaaz Interview Scheduled: Amina Mir", recruiter_payload["subject"])
+                self.assertIn("https://alfaazcollective.vercel.app/research.html?session=test-notify-sess", recruiter_payload["text"])
+
+                # Check Candidate Payload (Call 2)
+                candidate_payload = mock_post.call_args_list[1][1]["json"]
+                self.assertEqual(candidate_payload["to"], "amina.mir@example.com")
+                self.assertIn("ALFAAZ — Interview Scheduled: Wednesday, Oct 28 at 03:00 PM IST", candidate_payload["subject"])
+                self.assertIn("Greetings Amina Mir", candidate_payload["text"])
+                self.assertIn("Wednesday, Oct 28 at 03:00 PM IST", candidate_payload["text"])
+                # Ensure internal dossier link is NOT leaked to candidate
+                self.assertNotIn("research.html?session=", candidate_payload["text"])
+
+            # 2. Test reschedule dispatch
+            with patch("requests.post", return_value=mock_resp) as mock_post_resched:
+                _send_interview_notification(booking, is_reschedule=True)
+                self.assertEqual(mock_post_resched.call_count, 2)
+
+                candidate_resched_payload = mock_post_resched.call_args_list[1][1]["json"]
+                self.assertEqual(candidate_resched_payload["to"], "amina.mir@example.com")
+                self.assertIn("ALFAAZ — Interview Rescheduled", candidate_resched_payload["subject"])
+                self.assertIn("updated", candidate_resched_payload["text"])
+
+
 
