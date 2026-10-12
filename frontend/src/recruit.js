@@ -741,13 +741,18 @@ function renderConsent(app) {
  <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--bg-primary)] border border-[var(--accent-green)]"></div>
  <h2 class="text-lg text-[var(--text-primary)] mb-2">Why We Observe</h2>
  <p class="text-sm text-black leading-relaxed">
- As you interact with the tasks, we collect behavioral telemetry. 
- <strong>Why do we do this?</strong> To understand your intuitive working style. It helps us match you to the right 
- creative roles within the collective. 
- Your raw data is pseudonymous and will never be used for automated rejection or sold to third parties.
- </p>
+  As you interact with these tasks, we collect behavioral data to better
+  understand your approach to situations, collaboration, and creative challenges.
+  <br><br>
+  <strong>What does this mean for you? This experience is not a
+  pass/fail test and does not, by itself, determine whether you are accepted
+  or rejected. It simply helps us understand you a little better and adds
+  context to your application and conversation with us.</strong>
+  <br><br>
+  Your responses are not used for automated rejection or sold to third parties.
+</p>
  <p class="text-sm text-black leading-relaxed">
- Contact Us: <a href="mailto:alfaaz2k20@gmail.com" class="text-[var(--accent-gold)] hover:underline">alfaaz2k20@gmail.com</a>
+ For any questions or concerns, please contact us: <a href="mailto:alfaaz2k20@gmail.com" class="text-[var(--accent-gold)] hover:underline">alfaaz2k20@gmail.com</a>
  </p>
  </div>
  </div>
@@ -855,7 +860,7 @@ function renderIdentity(app) {
         <span class="font-semibold text-stone-900 uppercase tracking-widest text-[11px]">How the Assessment Works</span>
       </div>
       <p class="text-stone-600">
-        This session takes about <strong>11–14 minutes</strong>. It consists of <strong>two simple parts</strong>, followed by a friendly interview:
+        This session takes about <strong>~20 minutes</strong>. It consists of <strong>two simple parts</strong>, followed by a friendly interview:
       </p>
       <div class="space-y-2 pt-1 border-t border-[var(--grid-border)]/60">
         <div class="flex items-start gap-2.5">
