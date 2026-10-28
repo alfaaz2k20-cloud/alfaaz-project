@@ -69,14 +69,16 @@ body::after {
 nav {
   position: fixed; top: 0; left: 0; width: 100%; padding: 1.5rem 3rem;
   display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-  
+  transition: transform 0.3s ease, background 0.3s ease, padding 0.3s ease;
 }
 nav.scrolled {
   background: rgba(244,241,234,0.92); backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--grid-border);
   padding-top: 1.2rem; padding-bottom: 1.2rem;
 }
-nav.hidden {  }
+nav.hidden {
+  transform: translateY(-100%);
+}
 
 .logo {
   font-family: var(--font-heading); font-size: 1.8rem;
@@ -352,6 +354,11 @@ h3.ur-hover {
   border-top-color: var(--accent-gold);
   animation: spin 1s linear infinite, gentlePulse 2s ease-in-out infinite;
   margin: 0 auto;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* --- Soothing Animations --- */

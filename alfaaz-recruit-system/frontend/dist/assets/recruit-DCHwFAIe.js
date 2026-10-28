@@ -1,4 +1,4 @@
-import"./global-DxYxv3W5.js";/* empty css               */function re(r,d){const{appContainer:s,miniGameIndex:l,gameId:e,logEvent:t,onMiniGameComplete:i,worldIndex:a}=r,x=e||(l===0?"A1":l===1?"A2":"A3");x==="A1"?ne(s,d,t,i,a):x==="A2"?oe(s,d,t,i,a):de(s,d,t,i)}function ne(r,d,s,l,e=1){let t=0,i=!1,a=null,x="mouse";const v=[{id:"DOC_01",title:"Old Calligraphy Book (1842)",rule_prompt:"Sorting Rule: Sort by Century",tags:["Year: 1842","19th Century","Handmade Paper","Poem Verse"]},{id:"DOC_02",title:"Poetry Song Book",rule_prompt:"Sorting Rule: Sort by Type",tags:["Type: Poetry","Song Verses","Urdu","Paper Pages"]},{id:"DOC_03",title:"Exhibition Visitor Book (1924)",rule_prompt:"Sorting Rule: Sort by Century",tags:["Year: 1924","20th Century","Visitor List","Signatures"]},{id:"DOC_04",title:"Lal Ded Verses in Kashmiri",rule_prompt:"Sorting Rule: Sort by Language",tags:["Language: Kashmiri","Wise Verses","Local Poetry"]}],n=[{id:"19th_century",label:"19th Century Shelf",icon:"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"},{id:"20th_century",label:"20th Century Shelf",icon:"M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"},{id:"poetry",label:"Poetry Shelf",icon:"M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"},{id:"chronicle",label:"History Shelf",icon:"M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"},{id:"kashmiri",label:"Kashmiri Language Shelf",icon:"M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"}];function o(){var f,g;if(t>=v.length){l({mini_game:"A1",observations_count:v.length});return}const c=v[t];performance.now();const m=`
+import"./global-DKWxUifK.js";function re(r,d){const{appContainer:s,miniGameIndex:l,gameId:e,logEvent:t,onMiniGameComplete:i,worldIndex:a}=r,x=e||(l===0?"A1":l===1?"A2":"A3");x==="A1"?ne(s,d,t,i,a):x==="A2"?oe(s,d,t,i,a):de(s,d,t,i)}function ne(r,d,s,l,e=1){let t=0,i=!1,a=null,x="mouse";const v=[{id:"DOC_01",title:"Old Calligraphy Book (1842)",rule_prompt:"Sorting Rule: Sort by Century",tags:["Year: 1842","19th Century","Handmade Paper","Poem Verse"]},{id:"DOC_02",title:"Poetry Song Book",rule_prompt:"Sorting Rule: Sort by Type",tags:["Type: Poetry","Song Verses","Urdu","Paper Pages"]},{id:"DOC_03",title:"Exhibition Visitor Book (1924)",rule_prompt:"Sorting Rule: Sort by Century",tags:["Year: 1924","20th Century","Visitor List","Signatures"]},{id:"DOC_04",title:"Lal Ded Verses in Kashmiri",rule_prompt:"Sorting Rule: Sort by Language",tags:["Language: Kashmiri","Wise Verses","Local Poetry"]}],n=[{id:"19th_century",label:"19th Century Shelf",icon:"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"},{id:"20th_century",label:"20th Century Shelf",icon:"M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"},{id:"poetry",label:"Poetry Shelf",icon:"M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"},{id:"chronicle",label:"History Shelf",icon:"M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"},{id:"kashmiri",label:"Kashmiri Language Shelf",icon:"M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"}];function o(){var f,g;if(t>=v.length){l({mini_game:"A1",observations_count:v.length});return}const c=v[t];performance.now();const m=`
     <div class="p-5 sm:p-6 bg-[#faf8f5] border-l-4 border-l-[var(--accent-gold)] border border-[var(--grid-border)] rounded-xs shadow-xs space-y-2">
       <div class="flex justify-between items-start mb-1">
         <span class="text-xs uppercase tracking-wider text-[var(--accent-gold)] font-bold">Folio ${t+1} of ${v.length}</span>
@@ -1371,7 +1371,7 @@ import"./global-DxYxv3W5.js";/* empty css               */function re(r,d){const
  <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--bg-primary)] border border-[var(--accent-gold)]"></div>
  <h2 class="text-lg text-[var(--text-primary)] mb-2">The Experience</h2>
  <p class="text-sm text-black leading-relaxed">
- This is a 20-25 minute exploratory journey. You will encounter situational judgments and creative micro-tasks. 
+ This is a 20-25 minute exploratory journey. You will encounter situational judgments and creative micro-tasks.
  There are no right or wrong answers—only different perspectives. You may pause, skip, or withdraw at any time without penalty.
  </p>
  </div>
@@ -1381,9 +1381,9 @@ import"./global-DxYxv3W5.js";/* empty css               */function re(r,d){const
  <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--bg-primary)] border border-[var(--accent-green)]"></div>
  <h2 class="text-lg text-[var(--text-primary)] mb-2">Why We Observe</h2>
  <p class="text-sm text-black leading-relaxed">
- As you interact with the tasks, we collect behavioral telemetry. 
- <strong>Why do we do this?</strong> To understand your intuitive working style. It helps us match you to the right 
- creative roles within the collective. 
+ As you interact with the tasks, we collect behavioral telemetry.
+ <strong>Why do we do this?</strong> To understand your intuitive working style. It helps us match you to the right
+ creative roles within the collective.
  Your raw data is pseudonymous and will never be used for automated rejection or sold to third parties.
  </p>
  <p class="text-sm text-black leading-relaxed">
@@ -1399,7 +1399,7 @@ import"./global-DxYxv3W5.js";/* empty css               */function re(r,d){const
  I confirm that I am 18 years of age or older, and I am participating voluntarily.
  </label>
  </div>
- 
+
  <div class="flex items-start gap-3">
  <input type="checkbox" id="consentAgree" required class="mt-1 w-4 h-4 accent-[#bd6f5d] cursor-pointer">
  <label for="consentAgree" class="text-sm text-[var(--text-primary)] cursor-pointer">

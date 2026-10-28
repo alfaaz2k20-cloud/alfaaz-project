@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false } 
+  ssl: { rejectUnauthorized: false }
 });
 
 export default async function handler(req, res) {
@@ -12,16 +12,17 @@ export default async function handler(req, res) {
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
 
+  let client;
   try {
-    const client = await pool.connect();
-    
+    client = await pool.connect();
+
     const eventsResult = await client.query(`
       SELECT e.id, e.name, e.event_date, e.description, e.capacity,
              (SELECT COUNT(*) FROM event_registrations r WHERE r.event_id = e.id) as registered_count
       FROM events e
       WHERE e.registration_open = true
     `);
-    
+
     const events = eventsResult.rows.map(e => {
         const count = parseInt(e.registered_count) || 0;
         return {
@@ -45,12 +46,13 @@ export default async function handler(req, res) {
             about_text: row.about_text
         };
     }
-    
-    client.release();
+
     res.status(200).json({ events, exhibition });
 
   } catch (error) {
     console.error("Database connection error:", error);
     res.status(500).json({ error: "Failed to query Neon Vault" });
+  } finally {
+    if (client) client.release();
   }
 }

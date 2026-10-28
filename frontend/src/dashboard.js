@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
  <div class="list-item">
  <div style="flex:1;">
  <div style="font-family:var(--font-heading); font-size:1.5rem; color:var(--text-primary); margin-bottom:5px;">${window.escapeHtml(e.name)}</div>
- <div style="font-size:10px; color:var(--accent-gold); text-:uppercase; letter-spacing:1px; margin-bottom:8px;">${window.escapeHtml(e.event_date || 'TBD')}</div>
+ <div style="font-size:10px; color:var(--accent-gold); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">${window.escapeHtml(e.event_date || 'TBD')}</div>
  <div style="font-size:12px; color:var(--text-secondary);">${window.escapeHtml(e.description || '')}</div>
  </div>
  <div><button class="action-btn gold" style="margin-top:0; padding:0.6rem 1.5rem;" ${e.full ? 'disabled' : ''} onclick="openRsvpModal(${e.id})">${e.full ? 'FULL' : 'RSVP'}</button></div>
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
  if (!tickets.length) { container.innerHTML = '<div style="font-size:12px; color:var(--text-secondary); font-style:italic;">No registrations found.</div>'; return; }
  container.innerHTML = tickets.map(t => `
  <div class="list-item" style="border-left:2px solid var(--accent-green); background: var(--bg-primary);">
- <div><div style="font-family:var(--font-heading); font-size:1.3rem;">${window.escapeHtml(t.event_name)}</div><div style="font-size:10px; color:var(--text-secondary); margin-top:4px; letter-spacing: 1px; text-: uppercase;">${window.escapeHtml(t.event_date || 'TBD')}</div></div>
+ <div><div style="font-family:var(--font-heading); font-size:1.3rem;">${window.escapeHtml(t.event_name)}</div><div style="font-size:10px; color:var(--text-secondary); margin-top:4px; letter-spacing: 1px; text-transform: uppercase;">${window.escapeHtml(t.event_date || 'TBD')}</div></div>
  <div style="align-self:center;"><span class="badge badge-green">AUTHORIZED</span></div>
  </div>`).join('');
  } catch (e) {}
@@ -317,21 +317,23 @@ document.addEventListener('DOMContentLoaded', () => {
  const paymentDetails = document.getElementById('paymentDetails');
 
  if (tcLink) {
- if (cfg.tnc_pdf_url) {
- tcLink.href = cfg.tnc_pdf_url; tcLink.target = '_blank';
+ const safeTnc = window.safeHttpUrl ? window.safeHttpUrl(cfg.tnc_pdf_url) : (cfg.tnc_pdf_url && (cfg.tnc_pdf_url.startsWith('http://') || cfg.tnc_pdf_url.startsWith('https://')) ? cfg.tnc_pdf_url : null);
+ if (safeTnc) {
+ tcLink.href = safeTnc; tcLink.target = '_blank'; tcLink.rel = 'noopener noreferrer';
  tcLink.style.opacity = '1'; tcLink.style.pointerEvents = 'auto';
  } else {
- tcLink.removeAttribute('href'); tcLink.removeAttribute('target');
+ tcLink.removeAttribute('href'); tcLink.removeAttribute('target'); tcLink.removeAttribute('rel');
  tcLink.style.opacity = '0.55'; tcLink.style.pointerEvents = 'none';
  }
  }
 
  if (paymentLink) {
- if (cfg.payment_qr_url) {
- paymentLink.href = cfg.payment_qr_url; paymentLink.target = '_blank';
+ const safeQr = window.safeHttpUrl ? window.safeHttpUrl(cfg.payment_qr_url) : (cfg.payment_qr_url && (cfg.payment_qr_url.startsWith('http://') || cfg.payment_qr_url.startsWith('https://')) ? cfg.payment_qr_url : null);
+ if (safeQr) {
+ paymentLink.href = safeQr; paymentLink.target = '_blank'; paymentLink.rel = 'noopener noreferrer';
  paymentLink.style.opacity = '1'; paymentLink.style.pointerEvents = 'auto';
  } else {
- paymentLink.removeAttribute('href'); paymentLink.removeAttribute('target');
+ paymentLink.removeAttribute('href'); paymentLink.removeAttribute('target'); paymentLink.removeAttribute('rel');
  paymentLink.style.opacity = '0.55'; paymentLink.style.pointerEvents = 'none';
  }
  }

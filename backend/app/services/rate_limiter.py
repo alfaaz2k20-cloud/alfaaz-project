@@ -15,11 +15,7 @@ def get_client_ip(request: Request) -> str:
     """
     headers = getattr(request, "headers", None)
     if headers:
-        # 1. Platform-trusted single-IP headers
-        if "cf-connecting-ip" in headers:
-            return headers["cf-connecting-ip"].strip()
-        if "true-client-ip" in headers:
-            return headers["true-client-ip"].strip()
+        # 1. Render platform trusted single-IP header
         if "render-proxy-client-ip" in headers:
             return headers["render-proxy-client-ip"].strip()
 
@@ -30,7 +26,11 @@ def get_client_ip(request: Request) -> str:
             if ips:
                 return ips[-1]
 
-    # 3. Direct client connection fallback
+        # 3. Cloudflare-specific header only if CF-RAY header is also present from CF proxy
+        if "cf-connecting-ip" in headers and "cf-ray" in headers:
+            return headers["cf-connecting-ip"].strip()
+
+    # 4. Direct client connection fallback
     client = getattr(request, "client", None)
     if client and getattr(client, "host", None):
         return client.host
@@ -54,6 +54,10 @@ class SimpleRateLimiter:
         now = time.time()
         window_start = now - self.window_seconds
         self._requests[ip] = [t for t in self._requests[ip] if t > window_start]
+        if len(self._requests) > 500:
+            expired_keys = [k for k, v in self._requests.items() if not v or v[-1] <= window_start]
+            for k in expired_keys:
+                self._requests.pop(k, None)
         if len(self._requests[ip]) >= self.max_requests:
             raise HTTPException(status_code=429, detail=self.detail)
         self._requests[ip].append(now)

@@ -12,8 +12,8 @@ from app.services.rate_limiter import get_client_ip
 
 logger = logging.getLogger("app.curator")
 
-# Model definitions
-GEMINI_MODEL = "gemini-2.5-flash"
+# Model definitions & Provider Configuration
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
 GROQ_MODEL = "llama-3.1-8b-instant"
 
 # Lazy Groq client
@@ -49,7 +49,7 @@ WHATSAPP: +91 70066 13891 (https://wa.me/917006613891)
 --- SISTER INITIATIVE & OFFSHOOT: TCHANDERVAR ---
 WEBSITE: https://tchandervar.neocities.org
 MOTTO: "It belongs to where it lives"
-IDENTITY & PURPOSE: 
+IDENTITY & PURPOSE:
 - Tchandervar is an official offshoot and commercial-curatorial initiative born out of the Alfaaz Collective.
 - It connects local Kashmiri artists and artisans directly with individuals, residences, boutique hotels, cafes, offices, and restaurants who seek authentic, high-quality artwork for their physical environments.
 - Beyond selling art, Tchandervar provides personalized space curation and bespoke recommendations to establish the right aesthetic and contemplative ambiance.
@@ -167,6 +167,10 @@ def check_curator_rate_limit(request: Request):
     now = time.time()
     window_start = now - _CURATOR_WINDOW
     _curator_requests[ip] = [t for t in _curator_requests[ip] if t > window_start]
+    if len(_curator_requests) > 500:
+        expired_keys = [k for k, v in _curator_requests.items() if not v or v[-1] <= window_start]
+        for k in expired_keys:
+            _curator_requests.pop(k, None)
     if len(_curator_requests[ip]) >= _CURATOR_LIMIT:
         raise HTTPException(status_code=429, detail="The Curator is currently conversing with other guests. Please pause for a moment.")
     _curator_requests[ip].append(now)
@@ -267,12 +271,12 @@ def _offline_curator_response(question: str) -> str:
 def ask_curator_ai(question: str, history=None) -> str:
     """
     Primary intelligence pipeline:
-    1. Google Gemini (gemini-2.5-flash via high-speed REST)
+    1. Google Gemini (gemini-1.5-flash via high-speed REST)
     2. Groq fallback (llama-3.1-8b-instant)
     3. Grounded local offline knowledge synthesis
     """
     gemini_key = get_gemini_api_key()
-    
+
     # 1. Primary: Google Gemini
     if gemini_key:
         try:
@@ -358,6 +362,7 @@ OUTPUT REQUIREMENTS:
                     "responseMimeType": "application/json"
                 }
             }
+            # 90s timeout accommodates Render free tier cold-starts and extensive 8k token generation
             with httpx.Client(timeout=90.0) as client:
                 res = client.post(url, headers={"x-goog-api-key": gemini_key, "Content-Type": "application/json"}, json=payload)
                 if res.status_code == 200:

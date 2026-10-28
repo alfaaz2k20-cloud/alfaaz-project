@@ -20,4 +20,5 @@ def log_admin_action(
         db.add(log)
         db.commit()
     except Exception as e:
+        db.rollback()
         print(f"[AUDIT LOG ERROR] Failed to log action: {e}")

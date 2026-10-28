@@ -52,11 +52,17 @@ document.addEventListener('DOMContentLoaded', () => {
  localStorage.setItem('alfaaz_user', JSON.stringify(data.user));
  localStorage.setItem('alfaaz_token', data.token);
 
- setTimeout(() => {
- const params = new URLSearchParams(window.location.search);
- const redirect = params.get('redirect');
- window.location.href = redirect || (data.user.status === 'ADMIN' ? 'admin.html' : 'dashboard.html');
- }, 800);
+  setTimeout(() => {
+  const params = new URLSearchParams(window.location.search);
+  let redirect = params.get('redirect');
+  if (redirect) {
+    const isSafeRelative = /^\/[^/\\]/.test(redirect) || /^[a-zA-Z0-9_-]+\.html(\?.*)?$/.test(redirect);
+    if (!isSafeRelative) {
+      redirect = null;
+    }
+  }
+  window.location.href = redirect || (data.user.status === 'ADMIN' ? 'admin.html' : 'dashboard.html');
+  }, 800);
  } else {
  submitBtn.textContent = "Log In";
  submitBtn.disabled = false;

@@ -45,6 +45,11 @@ function isApiRequest(url) {
     url.pathname.startsWith('/events/') ||
     url.pathname.startsWith('/exhibitions/') ||
     url.pathname.startsWith('/clubs/') ||
+    url.pathname.startsWith('/curator/') ||
+    url.pathname.startsWith('/recruit/') ||
+    url.pathname.startsWith('/research/') ||
+    url.pathname.startsWith('/admin/') ||
+    url.pathname.startsWith('/vault/') ||
     url.pathname.startsWith('/phantom/')
   );
 }

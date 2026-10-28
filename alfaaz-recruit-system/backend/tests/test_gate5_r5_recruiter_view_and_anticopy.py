@@ -192,7 +192,9 @@ class TestGate5R5RecruiterViewAndAntiCopy(unittest.TestCase):
         - No shortcut/F12 keydown interception
         - No global user-select:none on * or body
         """
-        recruit_js_path = os.path.join("frontend", "src", "recruit.js")
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        frontend_dir = os.path.join(base_dir, "frontend") if os.path.exists(os.path.join(base_dir, "frontend")) else "frontend"
+        recruit_js_path = os.path.join(frontend_dir, "src", "recruit.js")
         with open(recruit_js_path, "r", encoding="utf-8") as f:
             js_src = f.read()
 
@@ -203,7 +205,7 @@ class TestGate5R5RecruiterViewAndAntiCopy(unittest.TestCase):
         self.assertNotIn("addEventListener('cut'", js_src)
         self.assertNotIn("addEventListener('dragstart'", js_src)
 
-        recruit_html_path = os.path.join("frontend", "recruit.html")
+        recruit_html_path = os.path.join(frontend_dir, "recruit.html")
         with open(recruit_html_path, "r", encoding="utf-8") as f:
             html_src = f.read()
 
@@ -216,7 +218,9 @@ class TestGate5R5RecruiterViewAndAntiCopy(unittest.TestCase):
         """
         Verify frontend research client displays 'Evidence by parameter' and neutral status filter.
         """
-        research_js_path = os.path.join("frontend", "src", "research.js")
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        frontend_dir = os.path.join(base_dir, "frontend") if os.path.exists(os.path.join(base_dir, "frontend")) else "frontend"
+        research_js_path = os.path.join(frontend_dir, "src", "research.js")
         with open(research_js_path, "r", encoding="utf-8") as f:
             js_src = f.read()
 

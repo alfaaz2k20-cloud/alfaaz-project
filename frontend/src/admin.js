@@ -37,11 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
  };
 
  function loadTab(name) {
- if (name === 'events') window.loadEvents(); 
+ if (name === 'events') window.loadEvents();
  if (name === 'exhibitions') { window.loadExhibitionManager(); window.loadExhibitionsData('ALL'); }
- if (name === 'clubs') window.loadClubs('ALL'); 
+ if (name === 'clubs') window.loadClubs('ALL');
  if (name === 'roster') window.loadRoster();
- if (name === 'recruitment') window.loadRecruitment();
+ if (name === 'submissions') window.loadSubmissions();
+ if (name === 'diagnostics') window.checkEmailStatus();
+ if (name === 'recruitment') { if (typeof window.loadRecruitment === 'function') window.loadRecruitment(); else window.location.href = 'research.html'; }
  }
 
  // ==========================================
@@ -87,13 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
  };
  window.toggleEvent = async function(id, btn) { btn.textContent = '...'; const res = await window.globalApiFetch(`/admin/events/${id}/toggle`, { method: 'PATCH' }); if (res && res.ok) window.loadEvents(); };
  window.deleteEvent = async function(id, name, btn) { if (!confirm(`Delete ${name}?`)) return; btn.textContent = '...'; const res = await window.globalApiFetch(`/admin/events/${id}`, { method: 'DELETE' }); if (res && res.ok) window.loadEvents(); };
- 
+
  window.viewRegistrations = async function(id) {
  const event = allEvents.find(e => e.id === id); document.getElementById('modalTitle').textContent = event.name; document.getElementById('modalBody').innerHTML = 'Loading...'; document.getElementById('regModal').classList.add('open');
  const res = await window.globalApiFetch(`/admin/events/${id}/registrations`);
  if(!res) return;
  const data = await res.json();
- let html = `<div style="font-size:12px; margin-bottom:1.5rem; color:var(--accent-gold); font-weight:600; letter-spacing: 1px; text-: uppercase;">Total Approved: ${data.registrations.length}</div>`;
+ let html = `<div style="font-size:12px; margin-bottom:1.5rem; color:var(--accent-gold); font-weight:600; letter-spacing: 1px; text-transform: uppercase;">Total Approved: ${data.registrations.length}</div>`;
  data.registrations.forEach((r, i) => {
  const safeEmail = window.escapeHtml(r.email);
  const safeWa = r.whatsapp ? 'WA: ' + window.escapeHtml(r.whatsapp) : 'No WA provided';
@@ -107,12 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
  // EXHIBITIONS LOGIC (TRUE EVENTS MODEL)
  // ==========================================
  let allExhibs = [], activeCycleFilter = 'ALL';
- let currentCycleView = 'ALL'; 
+ let currentCycleView = 'ALL';
 
  window.loadExhibitionManager = async function() {
  const res = await window.globalApiFetch('/admin/exhibitions/list');
  if (!res || !res.ok) return;
- 
+
  const exhibitions = await res.json();
  const container = document.getElementById('exhibitionListContainer');
  const statusText = document.getElementById('portalLiveStatus');
@@ -133,16 +135,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
  exhibitions.forEach(ex => {
  const card = document.createElement('div');
- card.style.cssText = `border: 1px solid ${ex.is_active ? 'var(--accent-gold)' : 'var(--grid-border)'}; padding: 1.5rem; background: ${ex.is_active ? 'var(--bg-primary)' : 'transparent'}; : all 0.3s;`;
- 
- const statusBadge = ex.is_active 
- ? `<span style="font-size: 9px; padding: 3px 8px; background: var(--accent-gold); color: #fff; letter-spacing: 1px; text-: uppercase;">Live Now</span>`
- : `<span style="font-size: 9px; padding: 3px 8px; border: 1px solid var(--grid-border); color: var(--text-secondary); letter-spacing: 1px; text-: uppercase;">Inactive</span>`;
- 
+ card.style.cssText = `border: 1px solid ${ex.is_active ? 'var(--accent-gold)' : 'var(--grid-border)'}; padding: 1.5rem; background: ${ex.is_active ? 'var(--bg-primary)' : 'transparent'}; transition: all 0.3s;`;
+
+ const statusBadge = ex.is_active
+ ? `<span style="font-size: 9px; padding: 3px 8px; background: var(--accent-gold); color: #fff; letter-spacing: 1px; text-transform: uppercase;">Live Now</span>`
+ : `<span style="font-size: 9px; padding: 3px 8px; border: 1px solid var(--grid-border); color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase;">Inactive</span>`;
+
  const safeTitle = window.escapeHtml(ex.title);
  const safeDateText = window.escapeHtml(ex.date_text);
  const actionBtn = ex.is_active
- ? `<button disabled style="font-family: var(--font-body); font-size: 10px; text-: uppercase; letter-spacing: 1px; padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--grid-border); color: var(--text-secondary); cursor: not-allowed;">Currently Active</button>`
+ ? `<button disabled style="font-family: var(--font-body); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--grid-border); color: var(--text-secondary); cursor: not-allowed;">Currently Active</button>`
  : `<button onclick="activateExhibition(${ex.id}, '${safeTitle.replace(/'/g, "\\'")}')" class="action-btn gold" style="padding: 0.5rem 1rem; font-size: 10px;">Set as Live</button>`;
 
  card.innerHTML = `
@@ -162,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
  window.createNewExhibition = async function() {
  const btn = document.querySelector('button[onclick="createNewExhibition()"]');
  const msg = document.getElementById('createExMsg');
- 
+
  const payload = {
  title: document.getElementById('newExTitle').value.trim(),
  date_text: document.getElementById('newExDate').value.trim(),
@@ -182,17 +184,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
  btn.textContent = "Creating..."; btn.disabled = true;
  const res = await window.globalApiFetch('/admin/exhibitions/create', { method: 'POST', body: JSON.stringify(payload) });
- 
+
  if (res && res.ok) {
  msg.textContent = "✓ Exhibition Created!";
  msg.style.color = "var(--accent-green)";
  document.querySelectorAll('#newExTitle, #newExDate, #newExVenue, #newExDesc, #newExTnc, #newExFee, #newExQr, #newExPayInst').forEach(el => el.value = '');
- await window.loadExhibitionManager(); 
+ await window.loadExhibitionManager();
  } else {
  msg.textContent = "Failed to create. Title might already exist.";
  msg.style.color = "var(--accent-red)";
  }
- 
+
  btn.textContent = "Create Exhibition"; btn.disabled = false;
  setTimeout(() => msg.textContent = '', 4000);
  };
@@ -200,14 +202,14 @@ document.addEventListener('DOMContentLoaded', () => {
  window.activateExhibition = async function(id, title) {
  if (!confirm(`Are you sure you want to make "${title}" the live exhibition on the public portal?`)) return;
  const res = await window.globalApiFetch(`/admin/exhibitions/${id}/activate`, { method: 'PATCH' });
- if (res && res.ok) { await window.loadExhibitionManager(); await window.loadExhibitionsData('ALL'); } 
+ if (res && res.ok) { await window.loadExhibitionManager(); await window.loadExhibitionsData('ALL'); }
  else { alert("Failed to activate exhibition."); }
  };
 
  window.deactivateAllExhibitions = async function() {
  if (!confirm("Are you sure you want to CLOSE the exhibition portal? The public will not be able to apply until you set a cycle to live.")) return;
  const res = await window.globalApiFetch('/admin/exhibitions/deactivate-all', { method: 'PATCH' });
- if (res && res.ok) { await window.loadExhibitionManager(); alert("Portal successfully closed."); } 
+ if (res && res.ok) { await window.loadExhibitionManager(); alert("Portal successfully closed."); }
  else { alert("Failed to close portal."); }
  };
 
@@ -223,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
  opts += `<option value="ALL">— All Archive —</option>`;
 
  wrap.innerHTML = `
- <label style="font-size:10px;color:var(--text-secondary);text-:uppercase;letter-spacing:1px;margin-right:0.8rem;">Viewing Cycle:</label>
+ <label style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-right:0.8rem;">Viewing Cycle:</label>
  <select id="cycleSelect" style="background:transparent;border:none;border-bottom:1px solid var(--grid-border);color:var(--text-primary);font-family:var(--font-body);font-size:12px;padding:0.4rem 0;outline:none;">
  ${opts}
  </select>`;
@@ -232,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
  sel.value = currentCycleView;
 
  sel.addEventListener('change', async (e) => {
- currentCycleView = e.target.value; 
+ currentCycleView = e.target.value;
  const query = currentCycleView ? `?cycle=${encodeURIComponent(currentCycleView)}` : '';
  const r = await window.globalApiFetch(`/admin/exhibitions${query}`);
  if (r && r.ok) { allExhibs = await r.json(); window.filterExhibitions('ALL'); }
@@ -240,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
  }
 
  window.loadExhibitionsData = async function(f) {
- currentCycleView = 'ALL'; 
+ currentCycleView = 'ALL';
  const res = await window.globalApiFetch('/admin/exhibitions?cycle=ALL');
  if (!res) return;
  allExhibs = await res.json();
@@ -262,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
  window.renderExhibitions = function(f) {
  const container = document.getElementById('exhibitionsContainer');
  const apps = f === 'ALL' ? allExhibs : allExhibs.filter(a => f === 'FINALIZED' ? hasPaymentSubmission(a) : f === 'APPROVED' ? a.status === 'APPROVED' && !hasPaymentSubmission(a) : a.status === f);
- 
+
  container.innerHTML = '';
  if (!apps.length) { container.innerHTML = '<div class="empty-state">No portfolios found.</div>'; return; }
 
@@ -272,24 +274,30 @@ document.addEventListener('DOMContentLoaded', () => {
  const displayStatus = getExhibitionLabel(a);
  const badge = a.status === 'PENDING' ? 'badge-pending' : a.status === 'APPROVED' ? 'badge-approved' : 'badge-rejected';
 
- let actionBtns = `<a href="${a.portfolio_url}" target="_blank" class="action-btn gold" style="padding:0.6rem;font-size:9px;text-align:center;">View Portfolio</a>`;
+ const safePortfolio = window.safeHttpUrl ? window.safeHttpUrl(a.portfolio_url) : (a.portfolio_url && (a.portfolio_url.startsWith('http://') || a.portfolio_url.startsWith('https://')) ? a.portfolio_url : null);
+ let actionBtns = safePortfolio
+   ? `<a href="${window.escapeHtml(safePortfolio)}" target="_blank" rel="noopener noreferrer" class="action-btn gold" style="padding:0.6rem;font-size:9px;text-align:center;">View Portfolio</a>`
+   : `<span class="action-btn" style="padding:0.6rem;font-size:9px;text-align:center;opacity:0.4;cursor:not-allowed;">Invalid Portfolio</span>`;
 
  if (a.status === 'PENDING') {
  actionBtns += `
- <button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="reviewExhibition(${a.id},'APPROVED',this)">Approve</button>
- <button class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-red);color:var(--accent-red);" onclick="reviewExhibition(${a.id},'REJECTED',this)">Reject</button>`;
+ <button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="reviewExhibition(${Number(a.id)},'APPROVED',this)">Approve</button>
+ <button class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-red);color:var(--accent-red);" onclick="reviewExhibition(${Number(a.id)},'REJECTED',this)">Reject</button>`;
  } else if (a.status === 'REJECTED') {
- actionBtns += `<button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="revertExhibition(${a.id},this)">Undo Rejection</button>`;
+ actionBtns += `<button class="action-btn" style="padding:0.6rem;font-size:9px;" onclick="revertExhibition(${Number(a.id)},this)">Undo Rejection</button>`;
  }
  if (a.payment_proof_url) {
- actionBtns += `<a href="${a.payment_proof_url}" target="_blank" class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-green);color:var(--accent-green);text-align:center;margin-top:0.5rem;">View Payment Receipt</a>`;
+ const safePayment = window.safeHttpUrl ? window.safeHttpUrl(a.payment_proof_url) : (a.payment_proof_url && (a.payment_proof_url.startsWith('http://') || a.payment_proof_url.startsWith('https://')) ? a.payment_proof_url : null);
+ if (safePayment) {
+ actionBtns += `<a href="${window.escapeHtml(safePayment)}" target="_blank" rel="noopener noreferrer" class="action-btn" style="padding:0.6rem;font-size:9px;border-color:var(--accent-green);color:var(--accent-green);text-align:center;margin-top:0.5rem;">View Payment Receipt</a>`;
+ }
  }
  if (a.registration_status === 'SUBMITTED') {
  actionBtns += `<button class="action-btn gold" style="padding:0.6rem;font-size:9px;" onclick="confirmExhibitionPayment(${a.id},this)">Confirm Payment</button>`;
  }
 
  const cycleName = window.escapeHtml(a.exhibition_cycle ? a.exhibition_cycle : 'LEGACY ARCHIVE');
- const cycleTag = `<div style="font-size:10px; margin-top:6px; color:var(--accent-gold); letter-spacing:1.5px; text-:uppercase; font-weight:600;">CYCLE: ${cycleName}</div>`;
+ const cycleTag = `<div style="font-size:10px; margin-top:6px; color:var(--accent-gold); letter-spacing:1.5px; text-transform:uppercase; font-weight:600;">CYCLE: ${cycleName}</div>`;
 
  const safeFullName = window.escapeHtml(a.full_name);
  const safeUserEmail = window.escapeHtml(a.user_email);
@@ -319,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
  const note = prompt('Curator Note to Artist (optional):');
  btn.textContent = '...'; btn.disabled = true;
  const res = await window.globalApiFetch('/admin/exhibitions/review', { method: 'POST', body: JSON.stringify({ application_id: id, status: status, curator_note: note || null }) });
- if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions(activeCycleFilter); } 
+ if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions(activeCycleFilter); }
  else { btn.textContent = status === 'APPROVED' ? 'Approve' : 'Reject'; btn.disabled = false; }
  };
 
@@ -327,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
  if (!confirm('Undo rejection and return to Pending?')) return;
  btn.textContent = '...'; btn.disabled = true;
  const res = await window.globalApiFetch(`/admin/exhibitions/${id}/revert`, { method: 'PATCH' });
- if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions(activeCycleFilter); } 
+ if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions(activeCycleFilter); }
  else { btn.textContent = 'Undo Rejection'; btn.disabled = false; }
  };
 
@@ -335,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
  if (!confirm('Confirm this payment? This will notify the artist.')) return;
  btn.textContent = '...'; btn.disabled = true;
  const res = await window.globalApiFetch(`/admin/exhibitions/${id}/confirm-payment`, { method: 'PATCH' });
- if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions('FINALIZED'); } 
+ if (res && res.ok) { await window.loadExhibitionsData('ALL'); window.filterExhibitions('FINALIZED'); }
  else { btn.textContent = 'Confirm Payment'; btn.disabled = false; }
  };
 
@@ -372,18 +380,156 @@ document.addEventListener('DOMContentLoaded', () => {
  // ==========================================
  window.loadRoster = async function() {
  const container = document.getElementById('rosterContainer'); const res = await window.globalApiFetch('/admin/users'); if(!res) return; const users = await res.json(); container.innerHTML = '';
+ if (!users.length) {
+ container.innerHTML = '<div class="empty-state">No users registered yet.</div>';
+ return;
+ }
  users.forEach((u, i) => {
  const card = document.createElement('div'); card.className = 'data-card user-card';
  const safeEmail = window.escapeHtml(u.email);
+ const safeName = window.escapeHtml(u.full_name || 'Member');
+ const isSelf = u.email === user.email;
+ const deleteBtn = (isSelf || u.status === 'ADMIN') ? '' : `<button class="action-btn" style="border-color: var(--accent-red); color: var(--accent-red); padding:0.8rem; font-size:9px;" data-email="${safeEmail}" onclick="deleteUser(this.getAttribute('data-email'), this)">Purge</button>`;
  card.innerHTML = `
- <div><div class="data-label">User</div><div class="data-display">${safeEmail}</div></div>
+ <div><div class="data-label">${safeName}</div><div class="data-display">${safeEmail}</div></div>
  <div><div class="data-label">Role</div><select id="st-${i}" style="margin:0;"><option value="PARTICIPANT" ${u.status==='PARTICIPANT'?'selected':''}>Participant</option><option value="ADMIN" ${u.status==='ADMIN'?'selected':''}>Admin</option></select></div>
- <button class="action-btn gold" style="padding:0.8rem; font-size:9px;" onclick="updateStatus('${u.email}', ${i}, this)">Save Role</button>`;
+ <div style="display:flex; gap:0.5rem; align-items:center;">
+ <button class="action-btn gold" style="padding:0.8rem; font-size:9px;" data-email="${safeEmail}" onclick="updateStatus(this.getAttribute('data-email'), ${i}, this)">Save Role</button>
+ ${deleteBtn}
+ </div>`;
  container.appendChild(card);
  });
  if(window.refreshGlobalEffects) window.refreshGlobalEffects();
  };
+
+ window.deleteUser = async function(email, btn) {
+ if (!confirm(`Are you sure you want to completely purge user ${email}? This will delete all their registrations, submissions, and club applications.`)) {
+ return;
+ }
+ btn.textContent = '...';
+ btn.disabled = true;
+ try {
+ const res = await window.globalApiFetch(`/admin/users/${encodeURIComponent(email)}`, { method: 'DELETE' });
+ if (res && res.ok) {
+ window.loadRoster();
+ } else {
+ alert('Failed to delete user.');
+ btn.textContent = 'Purge';
+ btn.disabled = false;
+ }
+ } catch (e) {
+ alert('Error purging user: ' + e.message);
+ btn.textContent = 'Purge';
+ btn.disabled = false;
+ }
+ };
+
  window.updateStatus = async function(email, i, btn) { const status = document.getElementById(`st-${i}`).value; btn.textContent = '...'; const res = await window.globalApiFetch('/admin/update_status', { method: 'POST', body: JSON.stringify({ email, status }) }); if (res && res.ok) { if (email === user.email && status === 'PARTICIPANT') { localStorage.clear(); window.location.href = 'login.html'; } btn.textContent = '✓'; setTimeout(() => btn.textContent = 'Save Role', 2000); } };
+
+ // ==========================================
+ // STORAGE VAULT SUBMISSIONS
+ // ==========================================
+ window.loadSubmissions = async function() {
+ const container = document.getElementById('submissionsContainer');
+ if (!container) return;
+ container.innerHTML = '<div class="empty-state">Loading submissions...</div>';
+ try {
+ const res = await window.globalApiFetch('/admin/submissions');
+ if (!res || !res.ok) {
+ container.innerHTML = '<div class="empty-state">Unable to load submissions.</div>';
+ return;
+ }
+ const subs = await res.json();
+ if (!subs || !subs.length) {
+ container.innerHTML = '<div class="empty-state">No submissions found in Storage Vault.</div>';
+ return;
+ }
+ container.innerHTML = '';
+ subs.forEach(s => {
+ const card = document.createElement('div');
+ card.className = 'data-card exhib-card';
+ const safeTitle = window.escapeHtml(s.title || 'Untitled');
+ const safeType = window.escapeHtml(s.submission_type || 'Work');
+ const safeAuthor = window.escapeHtml(s.author_email || 'Anonymous');
+ const safeNote = window.escapeHtml(s.note || '');
+ const safeDate = s.created_at ? new Date(s.created_at).toLocaleDateString() : '';
+ const safeUrl = window.safeHttpUrl(s.file_url);
+ const linkHtml = safeUrl
+ ? `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="action-btn gold" style="padding:0.6rem 1rem; font-size:9px; text-decoration:none; display:inline-block;">View File &rarr;</a>`
+ : `<span style="font-size:11px; color:var(--text-secondary);">(No valid URL)</span>`;
+
+ card.innerHTML = `
+ <div>
+ <div class="data-label">${safeType} · ${safeDate}</div>
+ <div class="data-display" style="font-weight:600; font-size:15px; margin-bottom:0.3rem;">${safeTitle}</div>
+ <div style="font-size:11px; color:var(--text-secondary);">${safeAuthor}</div>
+ </div>
+ <div>
+ <div class="data-label">Author Note</div>
+ <div style="font-size:12px; color:var(--text-secondary); max-height:80px; overflow-y:auto;">${safeNote || '—'}</div>
+ </div>
+ <div style="display:flex; justify-content:flex-end; align-items:center;">
+ ${linkHtml}
+ </div>
+ `;
+ container.appendChild(card);
+ });
+ if (window.refreshGlobalEffects) window.refreshGlobalEffects();
+ } catch (e) {
+ container.innerHTML = `<div class="empty-state">Error loading submissions: ${window.escapeHtml(e.message)}</div>`;
+ }
+ };
+
+ // ==========================================
+ // SYSTEM & EMAIL DIAGNOSTICS
+ // ==========================================
+ window.checkEmailStatus = async function() {
+ const statusEl = document.getElementById('emailWebhookStatus');
+ if (!statusEl) return;
+ try {
+ const res = await window.globalApiFetch('/admin/email/status');
+ if (res && res.ok) {
+ const data = await res.json();
+ if (data.make_webhook_configured) {
+ statusEl.style.color = 'var(--accent-gold)';
+ statusEl.textContent = 'CONFIGURED (Make.com Webhook URL Present — Live Delivery Unverified Until Dispatched)';
+ } else {
+ statusEl.style.color = 'var(--accent-red)';
+ statusEl.textContent = 'NOT CONFIGURED (MAKE_WEBHOOK_URL Absent in Environment)';
+ }
+ } else {
+ statusEl.textContent = 'Unable to determine webhook configuration status';
+ }
+ } catch (e) {
+ statusEl.textContent = 'Error checking webhook status';
+ }
+ };
+
+ window.sendTestEmail = async function() {
+ const btn = document.getElementById('btnTestEmail');
+ const msg = document.getElementById('emailTestMsg');
+ if (!btn || !msg) return;
+ btn.textContent = 'Dispatching...';
+ btn.disabled = true;
+ msg.textContent = '';
+ try {
+ const res = await window.globalApiFetch('/admin/email/test', { method: 'POST' });
+ if (res && res.ok) {
+ msg.style.color = 'var(--accent-green)';
+ msg.textContent = 'Webhook accepted test payload (200 OK). External inbox delivery depends on Make.com scenario processing.';
+ } else {
+ const errData = await res.json().catch(() => ({}));
+ msg.style.color = 'var(--accent-red)';
+ msg.textContent = `Webhook dispatch failed: ${errData.detail || 'Service returned error'}`;
+ }
+ } catch (e) {
+ msg.style.color = 'var(--accent-red)';
+ msg.textContent = `Error: ${e.message}`;
+ } finally {
+ btn.textContent = 'Send Test Email';
+ btn.disabled = false;
+ }
+ };
 
  // ==========================================
  // VOLUNTEER RECRUITMENT LOGIC

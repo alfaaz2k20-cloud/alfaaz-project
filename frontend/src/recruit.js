@@ -99,7 +99,6 @@ const FALLBACK_V2_1_SCENARIOS = Object.keys(SJT_V2_1_COPY).map((k, idx) => ({
  ALFAAZ RECRUIT — CANDIDATE EXPERIENCE & TELEMETRY CLIENT
  ========================================================================== */
 
-import consentCopy from '../../alfaaz-recruit-system/backend/config/copy/consent.json';
 import './recruit-utilities.css';
 import { runMiniGame, CANDIDATE_CORE_GAMES, scrollToTop } from './recruit_games/index.js';
 
@@ -280,7 +279,7 @@ async function restoreLocalState() {
  const activeSessionId = sessionStorage.getItem('alfaaz_active_session_id');
  const scopedKey = activeSessionId ? `${STATE_STORAGE_KEY}_${activeSessionId}` : STATE_STORAGE_KEY;
  const savedStateStr = sessionStorage.getItem(scopedKey) || sessionStorage.getItem(STATE_STORAGE_KEY);
- 
+
  const idbEvents = await TelemetryOutbox.getAll();
  if (idbEvents && idbEvents.length > 0) {
      state.telemetryQueue = idbEvents;
@@ -731,7 +730,7 @@ function renderConsent(app) {
  <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--bg-primary)] border border-[var(--accent-gold)]"></div>
  <h2 class="text-lg text-[var(--text-primary)] mb-2">The Experience</h2>
  <p class="text-sm text-black leading-relaxed">
- This is a 20-25 minute exploratory journey. You will encounter situational judgments and creative micro-tasks. 
+ This is a 20-25 minute exploratory journey. You will encounter situational judgments and creative micro-tasks.
  There are no right or wrong answers—only different perspectives. You may pause, skip, or withdraw at any time without penalty.
  </p>
  </div>
@@ -741,18 +740,13 @@ function renderConsent(app) {
  <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--bg-primary)] border border-[var(--accent-green)]"></div>
  <h2 class="text-lg text-[var(--text-primary)] mb-2">Why We Observe</h2>
  <p class="text-sm text-black leading-relaxed">
-  As you interact with these tasks, we collect behavioral data to better
-  understand your approach to situations, collaboration, and creative challenges.
-  <br><br>
-  <strong>What does this mean for you? This experience is not a
-  pass/fail test and does not, by itself, determine whether you are accepted
-  or rejected. It simply helps us understand you a little better and adds
-  context to your application and conversation with us.</strong>
-  <br><br>
-  Your responses are not used for automated rejection or sold to third parties.
-</p>
+ As you interact with the tasks, we collect behavioral telemetry.
+ <strong>Why do we do this?</strong> To understand your intuitive working style. It helps us match you to the right
+ creative roles within the collective.
+ Your raw data is pseudonymous and will never be used for automated rejection or sold to third parties.
+ </p>
  <p class="text-sm text-black leading-relaxed">
- For any questions or concerns, please contact us: <a href="mailto:alfaaz2k20@gmail.com" class="text-[var(--accent-gold)] hover:underline">alfaaz2k20@gmail.com</a>
+ Contact Us: <a href="mailto:alfaaz2k20@gmail.com" class="text-[var(--accent-gold)] hover:underline">alfaaz2k20@gmail.com</a>
  </p>
  </div>
  </div>
@@ -764,7 +758,7 @@ function renderConsent(app) {
  I confirm that I am 18 years of age or older, and I am participating voluntarily.
  </label>
  </div>
- 
+
  <div class="flex items-start gap-3">
  <input type="checkbox" id="consentAgree" required class="mt-1 w-4 h-4 accent-[#bd6f5d] cursor-pointer">
  <label for="consentAgree" class="text-sm text-[var(--text-primary)] cursor-pointer">
@@ -799,7 +793,7 @@ function renderConsent(app) {
  e.preventDefault();
  const btn = e.target.querySelector('button[type="submit"]');
  if (btn?.getAttribute('aria-disabled') === 'true') return;
- 
+
  const origText = btn ? btn.innerHTML : 'Enter the Studio &rarr;';
  if (btn) {
  btn.setAttribute('aria-disabled', 'true');
@@ -821,9 +815,9 @@ function renderConsent(app) {
  state.worldSequence = data.world_sequence || [];
  state.seeds = data.seeds || {};
  saveLocalState({ immediate: true });
- 
+
  flushTelemetry();
- 
+
  state.screen = 'identity';
  renderScreen();
  } catch (err) {
@@ -860,7 +854,7 @@ function renderIdentity(app) {
         <span class="font-semibold text-stone-900 uppercase tracking-widest text-[11px]">How the Assessment Works</span>
       </div>
       <p class="text-stone-600">
-        This session takes about <strong>~20 minutes</strong>. It consists of <strong>two simple parts</strong>, followed by a friendly interview:
+        This session takes about <strong>11–14 minutes</strong>. It consists of <strong>two simple parts</strong>, followed by a friendly interview:
       </p>
       <div class="space-y-2 pt-1 border-t border-[var(--grid-border)]/60">
         <div class="flex items-start gap-2.5">
@@ -1266,7 +1260,7 @@ function renderSjtBriefing(app) {
 
  function selectSjtOption(scenario, optId, inputType) {
     if (state.sjtResponses[scenario.id] === optId) return;
-    
+
     state.sjtResponses[scenario.id] = optId;
     logEvent('sjt', inputType === 'keyboard' ? 'option_selected_key' : 'option_selected', { scenario_id: scenario.id, option_id: optId });
 

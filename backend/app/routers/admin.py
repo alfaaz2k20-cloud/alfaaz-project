@@ -166,20 +166,20 @@ def get_all_exhibitions(cycle: str = None, db: Session = Depends(get_db)):
         target = cycle or _current_cycle(db)
         if target:
             query = query.filter(DBExhibitionApplication.exhibition_cycle == target)
-            
+
     apps = query.order_by(DBExhibitionApplication.created_at.desc()).all()
-    
+
     # Explicit dictionary mapping ensures nulls are sent to JS properly
     return [{
-        "id": a.id, 
-        "user_email": a.user_email, 
+        "id": a.id,
+        "user_email": a.user_email,
         "full_name": a.full_name,
         "exhibition_cycle": a.exhibition_cycle, # Now safely explicitly None/Null
-        "genre": a.genre, 
-        "medium": a.medium, 
+        "genre": a.genre,
+        "medium": a.medium,
         "portfolio_url": a.portfolio_url,
-        "status": a.status, 
-        "registration_status": a.registration_status, 
+        "status": a.status,
+        "registration_status": a.registration_status,
         "payment_proof_url": a.payment_proof_url
     } for a in apps]
 
@@ -188,13 +188,13 @@ def get_exhibition_cycles(db: Session = Depends(get_db)):
     # 1. Pull the master list of all created exhibitions directly from the source
     master_exhibitions = db.query(DBExhibition.title).order_by(DBExhibition.created_at.desc()).all()
     cycles = [e[0] for e in master_exhibitions]
-    
+
     # 2. Safety Net: Grab any legacy names stamped on old applications
     legacy_rows = db.query(DBExhibitionApplication.exhibition_cycle).distinct().all()
     for r in legacy_rows:
         if r[0] and r[0] not in cycles:
             cycles.append(r[0])
-            
+
     current = _current_cycle(db)
     return {"cycles": cycles, "current": current}
 
@@ -228,10 +228,10 @@ def confirm_exhibition_payment(application_id: int, db: Session = Depends(get_db
     application = db.query(DBExhibitionApplication).filter(DBExhibitionApplication.id == application_id).first()
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
-        
+
     if application.registration_status != "SUBMITTED":
         raise HTTPException(status_code=400, detail="Cannot confirm. The artist has not submitted payment proof yet.")
-        
+
     application.registration_status = "CONFIRMED"
     application.payment_confirmed_at = datetime.datetime.now(datetime.timezone.utc)
     db.commit()
@@ -277,17 +277,23 @@ def get_all_users(db: Session = Depends(get_db)):
 
 @router.delete("/users/{user_email}")
 def delete_user(user_email: str, db: Session = Depends(get_db), admin_user=Depends(require_admin)):
+    if user_email == admin_user["email"]:
+        raise HTTPException(status_code=400, detail="Cannot purge your own administrator account.")
     user = db.query(DBUser).filter(DBUser.email == user_email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
     if user.status == "ADMIN":
         raise HTTPException(status_code=403, detail="Cannot delete an admin account.")
-    db.query(DBSubmission).filter(DBSubmission.author_email == user_email).delete()
-    db.query(DBClubApplication).filter(DBClubApplication.user_email == user_email).delete()
-    db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user_email).delete()
-    db.query(DBExhibitionApplication).filter(DBExhibitionApplication.user_email == user_email).delete()
-    db.delete(user)
-    db.commit()
+    try:
+        db.query(DBSubmission).filter(DBSubmission.author_email == user_email).delete()
+        db.query(DBClubApplication).filter(DBClubApplication.user_email == user_email).delete()
+        db.query(DBEventRegistration).filter(DBEventRegistration.user_email == user_email).delete()
+        db.query(DBExhibitionApplication).filter(DBExhibitionApplication.user_email == user_email).delete()
+        db.delete(user)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database transaction error during purge: {e}")
     log_admin_action(db, admin_user["email"], "PURGE_USER", "user", user_email, f"User {user_email} deleted")
     return {"status": "SUCCESS", "message": f"User {user_email} purged."}
 
@@ -296,6 +302,10 @@ def update_user_status(target: StatusUpdate, db: Session = Depends(get_db), admi
     db_user = db.query(DBUser).filter(DBUser.email == target.email).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found.")
+    if db_user.status == "ADMIN" and target.status != "ADMIN":
+        admin_count = db.query(DBUser).filter(DBUser.status == "ADMIN").count()
+        if admin_count <= 1:
+            raise HTTPException(status_code=400, detail="Cannot demote the last administrator account.")
     db_user.status = target.status
     db.commit()
     log_admin_action(db, admin_user["email"], "UPDATE_ROLE", "user", target.email, f"Role set to {target.status}")

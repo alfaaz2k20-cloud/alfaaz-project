@@ -50,9 +50,9 @@
     
     @media (max-width: 768px) { .club-card, .event-card, .user-card, .exhib-card { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; gap: 1.5rem; } nav { padding: 1rem 1.5rem; } .nav-login { display: none !important; } .mobile-only-link { display: block; } .nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; flex-direction: column; background: var(--bg-secondary); padding: 2rem; gap: 1.5rem; border-bottom: 1px solid var(--grid-border); box-shadow: 0 10px 20px rgba(0,0,0,0.05); } .nav-links.active { display: flex; } #menuToggle { display: flex; align-items: center; justify-content: center; margin-left: 0.5rem; } }
   </style>
-  <script type="module" crossorigin src="/assets/admin-DuQK7KEk.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/global-DxYxv3W5.js">
-  <link rel="stylesheet" crossorigin href="/assets/global-DcIjY9J7.css">
+  <script type="module" crossorigin src="/assets/admin-BUaNWz_P.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/global-C9Breos1.js">
+  <link rel="stylesheet" crossorigin href="/assets/global-CdSdrt29.css">
 </head>
 <body>
     <nav id="navbar" style="justify-content: space-between;">
@@ -80,6 +80,8 @@
       <button class="tab-btn" onclick="switchTab('exhibitions')">Exhibitions</button>
       <button class="tab-btn" onclick="switchTab('clubs')">Club Applications</button>
       <button class="tab-btn" onclick="switchTab('roster')">Collective Roster</button>
+      <button class="tab-btn" onclick="switchTab('submissions')">Storage Vault</button>
+      <button class="tab-btn" onclick="switchTab('diagnostics')">Diagnostics</button>
     </div>
 
     <div id="tab-events" class="tab-panel active">
@@ -196,6 +198,25 @@
     <div id="tab-roster" class="tab-panel">
       <div class="section-title">Collective Roster</div>
       <div id="rosterContainer"><div class="empty-state">Loading roster...</div></div>
+    </div>
+
+    <div id="tab-submissions" class="tab-panel">
+      <div class="section-title">Storage Vault Submissions</div>
+      <div id="submissionsContainer"><div class="empty-state">Loading submissions...</div></div>
+    </div>
+
+    <div id="tab-diagnostics" class="tab-panel">
+      <div class="section-title">System & Email Diagnostics</div>
+      <div class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+          <div>
+            <div class="data-label">Email Webhook Status</div>
+            <div id="emailWebhookStatus" class="data-display" style="color: var(--accent-gold);">Checking webhook status...</div>
+          </div>
+          <button id="btnTestEmail" class="action-btn gold" style="padding: 0.8rem 1.5rem;" onclick="sendTestEmail()">Send Test Email</button>
+        </div>
+        <div id="emailTestMsg" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);"></div>
+      </div>
     </div>
 
     </div>

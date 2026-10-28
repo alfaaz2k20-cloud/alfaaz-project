@@ -80,6 +80,8 @@
       <button class="tab-btn" onclick="switchTab('exhibitions')">Exhibitions</button>
       <button class="tab-btn" onclick="switchTab('clubs')">Club Applications</button>
       <button class="tab-btn" onclick="switchTab('roster')">Collective Roster</button>
+      <button class="tab-btn" onclick="switchTab('submissions')">Storage Vault</button>
+      <button class="tab-btn" onclick="switchTab('diagnostics')">Diagnostics</button>
     </div>
 
     <div id="tab-events" class="tab-panel active">
@@ -196,6 +198,25 @@
     <div id="tab-roster" class="tab-panel">
       <div class="section-title">Collective Roster</div>
       <div id="rosterContainer"><div class="empty-state">Loading roster...</div></div>
+    </div>
+
+    <div id="tab-submissions" class="tab-panel">
+      <div class="section-title">Storage Vault Submissions</div>
+      <div id="submissionsContainer"><div class="empty-state">Loading submissions...</div></div>
+    </div>
+
+    <div id="tab-diagnostics" class="tab-panel">
+      <div class="section-title">System & Email Diagnostics</div>
+      <div class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+          <div>
+            <div class="data-label">Email Webhook Status</div>
+            <div id="emailWebhookStatus" class="data-display" style="color: var(--accent-gold);">Checking webhook status...</div>
+          </div>
+          <button id="btnTestEmail" class="action-btn gold" style="padding: 0.8rem 1.5rem;" onclick="sendTestEmail()">Send Test Email</button>
+        </div>
+        <div id="emailTestMsg" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);"></div>
+      </div>
     </div>
 
     </div>

@@ -130,6 +130,19 @@ class TestGate1ConsentIdentity(unittest.TestCase):
         self.assertTrue(consent_copy["age_confirmation"]["label"])
         self.assertTrue(consent_copy["research_participation"]["label"])
 
+    def test_identity_linkedin_url_validation(self):
+        # Valid URLs
+        req_https = IdentityRequest(session_id="s1", full_name="Ada", email="ada@test.com", linkedin_url="https://linkedin.com/in/ada")
+        self.assertEqual(req_https.linkedin_url, "https://linkedin.com/in/ada")
+
+        req_none = IdentityRequest(session_id="s1", full_name="Ada", email="ada@test.com", linkedin_url=None)
+        self.assertIsNone(req_none.linkedin_url)
+
+        # Hostile schemes must raise ValueError
+        for hostile in ["javascript:alert(1)", "data:text/html,<script>alert(1)</script>", "vbscript:msgbox(1)"]:
+            with self.assertRaises(Exception):
+                IdentityRequest(session_id="s1", full_name="Ada", email="ada@test.com", linkedin_url=hostile)
+
 
 if __name__ == "__main__":
     unittest.main()

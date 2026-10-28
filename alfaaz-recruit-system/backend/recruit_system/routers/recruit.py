@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 logger = logging.getLogger("recruit_system.routers.recruit")
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlmodel import Session, select
 
 from recruit_system.db.session import get_db
@@ -47,6 +47,20 @@ class IdentityRequest(BaseModel):
     phone_or_contact: Optional[str] = Field(None, max_length=50)
     whatsapp_no: Optional[str] = Field(None, max_length=50)
     linkedin_url: Optional[str] = Field(None, max_length=500)
+
+    @field_validator("linkedin_url")
+    @classmethod
+    def validate_linkedin_url(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        v = v.strip()
+        if not v:
+            return None
+        if ":" in v:
+            scheme = v.split(":", 1)[0].lower()
+            if scheme not in ("http", "https"):
+                raise ValueError("LinkedIn URL must use http or https scheme")
+        return v
 
 class ScheduleInterviewRequest(BaseModel):
     session_id: str

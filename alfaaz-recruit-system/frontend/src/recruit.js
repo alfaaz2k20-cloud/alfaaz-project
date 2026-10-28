@@ -99,7 +99,6 @@ const FALLBACK_V2_1_SCENARIOS = Object.keys(SJT_V2_1_COPY).map((k, idx) => ({
  ALFAAZ RECRUIT — CANDIDATE EXPERIENCE & TELEMETRY CLIENT
  ========================================================================== */
 
-import consentCopy from '../../backend/config/copy/consent.json';
 import './recruit-utilities.css';
 import { runMiniGame, CANDIDATE_CORE_GAMES, scrollToTop } from './recruit_games/index.js';
 
@@ -280,7 +279,7 @@ async function restoreLocalState() {
  const activeSessionId = sessionStorage.getItem('alfaaz_active_session_id');
  const scopedKey = activeSessionId ? `${STATE_STORAGE_KEY}_${activeSessionId}` : STATE_STORAGE_KEY;
  const savedStateStr = sessionStorage.getItem(scopedKey) || sessionStorage.getItem(STATE_STORAGE_KEY);
- 
+
  const idbEvents = await TelemetryOutbox.getAll();
  if (idbEvents && idbEvents.length > 0) {
      state.telemetryQueue = idbEvents;
@@ -731,7 +730,7 @@ function renderConsent(app) {
  <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--bg-primary)] border border-[var(--accent-gold)]"></div>
  <h2 class="text-lg text-[var(--text-primary)] mb-2">The Experience</h2>
  <p class="text-sm text-black leading-relaxed">
- This is a 20-25 minute exploratory journey. You will encounter situational judgments and creative micro-tasks. 
+ This is a 20-25 minute exploratory journey. You will encounter situational judgments and creative micro-tasks.
  There are no right or wrong answers—only different perspectives. You may pause, skip, or withdraw at any time without penalty.
  </p>
  </div>
@@ -741,9 +740,9 @@ function renderConsent(app) {
  <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--bg-primary)] border border-[var(--accent-green)]"></div>
  <h2 class="text-lg text-[var(--text-primary)] mb-2">Why We Observe</h2>
  <p class="text-sm text-black leading-relaxed">
- As you interact with the tasks, we collect behavioral telemetry. 
- <strong>Why do we do this?</strong> To understand your intuitive working style. It helps us match you to the right 
- creative roles within the collective. 
+ As you interact with the tasks, we collect behavioral telemetry.
+ <strong>Why do we do this?</strong> To understand your intuitive working style. It helps us match you to the right
+ creative roles within the collective.
  Your raw data is pseudonymous and will never be used for automated rejection or sold to third parties.
  </p>
  <p class="text-sm text-black leading-relaxed">
@@ -759,7 +758,7 @@ function renderConsent(app) {
  I confirm that I am 18 years of age or older, and I am participating voluntarily.
  </label>
  </div>
- 
+
  <div class="flex items-start gap-3">
  <input type="checkbox" id="consentAgree" required class="mt-1 w-4 h-4 accent-[#bd6f5d] cursor-pointer">
  <label for="consentAgree" class="text-sm text-[var(--text-primary)] cursor-pointer">
@@ -794,7 +793,7 @@ function renderConsent(app) {
  e.preventDefault();
  const btn = e.target.querySelector('button[type="submit"]');
  if (btn?.getAttribute('aria-disabled') === 'true') return;
- 
+
  const origText = btn ? btn.innerHTML : 'Enter the Studio &rarr;';
  if (btn) {
  btn.setAttribute('aria-disabled', 'true');
@@ -816,9 +815,9 @@ function renderConsent(app) {
  state.worldSequence = data.world_sequence || [];
  state.seeds = data.seeds || {};
  saveLocalState({ immediate: true });
- 
+
  flushTelemetry();
- 
+
  state.screen = 'identity';
  renderScreen();
  } catch (err) {
@@ -1261,7 +1260,7 @@ function renderSjtBriefing(app) {
 
  function selectSjtOption(scenario, optId, inputType) {
     if (state.sjtResponses[scenario.id] === optId) return;
-    
+
     state.sjtResponses[scenario.id] = optId;
     logEvent('sjt', inputType === 'keyboard' ? 'option_selected_key' : 'option_selected', { scenario_id: scenario.id, option_id: optId });
 

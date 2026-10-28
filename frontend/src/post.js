@@ -1,11 +1,24 @@
 // post.js — Centralized Article Fetching Logic
 document.addEventListener('DOMContentLoaded', () => {
- function sanitizeHTML(html) {
- const div = document.createElement('div'); 
- div.innerHTML = html;
- div.querySelectorAll('script, iframe, object, embed, form').forEach(el => el.remove());
- return div.innerHTML;
- }
+  function sanitizeHTML(html) {
+    if (!html) return '';
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const dangerousTags = ['script', 'iframe', 'object', 'embed', 'form', 'svg', 'math', 'base', 'link', 'meta'];
+    doc.querySelectorAll(dangerousTags.join(',')).forEach(el => el.remove());
+    doc.querySelectorAll('*').forEach(el => {
+      for (const attr of Array.from(el.attributes)) {
+        const name = attr.name.toLowerCase();
+        const value = attr.value.trim().toLowerCase();
+        if (name.startsWith('on') || name === 'srcdoc') {
+          el.removeAttribute(attr.name);
+        } else if ((name === 'href' || name === 'src') && (value.startsWith('javascript:') || value.startsWith('vbscript:') || value.startsWith('data:text/html'))) {
+          el.removeAttribute(attr.name);
+        }
+      }
+    });
+    return doc.body.innerHTML;
+  }
 
  async function loadArticle() {
  const target = document.getElementById('articleTarget');

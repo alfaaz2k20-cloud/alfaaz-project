@@ -28,21 +28,38 @@ window.escapeHtml = function(str) {
         .replace(/'/g, '&#039;');
 };
 
+window.safeHttpUrl = function(url) {
+    if (!url || typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    try {
+        const parsed = new URL(trimmed, window.location.origin);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+            return parsed.href;
+        }
+    } catch (e) {
+        return null;
+    }
+    return null;
+};
+
 // 2. Assertive Backend Waking (The Pulse)
 // We create a promise that resolves once the backend responds for the first time.
 let isServerReady = false;
-const serverReadyPromise = (async () => {
+const serverReadyPromise = new Promise(async (resolve) => {
     try {
         const start = Date.now();
         await fetch(`${API_URL}/`);
         isServerReady = true;
         console.log(`[ALFAAZ] Backend Pulse: OK (${Date.now() - start}ms)`);
+        resolve(true);
     } catch (e) {
         console.warn("[ALFAAZ] Backend Pulse: Failed. Service might be starting...");
-        // Resolve anyway after a timeout to prevent infinite hanging
-        setTimeout(() => { isServerReady = true; }, 30000);
+        setTimeout(() => {
+            isServerReady = true;
+            resolve(false);
+        }, 3000);
     }
-})();
+});
 
 // 3. Global Fetch Wrapper (Upgraded with Cold-Start Protection)
 window.globalApiFetch = async function(endpoint, options = {}) {
@@ -55,26 +72,27 @@ window.globalApiFetch = async function(endpoint, options = {}) {
     const token = localStorage.getItem('alfaaz_token');
     const headers = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    
+
     try {
-        const response = await fetch(`${API_URL}${endpoint}`, { 
-            ...options, 
-            headers: { ...headers, ...(options.headers || {}) } 
+        const response = await fetch(`${API_URL}${endpoint}`, {
+            ...options,
+            headers: { ...headers, ...(options.headers || {}) }
         });
-        
+
         if (response.status === 401) {
             const authPages = ['login.html', 'register.html', 'reset.html'];
             const isAuthPage = authPages.some(page => window.location.pathname.endsWith(page));
             if (!isAuthPage) {
-                localStorage.clear(); 
-                window.location.href = 'login.html'; 
-                return null;
+                localStorage.removeItem('alfaaz_token');
+                localStorage.removeItem('alfaaz_user');
+                window.location.href = '/login.html';
+                return response;
             }
         }
         return response;
-    } catch (error) { 
-        console.error("API fetch error:", error); 
-        throw error; 
+    } catch (error) {
+        console.error("API fetch error:", error);
+        throw error;
     }
 };
 
@@ -123,7 +141,7 @@ window.alfaazCuratorMemory = {
 
 document.addEventListener('DOMContentLoaded', () => {
     window.refreshGlobalEffects();
-    
+
     const navbar = document.getElementById('navbar');
     if (navbar) {
         let lastY = window.scrollY;
@@ -131,10 +149,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentY = window.scrollY;
             if (currentY > 80) navbar.classList.add('scrolled');
             else navbar.classList.remove('scrolled');
-            
+
             if (currentY > lastY && currentY > 120) navbar.classList.add('hidden');
             else navbar.classList.remove('hidden');
-            
+
             lastY = currentY;
         }, { passive: true });
     }
@@ -150,12 +168,12 @@ document.addEventListener('DOMContentLoaded', () => {
       bilingualElements.forEach((el, index) => {
         setTimeout(() => {
           el.classList.toggle('lang-swapped');
-        }, index * 120); 
+        }, index * 120);
       });
-    }, 5000); 
+    }, 5000);
   }
-  
-  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', startLanguageCycle); } 
+
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', startLanguageCycle); }
   else { startLanguageCycle(); }
 })();
 
